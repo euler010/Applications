@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newton's Cannonball</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js (r128) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom dark scrollbars for webkit and standard browsers */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #334155 #0b1120;
+    }
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b1120;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+      border: 1px solid #1e293b;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* Custom range slider styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #1e293b;
+      height: 8px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      border: 2px solid #e0f2fe;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+      border: 2px solid #e0f2fe;
+    }
+    /* Show Foci Checkbox: dark interior with light boundary */
+    #showFociCheckbox {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: #020617;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 4px;
+      width: 1.1rem;
+      height: 1.1rem;
+      display: inline-grid;
+      place-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    #showFociCheckbox:checked {
+      background-color: #06b6d4;
+      border-color: #f8fafc;
+    }
+    #showFociCheckbox:checked::before {
+      content: "";
+      width: 0.55rem;
+      height: 0.55rem;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      background-color: #020617;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-slate-900/90 border-b border-slate-800 px-5 py-3 flex items-center justify-between backdrop-blur-md sticky top-0 z-40">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+        <svg class="w-5 h-5 text-slate-950" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-base font-bold text-slate-100 tracking-tight">Newton's Cannonball</h1>
+      </div>
+    </div>
+
+    <!-- Quick Simulation Speed Controls -->
+    <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl p-1">
+      <span class="text-[11px] text-slate-400 font-medium px-2 hidden sm:inline">Sim Speed:</span>
+      <button id="speed1x" class="sim-speed-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all">1x</button>
+      <button id="speed500x" class="sim-speed-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all">500x</button>
+      <button id="speed1000x" class="sim-speed-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all">1000x</button>
+      <div class="w-px h-4 bg-slate-800 mx-1"></div>
+      <button id="soundToggleBtn" class="px-2.5 py-1 text-xs font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition-all flex items-center gap-1" title="Toggle Audio">
+        <span id="soundIcon">🔊</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Interactive Simulation Viewport -->
+  <main class="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
+    <!-- 3D Three.js WebGL Canvas Container -->
+    <div id="canvasContainer" class="flex-1 relative bg-slate-950 cursor-grab active:cursor-grabbing min-h-[500px] lg:min-h-0">
+      <canvas id="glCanvas" class="w-full h-full block"></canvas>
+
+      <!-- View Navigation Overlay Buttons -->
+      <div class="absolute top-4 right-4 z-20 flex gap-2">
+        <button id="zoomInBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom In">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+        <button id="zoomOutBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom Out">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+          </svg>
+        </button>
+        <button id="resetViewBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-all flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Reset View
+        </button>
+        <button id="clearPathsBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-all flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Clear Paths
+        </button>
+        <button id="resetAppBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-all flex items-center gap-1.5 active:scale-95" title="Reset entire app to initial load state">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Reset
+        </button>
+      </div>
+
+      <!-- Drag / Orbit Hint -->
+      <div class="absolute top-4 left-4 z-20 text-[11px] text-slate-400 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800/60 backdrop-blur-sm pointer-events-none">
+        Click &amp; drag to rotate • Scroll to zoom
+      </div>
+    </div>
+
+    <!-- Control Sidebar -->
+    <div class="w-full lg:w-96 bg-slate-900/95 border-t lg:border-t-0 lg:border-l border-slate-800 p-5 flex flex-col gap-5 overflow-y-auto max-h-[50vh] lg:max-h-[calc(100vh-61px)]">
+      
+      <!-- Velocity Slider Card -->
+      <div class="bg-slate-950/60 rounded-2xl border border-slate-800 p-4 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Initial Velocity (v₀)
+          </h2>
+          <span id="speedDisplayBadge" class="text-sm font-mono font-bold px-2.5 py-0.5 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-700">
+            0.00 km/s
+          </span>
+        </div>
+
+        <!-- Slider with Inline Fire Button -->
+        <div class="flex items-center gap-2 pt-1">
+          <input type="range" id="speedSlider" min="0" max="11500" step="25" value="0" class="flex-1 min-w-0">
+          <button id="fireBtn" class="py-2 px-5 bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 active:scale-95 text-slate-950 font-black rounded-xl shadow-md shadow-amber-500/20 border border-amber-300/40 text-xs whitespace-nowrap transition-all duration-150 uppercase tracking-wider">
+            Fire!
+          </button>
+        </div>
+      </div>
+
+      <!-- Presets Card: Grey by default, activates theme color upon click -->
+      <div class="bg-slate-950/60 rounded-2xl border border-slate-800 p-4 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-xs uppercase tracking-wider text-slate-400">
+            Newton's Orbital Presets
+          </h2>
+          <span class="text-[10px] text-slate-400">Click to Launch</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+          <!-- Preset 1: Violet -->
+          <button class="preset-btn group p-2.5 rounded-xl border text-left transition-all duration-200 bg-slate-900 border-slate-800 hover:border-slate-700 flex items-center justify-between"
+                  data-preset="1" data-speed="2200" data-color="#8b5cf6">
+            <div class="flex items-center gap-2.5">
+              <span class="preset-dot w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
+              <span class="preset-title text-xs font-semibold text-slate-300">Preset 1: Short Drop</span>
+            </div>
+            <span class="preset-speed text-xs font-mono font-bold text-slate-400">2.20 km/s</span>
+          </button>
+
+          <!-- Preset 2: Blue -->
+          <button class="preset-btn group p-2.5 rounded-xl border text-left transition-all duration-200 bg-slate-900 border-slate-800 hover:border-slate-700 flex items-center justify-between"
+                  data-preset="2" data-speed="5300" data-color="#3b82f6">
+            <div class="flex items-center gap-2.5">
+              <span class="preset-dot w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
+              <span class="preset-title text-xs font-semibold text-slate-300">Preset 2: Medium Arc</span>
+            </div>
+            <span class="preset-speed text-xs font-mono font-bold text-slate-400">5.30 km/s</span>
+          </button>
+
+          <!-- Preset 3: Green -->
+          <button class="preset-btn group p-2.5 rounded-xl border text-left transition-all duration-200 bg-slate-900 border-slate-800 hover:border-slate-700 flex items-center justify-between"
+                  data-preset="3" data-speed="6900" data-color="#22c55e">
+            <div class="flex items-center gap-2.5">
+              <span class="preset-dot w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
+              <span class="preset-title text-xs font-semibold text-slate-300">Preset 3: Long Arc</span>
+            </div>
+            <span class="preset-speed text-xs font-mono font-bold text-slate-400">6.90 km/s</span>
+          </button>
+
+          <!-- Preset 4: Yellow (Circular Orbit) -->
+          <button class="preset-btn group p-2.5 rounded-xl border text-left transition-all duration-200 bg-slate-900 border-slate-800 hover:border-slate-700 flex items-center justify-between"
+                  data-preset="4" data-speed="7350" data-color="#eab308">
+            <div class="flex items-center gap-2.5">
+              <span class="preset-dot w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
+              <span class="preset-title text-xs font-semibold text-slate-300">Preset 4: Circular Orbit</span>
+            </div>
+            <span class="preset-speed text-xs font-mono font-bold text-slate-400">7.35 km/s</span>
+          </button>
+
+          <!-- Preset 5: Orange (Elliptical Orbit) -->
+          <button class="preset-btn group p-2.5 rounded-xl border text-left transition-all duration-200 bg-slate-900 border-slate-800 hover:border-slate-700 flex items-center justify-between"
+                  data-preset="5" data-speed="8100" data-color="#f97316">
+            <div class="flex items-center gap-2.5">
+              <span class="preset-dot w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
+              <span class="preset-title text-xs font-semibold text-slate-300">Preset 5: Elliptical Orbit</span>
+            </div>
+            <span class="preset-speed text-xs font-mono font-bold text-slate-400">8.10 km/s</span>
+          </button>
+
+          <!-- Preset 6: Red (Escape Velocity) -->
+          <button class="preset-btn group p-2.5 rounded-xl border text-left transition-all duration-200 bg-slate-900 border-slate-800 hover:border-slate-700 flex items-center justify-between"
+                  data-preset="6" data-speed="10450" data-color="#ef4444">
+            <div class="flex items-center gap-2.5">
+              <span class="preset-dot w-2.5 h-2.5 rounded-full bg-slate-600 transition-colors"></span>
+              <span class="preset-title text-xs font-semibold text-slate-300">Preset 6: Escape Velocity</span>
+            </div>
+            <span class="preset-speed text-xs font-mono font-bold text-slate-400">10.45 km/s</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Show Foci Option Card -->
+      <div class="bg-slate-950/60 rounded-2xl border border-slate-800 p-4 shadow-xl space-y-2.5">
+        <div class="flex items-center justify-between">
+          <label for="showFociCheckbox" class="flex items-center gap-2.5 cursor-pointer select-none">
+            <input type="checkbox" id="showFociCheckbox" class="cursor-pointer">
+            <span class="text-xs font-bold text-slate-200 tracking-wide">Show Foci</span>
+          </label>
+          <span id="fociStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Off</span>
+        </div>
+        <p class="text-[11px] leading-relaxed text-slate-400">
+          Earth becomes transparent, collision is bypassed to trace the full ellipse, and Keplerian foci are revealed.
+        </p>
+      </div>
+
+      <!-- Educational Context Card -->
+      <div class="bg-slate-950/60 rounded-2xl border border-slate-800 p-4 shadow-xl text-xs space-y-2 text-slate-300">
+        <h3 class="font-bold text-amber-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Newton's Thought Experiment (1728)
+        </h3>
+        <p class="leading-relaxed text-slate-400">
+          In <em>A Treatise of the System of the World</em>, Sir Isaac Newton demonstrated that planetary orbital motion and projectile free-fall are governed by the same universal law of gravitation.
+        </p>
+        <p class="leading-relaxed text-slate-400">
+          At horizontal velocity v = √(GM/r) ≈ 7.35 km/s, the cannonball falls toward Earth at the exact rate the surface curves away underneath it.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* ==========================================================================
+       1. WEB AUDIO SYNTHESIS ENGINE (GUNPOWDER BLAST, LANDING ACOUSTIC TAP)
+       ========================================================================== */
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Noise buffer generator for explosions
+    function createNoiseBuffer(duration = 1.0) {
+      if (!audioCtx) return null;
+      const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        output[i] = (lastOut + (0.04 * white)) / 1.04;
+        lastOut = output[i];
+        output[i] *= 3.0;
+      }
+      return buffer;
+    }
+
+    // Gunpowder Cannon Detonation
+    function playExplosionSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const t = audioCtx.currentTime;
+      const comp = audioCtx.createDynamicsCompressor();
+      comp.threshold.setValueAtTime(-16, t);
+      comp.knee.setValueAtTime(8, t);
+      comp.ratio.setValueAtTime(14, t);
+      comp.attack.setValueAtTime(0.001, t);
+      comp.release.setValueAtTime(0.25, t);
+      comp.connect(audioCtx.destination);
+
+      // 1. Muzzle Detonation Crack
+      const crack = audioCtx.createBufferSource();
+      crack.buffer = createNoiseBuffer(0.12);
+      const crackFilter = audioCtx.createBiquadFilter();
+      crackFilter.type = 'bandpass';
+      crackFilter.frequency.setValueAtTime(1400, t);
+      crackFilter.Q.setValueAtTime(2.2, t);
+
+      const crackGain = audioCtx.createGain();
+      crackGain.gain.setValueAtTime(1.0, t);
+      crackGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+      crack.connect(crackFilter);
+      crackFilter.connect(crackGain);
+      crackGain.connect(comp);
+      crack.start(t);
+
+      // 2. Heavy Sub-Bass Shockwave
+      const sub = audioCtx.createOscillator();
+      const subGain = audioCtx.createGain();
+      sub.type = 'triangle';
+      sub.frequency.setValueAtTime(175, t);
+      sub.frequency.exponentialRampToValueAtTime(30, t + 0.65);
+
+      subGain.gain.setValueAtTime(1.0, t);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+
+      sub.connect(subGain);
+      subGain.connect(comp);
+      sub.start(t);
+      sub.stop(t + 0.75);
+
+      // 3. Reverberant Low Gunpowder Rumble
+      const rumble = audioCtx.createBufferSource();
+      rumble.buffer = createNoiseBuffer(1.3);
+      const rumbleFilter = audioCtx.createBiquadFilter();
+      rumbleFilter.type = 'lowpass';
+      rumbleFilter.frequency.setValueAtTime(700, t);
+      rumbleFilter.frequency.exponentialRampToValueAtTime(60, t + 1.1);
+
+      const rumbleGain = audioCtx.createGain();
+      rumbleGain.gain.setValueAtTime(0.9, t);
+      rumbleGain.gain.exponentialRampToValueAtTime(0.001, t + 1.25);
+
+      rumble.connect(rumbleFilter);
+      rumbleFilter.connect(rumbleGain);
+      rumbleGain.connect(comp);
+      rumble.start(t);
+    }
+
+    // Neutral, benign landing sound (gentle acoustic tap)
+    function playLandingSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(320, t);
+      filter.frequency.exponentialRampToValueAtTime(90, t + 0.12);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, t);
+      osc.frequency.exponentialRampToValueAtTime(70, t + 0.1);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.24, t + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.14);
+    }
+
+    /* ==========================================================================
+       2. PHYSICAL & SIMULATION CONSTANTS
+       ========================================================================== */
+    const G = 6.67430e-11;          // Gravitational Constant (m^3 kg^-1 s^-2)
+    const M_EARTH = 5.972e24;       // Mass of Earth (kg)
+    const R_EARTH = 6371.0;         // Radius of Earth in km
+    const GM = (G * M_EARTH) / 1e9; // Standard Gravitational Parameter in km^3 / s^2 (398600.4418)
+    const MOUNTAIN_HEIGHT = 1000.0; // Mountain summit altitude in km
+    const R_LAUNCH = R_EARTH + MOUNTAIN_HEIGHT; // Launch radius from Earth center (7371.0 km)
+
+    let simSpeedMultiplier = 500.0; // Default 500x real-time simulation speed
+    let isEarthSpinning = true;
+    let lastActiveColor = '#8b5cf6';
+    let trailColorIndex = 0;
+    const TRAIL_COLORS = ['#8b5cf6', '#3b82f6', '#22c55e', '#eab308', '#f97316', '#ef4444'];
+
+    /* ==========================================================================
+       3. THREE.JS 3D SCENE & TEXTURE PIPELINE
+       ========================================================================== */
+    const canvas = document.getElementById('glCanvas');
+    const container = document.getElementById('canvasContainer');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x020617); // Deep space background
+
+    // Perspective Camera setup
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 10, 300000);
+    
+    // Center camera on Earth's center along the Z-axis (normal to orbital plane)
+    const camTarget = new THREE.Vector3(0, 0, 0);
+    const defaultCamDist = R_EARTH * 5.22; // Zoomed in 10% closer by default (5.8 * 0.90)
+    camera.position.set(0, 0, defaultCamDist);
+    camera.lookAt(camTarget);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+
+    // Subtle starfield
+    const starCount = 650;
+    const starGeo = new THREE.BufferGeometry();
+    const starCoords = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount * 3; i += 3) {
+      starCoords[i] = (Math.random() - 0.5) * 120000;
+      starCoords[i + 1] = (Math.random() - 0.5) * 120000;
+      starCoords[i + 2] = -25000 - Math.random() * 50000;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starCoords, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0x94a3b8, size: 220, sizeAttenuation: true, transparent: true, opacity: 0.65 });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    // High-Resolution Procedural Earth Map with Accurate Geography
+    const mapCanvas = document.createElement('canvas');
+    mapCanvas.width = 2048;
+    mapCanvas.height = 1024;
+    const mctx = mapCanvas.getContext('2d');
+
+    // Uniform Deep Ocean base
+    mctx.fillStyle = '#1e3a8a';
+    mctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+    function drawPoly(pts, color, strokeColor = '#22c55e') {
+      mctx.fillStyle = color;
+      mctx.strokeStyle = strokeColor;
+      mctx.lineWidth = 3.5;
+      mctx.beginPath();
+      for (let i = 0; i < pts.length; i++) {
+        const x = (pts[i][0] / 360 + 0.5) * mapCanvas.width;
+        const y = (0.5 - pts[i][1] / 180) * mapCanvas.height;
+        if (i === 0) mctx.moveTo(x, y);
+        else mctx.lineTo(x, y);
+      }
+      mctx.closePath();
+      mctx.fill();
+      mctx.stroke();
+    }
+
+    const LAND_COLOR = '#4ade80';
+
+    // Continental shapes (Longitude -180 to 180, Latitude -90 to 90)
+    // 1. North America
+    drawPoly([
+      [-168, 65], [-160, 71], [-140, 70], [-120, 70], [-95, 71], [-82, 63],
+      [-65, 48], [-68, 44], [-75, 36], [-80, 26], [-82, 24], [-84, 30],
+      [-90, 30], [-97, 26], [-92, 18], [-84, 10], [-78, 8], [-85, 12],
+      [-96, 16], [-105, 20], [-110, 24], [-115, 30], [-122, 38], [-125, 49],
+      [-135, 57], [-150, 60], [-165, 60]
+    ], LAND_COLOR);
+
+    // Florida
+    drawPoly([[-82, 30], [-80, 25], [-81, 25], [-83, 30]], LAND_COLOR);
+
+    // Greenland
+    drawPoly([[-55, 60], [-40, 60], [-20, 72], [-22, 82], [-50, 83], [-60, 75]], LAND_COLOR);
+
+    // 2. South America
+    drawPoly([
+      [-78, 8], [-72, 11], [-60, 10], [-50, 0], [-35, -5], [-35, -9],
+      [-40, -22], [-50, -30], [-58, -38], [-65, -53], [-70, -55], [-75, -50],
+      [-72, -40], [-71, -30], [-78, -12], [-81, -4], [-78, 2], [-78, 8]
+    ], LAND_COLOR);
+
+    // 3. Europe
+    drawPoly([[-5, 50], [0, 52], [-1, 58], [-6, 58], [-5, 50]], LAND_COLOR);
+    drawPoly([[-10, 51], [-6, 52], [-6, 55], [-10, 54]], LAND_COLOR);
+    drawPoly([[5, 58], [12, 56], [18, 59], [28, 70], [18, 70], [10, 64], [5, 62]], LAND_COLOR);
+    drawPoly([
+      [-9, 36], [-9, 43], [-1, 44], [3, 47], [8, 54], [14, 54],
+      [24, 46], [28, 41], [22, 38], [15, 38], [14, 44], [9, 44],
+      [3, 43], [0, 37], [-5, 36]
+    ], LAND_COLOR);
+
+    // 4. Africa
+    drawPoly([
+      [-17, 32], [-5, 36], [10, 37], [25, 32], [33, 31], [34, 27],
+      [43, 12], [51, 11], [42, -2], [36, -18], [32, -28], [28, -34],
+      [18, -34], [12, -22], [10, -5], [3, 4], [-5, 5], [-12, 8],
+      [-17, 15], [-17, 32]
+    ], LAND_COLOR);
+    drawPoly([[44, -12], [50, -14], [48, -25], [44, -25]], LAND_COLOR);
+
+    // 5. Asia & Eurasia
+    drawPoly([
+      [28, 41], [35, 42], [40, 47], [50, 45], [60, 55], [80, 68],
+      [110, 72], [140, 72], [170, 66], [175, 62], [160, 55], [142, 52],
+      [130, 42], [120, 36], [118, 26], [108, 22], [102, 10], [98, 15],
+      [88, 22], [80, 13], [75, 10], [70, 22], [62, 25], [52, 25],
+      [42, 30], [36, 36], [32, 35]
+    ], LAND_COLOR);
+    drawPoly([[36, 32], [43, 32], [55, 25], [58, 22], [54, 16], [45, 13], [42, 16]], LAND_COLOR);
+    drawPoly([[70, 22], [78, 22], [85, 20], [80, 10], [75, 8], [72, 16]], LAND_COLOR);
+    drawPoly([[130, 32], [136, 35], [141, 40], [142, 44], [139, 37], [132, 33]], LAND_COLOR);
+
+    // 6. Australia & New Zealand
+    drawPoly([
+      [114, -22], [122, -18], [135, -12], [142, -11], [150, -22],
+      [153, -28], [148, -38], [140, -38], [130, -32], [116, -35], [114, -22]
+    ], LAND_COLOR);
+    drawPoly([[172, -35], [178, -38], [175, -42], [168, -46]], LAND_COLOR);
+
+    const mapPixelData = mctx.getImageData(0, 0, mapCanvas.width, mapCanvas.height);
+
+    function isLandImpact(x, y, z) {
+      const rotY = earthMesh.rotation.y;
+      const cosR = Math.cos(-rotY);
+      const sinR = Math.sin(-rotY);
+      const localX = x * cosR - z * sinR;
+      const localY = y;
+      const localZ = x * sinR + z * cosR;
+
+      const radius = Math.sqrt(localX * localX + localY * localY + localZ * localZ);
+      const lat = Math.asin(Math.max(-1, Math.min(1, localY / radius))) * (180 / Math.PI);
+      let lon = Math.atan2(localZ, localX) * (180 / Math.PI);
+
+      const px = Math.floor((lon / 360 + 0.5) * mapCanvas.width);
+      const py = Math.floor((0.5 - lat / 180) * mapCanvas.height);
+      const clampedX = Math.max(0, Math.min(mapCanvas.width - 1, px));
+      const clampedY = Math.max(0, Math.min(mapCanvas.height - 1, py));
+
+      const idx = (clampedY * mapCanvas.width + clampedX) * 4;
+      const g = mapPixelData.data[idx + 1];
+      const b = mapPixelData.data[idx + 2];
+      return (g > 150 && g > b);
+    }
+
+    // Earth Sphere Mesh
+    const earthTexture = new THREE.CanvasTexture(mapCanvas);
+    earthTexture.wrapS = THREE.RepeatWrapping;
+    earthTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+    const earthGeo = new THREE.SphereGeometry(R_EARTH, 64, 64);
+    const earthMat = new THREE.MeshStandardMaterial({
+      map: earthTexture,
+      roughness: 0.65,
+      metalness: 0.05
+    });
+    const earthMesh = new THREE.Mesh(earthGeo, earthMat);
+    scene.add(earthMesh);
+
+    // North Pole Mountain (Newton's iconic summit peak)
+    const mountainGroup = new THREE.Group();
+    const mountainConeGeo = new THREE.ConeGeometry(380, MOUNTAIN_HEIGHT, 24);
+    const mountainMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.9 });
+    const mountainCone = new THREE.Mesh(mountainConeGeo, mountainMat);
+    mountainCone.position.y = R_EARTH + MOUNTAIN_HEIGHT / 2;
+    mountainGroup.add(mountainCone);
+
+    // Mountain snowy cap peak
+    const peakGeo = new THREE.ConeGeometry(140, 320, 24);
+    const peakMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 });
+    const peakMesh = new THREE.Mesh(peakGeo, peakMat);
+    peakMesh.position.y = R_EARTH + MOUNTAIN_HEIGHT - 160;
+    mountainGroup.add(peakMesh);
+
+    scene.add(mountainGroup);
+
+    // Foci visualization state and group
+    let showFociMode = false;
+    const fociGroup = new THREE.Group();
+    scene.add(fociGroup);
+
+    // Lighting: Balanced ambient and directional lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.48);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+    dirLight.position.set(16000, 12000, 22000);
+    scene.add(dirLight);
+
+    const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.16);
+    fillLight.position.set(-18000, -8000, -12000);
+    scene.add(fillLight);
+
+    /* ==========================================================================
+       4. TRAJECTORY RIBBON & PROJECTILE DYNAMICS
+       ========================================================================== */
+    class TrajectoryRibbon {
+      constructor(colorHex) {
+        this.colorHex = colorHex;
+        this.points = [];
+        this.geometry = new THREE.BufferGeometry();
+        this.material = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(colorHex),
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.92,
+          depthTest: false
+        });
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        this.mesh.renderOrder = 990;
+        scene.add(this.mesh);
+      }
+
+      addPoint(pos, force = false) {
+        if (!force && this.points.length > 0) {
+          const last = this.points[this.points.length - 1];
+          if (last.distanceTo(pos) < 60) return;
+        }
+        this.points.push(pos.clone());
+        if (this.points.length < 2) return;
+        this.rebuildGeometry();
+      }
+
+      rebuildGeometry() {
+        const pts = this.points;
+        const n = pts.length;
+        if (n < 2) return;
+
+        const width = 85.0; // Thickness in world units (km)
+        const positions = [];
+        const indices = [];
+
+        for (let i = 0; i < n; i++) {
+          let dir;
+          if (i === 0) {
+            dir = new THREE.Vector3().subVectors(pts[1], pts[0]).normalize();
+          } else if (i === n - 1) {
+            dir = new THREE.Vector3().subVectors(pts[n - 1], pts[n - 2]).normalize();
+          } else {
+            dir = new THREE.Vector3().subVectors(pts[i + 1], pts[i - 1]).normalize();
+          }
+
+          // Perpendicular normal in orbital XY plane
+          const normXY = new THREE.Vector3(-dir.y, dir.x, 0).normalize().multiplyScalar(width);
+          // Normal along Z axis for omnidirectional 3D visibility
+          const normZ = new THREE.Vector3(0, 0, 1).multiplyScalar(width);
+
+          const p = pts[i];
+          const v0 = new THREE.Vector3().addVectors(p, normXY);
+          const v1 = new THREE.Vector3().subVectors(p, normXY);
+          const v2 = new THREE.Vector3().addVectors(p, normZ);
+          const v3 = new THREE.Vector3().subVectors(p, normZ);
+
+          positions.push(v0.x, v0.y, v0.z);
+          positions.push(v1.x, v1.y, v1.z);
+          positions.push(v2.x, v2.y, v2.z);
+          positions.push(v3.x, v3.y, v3.z);
+
+          if (i > 0) {
+            const base = (i - 1) * 4;
+            const curr = i * 4;
+            indices.push(base, base + 1, curr);
+            indices.push(curr, base + 1, curr + 1);
+            indices.push(base + 2, base + 3, curr + 2);
+            indices.push(curr + 2, base + 3, curr + 3);
+          }
+        }
+
+        this.geometry.dispose();
+        this.geometry = new THREE.BufferGeometry();
+        this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        this.geometry.setIndex(indices);
+        this.mesh.geometry = this.geometry;
+      }
+
+      dispose() {
+        scene.remove(this.mesh);
+        this.geometry.dispose();
+        this.material.dispose();
+      }
+    }
+
+    class Cannonball3D {
+      constructor(v0KmS, colorHex, passThroughEarth = false) {
+        this.x = 0;
+        this.y = R_LAUNCH;
+        this.z = 0;
+
+        // Fired horizontally to the right (+X axis)
+        this.vx = v0KmS;
+        this.vy = 0;
+        this.vz = 0;
+
+        this.isRadial = (v0KmS < 0.05);
+        this.radialDir = -1; // -1 = downwards, +1 = upwards
+        this.colorHex = colorHex;
+        this.passThroughEarth = passThroughEarth;
+        this.active = true;
+        this.landed = false;
+        this.escaped = false;
+        this.particles = [];
+
+        this.orbitCompleted = false;
+        this.hasPassedHalfway = false;
+        this.prevX = 0;
+        this.prevY = R_LAUNCH;
+
+        // Projectile core sphere mesh (rendered in front of mountain and globe)
+        const ballGeo = new THREE.SphereGeometry(140, 24, 24);
+        const ballMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(colorHex),
+          depthTest: false
+        });
+        this.ballMesh = new THREE.Mesh(ballGeo, ballMat);
+        this.ballMesh.renderOrder = 996;
+
+        // High-contrast outline border around the cannonball
+        const borderGeo = new THREE.SphereGeometry(185, 24, 24);
+        const borderMat = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          side: THREE.BackSide,
+          depthTest: false
+        });
+        this.borderMesh = new THREE.Mesh(borderGeo, borderMat);
+        this.borderMesh.renderOrder = 995;
+        this.ballMesh.add(this.borderMesh);
+
+        this.ballMesh.position.set(this.x, this.y, this.z);
+        scene.add(this.ballMesh);
+
+        // Path ribbon
+        this.ribbon = new TrajectoryRibbon(colorHex);
+        this.ribbon.addPoint(this.ballMesh.position, true);
+      }
+
+      update(dtSec, realDtSec = 0.016) {
+        if (!this.active) {
+          this.updateParticles(realDtSec);
+          return;
+        }
+
+        // 1. Degenerate Radial Fall (v0 = 0 km/s)
+        if (this.isRadial) {
+          if (!this.passThroughEarth) {
+            // Normal drop: numerical sub-stepping to stop and impact at North Pole mountain
+            let rTimeLeft = dtSec;
+            let rGuard = 0;
+            while (rTimeLeft > 1e-4 && rGuard < 120) {
+              rGuard++;
+              const step = Math.min(rTimeLeft, 0.4);
+              const g = GM / (this.y * this.y);
+              this.vy -= g * step;
+              this.y += this.vy * step;
+              if (this.y <= R_EARTH) {
+                this.y = R_EARTH;
+                this.active = false;
+                this.landed = true;
+                this.ballMesh.visible = false;
+                playLandingSound();
+                this.createImpactBurst(0x94a3b8, 0xca8a04);
+                break;
+              }
+              rTimeLeft -= step;
+            }
+            this.ballMesh.position.set(0, this.y, 0);
+            this.ribbon.addPoint(this.ballMesh.position);
+            return;
+          }
+
+          // Show Foci mode: exact energy conservation oscillation along Y axis
+          const yCore = 80.0;
+          let timeLeft = dtSec;
+          let rOscGuard = 0;
+          while (timeLeft > 1e-4 && rOscGuard < 300) {
+            rOscGuard++;
+            const absY = Math.max(Math.abs(this.y), yCore);
+            const speed = Math.sqrt(Math.max(10.0, 2.0 * GM * (1.0 / absY - 1.0 / R_LAUNCH)));
+            const stepDt = Math.min(timeLeft, Math.max(0.01, 0.08 * (absY / (speed + 1.0))), 1.5);
+            
+            this.y += this.radialDir * speed * stepDt;
+
+            // Turnaround check at exact symmetrical apoapses (+R_LAUNCH and -R_LAUNCH)
+            if (this.y <= -R_LAUNCH) {
+              this.y = -R_LAUNCH;
+              this.radialDir = 1;
+              if (!this.orbitCompleted) {
+                this.ribbon.addPoint(new THREE.Vector3(0, -R_LAUNCH, 0), true);
+                this.orbitCompleted = true;
+              }
+            } else if (this.y >= R_LAUNCH) {
+              this.y = R_LAUNCH;
+              this.radialDir = -1;
+            }
+
+            timeLeft -= stepDt;
+          }
+
+          this.ballMesh.position.set(0, this.y, 0);
+          if (!this.orbitCompleted) {
+            this.ribbon.addPoint(this.ballMesh.position);
+          }
+          return;
+        }
+
+        // 2. Adaptive High-Precision RK4 Numerical Integration (v0 > 0 km/s)
+        let timeLeft = dtSec;
+        const eps2 = 0.01;
+
+        let loopGuard = 0;
+        while (timeLeft > 1e-5 && loopGuard < 400) {
+          loopGuard++;
+          const rCurrent = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+          const vCurrent = Math.sqrt(this.vx * this.vx + this.vy * this.vy + this.vz * this.vz);
+
+          // Fine adaptive step near perigee (r ~ 345 km, v ~ 47 km/s)
+          let subDt = Math.min(timeLeft, 0.012 * (rCurrent / (vCurrent + 1)));
+          subDt = Math.max(0.0005, Math.min(1.5, subDt));
+          if (subDt > timeLeft) subDt = timeLeft;
+
+          const r1Sq = this.x * this.x + this.y * this.y + this.z * this.z + eps2;
+          const r1 = Math.sqrt(r1Sq);
+          if (!this.passThroughEarth && r1 <= R_EARTH) {
+            timeLeft = 0;
+            break;
+          }
+
+          const a1x = -GM * this.x / (r1Sq * r1);
+          const a1y = -GM * this.y / (r1Sq * r1);
+          const a1z = -GM * this.z / (r1Sq * r1);
+
+          const x2 = this.x + 0.5 * subDt * this.vx;
+          const y2 = this.y + 0.5 * subDt * this.vy;
+          const z2 = this.z + 0.5 * subDt * this.vz;
+          const r2Sq = x2 * x2 + y2 * y2 + z2 * z2 + eps2;
+          const r2 = Math.sqrt(r2Sq);
+          const a2x = -GM * x2 / (r2Sq * r2);
+          const a2y = -GM * y2 / (r2Sq * r2);
+          const a2z = -GM * z2 / (r2Sq * r2);
+
+          const x3 = this.x + 0.5 * subDt * (this.vx + 0.5 * subDt * a1x);
+          const y3 = this.y + 0.5 * subDt * (this.vy + 0.5 * subDt * a1y);
+          const z3 = this.z + 0.5 * subDt * (this.vz + 0.5 * subDt * a1z);
+          const r3Sq = x3 * x3 + y3 * y3 + z3 * z3 + eps2;
+          const r3 = Math.sqrt(r3Sq);
+          const a3x = -GM * x3 / (r3Sq * r3);
+          const a3y = -GM * y3 / (r3Sq * r3);
+          const a3z = -GM * z3 / (r3Sq * r3);
+
+          const x4 = this.x + subDt * (this.vx + subDt * a2x);
+          const y4 = this.y + subDt * (this.vy + subDt * a2y);
+          const z4 = this.z + subDt * (this.vz + subDt * a2z);
+          const r4Sq = x4 * x4 + y4 * y4 + z4 * z4 + eps2;
+          const r4 = Math.sqrt(r4Sq);
+          const a4x = -GM * x4 / (r4Sq * r4);
+          const a4y = -GM * y4 / (r4Sq * r4);
+          const a4z = -GM * z4 / (r4Sq * r4);
+
+          this.prevX = this.x;
+          this.prevY = this.y;
+
+          this.x += (subDt / 6) * (this.vx + 2 * (this.vx + 0.5 * subDt * a1x) + 2 * (this.vx + 0.5 * subDt * a2x) + (this.vx + subDt * a3x));
+          this.y += (subDt / 6) * (this.vy + 2 * (this.vy + 0.5 * subDt * a1y) + 2 * (this.vy + 0.5 * subDt * a2y) + (this.vy + subDt * a3y));
+          this.z += (subDt / 6) * (this.vz + 2 * (this.vz + 0.5 * subDt * a1z) + 2 * (this.vz + 0.5 * subDt * a2z) + (this.vz + subDt * a3z));
+
+          this.vx += (subDt / 6) * (a1x + 2 * a2x + 2 * a3x + a4x);
+          this.vy += (subDt / 6) * (a1y + 2 * a2y + 2 * a3y + a4y);
+          this.vz += (subDt / 6) * (a1z + 2 * a2z + 2 * a3z + a4z);
+
+          timeLeft -= subDt;
+        }
+
+        const distFromCenter = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+
+        // Surface Collision Check (only active when not in pass-through foci mode)
+        if (!this.passThroughEarth && distFromCenter <= R_EARTH) {
+          const norm = R_EARTH / distFromCenter;
+          this.x *= norm;
+          this.y *= norm;
+          this.z *= norm;
+          this.active = false;
+          this.landed = true;
+          this.ballMesh.visible = false;
+
+          playLandingSound();
+
+          const onLand = isLandImpact(this.x, this.y, this.z);
+          if (onLand) {
+            this.createImpactBurst(0x94a3b8, 0xca8a04);
+          } else {
+            this.createImpactBurst(0x38bdf8, 0xe0f2fe);
+          }
+        }
+
+        // Outer space escape limit
+        if (distFromCenter > R_EARTH * 14) {
+          this.active = false;
+          this.escaped = true;
+        }
+
+        this.ballMesh.position.set(this.x, this.y, this.z);
+
+        // Detect full orbital revolution and seamlessly close the trajectory loop
+        if (this.passThroughEarth) {
+          if (this.y < 0) {
+            this.hasPassedHalfway = true;
+          }
+          if (this.hasPassedHalfway && !this.orbitCompleted && this.prevX < 0 && this.x >= 0 && this.y > 0) {
+            this.ribbon.addPoint(new THREE.Vector3(0, R_LAUNCH, 0), true);
+            this.orbitCompleted = true;
+          }
+        }
+
+        if (!this.orbitCompleted) {
+          this.ribbon.addPoint(this.ballMesh.position);
+        }
+      }
+
+      createImpactBurst(primaryHex, secondaryHex) {
+        const particleCount = 40;
+        const pGeo = new THREE.BufferGeometry();
+        const pCoords = new Float32Array(particleCount * 3);
+        const pVel = [];
+
+        for (let i = 0; i < particleCount; i++) {
+          pCoords[i * 3] = this.x;
+          pCoords[i * 3 + 1] = this.y;
+          pCoords[i * 3 + 2] = this.z;
+
+          const speed = 120 + Math.random() * 380;
+          const theta = Math.random() * Math.PI * 2;
+          pVel.push({
+            x: Math.cos(theta) * speed,
+            y: Math.sin(theta) * speed,
+            z: (Math.random() - 0.5) * speed * 0.4
+          });
+        }
+
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pCoords, 3));
+        const pMat = new THREE.PointsMaterial({
+          color: new THREE.Color(Math.random() > 0.4 ? primaryHex : secondaryHex),
+          size: 160,
+          transparent: true,
+          opacity: 1.0,
+          depthTest: false
+        });
+
+        const pMesh = new THREE.Points(pGeo, pMat);
+        pMesh.renderOrder = 994;
+        scene.add(pMesh);
+
+        this.particles.push({
+          mesh: pMesh,
+          geo: pGeo,
+          mat: pMat,
+          coords: pCoords,
+          vel: pVel,
+          age: 0,
+          lifespan: 1.5
+        });
+      }
+
+      updateParticles(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const sys = this.particles[i];
+          sys.age += dt;
+          const progress = sys.age / sys.lifespan;
+
+          if (progress >= 1.0) {
+            scene.remove(sys.mesh);
+            sys.geo.dispose();
+            sys.mat.dispose();
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          sys.mat.opacity = 1.0 - progress;
+          for (let j = 0; j < sys.vel.length; j++) {
+            sys.coords[j * 3] += sys.vel[j].x * dt;
+            sys.coords[j * 3 + 1] += sys.vel[j].y * dt;
+            sys.coords[j * 3 + 2] += sys.vel[j].z * dt;
+          }
+          sys.geo.attributes.position.needsUpdate = true;
+        }
+      }
+
+      dispose() {
+        scene.remove(this.ballMesh);
+        this.ballMesh.geometry.dispose();
+        this.ballMesh.material.dispose();
+        if (this.borderMesh) {
+          this.borderMesh.geometry.dispose();
+          this.borderMesh.material.dispose();
+        }
+        this.ribbon.dispose();
+        for (const sys of this.particles) {
+          scene.remove(sys.mesh);
+          sys.geo.dispose();
+          sys.mat.dispose();
+        }
+        this.particles = [];
+      }
+    }
+
+    const cannonballs = [];
+
+    /* ==========================================================================
+       5. USER CONTROLS, PRESETS & EVENT LISTENERS
+       ========================================================================== */
+    const speedSlider = document.getElementById('speedSlider');
+    const speedDisplayBadge = document.getElementById('speedDisplayBadge');
+    const fireBtn = document.getElementById('fireBtn');
+    const resetAppBtn = document.getElementById('resetAppBtn');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+    const resetViewBtn = document.getElementById('resetViewBtn');
+    const clearPathsBtn = document.getElementById('clearPathsBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const showFociCheckbox = document.getElementById('showFociCheckbox');
+    const fociStatusBadge = document.getElementById('fociStatusBadge');
+
+    function updateSpeedUI() {
+      const v = parseFloat(speedSlider.value) / 1000;
+      speedDisplayBadge.textContent = v.toFixed(2) + ' km/s';
+    }
+
+    function clearAllTrajectories() {
+      while (cannonballs.length > 0) {
+        const b = cannonballs.pop();
+        b.dispose();
+      }
+      clearFoci();
+      resetAllPresetButtons();
+    }
+
+    // Dynamic width text billboard sprite
+    function createFocusSprite(text, colorHex) {
+      const c = document.createElement('canvas');
+      const ctx = c.getContext('2d');
+      ctx.font = 'bold 24px Inter, sans-serif';
+      const textMetrics = ctx.measureText(text);
+      const textWidth = Math.ceil(textMetrics.width);
+
+      // Generous dynamic padding so text is never truncated
+      const padX = 40;
+      const canvasWidth = Math.max(420, textWidth + padX * 2);
+      const canvasHeight = 72;
+      c.width = canvasWidth;
+      c.height = canvasHeight;
+
+      ctx.font = 'bold 24px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.92)';
+      ctx.strokeStyle = colorHex;
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.roundRect(4, 4, c.width - 8, c.height - 8, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, c.width / 2, c.height / 2);
+
+      const texture = new THREE.CanvasTexture(c);
+      const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(spriteMat);
+      const worldHeight = 310;
+      const worldWidth = worldHeight * (canvasWidth / canvasHeight);
+      sprite.scale.set(worldWidth, worldHeight, 1);
+      return sprite;
+    }
+
+    function createFocusMarker(pos, labelText, mainColor) {
+      const group = new THREE.Group();
+
+      // Glowing core sphere
+      const coreGeo = new THREE.SphereGeometry(140, 24, 24);
+      const coreMat = new THREE.MeshBasicMaterial({ color: mainColor, depthTest: false });
+      const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      group.add(coreMesh);
+
+      // Surrounding concentric ring
+      const ringGeo = new THREE.RingGeometry(210, 260, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: mainColor, side: THREE.DoubleSide, transparent: true, opacity: 0.8, depthTest: false });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      group.add(ringMesh);
+
+      // Outer dashed halo ring
+      const outerRingGeo = new THREE.RingGeometry(320, 350, 32);
+      const outerRingMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.6, depthTest: false });
+      const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+      group.add(outerRing);
+
+      // Text label
+      const sprite = createFocusSprite(labelText, mainColor);
+      sprite.position.set(0, 520, 0);
+      group.add(sprite);
+
+      group.position.copy(pos);
+      return group;
+    }
+
+    function renderFoci(speedKmS, colorHex = '#8b5cf6') {
+      clearFoci();
+      if (!showFociMode) return;
+
+      const r0 = R_LAUNCH;
+      const v0 = speedKmS;
+      const vEsc = Math.sqrt((2 * GM) / r0); // ~10.40 km/s
+
+      // Specific orbital energy E = v0^2 / 2 - GM / r0
+      const energy = 0.5 * (v0 * v0) - (GM / r0);
+
+      // Focus 1 is always the gravitating center of Earth (0, 0, 0)
+      const f1Pos = new THREE.Vector3(0, 0, 0);
+
+      // Degenerate 1D free fall (v0 = 0 km/s)
+      if (v0 < 0.05) {
+        const f1Marker = createFocusMarker(f1Pos, "Focus 1 (Earth Center)", "#38bdf8");
+        fociGroup.add(f1Marker);
+        const f2Pos = new THREE.Vector3(0, r0, 0);
+        const f2Marker = createFocusMarker(f2Pos, "Focus 2 (Launch Point)", "#8b5cf6");
+        fociGroup.add(f2Marker);
+        return;
+      }
+
+      // Add Focus 1 (Earth Center)
+      const f1Marker = createFocusMarker(f1Pos, "Focus 1 (Earth Center)", "#38bdf8");
+      fociGroup.add(f1Marker);
+
+      // For bound elliptical orbits, calculate the second focus (empty focus)
+      if (energy < 0 && v0 < vEsc) {
+        const a = -GM / (2 * energy);
+        const f2Y = 2 * (r0 - a);
+        const f2Pos = new THREE.Vector3(0, f2Y, 0);
+
+        const distFoci = Math.abs(f2Y);
+        if (distFoci < 160) {
+          fociGroup.remove(f1Marker);
+          const coincidentMarker = createFocusMarker(f1Pos, "Foci 1 & 2 (Coincident Center)", "#22c55e");
+          fociGroup.add(coincidentMarker);
+        } else {
+          const f2Marker = createFocusMarker(f2Pos, "Focus 2 (Empty Focus)", "#f97316");
+          fociGroup.add(f2Marker);
+        }
+      } else {
+        // Unbound parabolic/hyperbolic escape trajectory
+        const escapeBadge = createFocusSprite("Unbound Trajectory (No 2nd Focus)", "#ef4444");
+        escapeBadge.position.set(0, 1100, 0);
+        fociGroup.add(escapeBadge);
+      }
+    }
+
+    function clearFoci() {
+      while (fociGroup.children.length > 0) {
+        const obj = fociGroup.children[0];
+        fociGroup.remove(obj);
+        obj.traverse?.((child) => {
+          child.geometry?.dispose();
+          child.material?.dispose();
+        });
+      }
+    }
+
+    function setEarthTransparency(isTransparent) {
+      if (isTransparent) {
+        earthMat.transparent = true;
+        earthMat.opacity = 0.22;
+        earthMat.depthWrite = false;
+        mountainMat.transparent = true;
+        mountainMat.opacity = 0.28;
+        peakMat.transparent = true;
+        peakMat.opacity = 0.28;
+      } else {
+        earthMat.transparent = false;
+        earthMat.opacity = 1.0;
+        earthMat.depthWrite = true;
+        mountainMat.transparent = false;
+        mountainMat.opacity = 1.0;
+        peakMat.transparent = false;
+        peakMat.opacity = 1.0;
+      }
+      earthMat.needsUpdate = true;
+      mountainMat.needsUpdate = true;
+      peakMat.needsUpdate = true;
+    }
+
+    function fireCannon(customColor = null) {
+      initAudio();
+      const speedKmS = parseFloat(speedSlider.value) / 1000;
+      const colorHex = customColor || lastActiveColor || TRAIL_COLORS[trailColorIndex % TRAIL_COLORS.length];
+      trailColorIndex++;
+
+      // When Show Foci is active, enforce only one ellipse (and pair of foci) at a time
+      if (showFociMode) {
+        while (cannonballs.length > 0) {
+          const b = cannonballs.pop();
+          b.dispose();
+        }
+        renderFoci(speedKmS, colorHex);
+      }
+
+      const ball = new Cannonball3D(speedKmS, colorHex, showFociMode);
+      cannonballs.push(ball);
+      playExplosionSound();
+    }
+
+    speedSlider.addEventListener('input', updateSpeedUI);
+
+    // Helper to fire immediately on press down, requiring release before firing again
+    function attachSingleFireListener(button, actionFn) {
+      let isPressed = false;
+      let lastFireTime = 0;
+
+      const triggerFire = (e) => {
+        const now = performance.now();
+        if (now - lastFireTime < 150) return; // Prevent rapid contact bounce
+        lastFireTime = now;
+        actionFn(e);
+      };
+
+      // 1. Instant trigger on pointer press (mouse down, touch start, SmartBoard pen)
+      button.addEventListener('pointerdown', (e) => {
+        // Accept only primary button (left mouse click) or touch/pen contact
+        if (e.button !== undefined && e.button !== 0) return;
+        if (!isPressed) {
+          isPressed = true;
+          triggerFire(e);
+        }
+      });
+
+      // 2. Reset pressed state when pointer is released anywhere on screen
+      const handleRelease = () => {
+        isPressed = false;
+      };
+      window.addEventListener('pointerup', handleRelease);
+      window.addEventListener('pointercancel', handleRelease);
+
+      // 3. Instant trigger on keyboard press (Enter or Space) without hold-to-repeat
+      button.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          if (e.repeat) {
+            e.preventDefault();
+            return;
+          }
+          if (!isPressed) {
+            isPressed = true;
+            triggerFire(e);
+          }
+        }
+      });
+
+      button.addEventListener('keyup', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          isPressed = false;
+        }
+      });
+
+      // 4. Prevent the browser's subsequent synthetic click event from firing on release
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    }
+
+    // Global guard against holding Enter or Space on focused buttons
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === ' ' || e.key === 'Enter') && e.repeat) {
+        e.preventDefault();
+      }
+    });
+
+    // Attach single-shot listener to the Fire! button
+    attachSingleFireListener(fireBtn, () => fireCannon());
+
+    // Reset whole app to initial launch state
+    function resetEntireApp() {
+      // 1. Clear all active cannonballs, trails, particles, and foci markers
+      clearAllTrajectories();
+
+      // 2. Reset initial speed slider and display badge to 0.00 km/s
+      speedSlider.value = 0;
+      updateSpeedUI();
+
+      // 3. Reset color sequencing and active presets
+      lastActiveColor = '#8b5cf6';
+      trailColorIndex = 0;
+      resetAllPresetButtons();
+
+      // 4. Reset "Show Foci" option and restore Earth opacity
+      if (showFociCheckbox) {
+        showFociCheckbox.checked = false;
+        showFociMode = false;
+        setEarthTransparency(false);
+        if (fociStatusBadge) {
+          fociStatusBadge.textContent = "Off";
+          fociStatusBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800";
+        }
+      }
+
+      // 5. Reset camera orientation and zoom distance to default startup position
+      camera.position.set(0, 0, defaultCamDist);
+      camera.lookAt(camTarget);
+
+      // 6. Reset Earth rotation orientation
+      earthMesh.rotation.y = 0;
+
+      // 7. Reset simulation speed multiplier to default 500x
+      if (speed500xBtn) {
+        setSimSpeed(500.0, speed500xBtn);
+      }
+    }
+
+    if (resetAppBtn) {
+      resetAppBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        initAudio();
+        resetEntireApp();
+      });
+    }
+
+    if (showFociCheckbox) {
+      showFociCheckbox.addEventListener('change', () => {
+        showFociMode = showFociCheckbox.checked;
+
+        // 1. Earth transparency toggle
+        setEarthTransparency(showFociMode);
+
+        // 2. Erase previous paths and reset preset buttons
+        clearAllTrajectories();
+
+        // 3. Update status UI badge
+        if (fociStatusBadge) {
+          if (showFociMode) {
+            fociStatusBadge.textContent = "Active";
+            fociStatusBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-700/60";
+          } else {
+            fociStatusBadge.textContent = "Off";
+            fociStatusBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800";
+          }
+        }
+      });
+    }
+
+    function activatePresetButton(btn) {
+      const color = btn.dataset.color;
+      btn.style.borderColor = color;
+      btn.style.backgroundColor = `${color}18`;
+      btn.style.boxShadow = `0 0 15px ${color}22`;
+      const activeDot = btn.querySelector('.preset-dot');
+      if (activeDot) activeDot.style.backgroundColor = color;
+      const activeSpeed = btn.querySelector('.preset-speed');
+      if (activeSpeed) activeSpeed.style.color = color;
+    }
+
+    function resetAllPresetButtons() {
+      presetButtons.forEach(b => {
+        b.style.borderColor = '';
+        b.style.backgroundColor = '';
+        b.style.boxShadow = '';
+        const dot = b.querySelector('.preset-dot');
+        if (dot) dot.style.backgroundColor = '#475569';
+        const speedEl = b.querySelector('.preset-speed');
+        if (speedEl) speedEl.style.color = '';
+      });
+    }
+
+    // Preset Buttons Click Handlers (single-shot per click)
+    presetButtons.forEach(btn => {
+      attachSingleFireListener(btn, () => {
+        initAudio();
+        const speedVal = parseInt(btn.dataset.speed, 10);
+        const color = btn.dataset.color;
+        lastActiveColor = color;
+
+        speedSlider.value = speedVal;
+        updateSpeedUI();
+
+        if (showFociMode) {
+          resetAllPresetButtons();
+        }
+
+        activatePresetButton(btn);
+        fireCannon(color);
+      });
+    });
+
+    // Clear Trajectories
+    clearPathsBtn.addEventListener('click', () => {
+      clearAllTrajectories();
+    });
+
+    // Reset View Button
+    resetViewBtn.addEventListener('click', () => {
+      camera.position.set(0, 0, defaultCamDist);
+      camera.lookAt(camTarget);
+    });
+
+    // SmartBoard / Touch-friendly Zoom Helpers
+    function zoomCamera(factor) {
+      const offset = new THREE.Vector3().subVectors(camera.position, camTarget);
+      let radius = offset.length();
+      radius *= factor;
+      radius = Math.max(R_EARTH * 2.2, Math.min(R_EARTH * 25, radius));
+      offset.setLength(radius);
+      camera.position.copy(camTarget).add(offset);
+      camera.lookAt(camTarget);
+    }
+
+    if (zoomInBtn) zoomInBtn.addEventListener('click', () => zoomCamera(0.82));
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => zoomCamera(1.22));
+
+    // Simulation Speed Multipliers (1x, 500x, 1000x - Real Physical Time Multipliers)
+    const speed1xBtn = document.getElementById('speed1x');
+    const speed500xBtn = document.getElementById('speed500x');
+    const speed1000xBtn = document.getElementById('speed1000x');
+
+    function setSimSpeed(mult, activeBtn) {
+      simSpeedMultiplier = mult;
+      [speed1xBtn, speed500xBtn, speed1000xBtn].filter(Boolean).forEach(b => {
+        b.className = "sim-speed-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all";
+      });
+      if (activeBtn) {
+        activeBtn.className = "sim-speed-btn px-2.5 py-1 text-xs font-semibold rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all";
+      }
+    }
+
+    if (speed1xBtn) speed1xBtn.addEventListener('click', () => setSimSpeed(1.0, speed1xBtn));
+    if (speed500xBtn) speed500xBtn.addEventListener('click', () => setSimSpeed(500.0, speed500xBtn));
+    if (speed1000xBtn) speed1000xBtn.addEventListener('click', () => setSimSpeed(1000.0, speed1000xBtn));
+
+    // Sound Toggle
+    soundToggleBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
+      soundToggleBtn.className = soundEnabled 
+        ? "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition-all flex items-center gap-1"
+        : "px-2.5 py-1 text-xs font-medium rounded-lg text-rose-400 bg-rose-950/40 border border-rose-800/40 transition-all flex items-center gap-1";
+    });
+
+    // Interactive Camera Drag / Orbit
+    let isDragging = false;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    container.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - prevMouseX;
+      const dy = e.clientY - prevMouseY;
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
+
+      const offset = new THREE.Vector3().subVectors(camera.position, camTarget);
+      let radius = offset.length();
+      let theta = Math.atan2(offset.x, offset.z);
+      let phi = Math.acos(Math.max(-1, Math.min(1, offset.y / radius)));
+
+      theta -= dx * 0.005;
+      phi -= dy * 0.005;
+      phi = Math.max(0.05, Math.min(Math.PI - 0.05, phi));
+
+      offset.x = radius * Math.sin(phi) * Math.sin(theta);
+      offset.y = radius * Math.cos(phi);
+      offset.z = radius * Math.sin(phi) * Math.cos(theta);
+
+      camera.position.copy(camTarget).add(offset);
+      camera.lookAt(camTarget);
+    });
+
+    // Zoom on wheel
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const offset = new THREE.Vector3().subVectors(camera.position, camTarget);
+      let radius = offset.length();
+      radius += e.deltaY * 18.0;
+      radius = Math.max(R_EARTH * 2.2, Math.min(R_EARTH * 25, radius));
+      offset.setLength(radius);
+      camera.position.copy(camTarget).add(offset);
+      camera.lookAt(camTarget);
+    }, { passive: false });
+
+    // Responsive Canvas Resize
+    function handleResize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    window.addEventListener('resize', handleResize);
+
+    /* ==========================================================================
+       6. MAIN ANIMATION & PHYSICS INTEGRATION LOOP
+       ========================================================================== */
+    let lastTime = performance.now();
+
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+
+      const deltaMs = currentTime - lastTime;
+      lastTime = currentTime;
+      const dtSec = Math.min(0.05, deltaMs / 1000);
+
+      // Physical simulation time elapsed this frame (in true seconds)
+      const physicsDt = dtSec * simSpeedMultiplier;
+
+      // Real physical axial rotation of Earth (1 sidereal day = 86164.1 seconds; omega = 7.2921e-5 rad/s)
+      if (isEarthSpinning) {
+        const OMEGA_EARTH = (2 * Math.PI) / 86164.1;
+        earthMesh.rotation.y += OMEGA_EARTH * physicsDt;
+      }
+
+      // Physics integration step in true physical seconds
+      for (let i = 0; i < cannonballs.length; i++) {
+        cannonballs[i].update(physicsDt, dtSec);
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // Startup Initialization
+    window.onload = function() {
+      handleResize();
+      speedSlider.value = 0;
+      updateSpeedUI();
+      animate(performance.now());
+    };
+  </script>
+</body>
+</html>
