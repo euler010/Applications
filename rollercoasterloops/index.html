@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular vs. Clothoid Roller Coaster Loop Physics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Range Slider Styling for Clean White Theme */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 9999px;
+            border: 1px solid #cbd5e1;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px;
+            background-color: #059669;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15), 0 0 0 3px rgba(5, 150, 105, 0.25);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background-color: #047857;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+        }
+    </style>
+    <!-- Utility stylesheet (replaces Tailwind): covers every class this page uses -->
+    <style>
+        /* ---------- Base reset ---------- */
+        *, ::before, ::after { box-sizing: border-box; border: 0 solid #e5e7eb; }
+        html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+        body { margin: 0; line-height: inherit; }
+        h1, h3, p { margin: 0; }
+        h1, h3 { font-size: inherit; font-weight: inherit; }
+        strong { font-weight: bolder; }
+        button, input { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+        button { background-color: transparent; background-image: none; cursor: pointer; }
+        canvas, svg { display: block; vertical-align: middle; }
+
+        /* ---------- Colour tokens ---------- */
+        :root {
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-300: #cbd5e1;
+            --slate-400: #94a3b8; --slate-500: #64748b; --slate-600: #475569; --slate-700: #334155;
+            --slate-800: #1e293b; --slate-900: #0f172a;
+            --blue-200: #bfdbfe; --blue-600: #2563eb; --blue-700: #1d4ed8; --blue-800: #1e40af;
+            --emerald-200: #a7f3d0; --emerald-600: #059669; --emerald-700: #047857;
+            --emerald-800: #065f46; --emerald-900: #064e3b;
+            --teal-600: #0d9488; --rose-600: #e11d48; --rose-700: #be123c; --amber-600: #d97706;
+        }
+
+        /* ---------- Layout ---------- */
+        .block { display: block; }
+        .inline-block { display: inline-block; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .hidden { display: none; }
+        .relative { position: relative; }
+        .overflow-hidden { overflow: hidden; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-1 { flex: 1 1 0%; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+        .gap-1 { gap: .25rem; } .gap-1\.5 { gap: .375rem; } .gap-2 { gap: .5rem; }
+        .gap-2\.5 { gap: .625rem; } .gap-3 { gap: .75rem; } .gap-4 { gap: 1rem; }
+
+        /* ---------- Sizing ---------- */
+        .w-full { width: 100%; } .w-2 { width: .5rem; } .w-2\.5 { width: .625rem; }
+        .w-3 { width: .75rem; } .w-3\.5 { width: .875rem; }
+        .h-full { height: 100%; } .h-1\.5 { height: .375rem; } .h-2 { height: .5rem; }
+        .h-2\.5 { height: .625rem; } .h-3\.5 { height: .875rem; } .h-28 { height: 7rem; } .h-graph { height: 8.4rem; } .h-44 { height: 11rem; }
+        .min-h-screen { min-height: 100vh; }
+        .max-w-7xl { max-width: 80rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+
+        /* ---------- Spacing ---------- */
+        .p-2 { padding: .5rem; } .p-2\.5 { padding: .625rem; } .p-3 { padding: .75rem; } .p-4 { padding: 1rem; }
+        .px-1 { padding-left: .25rem; padding-right: .25rem; } .px-1\.5 { padding-left: .375rem; padding-right: .375rem; }
+        .px-2 { padding-left: .5rem; padding-right: .5rem; } .px-2\.5 { padding-left: .625rem; padding-right: .625rem; }
+        .px-3 { padding-left: .75rem; padding-right: .75rem; } .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-0\.5 { padding-top: .125rem; padding-bottom: .125rem; } .py-1\.5 { padding-top: .375rem; padding-bottom: .375rem; }
+        .py-2 { padding-top: .5rem; padding-bottom: .5rem; }
+        .pt-2 { padding-top: .5rem; } .pb-2 { padding-bottom: .5rem; }
+        .mt-0\.5 { margin-top: .125rem; } .mt-2 { margin-top: .5rem; }
+        .mb-1 { margin-bottom: .25rem; } .mb-1\.5 { margin-bottom: .375rem; } .mb-2 { margin-bottom: .5rem; }
+        .mb-2\.5 { margin-bottom: .625rem; } .mb-3 { margin-bottom: .75rem; }
+
+        /* ---------- Typography ---------- */
+        .font-sans { font-family: ui-sans-serif, system-ui, sans-serif; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .text-\[10px\] { font-size: 10px; } .text-\[11px\] { font-size: 11px; }
+        .text-xs { font-size: .75rem; line-height: 1rem; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .font-normal { font-weight: 400; } .font-medium { font-weight: 500; } .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; } .font-extrabold { font-weight: 800; }
+        .leading-none { line-height: 1; } .leading-tight { line-height: 1.25; } .leading-relaxed { line-height: 1.625; }
+        .tracking-tight { letter-spacing: -.025em; } .tracking-wider { letter-spacing: .05em; }
+        .text-center { text-align: center; }
+        .text-white { color: #fff; } .text-transparent { color: transparent; }
+        .text-slate-400 { color: var(--slate-400); } .text-slate-500 { color: var(--slate-500); }
+        .text-slate-600 { color: var(--slate-600); } .text-slate-700 { color: var(--slate-700); }
+        .text-slate-800 { color: var(--slate-800); }
+        .text-blue-700 { color: var(--blue-700); } .text-blue-800 { color: var(--blue-800); }
+        .text-emerald-700 { color: var(--emerald-700); } .text-emerald-800 { color: var(--emerald-800); }
+        .text-emerald-900 { color: var(--emerald-900); }
+        .text-rose-600 { color: var(--rose-600); } .text-rose-700 { color: var(--rose-700); }
+        .text-amber-600 { color: var(--amber-600); }
+
+        /* ---------- Backgrounds ---------- */
+        .bg-white { background-color: #fff; } .bg-transparent { background-color: transparent; }
+        .bg-slate-100 { background-color: var(--slate-100); } .bg-slate-200 { background-color: var(--slate-200); }
+        .bg-blue-600 { background-color: var(--blue-600); } .bg-emerald-600 { background-color: var(--emerald-600); }
+        .bg-rose-600 { background-color: var(--rose-600); }
+        .bg-blue-50\/70 { background-color: rgb(239 246 255 / .7); }
+        .bg-emerald-50\/70 { background-color: rgb(236 253 245 / .7); }
+        .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
+
+        /* Gradients: from / via / to compose through custom properties */
+        .bg-gradient-to-r { background-image: linear-gradient(to right, var(--g-stops)); }
+        .bg-gradient-to-b { background-image: linear-gradient(to bottom, var(--g-stops)); }
+        .from-blue-600 { --g-from: var(--blue-600); --g-to: rgb(37 99 235 / 0); --g-stops: var(--g-from), var(--g-to); }
+        .from-blue-700 { --g-from: var(--blue-700); --g-to: rgb(29 78 216 / 0); --g-stops: var(--g-from), var(--g-to); }
+        .from-sky-50\/60 { --g-from: rgb(240 249 255 / .6); --g-to: rgb(240 249 255 / 0); --g-stops: var(--g-from), var(--g-to); }
+        .from-emerald-50\/40 { --g-from: rgb(236 253 245 / .4); --g-to: rgb(236 253 245 / 0); --g-stops: var(--g-from), var(--g-to); }
+        .via-teal-600 { --g-to: rgb(13 148 136 / 0); --g-stops: var(--g-from), var(--teal-600), var(--g-to); }
+        .via-white { --g-to: rgb(255 255 255 / 0); --g-stops: var(--g-from), #fff, var(--g-to); }
+        .to-emerald-600 { --g-to: var(--emerald-600); } .to-emerald-700 { --g-to: var(--emerald-700); }
+        .to-slate-50 { --g-to: var(--slate-50); }
+
+        /* ---------- Borders & radius ---------- */
+        .border { border-width: 1px; } .border-t { border-top-width: 1px; } .border-b { border-bottom-width: 1px; }
+        .border-t-4 { border-top-width: 4px; } .border-l-2 { border-left-width: 2px; }
+        .border-slate-200 { border-color: var(--slate-200); } .border-slate-300 { border-color: var(--slate-300); }
+        .border-blue-200 { border-color: var(--blue-200); } .border-emerald-200 { border-color: var(--emerald-200); }
+        .border-t-blue-600 { border-top-color: var(--blue-600); } .border-t-emerald-600 { border-top-color: var(--emerald-600); }
+        .rounded { border-radius: .25rem; } .rounded-md { border-radius: .375rem; } .rounded-lg { border-radius: .5rem; }
+        .rounded-xl { border-radius: .75rem; } .rounded-2xl { border-radius: 1rem; } .rounded-full { border-radius: 9999px; }
+
+        /* ---------- Effects & interaction ---------- */
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); }
+        .shadow-inner { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / .05); }
+        .fill-current { fill: currentColor; }
+        .accent-emerald-600 { accent-color: var(--emerald-600); }
+        .cursor-pointer { cursor: pointer; }
+        .select-none { -webkit-user-select: none; user-select: none; }
+        .transition { transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter; transition-timing-function: cubic-bezier(.4, 0, .2, 1); transition-duration: 150ms; }
+        @keyframes pulse { 50% { opacity: .5; } }
+        .animate-pulse { animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
+
+        .hover\:bg-slate-50:hover { background-color: var(--slate-50); }
+        .hover\:bg-slate-100:hover { background-color: var(--slate-100); }
+        .hover\:bg-slate-200:hover { background-color: var(--slate-200); }
+        .hover\:bg-emerald-700:hover { background-color: var(--emerald-700); }
+        .hover\:text-slate-900:hover { color: var(--slate-900); }
+        .hover\:from-blue-700:hover { --g-from: var(--blue-700); --g-to: rgb(29 78 216 / 0); --g-stops: var(--g-from), var(--g-to); }
+        .hover\:to-emerald-700:hover { --g-to: var(--emerald-700); }
+        .active\:scale-95:active { transform: scale(.95); }
+
+        /* Telemetry values: fixed line height, no wrapping, so boxes keep a constant size */
+        .tel-val { height: 1.5rem; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums; }
+        .tel-val > span { line-height: 1 !important; }
+
+        /* ---------- Breakpoints: sm 640px, md 768px, lg 1024px ---------- */
+        @media (min-width: 640px) {
+            .sm\:flex-row { flex-direction: row; }
+            .sm\:h-48 { height: 12rem; }
+        }
+        @media (min-width: 768px) {
+            .md\:p-3 { padding: .75rem; }
+            .md\:h-52 { height: 13rem; }
+            .md\:text-sm { font-size: .875rem; line-height: 1.25rem; }
+            .md\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+            .md\:text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .md\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+            .md\:col-span-2 { grid-column: span 2 / span 2; }
+            .md\:col-span-4 { grid-column: span 4 / span 4; }
+            .md\:col-span-6 { grid-column: span 6 / span 6; }
+        }
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+            .lg\:col-span-2 { grid-column: span 2 / span 2; }
+            .lg\:col-span-4 { grid-column: span 4 / span 4; }
+            .lg\:col-span-6 { grid-column: span 6 / span 6; }
+            .lg\:col-span-8 { grid-column: span 8 / span 8; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-2 md:p-3 select-none">
+
+    <!-- Header (Tightened padding to save vertical space) -->
+    <header class="max-w-7xl w-full mx-auto mb-2">
+        <div class="glass-panel rounded-xl px-4 py-1.5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                <h1 class="text-lg md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-700 via-teal-600 to-emerald-700 bg-clip-text text-transparent">
+                    Roller Coaster Loop Physics: Circular vs. Clothoid
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION 1: ANIMATIONS AT THE VERY TOP (Canvas height reduced: h-44 sm:h-48 md:h-52) -->
+    <main class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-3 mb-2.5">
+        
+        <!-- LEFT: Circular Loop Canvas Card -->
+        <div class="glass-panel rounded-xl p-2 flex flex-col relative overflow-hidden border-t-4 border-t-blue-600">
+            <div class="relative w-full h-44 sm:h-48 md:h-52 bg-gradient-to-b from-sky-50/60 via-white to-slate-50 rounded-lg border border-slate-200 overflow-hidden shadow-inner">
+                <canvas id="canvasCircular" class="w-full h-full block"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT: Euler Spiral Clothoid Loop Canvas Card -->
+        <div class="glass-panel rounded-xl p-2 flex flex-col relative overflow-hidden border-t-4 border-t-emerald-600">
+            <div class="relative w-full h-44 sm:h-48 md:h-52 bg-gradient-to-b from-emerald-50/40 via-white to-slate-50 rounded-lg border border-slate-200 overflow-hidden shadow-inner">
+                <canvas id="canvasClothoid" class="w-full h-full block"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SECTION 2: COMPACT 3-CARD CONTROLS SECTION -->
+    <section class="max-w-7xl w-full mx-auto mb-3 grid grid-cols-1 md:grid-cols-12 gap-2.5">
+        
+        <!-- 1. Left: True Clothoid Blend Slider -->
+        <div class="md:col-span-6 lg:col-span-6 glass-panel rounded-xl p-3 flex flex-col justify-center gap-1.5">
+            <div class="flex flex-wrap justify-between items-center gap-1">
+                <label for="sliderClothoid" class="text-xs font-bold tracking-wider text-emerald-700 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                    True Clothoid Blend (Euler Spiral): <span id="valClothoidPct" class="text-emerald-900 font-extrabold">100%</span>
+                </label>
+                <div class="mono text-xs font-semibold text-slate-600 flex items-center gap-2">
+                    <span class="text-emerald-800 font-bold" id="lblRmin">Apex R: 7.4m</span>
+                    <span class="text-slate-400 font-normal">(1% – 100%)</span>
+                </div>
+            </div>
+            <input id="sliderClothoid" type="range" min="1" max="100" step="1" value="100" class="w-full">
+        </div>
+
+        <!-- 2. Middle: Vertically Stacked Overlay Checkboxes -->
+        <div class="md:col-span-2 lg:col-span-2 glass-panel rounded-xl px-3 py-2 flex flex-col justify-center gap-1.5 border-l-2 border-slate-200">
+            <span class="text-[10px] font-bold tracking-wider text-slate-400">Overlays</span>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 hover:text-slate-900 select-none">
+                <input type="checkbox" id="chkNormalForce" checked class="rounded accent-emerald-600 w-3.5 h-3.5">
+                <span>Normal Force</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 hover:text-slate-900 select-none">
+                <input type="checkbox" id="chkShowRadii" class="rounded accent-emerald-600 w-3.5 h-3.5">
+                <span>Show Radii</span>
+            </label>
+        </div>
+
+        <!-- 3. Right: Simulation Speed & Action Buttons -->
+        <div class="md:col-span-4 lg:col-span-4 glass-panel rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold tracking-wider text-slate-700">Simulation</span>
+                <div class="flex items-center gap-1 text-xs">
+                    <span class="text-slate-400 font-medium text-[11px]">Speed:</span>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="0.5">0.5x</button>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="1.0">1.0x</button>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 transition" data-speed="3.0">3.0x</button>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="5.0">5.0x</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons Row -->
+            <div class="flex items-center gap-1.5">
+                <button id="btnStart" class="flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-gradient-to-r from-blue-600 via-teal-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
+                    <span id="btnStartIcon">
+                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </span>
+                    <span id="btnStartText">Release Carts</span>
+                </button>
+                <button id="btnReset" class="px-2.5 py-1.5 rounded-lg font-semibold text-xs bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm active:scale-95 transition flex items-center justify-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- SECTION 3: REAL-TIME TELEMETRY STRIPS -->
+    <section class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 mb-3">
+        <!-- Circular Telemetry Strip -->
+        <div class="glass-panel rounded-2xl p-3">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <span class="text-xs font-bold text-blue-700 tracking-wider">Circular Coaster Telemetry</span>
+                <span class="mono text-xs font-bold text-slate-600">Drop: 50.0m | Loop: 40.0m</span>
+            </div>
+            <div class="grid grid-cols-5 gap-2">
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Speed (v)</div>
+                    <div id="telCircSpeed" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">0.0 m/s</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Height (y)</div>
+                    <div id="telCircHeight" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">50.0 m</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Radius (R)</div>
+                    <div id="telCircRadius" class="tel-val mono text-xs md:text-sm font-bold text-blue-700 leading-tight mt-0.5">∞</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Current G</div>
+                    <div id="telCircG" class="tel-val mono text-xs md:text-sm font-bold text-amber-600 leading-tight mt-0.5">1.00 G</div>
+                </div>
+                <div class="bg-blue-50/70 border border-blue-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-blue-700 font-semibold leading-tight">Peak G-Force</div>
+                    <div id="telCircPeakG" class="tel-val mono text-xs md:text-sm font-extrabold text-blue-800 leading-tight mt-0.5">1.00 G</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clothoid Telemetry Strip -->
+        <div class="glass-panel rounded-2xl p-3">
+            <div class="flex items-center justify-between mb-2 px-1">
+                <span class="text-xs font-bold text-emerald-700 tracking-wider">Clothoid Coaster Telemetry</span>
+                <span class="mono text-xs font-bold text-slate-600">Drop: 50.0m | Loop: 40.0m</span>
+            </div>
+            <div class="grid grid-cols-5 gap-2">
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Speed (v)</div>
+                    <div id="telClothSpeed" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">0.0 m/s</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Height (y)</div>
+                    <div id="telClothHeight" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">50.0 m</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Radius (R)</div>
+                    <div id="telClothRadius" class="tel-val mono text-xs md:text-sm font-bold text-emerald-700 leading-tight mt-0.5">∞</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Current G</div>
+                    <div id="telClothG" class="tel-val mono text-xs md:text-sm font-bold text-amber-600 leading-tight mt-0.5">1.00 G</div>
+                </div>
+                <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
+                    <div class="text-[10px] tracking-wider text-emerald-700 font-semibold leading-tight">Peak G-Force</div>
+                    <div id="telClothPeakG" class="tel-val mono text-xs md:text-sm font-extrabold text-emerald-800 leading-tight mt-0.5">1.00 G</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: LIVE G-FORCE GRAPH & PHYSICS BREAKDOWN -->
+    <footer class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div class="lg:col-span-8 glass-panel rounded-2xl p-4 flex flex-col">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 class="text-xs font-bold tracking-wider text-slate-700">Rider Experienced G-Force Profile vs Track Progress</h3>
+                <div class="flex items-center gap-4 text-xs font-medium">
+                    <span class="flex items-center gap-1.5 text-blue-700 font-semibold">
+                        <span class="w-3 h-1.5 rounded bg-blue-600 inline-block"></span> Circular G
+                    </span>
+                    <span class="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                        <span class="w-3 h-1.5 rounded bg-emerald-600 inline-block"></span> Clothoid G
+                    </span>
+                    <span class="text-slate-400 text-[11px]">(Dotted line = Full Theoretical Curve)</span>
+                </div>
+            </div>
+            <div class="w-full h-graph bg-white rounded-xl border border-slate-200 overflow-hidden relative shadow-inner">
+                <canvas id="canvasGraph" class="w-full h-full block"></canvas>
+            </div>
+        </div>
+
+        <div class="lg:col-span-4 glass-panel rounded-2xl p-4 flex flex-col text-xs text-slate-600 leading-relaxed">
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-3 border-b border-slate-200 pb-2">
+                <button id="tabHistory" class="px-3 py-1.5 rounded-md font-bold text-xs bg-slate-200 text-slate-800 transition">History</button>
+                <button id="tabEuler" class="px-3 py-1.5 rounded-md font-bold text-xs bg-transparent hover:bg-slate-100 text-slate-500 transition">Euler Spiral</button>
+            </div>
+            
+            <!-- Content: History -->
+            <div id="contentHistory" class="flex flex-col justify-between h-full">
+                <div>
+                    <h3 class="text-xs font-bold tracking-wider text-rose-700 mb-1 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+                        Coney Island's Circular Loop (1895)
+                    </h3>
+                    <p class="text-slate-500 mb-1.5">
+                        In 1895, Lina Beecher introduced North America's first looping coaster, the <strong class="text-slate-800">Flip Flap Railway</strong> at Coney Island's Sea Lion Park. It utilized a <strong class="text-blue-700">true circular loop</strong>.
+                    </p>
+                    <p class="text-slate-500">
+                        While modern physics textbooks popularized a claim of <span class="text-rose-600 font-semibold">12 Gs</span>, that figure is physically unsupported by the ride's documented 40-to-45-foot structure. A mathematical analysis of the actual geometry yields an entry spike of roughly <strong class="text-rose-600 font-bold">~7.5 Gs</strong>. In an era of upright seating and rigid wooden cars without headrests, this instantaneous shock was more than enough to cause severe neck whiplash and blackouts, prompting engineers to shift to gradual, teardrop-shaped <strong class="text-emerald-700 font-semibold">clothoid loops</strong>.
+                    </p>
+                </div>
+                <div class="pt-2 mt-2 border-t border-slate-200 flex items-center justify-between mono text-[11px]">
+                    <span class="text-slate-500">Flip Flap Force Peak:</span>
+                    <strong class="text-rose-600 font-bold">~7.5 G (Injurious)</strong>
+                </div>
+            </div>
+
+            <!-- Content: Euler -->
+            <div id="contentEuler" class="hidden flex-col justify-between h-full">
+                <div>
+                    <h3 class="text-xs font-bold tracking-wider text-emerald-700 mb-1 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                        The True Clothoid (Euler Spiral)
+                    </h3>
+                    <p class="text-slate-500 mb-1.5">
+                        An <strong class="text-slate-800">Euler Spiral</strong> is a curve where curvature increases linearly with its curve length.
+                    </p>
+                    <p class="text-slate-500">
+                        Mathematically, its radius (<strong class="font-semibold text-emerald-700">R</strong>) is inversely proportional to the distance traveled (<strong class="font-semibold text-emerald-700">s</strong>). As the train enters the loop, the radius starts infinitely large (flat track) and smoothly shrinks. This geometric transition mirrors the train's deceleration perfectly, managing centripetal force and neutralizing G-force jolts.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================================================
+        // CONSTANTS & FIXED PARAMETERS
+        // ============================================================================
+        const G_ACCEL = 9.81;
+        const FIXED_DROP_HEIGHT = 50.0; // 50 meters
+        const FIXED_LOOP_HEIGHT = 40.0; // 40 meters
+
+        const state = {
+            dropHeight: FIXED_DROP_HEIGHT,
+            loopHeight: FIXED_LOOP_HEIGHT,
+            clothoidBlendPct: 100, // 1% to 100% Euler Spiral Transition Blend (default: 100%)
+            simSpeed: 3.0,
+            running: false,
+            paused: false,
+            showRadii: false, // Default unchecked
+            showNormalForce: true,
+
+            // Circular loop geometry (H = 40m => R = 20m)
+            circR: 20.0,
+
+            // Clothoid loop dynamic radius (Updated via builder)
+            clothRmin: 7.4, 
+
+            // Track objects
+            circularTrack: null,
+            clothoidTrack: null,
+
+            // Carts
+            carCirc: { s: 0, v: 0, peakG: 1.0, finished: false, history: [], fnTrail: [] },
+            carCloth: { s: 0, v: 0, peakG: 1.0, finished: false, history: [], fnTrail: [] }
+        };
+
+        // Canvas & Context references
+        const canvasCirc = document.getElementById('canvasCircular');
+        const ctxCirc = canvasCirc.getContext('2d');
+        const canvasCloth = document.getElementById('canvasClothoid');
+        const ctxCloth = canvasCloth.getContext('2d');
+        const canvasGraph = document.getElementById('canvasGraph');
+        const ctxGraph = canvasGraph.getContext('2d');
+
+        // ============================================================================
+        // TRACK GEOMETRY BUILDERS
+        // ============================================================================
+        /**
+         * Builds a track.
+         * Made the approach ramp steeper to accommodate a 10% zoom scale,
+         * dropping to y = 0 at x = +46.2 m.
+         */
+        function buildTrackGeometry(isClothoid, blendParam) {
+            const points = [];
+            const dsTarget = 0.25; // High resolution interpolation
+
+            const H_loop = FIXED_LOOP_HEIGHT;
+            const H_drop = FIXED_DROP_HEIGHT;
+
+            // Shifted start to align cart's left edge closely with the vertical axis
+            const xRampStart = -74.0;
+            const x_entry = 46.2; // Locks loops exactly in place
+            const rampSpan = x_entry - xRampStart;
+            const numRampSteps = 240;
+
+            if (!isClothoid) {
+                // ==========================
+                // 1. CIRCULAR LOOP GEOMETRY
+                // ==========================
+                const R = 20.0;
+                const x_circ_center = x_entry;
+                const y_circ_center = R;
+
+                // Approach ramp down to (x_entry, 0)
+                for (let i = 0; i <= numRampSteps; i++) {
+                    const t = i / numRampSteps;
+                    const x = xRampStart + t * rampSpan;
+                    
+                    // Skewed time parameter to make the drop occur earlier and flatten the bottom transition
+                    const k = 0.25; 
+                    const tau = t + k * Math.sin(Math.PI * t);
+                    const dtau_dt = 1 + k * Math.PI * Math.cos(Math.PI * t);
+                    const d2tau_dt2 = -k * Math.pow(Math.PI, 2) * Math.sin(Math.PI * t);
+
+                    const y = H_drop * 0.5 * (1 + Math.cos(Math.PI * tau));
+                    const dy_dtau = -H_drop * 0.5 * Math.PI * Math.sin(Math.PI * tau);
+                    const d2y_dtau2 = -H_drop * 0.5 * Math.pow(Math.PI, 2) * Math.cos(Math.PI * tau);
+
+                    const dy_dt = dy_dtau * dtau_dt;
+                    const d2y_dt2 = d2y_dtau2 * Math.pow(dtau_dt, 2) + dy_dtau * d2tau_dt2;
+
+                    const dydx = dy_dt / rampSpan;
+                    const d2ydx2 = d2y_dt2 / Math.pow(rampSpan, 2);
+
+                    const theta = Math.atan2(dydx, 1);
+                    const kappa = d2ydx2 / Math.pow(1 + dydx * dydx, 1.5);
+                    const radius = Math.abs(kappa) > 1e-6 ? 1 / Math.abs(kappa) : Infinity;
+
+                    points.push({ x, y, theta, kappa, radius, zone: 'ramp' });
+                }
+
+                // Full 360-degree circle starting at bottom (phi = -pi/2), curving counter-clockwise
+                const circCircumference = 2 * Math.PI * R;
+                const stepsCirc = Math.max(80, Math.round(circCircumference / dsTarget));
+                for (let i = 0; i <= stepsCirc; i++) {
+                    const t = i / stepsCirc;
+                    const phi = -Math.PI / 2 + t * 2 * Math.PI;
+                    const x = x_circ_center + R * Math.cos(phi);
+                    const y = y_circ_center + R * Math.sin(phi);
+                    const theta = phi + Math.PI / 2;
+                    points.push({ x, y, theta, kappa: 1 / R, radius: R, zone: 'circle' });
+                }
+
+                // Runout flat from circular loop bottom extending well beyond the right viewport edge (worldMaxX = 118.9)
+                const xEndCirc = 140.0;
+                const flatLen = xEndCirc - x_entry;
+                const stepsExit = Math.max(20, Math.round(flatLen / dsTarget));
+                for (let i = 0; i <= stepsExit; i++) {
+                    const t = i / stepsExit;
+                    const x = x_entry + t * flatLen;
+                    points.push({ x, y: 0, theta: 0, kappa: 0, radius: Infinity, zone: 'runout' });
+                }
+
+                return finalizeTrackPoints(points, { R, H_loop, H_drop, x_center: x_circ_center, y_center: y_circ_center });
+            }
+
+            // ============================================
+            // 2. TRUE CLOTHOID LOOP (EULER SPIRAL) GEOMETRY
+            // ============================================
+            // Convert 1-100 blend into a fraction of max transition turn (up to ~162 degrees)
+            const p = Math.max(0.01, blendParam / 100.0);
+            const theta_s = p * Math.PI * 0.9; // Angle consumed by entry clothoid
+
+            // 1) Evaluate normalized shape (R_min = 1) to determine exact height of the resulting loop
+            const Ls_norm = 2 * theta_s; // Length of entry clothoid
+            let x1_norm = 0;
+            let y1_norm = 0;
+            const steps_norm = 1000;
+            const ds_norm = Ls_norm / steps_norm;
+            
+            // Fresnel integration for entry clothoid segment
+            for (let i = 0; i < steps_norm; i++) {
+                const s_mid = (i + 0.5) * ds_norm;
+                const theta_mid = (s_mid * s_mid) / (2 * Ls_norm);
+                x1_norm += Math.cos(theta_mid) * ds_norm;
+                y1_norm += Math.sin(theta_mid) * ds_norm;
+            }
+
+            // Normalized apex is height of clothoid end + height of circular remainder
+            const H_norm = y1_norm + Math.cos(theta_s) + 1;
+            
+            // 2) Scale up to hit exact H_loop
+            const scale = H_loop / H_norm;
+            const R_min = scale;
+            const real_Ls = Ls_norm * scale;
+            const real_Lc = 2 * (Math.PI - theta_s) * scale; // Circular apex span
+            
+            // Precise center of the circular apex for visualization
+            const x_c_semi = x_entry + x1_norm * scale - R_min * Math.sin(theta_s);
+            const y_c_semi = 0 + y1_norm * scale + R_min * Math.cos(theta_s);
+
+            // A. Drop Ramp to x_entry
+            for (let i = 0; i <= numRampSteps; i++) {
+                const t = i / numRampSteps;
+                const x = xRampStart + t * rampSpan;
+                
+                // Skewed time parameter to make the drop occur earlier and flatten the bottom transition
+                const k = 0.25; 
+                const tau = t + k * Math.sin(Math.PI * t);
+                const dtau_dt = 1 + k * Math.PI * Math.cos(Math.PI * t);
+                const d2tau_dt2 = -k * Math.pow(Math.PI, 2) * Math.sin(Math.PI * t);
+
+                const y = H_drop * 0.5 * (1 + Math.cos(Math.PI * tau));
+                const dy_dtau = -H_drop * 0.5 * Math.PI * Math.sin(Math.PI * tau);
+                const d2y_dtau2 = -H_drop * 0.5 * Math.pow(Math.PI, 2) * Math.cos(Math.PI * tau);
+
+                const dy_dt = dy_dtau * dtau_dt;
+                const d2y_dt2 = d2y_dtau2 * Math.pow(dtau_dt, 2) + dy_dtau * d2tau_dt2;
+
+                const dydx = dy_dt / rampSpan;
+                const d2ydx2 = d2y_dt2 / Math.pow(rampSpan, 2);
+
+                const theta = Math.atan2(dydx, 1);
+                const kappa = d2ydx2 / Math.pow(1 + dydx * dydx, 1.5);
+                const radius = Math.abs(kappa) > 1e-6 ? 1 / Math.abs(kappa) : Infinity;
+
+                points.push({ x, y, theta, kappa, radius, zone: 'ramp' });
+            }
+
+            // B, C, D. Euler Spiral Loop numeric integration
+            const s_total = 2 * real_Ls + real_Lc;
+            const numSteps = Math.ceil(s_total / dsTarget);
+            const ds = s_total / numSteps;
+            
+            let cx = x_entry;
+            let cy = 0;
+            
+            for(let i = 1; i <= numSteps; i++) {
+                const s = i * ds;
+                let kappa, theta, zone;
+                
+                // Position integration via midpoint rule for exactness
+                const s_mid = (i - 0.5) * ds;
+                let theta_mid;
+                if (s_mid <= real_Ls) {
+                    theta_mid = (s_mid * s_mid) / (2 * real_Ls * R_min);
+                } else if (s_mid <= real_Ls + real_Lc) {
+                    const s_circ = s_mid - real_Ls;
+                    theta_mid = theta_s + s_circ / R_min;
+                } else {
+                    const s_out = s_mid - real_Ls - real_Lc;
+                    theta_mid = theta_s + (real_Lc / R_min) + (s_out / R_min) - (s_out * s_out) / (2 * real_Ls * R_min);
+                }
+                
+                cx += Math.cos(theta_mid) * ds;
+                cy += Math.sin(theta_mid) * ds;
+                
+                // Track curvature at current edge `s`
+                if (s <= real_Ls) {
+                    kappa = (s / real_Ls) * (1 / R_min);
+                    theta = (s * s) / (2 * real_Ls * R_min);
+                    zone = 'bottom_entry';
+                } else if (s <= real_Ls + real_Lc) {
+                    const s_circ = s - real_Ls;
+                    kappa = 1 / R_min;
+                    theta = theta_s + s_circ / R_min;
+                    zone = 'top_semicircle';
+                } else {
+                    const s_out = s - real_Ls - real_Lc;
+                    kappa = (1 / R_min) * (1 - s_out / real_Ls);
+                    theta = theta_s + (real_Lc / R_min) + (s_out / R_min) - (s_out * s_out) / (2 * real_Ls * R_min);
+                    zone = 'bottom_exit';
+                }
+                
+                const radius = Math.abs(kappa) > 1e-6 ? 1 / Math.abs(kappa) : Infinity;
+                points.push({ x: cx, y: cy, theta: theta, kappa: kappa, radius: radius, zone: zone });
+            }
+
+            // Snap final y directly to 0 for exact flat runout connection
+            cy = 0; 
+            
+            // E. Runout Flat extending well beyond the right viewport edge (worldMaxX = 118.9)
+            const x_exit = cx;
+            const xEndCloth = 140.0;
+            const flatLen = xEndCloth - x_exit;
+            const stepsRunout = Math.max(20, Math.round(flatLen / dsTarget));
+            for (let i = 1; i <= stepsRunout; i++) {
+                const t = i / stepsRunout;
+                points.push({ x: x_exit + t * flatLen, y: 0, theta: 0, kappa: 0, radius: Infinity, zone: 'runout' });
+            }
+
+            return finalizeTrackPoints(points, {
+                R_min, H_loop, H_drop, x_c_semi, y_c_semi
+            });
+        }
+
+        function finalizeTrackPoints(points, meta) {
+            let totalS = 0;
+            points[0].s = 0;
+            let loopStartS = 0;
+            let loopEndS = 0;
+
+            for (let i = 1; i < points.length; i++) {
+                const dx = points[i].x - points[i - 1].x;
+                const dy = points[i].y - points[i - 1].y;
+                totalS += Math.hypot(dx, dy);
+                points[i].s = totalS;
+
+                if (points[i - 1].zone === 'ramp' && points[i].zone !== 'ramp') {
+                    loopStartS = totalS;
+                }
+                if (points[i - 1].zone !== 'runout' && points[i].zone === 'runout') {
+                    loopEndS = totalS;
+                }
+            }
+
+            return {
+                points,
+                totalLength: totalS,
+                loopStartS,
+                loopEndS,
+                ...meta
+            };
+        }
+
+        function sampleTrackAtS(track, s) {
+            const pts = track.points;
+            if (s <= 0) return pts[0];
+            if (s >= track.totalLength) return pts[pts.length - 1];
+
+            let low = 0;
+            let high = pts.length - 1;
+            while (low <= high) {
+                const mid = (low + high) >> 1;
+                if (pts[mid].s < s) low = mid + 1;
+                else high = mid - 1;
+            }
+            const idx = Math.max(0, low - 1);
+            const p0 = pts[idx];
+            const p1 = pts[Math.min(pts.length - 1, idx + 1)];
+            const span = p1.s - p0.s;
+            const t = span > 1e-6 ? (s - p0.s) / span : 0;
+
+            return {
+                s,
+                x: p0.x + t * (p1.x - p0.x),
+                y: p0.y + t * (p1.y - p0.y),
+                theta: p0.theta + t * (p1.theta - p0.theta),
+                kappa: p1.zone === 'ramp' || p1.zone === 'runout' ? (p0.kappa + t * (p1.kappa - p0.kappa)) : p1.kappa,
+                radius: p1.zone === 'ramp' || p1.zone === 'runout' ? p0.radius : p1.radius,
+                zone: p1.zone
+            };
+        }
+
+        // ============================================================================
+        // REBUILD GEOMETRY & TELEMETRY
+        // ============================================================================
+        function rebuildTracks() {
+            state.circularTrack = buildTrackGeometry(false, 0);
+            state.clothoidTrack = buildTrackGeometry(true, state.clothoidBlendPct);
+            
+            // Sync state Rmin
+            state.clothRmin = state.clothoidTrack.R_min;
+
+            // Update UI Labels
+            const valClothoidPct = document.getElementById('valClothoidPct');
+            if (valClothoidPct) valClothoidPct.textContent = `${state.clothoidBlendPct}%`;
+            
+            const lblRmin = document.getElementById('lblRmin');
+            if (lblRmin) lblRmin.textContent = `Apex R: ${state.clothRmin.toFixed(1)}m`;
+
+            if (!state.running) resetCars(false);
+        }
+
+        // ============================================================================
+        // PHYSICS EVALUATION & NUMERICAL STABILITY
+        // ============================================================================
+        function evaluateCarPhysics(car, track) {
+            const sample = sampleTrackAtS(track, car.s);
+            // Energy conservation: v = sqrt(max(0, 2 * g * (H_release - y)))
+            const drop = Math.max(0, track.H_drop - sample.y);
+            const v = Math.sqrt(2 * G_ACCEL * drop);
+            const ac = v * v * Math.abs(sample.kappa);
+
+            // Normal force experienced by rider: F_N / mg = (v^2 * kappa / g) + cos(theta)
+            const gFelt = Math.cos(sample.theta) + (v * v * sample.kappa) / G_ACCEL;
+
+            return { sample, v, ac, gFelt };
+        }
+
+        function stepCar(car, track, dt) {
+            if (car.finished) return;
+
+            // Numerical sub-stepping ensures high stability at 4.0x speed without tunneling
+            const subSteps = 6;
+            const subDt = (dt * state.simSpeed) / subSteps;
+
+            for (let i = 0; i < subSteps; i++) {
+                const phys = evaluateCarPhysics(car, track);
+                const effectiveV = Math.max(1.8, phys.v);
+                car.v = phys.v;
+                car.s += effectiveV * subDt;
+
+                if (phys.gFelt > car.peakG) {
+                    car.peakG = phys.gFelt;
+                }
+
+                if (car.s >= track.totalLength) {
+                    car.s = track.totalLength;
+                    car.finished = true;
+                    break;
+                }
+            }
+
+            const finalPhys = evaluateCarPhysics(car, track);
+            const progress = Math.min(1, car.s / track.totalLength);
+            // Increased fidelity threshold to 0.001 to ensure crisp capture of vertical G-force transitions
+            if (car.history.length === 0 || progress - car.history[car.history.length - 1].p > 0.001) {
+                car.history.push({ p: progress, g: finalPhys.gFelt });
+            }
+
+            // Sample trail markers for normal force along track
+            if (car.fnTrail.length === 0 || car.s - car.fnTrail[car.fnTrail.length - 1].s > 3.2) {
+                car.fnTrail.push({
+                    s: car.s,
+                    x: finalPhys.sample.x,
+                    y: finalPhys.sample.y,
+                    theta: finalPhys.sample.theta,
+                    fn: finalPhys.gFelt
+                });
+            }
+        }
+
+        // ============================================================================
+        // CANVAS SIZING & WORLD COORDINATE TRANSFORMS
+        // ============================================================================
+        function resizeCanvases() {
+            const dpr = window.devicePixelRatio || 1;
+            [canvasCirc, canvasCloth, canvasGraph].forEach((cvs) => {
+                const rect = cvs.getBoundingClientRect();
+                cvs.width = Math.floor(rect.width * dpr);
+                cvs.height = Math.floor(rect.height * dpr);
+            });
+        }
+
+        function createWorldTransform(canvas) {
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Shrunk coordinate bounds by ANOTHER 10% to "zoom in" further, maintaining x_entry alignment
+            const worldMinX = -85.6;
+            const worldMaxX = 118.9;
+            const worldWidth = worldMaxX - worldMinX; // 204.5m
+            const worldHeight = 55.6; // 55.6m
+
+            const scaleX = w / worldWidth;
+            const scaleY = h / worldHeight;
+            const scale = Math.min(scaleX, scaleY) * 0.98;
+
+            const originX = (w - worldWidth * scale) / 2 - worldMinX * scale;
+            const originY = h * 0.92; // ground line sits at 92% of canvas height
+
+            return {
+                scale,
+                toScreenX: (x) => originX + x * scale,
+                toScreenY: (y) => originY - y * scale,
+                toWorldX: (sx) => (sx - originX) / scale,
+                toWorldY: (sy) => (originY - sy) / scale,
+                groundY: originY
+            };
+        }
+
+        // ============================================================================
+        // CANVAS RENDERING
+        // ============================================================================
+        function drawTrackScene(ctx, canvas, track, car, isClothoid) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const tr = createWorldTransform(canvas);
+            const pts = track.points;
+
+            // 1. Subtle Background Grid & Permanent Left-Side Vertical Height Gauge
+            ctx.save();
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1;
+            for (let y = 0; y <= 60; y += 10) {
+                const sy = tr.toScreenY(y);
+                ctx.beginPath();
+                ctx.moveTo(0, sy);
+                ctx.lineTo(canvas.width, sy);
+                ctx.stroke();
+            }
+
+            // Permanent Vertical Height Axis & Ticks on the left
+            const axisX = 42;
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(axisX, tr.toScreenY(0));
+            ctx.lineTo(axisX, tr.toScreenY(60));
+            ctx.stroke();
+
+            ctx.font = 'bold 18px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#64748b';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (let y = 0; y <= 60; y += 10) {
+                const sy = tr.toScreenY(y);
+                // Tick mark
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(axisX - 4, sy);
+                ctx.lineTo(axisX + 4, sy);
+                ctx.stroke();
+
+                // Elevation label
+                ctx.fillText(`${y}m`, axisX - 7, sy);
+            }
+            ctx.textAlign = 'left';
+            ctx.restore();
+
+            // 2. Reference Lines for Loop Height & Release Height (ONLY when Show Radii is checked)
+            if (state.showRadii) {
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+
+                // Loop apex line (40m)
+                const syLoop = tr.toScreenY(track.H_loop);
+                ctx.strokeStyle = isClothoid ? '#10b981' : '#3b82f6';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(0, syLoop);
+                ctx.lineTo(canvas.width, syLoop);
+                ctx.stroke();
+
+                // Release apex line (50m)
+                const syDrop = tr.toScreenY(track.H_drop);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 1.0;
+                ctx.beginPath();
+                ctx.moveTo(0, syDrop);
+                ctx.lineTo(canvas.width, syDrop);
+                ctx.stroke();
+
+                // Height Text Labels
+                ctx.setLineDash([]);
+                ctx.font = 'bold 20px "JetBrains Mono", monospace';
+                ctx.fillStyle = '#64748b';
+                ctx.fillText(`Release H = ${track.H_drop.toFixed(1)}m`, 60, syDrop - 8);
+
+                ctx.fillStyle = isClothoid ? '#047857' : '#1d4ed8';
+                ctx.fillText(`Loop H = ${track.H_loop.toFixed(1)}m`, 60, syLoop - 8);
+                ctx.restore();
+            }
+
+            // 3. Radius Circles & Centers (when Show Radii is checked)
+            if (state.showRadii) {
+                ctx.save();
+                ctx.lineWidth = 1.2;
+
+                if (!isClothoid) {
+                    const cx = tr.toScreenX(track.x_center);
+                    const cy = tr.toScreenY(track.y_center);
+                    const rPix = track.R * tr.scale;
+
+                    ctx.strokeStyle = 'rgba(37, 99, 235, 0.4)';
+                    ctx.setLineDash([3, 3]);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, rPix, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Center dot
+                    ctx.fillStyle = '#2563eb';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Connecting dashed line from center extending past left edge of loop
+                    const labelX = cx - rPix - 18;
+                    const labelY = cy;
+                    ctx.strokeStyle = 'rgba(37, 99, 235, 0.45)';
+                    ctx.setLineDash([2, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(labelX + 6, labelY);
+                    ctx.stroke();
+
+                    // Radius label placed clearly to the left of the loop
+                    ctx.setLineDash([]);
+                    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+                    ctx.fillStyle = '#1d4ed8';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(`R = ${track.R.toFixed(1)}m`, labelX, labelY);
+                } else {
+                    // True Clothoid: Render strictly the minimum Apex circle
+                    const c2x = tr.toScreenX(track.x_c_semi);
+                    const c2y = tr.toScreenY(track.y_c_semi);
+                    const r2Pix = track.R_min * tr.scale;
+
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
+                    ctx.setLineDash([3, 3]);
+                    ctx.beginPath();
+                    ctx.arc(c2x, c2y, r2Pix, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#10b981';
+                    ctx.beginPath();
+                    ctx.arc(c2x, c2y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    const leftEdgeX = c2x - r2Pix;
+                    const labelX = leftEdgeX - 22;
+
+                    // Dash line to Apex label extending to the left
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)';
+                    ctx.setLineDash([2, 3]);
+                    ctx.beginPath();
+                    ctx.moveTo(c2x, c2y);
+                    ctx.lineTo(labelX + 6, c2y);
+                    ctx.stroke();
+
+                    // Render label to the left of the loop
+                    ctx.setLineDash([]);
+                    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#059669';
+                    ctx.fillText(`Apex R = ${track.R_min.toFixed(1)}m`, labelX, c2y);
+                }
+                ctx.restore();
+            }
+
+            // 4. Rails Color-Coded by Exact Arc Segment
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            for (let i = 1; i < pts.length; i++) {
+                const p0 = pts[i - 1];
+                const p1 = pts[i];
+                ctx.beginPath();
+                ctx.moveTo(tr.toScreenX(p0.x), tr.toScreenY(p0.y));
+                ctx.lineTo(tr.toScreenX(p1.x), tr.toScreenY(p1.y));
+
+                if (p1.zone === 'ramp') {
+                    ctx.strokeStyle = isClothoid ? '#10b981' : '#64748b';
+                    ctx.lineWidth = 3.5;
+                } else if (p1.zone === 'runout') {
+                    ctx.strokeStyle = isClothoid ? '#059669' : '#64748b';
+                    ctx.lineWidth = 3.0;
+                } else if (!isClothoid) {
+                    ctx.strokeStyle = '#2563eb';
+                    ctx.lineWidth = 4.0;
+                } else if (p1.zone === 'bottom_entry' || p1.zone === 'bottom_exit') {
+                    // Dark green clothoid transitions
+                    ctx.strokeStyle = '#047857';
+                    ctx.lineWidth = 4.5;
+                } else {
+                    // Light green top apex circular segment
+                    ctx.strokeStyle = '#86efac';
+                    ctx.lineWidth = 4.5;
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // 4b. Sampled Normal Force Trail along the Track (when Normal Force is active)
+            if (state.showNormalForce && car.fnTrail && car.fnTrail.length > 0) {
+                ctx.save();
+                for (let i = 0; i < car.fnTrail.length; i++) {
+                    const node = car.fnTrail[i];
+                    const sx_t = tr.toScreenX(node.x);
+                    const sy_t = tr.toScreenY(node.y);
+                    const nx_t = -Math.sin(node.theta);
+                    const ny_t = Math.cos(node.theta);
+                    const tLen = Math.min(57, Math.max(0, node.fn * 7.8));
+                    const endX_t = sx_t + nx_t * tLen;
+                    const endY_t = sy_t - ny_t * tLen;
+
+                    const trailColor = node.fn > 5.0 ? 'rgba(225, 29, 72, 0.45)' : node.fn > 3.5 ? 'rgba(217, 119, 6, 0.45)' : isClothoid ? 'rgba(5, 150, 105, 0.42)' : 'rgba(37, 99, 235, 0.42)';
+                    ctx.strokeStyle = trailColor;
+                    ctx.lineWidth = 1.6;
+                    ctx.beginPath();
+                    ctx.moveTo(sx_t, sy_t);
+                    ctx.lineTo(endX_t, endY_t);
+                    ctx.stroke();
+
+                    // Subtle dot at base
+                    ctx.fillStyle = trailColor;
+                    ctx.beginPath();
+                    ctx.arc(sx_t, sy_t, 1.4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            // 5. Coaster Car & Active Normal Force Vector
+            const phys = evaluateCarPhysics(car, track);
+            const sx = tr.toScreenX(phys.sample.x);
+            const sy = tr.toScreenY(phys.sample.y);
+
+            if (state.showNormalForce) {
+                const nx = -Math.sin(phys.sample.theta);
+                const ny = Math.cos(phys.sample.theta);
+                const vecLen = Math.min(195, Math.max(0, phys.gFelt * 27));
+                const endX = sx + nx * vecLen;
+                const endY = sy - ny * vecLen;
+
+                const arrowColor = '#ef4444'; // Red normal force vector
+
+                ctx.save();
+                ctx.strokeStyle = arrowColor;
+                ctx.lineWidth = 3.0;
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+
+                // Arrowhead
+                const angle = Math.atan2(endY - sy, endX - sx);
+                const headLen = 11;
+                ctx.fillStyle = arrowColor;
+                ctx.beginPath();
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(endX - headLen * Math.cos(angle - Math.PI / 6), endY - headLen * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(endX - headLen * Math.cos(angle + Math.PI / 6), endY - headLen * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Draw Car Chassis & Wheels
+            ctx.save();
+            ctx.translate(sx, sy);
+            ctx.rotate(-phys.sample.theta);
+            ctx.translate(0, -6);
+
+            // Wheels
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.arc(-7, 5, 2.5, 0, Math.PI * 2);
+            ctx.arc(7, 5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body Gradient
+            const carGrad = ctx.createLinearGradient(-12, -6, 12, 4);
+            if (!isClothoid) {
+                carGrad.addColorStop(0, '#3b82f6');
+                carGrad.addColorStop(1, '#1d4ed8');
+            } else {
+                carGrad.addColorStop(0, '#34d399');
+                carGrad.addColorStop(1, '#059669');
+            }
+            ctx.fillStyle = carGrad;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.roundRect(-12, -5, 24, 9, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // Rider Head
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(0, -7, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Floating G-Force Live Label
+            ctx.save();
+            ctx.font = 'bold 22px "JetBrains Mono", monospace';
+            const labelColor = phys.gFelt > 5.0 ? '#e11d48' : phys.gFelt > 3.5 ? '#d97706' : isClothoid ? '#059669' : '#2563eb';
+            const gText = `${phys.gFelt.toFixed(2)} G`;
+
+            ctx.fillStyle = labelColor;
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.95)';
+            ctx.shadowBlur = 4;
+            // Label rides at a fixed offset to the top-right of the cart, so it moves continuously with it
+            ctx.textAlign = 'left';
+            ctx.fillText(gText, sx + 22, sy - 24);
+            ctx.restore();
+        }
+
+        // ============================================================================
+        // TELEMETRY STRIP UPDATES
+        // ============================================================================
+        function updateTelemetryUI() {
+            const physCirc = evaluateCarPhysics(state.carCirc, state.circularTrack);
+            const physCloth = evaluateCarPhysics(state.carCloth, state.clothoidTrack);
+
+            // 1. Circular Coaster Telemetry
+            document.getElementById('telCircSpeed').textContent = `${physCirc.v.toFixed(1)} m/s`;
+            document.getElementById('telCircHeight').textContent = `${physCirc.sample.y.toFixed(1)} m`;
+            
+            const elCircRadius = document.getElementById('telCircRadius');
+            if (isFinite(physCirc.sample.radius)) {
+                elCircRadius.textContent = `${physCirc.sample.radius.toFixed(1)}m`;
+            } else {
+                elCircRadius.innerHTML = '<span class="text-base md:text-lg leading-none inline-block font-sans font-bold">∞</span>';
+            }
+            
+            document.getElementById('telCircG').textContent = `${physCirc.gFelt.toFixed(2)} G`;
+            document.getElementById('telCircPeakG').textContent = `${state.carCirc.peakG.toFixed(2)} G`;
+
+            // 2. Clothoid Coaster Telemetry
+            document.getElementById('telClothSpeed').textContent = `${physCloth.v.toFixed(1)} m/s`;
+            document.getElementById('telClothHeight').textContent = `${physCloth.sample.y.toFixed(1)} m`;
+            
+            const elClothRadius = document.getElementById('telClothRadius');
+            if (isFinite(physCloth.sample.radius)) {
+                elClothRadius.textContent = `${physCloth.sample.radius.toFixed(1)}m`;
+            } else {
+                elClothRadius.innerHTML = '<span class="text-base md:text-lg leading-none inline-block font-sans font-bold">∞</span>';
+            }
+            
+            document.getElementById('telClothG').textContent = `${physCloth.gFelt.toFixed(2)} G`;
+            document.getElementById('telClothPeakG').textContent = `${state.carCloth.peakG.toFixed(2)} G`;
+        }
+
+        // ============================================================================
+        // LIVE G-FORCE GRAPH
+        // ============================================================================
+        function drawGForceGraph() {
+            const ctx = ctxGraph;
+            const w = canvasGraph.width;
+            const h = canvasGraph.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const padLeft = 52;
+            const padRight = 14;
+            const padTop = 14;
+            const padBottom = 18;
+            const plotW = w - padLeft - padRight;
+            const plotH = h - padTop - padBottom;
+
+            const minG = 0;
+            const maxG = 7.0;
+
+            const toGraphX = (p) => padLeft + p * plotW;
+            const toGraphY = (g) => padTop + plotH - ((g - minG) / (maxG - minG)) * plotH;
+
+            // Grid lines
+            ctx.save();
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1;
+            for (let g = 0; g <= 6; g += 2) {
+                const y = toGraphY(g);
+                ctx.beginPath();
+                ctx.moveTo(padLeft, y);
+                ctx.lineTo(w - padRight, y);
+                ctx.stroke();
+
+                ctx.font = 'bold 18px "JetBrains Mono", monospace';
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(`${g}G`, padLeft - 8, y);
+            }
+
+            // 5G Danger Threshold line
+            const yDanger = toGraphY(5.0);
+            ctx.strokeStyle = 'rgba(225, 29, 72, 0.25)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padLeft, yDanger);
+            ctx.lineTo(w - padRight, yDanger);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+
+            // Theoretical Curves
+            function drawTheoretical(track, color) {
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.0;
+                ctx.setLineDash([5, 4]);
+                ctx.beginPath();
+                const total = track.totalLength;
+                const pts = track.points;
+                
+                for (let i = 0; i < pts.length; i++) {
+                    const pt = pts[i];
+                    const p = pt.s / total;
+                    const drop = Math.max(0, track.H_drop - pt.y);
+                    const v = Math.sqrt(2 * G_ACCEL * drop);
+                    const g = Math.cos(pt.theta) + (v * v * pt.kappa) / G_ACCEL;
+                    const gx = toGraphX(p);
+                    const gy = toGraphY(g);
+                    if (i === 0) ctx.moveTo(gx, gy);
+                    else ctx.lineTo(gx, gy);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            drawTheoretical(state.circularTrack, 'rgba(37, 99, 235, 0.7)');
+            drawTheoretical(state.clothoidTrack, 'rgba(5, 150, 105, 0.7)');
+
+            // Live Traces
+            function drawLiveTrace(history, color) {
+                if (history.length < 2) return;
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                ctx.moveTo(toGraphX(history[0].p), toGraphY(history[0].g));
+                for (let i = 1; i < history.length; i++) {
+                    ctx.lineTo(toGraphX(history[i].p), toGraphY(history[i].g));
+                }
+                ctx.stroke();
+
+                // Live tip marker
+                const last = history[history.length - 1];
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(toGraphX(last.p), toGraphY(last.g), 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            drawLiveTrace(state.carCirc.history, '#2563eb');
+            drawLiveTrace(state.carCloth.history, '#059669');
+        }
+
+        // ============================================================================
+        // ANIMATION LOOP & CAR CONTROLS
+        // ============================================================================
+        function updateStartButtonUI() {
+            const btnText = document.getElementById('btnStartText');
+            const btnIcon = document.getElementById('btnStartIcon');
+            if (!btnText || !btnIcon) return;
+
+            const bothFinished = state.carCirc.finished && state.carCloth.finished;
+
+            if (bothFinished) {
+                btnText.textContent = 'Restart Carts';
+                btnIcon.innerHTML = '<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>';
+            } else if (state.running) {
+                if (state.paused) {
+                    btnText.textContent = 'Resume';
+                    btnIcon.innerHTML = '<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+                } else {
+                    btnText.textContent = 'Pause';
+                    btnIcon.innerHTML = '<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                }
+            } else {
+                btnText.textContent = 'Release Carts';
+                btnIcon.innerHTML = '<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+            }
+        }
+
+        function resetCars(keepRunning = false) {
+            state.running = keepRunning;
+            state.paused = false;
+
+            state.carCirc = { s: 0, v: 0, peakG: 1.0, finished: false, history: [], fnTrail: [] };
+            state.carCloth = { s: 0, v: 0, peakG: 1.0, finished: false, history: [], fnTrail: [] };
+
+            updateStartButtonUI();
+            updateTelemetryUI();
+        }
+
+        let lastTime = performance.now();
+        function animate(now) {
+            const dt = Math.min(0.04, (now - lastTime) / 1000);
+            lastTime = now;
+
+            if (state.running && !state.paused) {
+                stepCar(state.carCirc, state.circularTrack, dt);
+                stepCar(state.carCloth, state.clothoidTrack, dt);
+                updateTelemetryUI();
+
+                if (state.carCirc.finished && state.carCloth.finished) {
+                    state.running = false;
+                    state.paused = false;
+                    updateStartButtonUI();
+                }
+            }
+
+            drawTrackScene(ctxCirc, canvasCirc, state.circularTrack, state.carCirc, false);
+            drawTrackScene(ctxCloth, canvasCloth, state.clothoidTrack, state.carCloth, true);
+            drawGForceGraph();
+
+            requestAnimationFrame(animate);
+        }
+
+        // ============================================================================
+        // EVENT LISTENERS
+        // ============================================================================
+        document.getElementById('sliderClothoid').addEventListener('input', (e) => {
+            state.clothoidBlendPct = parseInt(e.target.value, 10);
+            rebuildTracks();
+            updateTelemetryUI();
+        });
+
+        document.getElementById('btnStart').addEventListener('click', () => {
+            const bothFinished = state.carCirc.finished && state.carCloth.finished;
+
+            if (!state.running && !bothFinished) {
+                // Initial release from stationary start
+                resetCars(true);
+            } else if (bothFinished) {
+                // Restart run from the top after finishing
+                resetCars(true);
+            } else {
+                // Toggle Pause / Resume while in motion
+                state.paused = !state.paused;
+                updateStartButtonUI();
+            }
+        });
+
+        document.getElementById('btnReset').addEventListener('click', () => {
+            resetCars(false);
+        });
+
+        document.querySelectorAll('.btn-speed').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn-speed').forEach((b) => {
+                    b.className = 'btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+                });
+                btn.className = 'btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 transition';
+                state.simSpeed = parseFloat(btn.dataset.speed);
+            });
+        });
+
+        document.getElementById('chkShowRadii').addEventListener('change', (e) => {
+            state.showRadii = e.target.checked;
+        });
+
+        document.getElementById('chkNormalForce').addEventListener('change', (e) => {
+            state.showNormalForce = e.target.checked;
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvases();
+        });
+
+        // Tab Switching Logic
+        const tabHistory = document.getElementById('tabHistory');
+        const tabEuler = document.getElementById('tabEuler');
+        const contentHistory = document.getElementById('contentHistory');
+        const contentEuler = document.getElementById('contentEuler');
+
+        function switchTab(tab) {
+            if (tab === 'history') {
+                contentHistory.classList.remove('hidden');
+                contentHistory.classList.add('flex');
+                contentEuler.classList.add('hidden');
+                contentEuler.classList.remove('flex');
+                
+                tabHistory.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-slate-200 text-slate-800 transition';
+                tabEuler.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-transparent hover:bg-slate-100 text-slate-500 transition';
+            } else {
+                contentEuler.classList.remove('hidden');
+                contentEuler.classList.add('flex');
+                contentHistory.classList.add('hidden');
+                contentHistory.classList.remove('flex');
+
+                tabEuler.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-slate-200 text-slate-800 transition';
+                tabHistory.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-transparent hover:bg-slate-100 text-slate-500 transition';
+            }
+        }
+
+        tabHistory.addEventListener('click', () => switchTab('history'));
+        tabEuler.addEventListener('click', () => switchTab('euler'));
+
+        window.onload = function () {
+            resizeCanvases();
+            rebuildTracks();
+            updateTelemetryUI();
+            requestAnimationFrame(animate);
+        };
+    </script>
+</body>
+</html>
