@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rear-View Mirror and Acceleration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       Design tokens
+       ========================================================= */
+    :root {
+      /* Neutrals (slate) */
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --white: #ffffff;
+
+      /* Sky (primary / velocity) */
+      --sky-100: #e0f2fe;
+      --sky-200: #bae6fd;
+      --sky-500: #0ea5e9;
+      --sky-600: #0284c7;
+      --sky-700: #0369a1;
+
+      /* Amber (acceleration / brake) */
+      --amber-50: #fffbeb;
+      --amber-100: #fef3c7;
+      --amber-200: #fde68a;
+      --amber-500: #f59e0b;
+      --amber-600: #d97706;
+      --amber-800: #92400e;
+
+      /* Emerald (angle / accelerate) */
+      --emerald-50: #ecfdf5;
+      --emerald-100: #d1fae5;
+      --emerald-200: #a7f3d0;
+      --emerald-500: #10b981;
+      --emerald-600: #059669;
+      --emerald-800: #065f46;
+
+      /* Rose (full stop) */
+      --rose-50: #fff1f2;
+      --rose-100: #ffe4e6;
+      --rose-200: #fecdd3;
+      --rose-800: #9f1239;
+
+      /* Yellow (tension) */
+      --yellow-300: #fde047;
+      --yellow-400: #facc15;
+      --yellow-600: #ca8a04;
+      --yellow-700: #a16207;
+
+      /* Toggle dots */
+      --blue-500: #3b82f6;
+      --indigo-500: #6366f1;
+
+      /* Type */
+      --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+      /* Effects */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      --transition: color, background-color, border-color, opacity, box-shadow, transform;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* =========================================================
+       Base reset
+       ========================================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      border: 0 solid var(--slate-200);
+    }
+    html {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-family: var(--font-body);
+      background-color: var(--slate-50);
+      color: var(--slate-900);
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    h1, h2 {
+      margin: 0;
+      font-size: inherit;
+      font-weight: inherit;
+    }
+    button, input {
+      font: inherit;
+      color: inherit;
+      margin: 0;
+    }
+    button {
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      line-height: inherit;
+    }
+    canvas { display: block; }
+    sub {
+      font-size: 10px;
+      line-height: 1;
+      position: relative;
+      vertical-align: baseline;
+      bottom: -0.25em;
+    }
+    .mono { font-family: var(--font-mono); }
+    .italic { font-style: italic; }
+
+    /* =========================================================
+       Top navigation bar
+       ========================================================= */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .topbar-inner {
+      max-width: 80rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .app-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      line-height: 28px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+    .badge {
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      background: var(--sky-100);
+      color: var(--sky-700);
+      border: 1px solid var(--sky-200);
+    }
+    .topbar-meta {
+      display: none;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 500;
+      color: var(--slate-500);
+    }
+    .meta-accent { color: var(--sky-700); font-weight: 600; }
+    .meta-strong { color: var(--slate-700); font-weight: 600; }
+
+    /* =========================================================
+       Page layout
+       ========================================================= */
+    .layout {
+      flex-grow: 1;
+      width: 100%;
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .stage-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* =========================================================
+       Simulation viewport
+       ========================================================= */
+    .viewport {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      aspect-ratio: 16 / 10;
+      background: var(--slate-900);
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-xl);
+    }
+    .sim-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      cursor: grab;
+    }
+    .sim-canvas:active { cursor: grabbing; }
+
+    .labels-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* DOM Vector Labels */
+    .vector-label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(203, 213, 225, 0.95);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 11px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+      display: none;
+      pointer-events: none;
+      z-index: 25;
+      white-space: nowrap;
+      transition: opacity 0.15s ease;
+    }
+    .label-gravity { color: var(--sky-700); border-color: var(--sky-200); }
+    .label-tension { color: var(--yellow-700); border-color: var(--yellow-300); }
+
+    /* HUD readouts (fixed widths prevent jitter) */
+    .hud {
+      position: absolute;
+      top: 12px;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      pointer-events: none;
+    }
+    .hud-card {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--slate-700);
+      background: rgba(255, 255, 255, 0.95);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+    }
+    .hud-velocity { width: 245px; font-size: 14px; line-height: 20px; }
+    .hud-accel { width: 195px; }
+    .hud-angle { width: 145px; }
+    .hud-key {
+      color: var(--slate-500);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .hud-values {
+      flex-grow: 1;
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-value {
+      font-weight: 700;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .hud-sub {
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--slate-400);
+      white-space: nowrap;
+    }
+    .value-sky { color: var(--sky-600); }
+    .value-amber { color: var(--amber-600); }
+    .value-emerald { color: var(--emerald-600); }
+
+    /* =========================================================
+       Classroom presets
+       ========================================================= */
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 16px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    .presets-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slate-500);
+    }
+    .preset-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .preset {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid;
+      font-weight: 500;
+      transition-property: var(--transition);
+      transition-duration: 150ms;
+      transition-timing-function: var(--ease);
+    }
+    .preset-cruise { background: var(--slate-100); color: var(--slate-700); border-color: var(--slate-200); }
+    .preset-cruise:hover { background: var(--slate-200); }
+    .preset-accel { background: var(--emerald-50); color: var(--emerald-800); border-color: var(--emerald-200); }
+    .preset-accel:hover { background: var(--emerald-100); }
+    .preset-brake { background: var(--amber-50); color: var(--amber-800); border-color: var(--amber-200); }
+    .preset-brake:hover { background: var(--amber-100); }
+    .preset-stop { background: var(--rose-50); color: var(--rose-800); border-color: var(--rose-200); }
+    .preset-stop:hover { background: var(--rose-100); }
+
+    /* =========================================================
+       Sidebar panels
+       ========================================================= */
+    .panel {
+      padding: 16px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .control-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+    .control-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 600;
+      color: var(--slate-700);
+    }
+    .control-value {
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+    }
+    .dot-amber { background: var(--amber-500); }
+    .dot-sky { background: var(--sky-500); }
+    .dot-blue { background: var(--blue-500); }
+    .dot-indigo { background: var(--indigo-500); }
+    .dot-emerald { background: var(--emerald-500); }
+    .dot-yellow { background: var(--yellow-400); border: 1px solid var(--yellow-600); }
+
+    /* Range sliders */
+    .slider {
+      width: 100%;
+      height: 8px;
+      background: var(--slate-200);
+      border-radius: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      accent-color: var(--sky-600);
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--sky-600);
+      border: 3px solid var(--white);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.15s ease;
+    }
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: var(--sky-700);
+    }
+    .slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--sky-600);
+      border: 3px solid var(--white);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
+    .slider-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--slate-500);
+    }
+
+    /* Buttons */
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .btn {
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 500;
+      transition-property: var(--transition);
+      transition-duration: 150ms;
+      transition-timing-function: var(--ease);
+    }
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: var(--sky-600);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover { background: var(--sky-500); }
+    .btn-secondary {
+      background: var(--slate-100);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-200);
+    }
+    .btn-secondary:hover { background: var(--slate-200); }
+
+    /* Display toggles */
+    .panel-title {
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--slate-100);
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 700;
+      color: var(--slate-800);
+    }
+    .toggle-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--slate-700);
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-100);
+      border-radius: 12px;
+      cursor: pointer;
+      transition-property: var(--transition);
+      transition-duration: 150ms;
+      transition-timing-function: var(--ease);
+    }
+    .toggle:hover { background: rgba(241, 245, 249, 0.8); }
+    .toggle-indent { padding-left: 16px; }
+    .toggle-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+    .inline-sub {
+      display: inline-flex;
+      align-items: baseline;
+    }
+    .checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       Breakpoints
+       ========================================================= */
+    @media (min-width: 640px) {
+      .topbar-meta { display: flex; }
+      .layout { padding: 20px; }
+      .viewport { aspect-ratio: 16 / 9; }
+    }
+    @media (min-width: 1024px) {
+      .layout { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .stage-col { grid-column: span 8 / span 8; }
+      .side-col { grid-column: span 4 / span 4; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <h1 class="app-title">
+        Rear-View Mirror and Acceleration
+        <span class="badge">Physics Lab</span>
+      </h1>
+      <div class="topbar-meta">
+        <span>Car Heading: <strong class="meta-accent">&rarr; Forward (+x)</strong></span>
+        <span>Standard Gravity: <strong class="meta-strong">g = 9.80 m/s²</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport and Controls Grid -->
+  <main class="layout">
+
+    <div class="stage-col">
+      <div class="viewport">
+
+        <!-- Interactive Canvas -->
+        <canvas id="simCanvas" class="sim-canvas"></canvas>
+
+        <!-- DOM Vector Labels Overlay Container -->
+        <div id="labelsContainer" class="labels-layer">
+          <div id="lbl-fg" class="vector-label label-gravity">F<sub>g</sub></div>
+          <div id="lbl-ft" class="vector-label label-tension">F<sub>T</sub></div>
+          <div id="lbl-ftx" class="vector-label label-tension">F<sub>Tx</sub></div>
+          <div id="lbl-fty" class="vector-label label-tension">F<sub>Ty</sub></div>
+        </div>
+
+        <!-- Centered HUD Readouts with Fixed Widths to Prevent Jitter -->
+        <div class="hud">
+          <div class="hud-card hud-velocity">
+            <span class="hud-key">Velocity:</span>
+            <div class="hud-values">
+              <span id="hudVelocity" class="hud-value mono value-sky">0.0 m/s</span>
+              <span id="hudMph" class="hud-sub mono">(0.0 mi/hr)</span>
+            </div>
+          </div>
+          <div class="hud-card hud-accel">
+            <span class="hud-key">Acceleration:</span>
+            <span id="hudAccel" class="hud-value mono value-amber">+0.00 m/s²</span>
+          </div>
+          <div class="hud-card hud-angle">
+            <span class="hud-key">Angle &theta;:</span>
+            <div class="hud-values">
+              <span id="hudAngle" class="hud-value mono value-emerald">0.0°</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Classroom Presets Row -->
+      <div class="presets">
+        <span class="presets-title">Classroom Presets:</span>
+        <div class="preset-list">
+          <button id="presetCruise" class="preset preset-cruise">1. Cruise (a = 0)</button>
+          <button id="presetAccel" class="preset preset-accel">2. Accelerate (+4.0 m/s²)</button>
+          <button id="presetBrake" class="preset preset-brake">3. Heavy Brake (-6.0 m/s²)</button>
+          <button id="presetFullStop" class="preset preset-stop">4. Full Stop (2.0s)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Controls -->
+    <div class="side-col">
+      <div class="panel controls">
+
+        <div>
+          <div class="control-head">
+            <label for="accelSlider" class="control-label">
+              <span class="dot dot-amber"></span>
+              Acceleration (<span class="mono italic">a</span>):
+            </label>
+            <span id="accelValDisplay" class="control-value mono value-amber">+0.0 m/s²</span>
+          </div>
+          <input id="accelSlider" type="range" min="-20" max="20" step="0.1" value="0" class="slider">
+        </div>
+
+        <div>
+          <div class="control-head">
+            <label for="velSlider" class="control-label">
+              <span class="dot dot-sky"></span>
+              Velocity (<span class="mono italic">v</span>):
+            </label>
+            <span id="velValDisplay" class="control-value mono value-sky">0.0 m/s</span>
+          </div>
+          <input id="velSlider" type="range" min="-40" max="40" step="0.5" value="0" class="slider">
+          <div class="slider-scale mono">
+            <span>-40 m/s</span>
+            <span>0 m/s</span>
+            <span>+40 m/s</span>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="btnPlayPause" class="btn btn-primary">
+            <span id="playPauseText">Pause</span>
+          </button>
+          <button id="btnZeroAccel" class="btn btn-secondary">
+            Zero <span class="italic">a</span>
+          </button>
+          <button id="btnReset" class="btn btn-secondary">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">Physics Display &amp; Visuals</h2>
+        <div class="toggle-list">
+          <label class="toggle">
+            <div class="toggle-text">
+              <span class="dot dot-blue"></span>
+              <span>Show Free-Body Diagram</span>
+            </div>
+            <input id="toggleFBD" type="checkbox" checked class="checkbox">
+          </label>
+
+          <label id="labelTensionComponents" class="toggle toggle-indent">
+            <div class="toggle-text">
+              <span class="dot dot-yellow"></span>
+              <span class="inline-sub">Show Tension Components (F<sub>Tx</sub>, F<sub>Ty</sub>)</span>
+            </div>
+            <input id="toggleTensionComponents" type="checkbox" class="checkbox">
+          </label>
+
+          <label class="toggle">
+            <div class="toggle-text">
+              <span class="dot dot-indigo"></span>
+              <span>Show Vector Names</span>
+            </div>
+            <input id="toggleVectorLabels" type="checkbox" class="checkbox">
+          </label>
+
+          <label class="toggle">
+            <div class="toggle-text">
+              <span class="dot dot-emerald"></span>
+              <span>Show Angle Arc and Protractor</span>
+            </div>
+            <input id="toggleProtractor" type="checkbox" class="checkbox">
+          </label>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      g: 9.80,
+      a: 0.0,
+      v: 0.0,
+      stringLength: 1.15,
+      theta: 0.0,
+      omega: 0.0,
+      damping: 2.8,
+      showFBD: true,
+      showTensionComponents: false,
+      showVectorLabels: false,
+      showProtractor: false, // Default unchecked
+      isPaused: false,
+      worldX: 0.0,
+      isDragging: false,
+      brakeMode: null,
+      brakeDirection: 0,
+      timedStopRemaining: 0.0
+    };
+
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Labels DOM
+    const lblFg = document.getElementById('lbl-fg');
+    const lblFt = document.getElementById('lbl-ft');
+    const lblFtx = document.getElementById('lbl-ftx');
+    const lblFty = document.getElementById('lbl-fty');
+
+    // UI Elements
+    const accelSlider = document.getElementById('accelSlider');
+    const velSlider = document.getElementById('velSlider');
+    const accelValDisplay = document.getElementById('accelValDisplay');
+    const velValDisplay = document.getElementById('velValDisplay');
+    const hudVelocity = document.getElementById('hudVelocity');
+    const hudMph = document.getElementById('hudMph');
+    const hudAccel = document.getElementById('hudAccel');
+    const hudAngle = document.getElementById('hudAngle');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnZeroAccel = document.getElementById('btnZeroAccel');
+    const btnReset = document.getElementById('btnReset');
+    const toggleFBD = document.getElementById('toggleFBD');
+    const toggleTensionComponents = document.getElementById('toggleTensionComponents');
+    const toggleVectorLabels = document.getElementById('toggleVectorLabels');
+    const toggleProtractor = document.getElementById('toggleProtractor');
+
+    function cancelBraking() {
+      state.brakeMode = null;
+      state.brakeDirection = 0;
+      state.timedStopRemaining = 0.0;
+    }
+
+    document.getElementById('presetCruise').addEventListener('click', () => {
+      cancelBraking(); state.a = 0.0; accelSlider.value = 0; updateUI();
+    });
+
+    document.getElementById('presetAccel').addEventListener('click', () => {
+      cancelBraking(); state.a = 4.0; accelSlider.value = 4.0; updateUI();
+    });
+
+    document.getElementById('presetBrake').addEventListener('click', () => {
+      if (Math.abs(state.v) < 0.05) { cancelBraking(); state.v = 0.0; state.a = 0.0; updateUI(); return; }
+      state.brakeMode = 'heavy';
+      state.brakeDirection = Math.sign(state.v);
+      state.a = state.brakeDirection > 0 ? -6.0 : 6.0;
+      accelSlider.value = state.a;
+      updateUI();
+    });
+
+    document.getElementById('presetFullStop').addEventListener('click', () => {
+      if (Math.abs(state.v) < 0.05) { cancelBraking(); state.v = 0.0; state.a = 0.0; updateUI(); return; }
+      state.brakeMode = 'timedStop';
+      state.timedStopRemaining = 2.0;
+      state.brakeDirection = Math.sign(state.v);
+      state.a = -state.v / 2.0;
+      accelSlider.value = Math.max(-20, Math.min(20, state.a));
+      updateUI();
+    });
+
+    accelSlider.addEventListener('input', (e) => { cancelBraking(); state.a = parseFloat(e.target.value); updateUI(); });
+    velSlider.addEventListener('input', (e) => { cancelBraking(); state.v = parseFloat(e.target.value); updateUI(); });
+    
+    toggleFBD.addEventListener('change', (e) => {
+      state.showFBD = e.target.checked;
+      toggleTensionComponents.disabled = !state.showFBD;
+      document.getElementById('labelTensionComponents').style.opacity = state.showFBD ? '1' : '0.4';
+    });
+    toggleTensionComponents.addEventListener('change', (e) => state.showTensionComponents = e.target.checked);
+    toggleVectorLabels.addEventListener('change', (e) => state.showVectorLabels = e.target.checked);
+    toggleProtractor.addEventListener('change', (e) => state.showProtractor = e.target.checked);
+
+    btnPlayPause.addEventListener('click', () => {
+      state.isPaused = !state.isPaused;
+      document.getElementById('playPauseText').textContent = state.isPaused ? 'Resume' : 'Pause';
+    });
+    btnZeroAccel.addEventListener('click', () => { cancelBraking(); state.a = 0.0; accelSlider.value = 0; updateUI(); });
+    btnReset.addEventListener('click', () => { cancelBraking(); state.v = 0.0; state.a = 0.0; state.theta = 0.0; state.omega = 0.0; accelSlider.value = 0; velSlider.value = 0; updateUI(); });
+
+    function updateUI() {
+      accelValDisplay.textContent = (state.a >= 0 ? "+" : "") + state.a.toFixed(1) + " m/s²";
+      velValDisplay.textContent = state.v.toFixed(1) + " m/s";
+      hudVelocity.textContent = state.v.toFixed(1) + " m/s";
+      const speedMph = (Math.abs(state.v) * 2.23694).toFixed(1);
+      hudMph.textContent = `(${speedMph} mi/hr)`;
+      hudAccel.textContent = (state.a >= 0 ? "+" : "") + state.a.toFixed(2) + " m/s²";
+      const thetaDeg = (state.theta * 180 / Math.PI);
+      hudAngle.textContent = Math.abs(thetaDeg).toFixed(1) + "°";
+    }
+
+    let canvasWidth = 800;
+    let canvasHeight = 450;
+    let mirrorMount = { x: 416, y: 100 };
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvasWidth = rect.width;
+      canvasHeight = rect.height;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      mirrorMount = { x: canvasWidth * 0.52, y: canvasHeight * 0.22 };
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function getPointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: cx - rect.left, y: cy - rect.top };
+    }
+    function startDrag(e) {
+      const p = getPointerPos(e);
+      const pixelLength = canvasHeight * 0.44;
+      const dx = mirrorMount.x - Math.sin(state.theta) * pixelLength;
+      const dy = mirrorMount.y + Math.cos(state.theta) * pixelLength;
+      if (Math.hypot(p.x - dx, p.y - dy) < 45) {
+        state.isDragging = true;
+        if (e.cancelable) e.preventDefault();
+      }
+    }
+    function moveDrag(e) {
+      if (!state.isDragging) return;
+      const p = getPointerPos(e);
+      if (p.y - mirrorMount.y > 10) {
+        state.theta = Math.atan2(mirrorMount.x - p.x, p.y - mirrorMount.y);
+        state.omega = 0;
+      }
+      if (e.cancelable) e.preventDefault();
+    }
+    function endDrag() { state.isDragging = false; }
+
+    canvas.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('mouseup', endDrag);
+
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    window.addEventListener('touchmove', moveDrag, { passive: false });
+    window.addEventListener('touchend', endDrag);
+
+    let lastTime = performance.now();
+
+    function updatePhysics(dt) {
+      if (state.isPaused) return;
+      dt = Math.min(dt, 0.05);
+
+      if (state.brakeMode === 'heavy') {
+        const prevSign = Math.sign(state.v);
+        state.v += state.a * dt;
+        if (state.v === 0 || Math.sign(state.v) !== prevSign) { 
+          state.v = 0.0; state.a = 0.0; cancelBraking(); accelSlider.value = 0; 
+        }
+      } else if (state.brakeMode === 'timedStop') {
+        state.timedStopRemaining -= dt;
+        state.v += state.a * dt;
+        if (state.timedStopRemaining <= 0 || (state.brakeDirection > 0 && state.v <= 0) || (state.brakeDirection < 0 && state.v >= 0)) {
+          state.v = 0.0; state.a = 0.0; cancelBraking(); accelSlider.value = 0;
+        }
+      } else {
+        state.v += state.a * dt;
+      }
+
+      velSlider.value = state.v.toFixed(1);
+      updateUI();
+      state.worldX += state.v * dt * 45;
+
+      if (!state.isDragging) {
+        const L = state.stringLength;
+        const subSteps = 4;
+        const subDt = dt / subSteps;
+        for (let s = 0; s < subSteps; s++) {
+          const angularAccel = (state.a * Math.cos(state.theta) - state.g * Math.sin(state.theta)) / L - state.damping * state.omega;
+          state.omega += angularAccel * subDt;
+          state.theta += state.omega * subDt;
+          state.omega *= Math.pow(0.999, 1 / subSteps);
+        }
+      }
+    }
+
+    // Static, immutable skyline buildings definition with fixed dimensions and window layouts
+    const BUILDING_WIDTHS = [85, 120, 95, 140, 110, 130, 90, 150, 105, 125, 100, 135];
+    const BUILDING_HEIGHTS = [120, 185, 140, 210, 160, 195, 130, 225, 150, 175, 135, 200];
+    const BUILDING_GAPS = [24, 0, 36, 18, 0, 42, 28, 0, 32, 20, 0, 48]; // Varied realistic gaps between buildings
+    const BUILDING_COLORS = [
+      '#0f172a', '#1e293b', '#111827', '#1e293b',
+      '#0f172a', '#182338', '#0f172a', '#1e293b',
+      '#131c2e', '#1e293b', '#0f172a', '#172236'
+    ];
+
+    let currentBuildingX = 0;
+    const bldgs = BUILDING_WIDTHS.map((width, i) => {
+      const height = BUILDING_HEIGHTS[i];
+      const gap = BUILDING_GAPS[i];
+      const startX = currentBuildingX;
+      currentBuildingX += width + gap;
+      return {
+        x: startX,
+        w: width,
+        h: height,
+        color: BUILDING_COLORS[i],
+        // Pre-computed fixed window grid so windows never flicker or change
+        windowCols: Math.floor((width - 16) / 16),
+        windowRows: Math.floor((height - 25) / 18),
+        patternSeed: (i * 7) + 3
+      };
+    });
+    const TOTAL_SKYLINE_WIDTH = currentBuildingX; // Exact period of repetitive pattern including gaps
+
+    // Layer 1: Mid-ground / background trees (smaller, muted/cooler deep tones, intermediate parallax rate)
+    const MID_TREE_SPACINGS = [95, 110, 85, 120, 105, 90, 115, 100, 125, 90, 110, 100];
+    let currentMidTreeX = 0;
+    const midTrees = MID_TREE_SPACINGS.map((spacing, i) => {
+      const startX = currentMidTreeX;
+      currentMidTreeX += spacing;
+      return {
+        x: startX,
+        type: i % 2 === 0 ? 'pine' : 'deciduous',
+        scale: 0.62 + ((i * 13) % 18) / 100,
+        trunkColor: '#2b1d19',
+        foliageColor: ['#0f3922', '#14452f', '#0e3b2e', '#19422a', '#163f35'][i % 5]
+      };
+    });
+    const TOTAL_MID_TREES_WIDTH = currentMidTreeX;
+
+    // Layer 2: Foreground roadside trees (richer greens, larger, scrolling faster along curb)
+    const FORE_TREE_SPACINGS = [110, 125, 95, 135, 115, 130, 100, 120, 140, 105, 115, 125];
+    let currentForeTreeX = 0;
+    const foreTrees = FORE_TREE_SPACINGS.map((spacing, i) => {
+      const startX = currentForeTreeX;
+      currentForeTreeX += spacing;
+      return {
+        x: startX,
+        type: i % 3 === 0 ? 'pine' : 'deciduous',
+        scale: 0.90 + ((i * 19) % 22) / 100,
+        trunkColor: '#3e2723',
+        foliageColor: ['#14532d', '#166534', '#15803d', '#1e3a1e', '#134e4a'][i % 5]
+      };
+    });
+    const TOTAL_FORE_TREES_WIDTH = currentForeTreeX;
+
+    function renderTree(t, groundY) {
+      ctx.save();
+      ctx.translate(0, groundY);
+      ctx.scale(t.scale, t.scale);
+
+      // Trunk
+      ctx.fillStyle = t.trunkColor;
+      ctx.fillRect(-5, -28, 10, 28);
+
+      if (t.type === 'pine') {
+        ctx.fillStyle = t.foliageColor;
+        // Bottom tier
+        ctx.beginPath();
+        ctx.moveTo(0, -78);
+        ctx.lineTo(26, -26);
+        ctx.lineTo(-26, -26);
+        ctx.closePath();
+        ctx.fill();
+        // Middle tier
+        ctx.beginPath();
+        ctx.moveTo(0, -96);
+        ctx.lineTo(22, -48);
+        ctx.lineTo(-22, -48);
+        ctx.closePath();
+        ctx.fill();
+        // Top tier
+        ctx.beginPath();
+        ctx.moveTo(0, -112);
+        ctx.lineTo(16, -70);
+        ctx.lineTo(-16, -70);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        // Deciduous canopy
+        ctx.fillStyle = t.foliageColor;
+        ctx.beginPath();
+        ctx.arc(0, -56, 32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(-16, -48, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(16, -48, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(0, -70, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Scenery is designed for a viewport this wide (the full desktop layout).
+    // On any other width it is scaled so buildings and trees keep the same proportions.
+    const SCENE_REF_WIDTH = 820;
+
+    function drawBackground() {
+      const w = canvasWidth, h = canvasHeight;
+      const s = w / SCENE_REF_WIDTH; // scenery scale factor
+      const sw = w / s;              // visible width in scenery units
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+      skyGrad.addColorStop(0, '#0c4a6e');
+      skyGrad.addColorStop(0.5, '#0284c7');
+      skyGrad.addColorStop(1, '#bae6fd');
+      ctx.fillStyle = skyGrad; 
+      ctx.fillRect(0, 0, w, h);
+
+      // Warm Sun with Corona Halo
+      const sunX = w * 0.82, sunY = h * 0.2;
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.42)';
+      ctx.beginPath(); 
+      ctx.arc(sunX, sunY, 55 * s, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, 32 * s, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Distant Skyline Buildings with completely fixed heights/widths and seamless wrapping
+      const baseH = h * 0.68;
+      const cityScroll = ((state.worldX * 0.28) % TOTAL_SKYLINE_WIDTH + TOTAL_SKYLINE_WIDTH) % TOTAL_SKYLINE_WIDTH;
+
+      // Buildings are drawn in scenery units, with the street line as y = 0
+      ctx.save();
+      ctx.translate(0, baseH);
+      ctx.scale(s, s);
+
+      bldgs.forEach(b => {
+        // Compute wrapped position
+        let drawX = b.x - cityScroll;
+        // Wrap buildings seamlessly into viewport range [ -b.w, sw + b.w ]
+        while (drawX < -b.w) drawX += TOTAL_SKYLINE_WIDTH;
+        while (drawX > sw + b.w) drawX -= TOTAL_SKYLINE_WIDTH;
+
+        // Draw instances that fall within visible or boundary-crossing range
+        const instances = [drawX];
+        if (drawX - TOTAL_SKYLINE_WIDTH >= -b.w) instances.push(drawX - TOTAL_SKYLINE_WIDTH);
+        if (drawX + TOTAL_SKYLINE_WIDTH <= sw + b.w) instances.push(drawX + TOTAL_SKYLINE_WIDTH);
+
+        instances.forEach(posX => {
+          if (posX + b.w < -10 || posX > sw + 10) return;
+
+          // Building facade
+          ctx.fillStyle = b.color;
+          ctx.fillRect(posX, -b.h, b.w, b.h);
+
+          // Dark amber-gold lit windows (fixed pre-computed grid)
+          ctx.fillStyle = '#b45309';
+          for (let row = 0; row < b.windowRows; row++) {
+            const wy = -b.h + 12 + row * 18;
+            for (let col = 0; col < b.windowCols; col++) {
+              // Deterministic window lighting state
+              if ((col + row * 2 + b.patternSeed) % 3 !== 0) {
+                const wx = posX + 10 + col * 16;
+                ctx.fillRect(wx, wy, 7, 10);
+              }
+            }
+          }
+        });
+      });
+      ctx.restore();
+
+      // Layer 1: Mid-ground trees (behind foreground, scrolling at 0.48x)
+      const roadY = h * 0.66;
+      const midTreeScroll = ((state.worldX * 0.48) % TOTAL_MID_TREES_WIDTH + TOTAL_MID_TREES_WIDTH) % TOTAL_MID_TREES_WIDTH;
+
+      ctx.save();
+      ctx.translate(0, roadY + 2);
+      ctx.scale(s, s);
+      midTrees.forEach(t => {
+        let drawX = t.x - midTreeScroll;
+        while (drawX < -100) drawX += TOTAL_MID_TREES_WIDTH;
+        while (drawX > sw + 100) drawX -= TOTAL_MID_TREES_WIDTH;
+
+        const instances = [drawX];
+        if (drawX - TOTAL_MID_TREES_WIDTH >= -100) instances.push(drawX - TOTAL_MID_TREES_WIDTH);
+        if (drawX + TOTAL_MID_TREES_WIDTH <= sw + 100) instances.push(drawX + TOTAL_MID_TREES_WIDTH);
+
+        instances.forEach(posX => {
+          if (posX < -80 || posX > sw + 80) return;
+          ctx.save();
+          ctx.translate(posX, 0);
+          renderTree(t, 0);
+          ctx.restore();
+        });
+      });
+      ctx.restore();
+
+      // Layer 2: Foreground roadside trees (in front of mid-ground, scrolling at 0.72x)
+      const foreTreeScroll = ((state.worldX * 0.72) % TOTAL_FORE_TREES_WIDTH + TOTAL_FORE_TREES_WIDTH) % TOTAL_FORE_TREES_WIDTH;
+
+      ctx.save();
+      ctx.translate(0, roadY + 5);
+      ctx.scale(s, s);
+      foreTrees.forEach(t => {
+        let drawX = t.x - foreTreeScroll;
+        while (drawX < -120) drawX += TOTAL_FORE_TREES_WIDTH;
+        while (drawX > sw + 120) drawX -= TOTAL_FORE_TREES_WIDTH;
+
+        const instances = [drawX];
+        if (drawX - TOTAL_FORE_TREES_WIDTH >= -120) instances.push(drawX - TOTAL_FORE_TREES_WIDTH);
+        if (drawX + TOTAL_FORE_TREES_WIDTH <= sw + 120) instances.push(drawX + TOTAL_FORE_TREES_WIDTH);
+
+        instances.forEach(posX => {
+          if (posX < -80 || posX > sw + 80) return;
+          ctx.save();
+          ctx.translate(posX, 0);
+          renderTree(t, 0);
+          ctx.restore();
+        });
+      });
+      ctx.restore();
+
+      // Road Surface & Shoulder
+      ctx.fillStyle = '#1e293b'; 
+      ctx.fillRect(0, roadY, w, h - roadY);
+      ctx.fillStyle = '#14532d'; 
+      ctx.fillRect(0, roadY, w, 8);
+
+      // Dashed lane lines
+      ctx.fillStyle = '#f8fafc';
+      const laneOffset = ((state.worldX * 1.0) % 80 + 80) % 80;
+      for (let lx = -80; lx < w + 80; lx += 80) {
+        ctx.fillRect(lx - laneOffset, roadY + 28, 42, 4);
+      }
+    }
+
+    function drawCarInterior() {
+      const w = canvasWidth, h = canvasHeight;
+      // Roof / Windshield top molding
+      ctx.fillStyle = '#090d16';
+      ctx.beginPath(); 
+      ctx.moveTo(0, 0); 
+      ctx.lineTo(w, 0); 
+      ctx.lineTo(w, 52); 
+      ctx.bezierCurveTo(w * 0.7, 56, w * 0.3, 56, 0, 52); 
+      ctx.fill();
+      
+      // Left A-pillar
+      ctx.beginPath(); 
+      ctx.moveTo(0, 0); 
+      ctx.lineTo(w * 0.14, 0); 
+      ctx.lineTo(0, h * 0.85); 
+      ctx.fill();
+      
+      // Mirror mount base
+      const mx = mirrorMount.x, my = mirrorMount.y;
+      ctx.fillStyle = '#090d16'; 
+      ctx.beginPath(); 
+      ctx.arc(mx, my - 38, 16, 0, Math.PI * 2); 
+      ctx.fill();
+      
+      // Mirror stem
+      ctx.strokeStyle = '#475569'; 
+      ctx.lineWidth = 7; 
+      ctx.lineCap = 'round';
+      ctx.beginPath(); 
+      ctx.moveTo(mx, my - 38); 
+      ctx.lineTo(mx, my - 6); 
+      ctx.stroke();
+      
+      // Mirror housing, seen side-on. The car travels to the right (+x),
+      // so the glass faces left, toward the rear of the car and the driver.
+      ctx.save();
+      ctx.translate(mx, my - 12);
+
+      // Housing profile: deepest at the glass, tapering toward the windshield
+      ctx.fillStyle = '#0b0f19';
+      ctx.beginPath();
+      ctx.moveTo(-9, -22);
+      ctx.lineTo(3, -18);
+      ctx.quadraticCurveTo(11, -15, 11, -8);
+      ctx.lineTo(11, 8);
+      ctx.quadraticCurveTo(11, 15, 3, 18);
+      ctx.lineTo(-9, 22);
+      ctx.closePath();
+      ctx.fill();
+
+      // Mirror glass, seen edge-on on the rear-facing side
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.roundRect(-13, -21, 5, 42, 2);
+      ctx.fill();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(-12, -17, 1.5, 34);
+
+      ctx.restore();
+    }
+
+    function drawCleanDie(x, y, angle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(-angle);
+      
+      const size = 36;
+      ctx.shadowColor = 'rgba(0,0,0,0.35)'; 
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); 
+      ctx.roundRect(-size/2, -size/2, size, size, 8); 
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      ctx.strokeStyle = '#f87171'; 
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); 
+      ctx.roundRect(-size/2 + 1, -size/2 + 1, size - 2, size - 2, 7); 
+      ctx.stroke();
+      
+      // Crisp 5-pip face
+      ctx.fillStyle = '#ffffff';
+      const offset = 9;
+      ctx.beginPath(); ctx.arc(0, 0, 2.7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-offset, -offset, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(offset, -offset, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-offset, offset, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(offset, offset, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    function drawProtractor() {
+      if (!state.showProtractor) return;
+
+      const px = mirrorMount.x;
+      const py = mirrorMount.y;
+      const R = canvasHeight * 0.28; // Protractor radius
+      const maxAngleDeg = 90;
+      const maxAngleRad = (maxAngleDeg * Math.PI) / 180;
+      const currentTheta = state.theta; // In canvas coords: dieX = mirrorMount.x - sin(theta)*L, dieY = mirrorMount.y + cos(theta)*L
+                                        // When theta > 0, dieX < px (hangs to the left/backward)
+                                        // When theta < 0, dieX > px (hangs to the right/forward)
+
+      // If virtually vertical, draw subtle dashed vertical normal reference only
+      if (Math.abs(currentTheta) < 0.008) {
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(100, 116, 139, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px, py + R + 14);
+        ctx.stroke();
+        ctx.restore();
+        return;
+      }
+
+      // True = string deflected to the left (theta > 0), False = deflected to the right (theta < 0)
+      const hangsLeft = currentTheta > 0;
+
+      ctx.save();
+
+      // In HTML Canvas, standard angles start at positive X-axis (0 rad) pointing right,
+      // and increase clockwise: Vertical Down = +PI/2 rad (90°).
+      // Left of vertical down = angles > PI/2 (clockwise from down).
+      // Right of vertical down = angles < PI/2 (counter-clockwise from down).
+      const verticalRad = Math.PI / 2;
+
+      // 1. Semi-transparent protractor body restricted ONLY to the active deflected quadrant (0° to 90°)
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      if (hangsLeft) {
+        // From vertical down (PI/2) clockwise to left horizontal (PI/2 + PI/2 = PI)
+        ctx.arc(px, py, R, verticalRad, verticalRad + maxAngleRad, false);
+      } else {
+        // From vertical down (PI/2) counter-clockwise to right horizontal (PI/2 - PI/2 = 0)
+        ctx.arc(px, py, R, verticalRad, verticalRad - maxAngleRad, true);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.90)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(100, 116, 139, 0.85)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 2. Vertical 0° reference dashed line
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px, py + R + 14);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 3. Degree tick marks and labels at 30° and 60° only (excluding 0° and 90°)
+      const angles = [30, 60];
+      angles.forEach(deg => {
+        const radOffset = (deg * Math.PI) / 180;
+        // Directional angle in canvas coordinates:
+        const angleRad = hangsLeft ? (verticalRad + radOffset) : (verticalRad - radOffset);
+        const tickLength = 10;
+        
+        const xOuter = px + Math.cos(angleRad) * R;
+        const yOuter = py + Math.sin(angleRad) * R;
+        const xInner = px + Math.cos(angleRad) * (R - tickLength);
+        const yInner = py + Math.sin(angleRad) * (R - tickLength);
+
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xInner, yInner);
+        ctx.lineTo(xOuter, yOuter);
+        ctx.stroke();
+
+        const xText = px + Math.cos(angleRad) * (R - 20);
+        const yText = py + Math.sin(angleRad) * (R - 20);
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${deg}°`, xText, yText);
+      });
+
+      // 4. Dynamic Deflection Angle Sweep Arc on the deflected side
+      const arcR = R * 0.52;
+      const absTheta = Math.abs(currentTheta);
+      const stringAngle = hangsLeft ? (verticalRad + absTheta) : (verticalRad - absTheta);
+
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      if (hangsLeft) {
+        ctx.arc(px, py, arcR, verticalRad, stringAngle, false);
+      } else {
+        ctx.arc(px, py, arcR, verticalRad, stringAngle, true);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.22)';
+      ctx.fill();
+
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      if (hangsLeft) {
+        ctx.arc(px, py, arcR, verticalRad, stringAngle, false);
+      } else {
+        ctx.arc(px, py, arcR, verticalRad, stringAngle, true);
+      }
+      ctx.stroke();
+
+      // 5. Floating Angle Badge cleanly placed on the deflected sector (between vertical and string)
+      const midA = (verticalRad + stringAngle) / 2;
+      const badgeDist = arcR + 20;
+      const bx = px + Math.cos(midA) * badgeDist;
+      const by = py + Math.sin(midA) * badgeDist;
+      const degText = `${(absTheta * 180 / Math.PI).toFixed(1)}°`;
+
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      const txtWidth = ctx.measureText(degText).width;
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(bx - (txtWidth + 10) / 2, by - 9, txtWidth + 10, 18, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#065f46';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(degText, bx, by);
+
+      ctx.restore();
+    }
+
+    function drawVector(x1, y1, x2, y2, color, isDotted) {
+      const dist = Math.hypot(x2 - x1, y2 - y1);
+      if (dist < 4) return;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const headlen = 14;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(15, 23, 42, 0.45)'; 
+      ctx.shadowBlur = 4;
+      ctx.strokeStyle = color; 
+      ctx.fillStyle = color; 
+      ctx.lineWidth = 4.5; 
+      ctx.lineCap = 'round';
+      
+      if (isDotted) {
+        ctx.setLineDash([0, 8]);
+        ctx.beginPath(); 
+        ctx.moveTo(x1, y1); 
+        ctx.lineTo(x2 - (headlen - 1) * Math.cos(angle), y2 - (headlen - 1) * Math.sin(angle)); 
+        ctx.stroke();
+      } else {
+        ctx.setLineDash([]);
+        ctx.beginPath(); 
+        ctx.moveTo(x1, y1); 
+        ctx.lineTo(x2, y2); 
+        ctx.stroke();
+      }
+
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath(); 
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function manageDOMVectors(dieX, dieY) {
+      if (!state.showFBD) {
+        lblFg.style.display = 'none'; 
+        lblFt.style.display = 'none';
+        lblFtx.style.display = 'none'; 
+        lblFty.style.display = 'none';
+        return;
+      }
+
+      const fgLength = 76;
+      drawVector(dieX, dieY, dieX, dieY + fgLength, '#0284c7', false);
+
+      const tensionMag = fgLength / Math.max(0.1, Math.cos(state.theta));
+      const clampedMag = Math.min(tensionMag, 125);
+      const tx = dieX + Math.sin(state.theta) * clampedMag;
+      const ty = dieY - Math.cos(state.theta) * clampedMag;
+      drawVector(dieX, dieY, tx, ty, '#facc15', false);
+
+      if (state.showTensionComponents) {
+        drawVector(dieX, dieY, dieX, ty, '#facc15', true); // FTy
+        const dx = tx - dieX;
+        if (Math.abs(dx) > 3) drawVector(dieX, dieY, tx, dieY, '#facc15', true); // FTx
+      }
+
+      // DOM Label Positioning Overlay with Zero-Overlap Rules
+      if (state.showVectorLabels) {
+        // Fg: Position horizontally offset from the vertical gravity arrow
+        lblFg.style.display = 'block';
+        lblFg.style.left = `${dieX + 36}px`;
+        lblFg.style.top = `${dieY + fgLength / 2}px`;
+
+        // FT: Displaced outward perpendicularly along the upper portion of the tension shaft
+        lblFt.style.display = 'block';
+        const tAngle = Math.atan2(ty - dieY, tx - dieX);
+        const hangsLeft = state.theta >= 0; 
+        const perpSign = hangsLeft ? 1 : -1;
+        lblFt.style.left = `${(dieX + tx) / 2 + Math.cos(tAngle + perpSign * Math.PI / 2) * 28}px`;
+        lblFt.style.top = `${(dieY + ty) / 2 + Math.sin(tAngle + perpSign * Math.PI / 2) * 28}px`;
+
+        if (state.showTensionComponents) {
+          // FTy: Offset horizontally on the opposite side of the component triangle
+          lblFty.style.display = 'block';
+          const thetaSign = Math.sign(Math.sin(state.theta)) || 1;
+          lblFty.style.left = `${dieX - thetaSign * 34}px`;
+          lblFty.style.top = `${(dieY + ty) / 2}px`;
+
+          // FTx: Positioned completely outside and to the right/left of the arrowhead tip
+          const dx = tx - dieX;
+          if (Math.abs(dx) > 3) {
+            lblFtx.style.display = 'block';
+            const ftxDir = Math.sign(dx);
+            lblFtx.style.left = `${tx + ftxDir * 34}px`;
+            lblFtx.style.top = `${dieY + 16}px`;
+          } else {
+            lblFtx.style.display = 'none';
+          }
+        } else {
+          lblFtx.style.display = 'none'; 
+          lblFty.style.display = 'none';
+        }
+      } else {
+        lblFg.style.display = 'none'; 
+        lblFt.style.display = 'none';
+        lblFtx.style.display = 'none'; 
+        lblFty.style.display = 'none';
+      }
+    }
+
+    function animate(currentTime) {
+      const dt = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      updatePhysics(dt);
+
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawBackground();
+      drawCarInterior();
+
+      const pixelLength = canvasHeight * 0.44;
+      const dieX = mirrorMount.x - Math.sin(state.theta) * pixelLength;
+      const dieY = mirrorMount.y + Math.cos(state.theta) * pixelLength;
+
+      // Draw Directional Protractor attached at the mirror mount pivot
+      drawProtractor();
+
+      // Mirror suspension string
+      ctx.strokeStyle = '#f1f5f9'; 
+      ctx.lineWidth = 2;
+      ctx.beginPath(); 
+      ctx.moveTo(mirrorMount.x, mirrorMount.y);
+      ctx.lineTo(dieX + Math.sin(state.theta) * 18, dieY - Math.cos(state.theta) * 18); 
+      ctx.stroke();
+
+      drawCleanDie(dieX, dieY, state.theta);
+      manageDOMVectors(dieX, dieY);
+
+      requestAnimationFrame(animate);
+    }
+
+    window.onload = function() {
+      resizeCanvas();
+      updateUI();
+      lastTime = performance.now();
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>
