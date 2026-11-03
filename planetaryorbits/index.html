@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kepler's Laws No Highlight</title>
+  <title>Planetary Orbits and Kepler's Laws</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -1227,9 +1227,6 @@
       }
     }
 
-    // Set to true to make each sector light up while the connecting line is in it
-    const HIGHLIGHT_SECTORS = false;
-
     function drawKeplerSlices(period, e, timeNow) {
       const a = 1.0;
       const b = a * Math.sqrt(Math.max(0, 1 - e * e));
@@ -1278,22 +1275,21 @@
           glowFactor = 0;
         }
 
-        if (!HIGHLIGHT_SECTORS) glowFactor = 0;
         const [r, g, b_col] = SLICE_BASE_RGB[i % SLICE_BASE_RGB.length];
 
         // Smooth color brightening & opacity scaling based on glowFactor
         // Softer sector highlight so the sweeping glow trail stays the focus
-        const fillAlpha = 0.22 + 0.22 * glowFactor;
-        const brightR = Math.round(r + (255 - r) * (0.12 * glowFactor));
-        const brightG = Math.round(g + (255 - g) * (0.12 * glowFactor));
-        const brightB = Math.round(b_col + (255 - b_col) * (0.12 * glowFactor));
+        const fillAlpha = 0.22 + 0.38 * glowFactor;
+        const brightR = Math.round(r + (255 - r) * (0.22 * glowFactor));
+        const brightG = Math.round(g + (255 - g) * (0.22 * glowFactor));
+        const brightB = Math.round(b_col + (255 - b_col) * (0.22 * glowFactor));
 
         ctx.fillStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${fillAlpha.toFixed(3)})`;
         ctx.fill();
 
         if (glowFactor > 0.01) {
-          ctx.lineWidth = 1 + 0.6 * glowFactor;
-          ctx.strokeStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${(0.55 + 0.2 * glowFactor).toFixed(3)})`;
+          ctx.lineWidth = 1 + 1.0 * glowFactor;
+          ctx.strokeStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${(0.55 + 0.3 * glowFactor).toFixed(3)})`;
         } else {
           ctx.lineWidth = 1;
           ctx.strokeStyle = SLICE_STROKES[i % SLICE_STROKES.length];
