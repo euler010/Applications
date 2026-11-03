@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kepler's Laws No Highlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- App stylesheet (replaces the Tailwind CDN). Class names match the ones used in the markup and script. -->
+  <style id="appStyles">
+    /* ---------- Base reset ---------- */
+    *, ::before, ::after { box-sizing: border-box; border: 0 solid #e5e7eb; }
+    html { height: 100%; line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+    body { margin: 0; line-height: inherit; }
+    h1, p { margin: 0; font-size: inherit; font-weight: inherit; }
+    button, input, select { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+    button, select { text-transform: none; }
+    button { background-color: transparent; background-image: none; cursor: pointer; -webkit-appearance: button; }
+    button:disabled { cursor: default; }
+    img, svg, canvas { display: block; vertical-align: middle; }
+    [hidden] { display: none; }
+
+    /* ---------- Colour palette ---------- */
+    :root {
+      --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-300: #cbd5e1; --slate-400: #94a3b8;
+      --slate-500: #64748b; --slate-700: #334155; --slate-800: #1e293b; --slate-900: #0f172a; --slate-950: #020617;
+      --indigo-300: #a5b4fc; --indigo-400: #818cf8; --indigo-500: #6366f1; --indigo-600: #4f46e5;
+      --indigo-700: #4338ca; --indigo-900: #312e81; --indigo-950: #1e1b4b;
+      --sky-300: #7dd3fc; --sky-400: #38bdf8;
+      --amber-400: #fbbf24; --emerald-400: #34d399; --violet-400: #a78bfa; --yellow-400: #facc15;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ---------- Layout ---------- */
+    .block { display: block; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .hidden { display: none; }
+    .flex-col { flex-direction: column; }
+    .flex-1 { flex: 1 1 0%; }
+    .shrink-0 { flex-shrink: 0; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .items-baseline { align-items: baseline; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .inset-y-0 { top: 0; bottom: 0; }
+    .top-3 { top: 0.75rem; }
+    .left-3 { left: 0.75rem; }
+    .right-0 { right: 0; }
+    .z-20 { z-index: 20; }
+    .z-30 { z-index: 30; }
+
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+
+    /* ---------- Sizing ---------- */
+    .w-full { width: 100%; }
+    .w-1\.5 { width: 0.375rem; }
+    .w-2\.5 { width: 0.625rem; }
+    .w-3\.5 { width: 0.875rem; }
+    .w-4 { width: 1rem; }
+    .h-full { height: 100%; }
+    .h-1\.5 { height: 0.375rem; }
+    .h-2\.5 { height: 0.625rem; }
+    .h-3\.5 { height: 0.875rem; }
+    .h-4 { height: 1rem; }
+    .min-h-screen { min-height: 100vh; }
+    .max-w-xl { max-width: 36rem; }
+
+    /* ---------- Spacing ---------- */
+    .p-1\.5 { padding: 0.375rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-3\.5 { padding: 0.875rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+    .pt-2 { padding-top: 0.5rem; }
+    .pb-1 { padding-bottom: 0.25rem; }
+    .pb-2\.5 { padding-bottom: 0.625rem; }
+    .pl-2\.5 { padding-left: 0.625rem; }
+    .pr-7 { padding-right: 1.75rem; }
+    .mt-0\.5 { margin-top: 0.125rem; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+
+    /* ---------- Typography ---------- */
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-\[13px\] { font-size: 13px; }
+    .text-\[15px\] { font-size: 15px; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .leading-relaxed { line-height: 1.625; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .whitespace-nowrap { white-space: nowrap; }
+
+    .text-white { color: #fff; }
+    .text-slate-100 { color: var(--slate-100); }
+    .text-slate-200 { color: var(--slate-200); }
+    .text-slate-300 { color: var(--slate-300); }
+    .text-slate-400 { color: var(--slate-400); }
+    .text-slate-500 { color: var(--slate-500); }
+    .text-indigo-300 { color: var(--indigo-300); }
+    .text-indigo-400 { color: var(--indigo-400); }
+    .text-sky-300 { color: var(--sky-300); }
+    .text-yellow-400 { color: var(--yellow-400); }
+
+    /* ---------- Backgrounds ---------- */
+    .bg-slate-800 { background-color: var(--slate-800); }
+    .bg-slate-900 { background-color: var(--slate-900); }
+    .bg-slate-950 { background-color: var(--slate-950); }
+    .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8); }
+    .bg-slate-900\/85 { background-color: rgba(15, 23, 42, 0.85); }
+    .bg-slate-900\/90 { background-color: rgba(15, 23, 42, 0.9); }
+    .bg-slate-950\/70 { background-color: rgba(2, 6, 23, 0.7); }
+    .bg-slate-950\/80 { background-color: rgba(2, 6, 23, 0.8); }
+    .bg-indigo-600 { background-color: var(--indigo-600); }
+    .bg-indigo-950 { background-color: var(--indigo-950); }
+    .bg-sky-400 { background-color: var(--sky-400); }
+    .bg-amber-400 { background-color: var(--amber-400); }
+    .bg-emerald-400 { background-color: var(--emerald-400); }
+
+    /* ---------- Borders ---------- */
+    .border { border-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-dashed { border-style: dashed; }
+    .border-slate-800 { border-color: var(--slate-800); }
+    .border-slate-700\/80 { border-color: rgba(51, 65, 85, 0.8); }
+    .border-slate-700\/90 { border-color: rgba(51, 65, 85, 0.9); }
+    .border-slate-800\/80 { border-color: rgba(30, 41, 59, 0.8); }
+    .border-slate-800\/90 { border-color: rgba(30, 41, 59, 0.9); }
+    .border-indigo-700\/60 { border-color: rgba(67, 56, 202, 0.6); }
+    .border-violet-400 { border-color: var(--violet-400); }
+
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* ---------- Effects ---------- */
+    .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); }
+    .shadow-md.shadow-indigo-600\/20 { box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -2px rgba(79, 70, 229, 0.2); }
+    .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+    .opacity-30 { opacity: 0.3; }
+    .opacity-40 { opacity: 0.4; }
+
+    .transition {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+      transition-timing-function: var(--ease);
+      transition-duration: 150ms;
+    }
+    @keyframes pulse { 50% { opacity: 0.5; } }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    /* ---------- Interaction ---------- */
+    .cursor-pointer { cursor: pointer; }
+    .cursor-default { cursor: default; }
+    .cursor-not-allowed { cursor: not-allowed; }
+    .pointer-events-none { pointer-events: none; }
+    .select-none { -webkit-user-select: none; user-select: none; }
+    .appearance-none { -webkit-appearance: none; appearance: none; }
+    .accent-indigo-500 { accent-color: var(--indigo-500); }
+
+    /* ---------- State variants ---------- */
+    .hover\:bg-slate-700:hover { background-color: var(--slate-700); }
+    .hover\:bg-slate-800:hover { background-color: var(--slate-800); }
+    .hover\:bg-slate-900:hover { background-color: var(--slate-900); }
+    .hover\:bg-indigo-500:hover { background-color: var(--indigo-500); }
+    .hover\:bg-indigo-900:hover { background-color: var(--indigo-900); }
+    .hover\:border-slate-400:hover { border-color: var(--slate-400); }
+    .hover\:border-slate-500\/80:hover { border-color: rgba(100, 116, 139, 0.8); }
+    .hover\:border-slate-700\/90:hover { border-color: rgba(51, 65, 85, 0.9); }
+    .hover\:text-white:hover { color: #fff; }
+    .group:hover .group-hover\:text-indigo-300 { color: var(--indigo-300); }
+    .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus\:border-indigo-500:focus { border-color: var(--indigo-500); }
+    .active\:bg-slate-700:active { background-color: var(--slate-700); }
+    .disabled\:opacity-50:disabled { opacity: 0.5; }
+
+    /* ---------- Responsive variants ---------- */
+    @media (min-width: 640px) {
+      .sm\:flex { display: flex; }
+      .sm\:p-4 { padding: 1rem; }
+      .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .sm\:text-base { font-size: 1rem; line-height: 1.5rem; }
+    }
+    @media (min-width: 768px) {
+      .md\:flex-row { flex-direction: row; }
+      .md\:w-72 { width: 18rem; }
+      .md\:border-b-0 { border-bottom-width: 0; }
+      .md\:border-r { border-right-width: 1px; }
+    }
+    @media (min-width: 1024px) {
+      .lg\:flex { display: flex; }
+      .lg\:hidden { display: none; }
+      .lg\:flex-row { flex-direction: row; }
+      .lg\:justify-start { justify-content: flex-start; }
+      .lg\:w-auto { width: auto; }
+      .lg\:w-80 { width: 20rem; }
+    }
+  </style>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Dark custom scrollbar styling across all modern browsers */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #334155 #0b0f19;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+      border: 1.5px solid #090d16;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background: #64748b;
+    }
+
+    /* Dark custom checkbox styling with light border across all browsers */
+    input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: #020617; /* Dark slate-950 interior */
+      margin: 0;
+      cursor: pointer;
+      width: 1.15rem;
+      height: 1.15rem;
+      border: 1.5px solid #cbd5e1; /* Light slate border */
+      border-radius: 0.35rem;
+      display: inline-grid;
+      place-content: center;
+      transition: all 0.15s ease-in-out;
+      flex-shrink: 0;
+    }
+
+    input[type="checkbox"]:hover {
+      border-color: #f8fafc; /* Bright white border on hover */
+      background-color: #0b0f19;
+    }
+
+    /* Custom checkmark indicator */
+    input[type="checkbox"]::before {
+      content: "";
+      width: 0.65rem;
+      height: 0.65rem;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+      transform: scale(0);
+      transform-origin: center;
+      transition: 120ms transform ease-in-out;
+      background-color: #38bdf8; /* Luminous sky-blue checkmark */
+    }
+
+    /* Keep background dark and border light when checked */
+    input[type="checkbox"]:checked {
+      background-color: #020617; /* Remains dark when checked */
+      border-color: #f1f5f9; /* Bright light border */
+    }
+
+    input[type="checkbox"]:checked::before {
+      transform: scale(1);
+    }
+
+    input[type="checkbox"]:disabled {
+      cursor: default;
+    }
+
+    input[type="checkbox"]:focus-visible {
+      outline: 2px solid #38bdf8;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full min-h-screen overflow-hidden flex flex-col">
+
+  <!-- Header & Top Controls Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md z-30 px-4 py-2.5 sm:px-6 shadow-lg flex flex-col lg:flex-row items-center justify-between gap-3">
+    <!-- Title -->
+    <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-sm sm:text-base font-bold tracking-tight text-white whitespace-nowrap">
+          Planetary Orbits and Kepler's Laws
+        </h1>
+      </div>
+
+      <!-- Compact Play/Reset Buttons on Mobile -->
+      <div class="flex lg:hidden items-center gap-2">
+        <button id="btnMobilePlayPause" class="p-1.5 bg-indigo-600 rounded-lg text-xs font-semibold text-white">
+          <svg id="iconMobilePause" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+          <svg id="iconMobilePlay" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Eccentricity Slider at Top -->
+    <div id="eccentricityControlWrapper" class="flex-1 max-w-xl w-full bg-slate-950/70 border border-slate-800 px-4 py-1.5 rounded-xl flex items-center gap-3 transition">
+      <div class="shrink-0 flex items-center gap-1.5">
+        <span class="text-[13px] font-semibold text-slate-200">Eccentricity (e):</span>
+        <span id="txtEccentricityVal" class="font-mono text-indigo-300 font-bold text-[15px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">0.30</span>
+      </div>
+      <input type="range" id="sliderEccentricity" min="0.00" max="0.98" step="0.01" value="0.30" class="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 transition">
+      <div id="presetButtonsGroup" class="shrink-0 hidden sm:flex items-center gap-1 text-[13px] font-mono transition">
+        <button id="btnPresetZero" class="px-2 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition">0.00</button>
+        <button id="btnPresetLow" class="px-2 py-0.5 bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/60 rounded text-indigo-300 hover:text-white transition">0.30</button>
+        <button id="btnPresetMid" class="px-2 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition">0.60</button>
+        <button id="btnPresetHigh" class="px-2 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition">0.85</button>
+        <button id="btnPresetMax" class="px-2 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition">0.98</button>
+      </div>
+    </div>
+
+    <!-- Header Actions (Play / Reset / Recenter) -->
+    <div class="hidden lg:flex items-center gap-2 text-xs">
+      <button id="btnPlayPause" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+        <svg id="iconPause" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+        <svg id="iconPlay" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <span id="btnPlayPauseText">Pause</span>
+      </button>
+      <button id="btnReset" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-lg font-medium transition">
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 relative flex flex-col md:flex-row overflow-hidden">
+    <!-- Left Sidebar: Controls -->
+    <aside class="w-full md:w-72 lg:w-80 shrink-0 border-b md:border-b-0 md:border-r border-slate-800 bg-slate-900/85 backdrop-blur-md p-3.5 sm:p-4 z-20 flex flex-col gap-3 overflow-y-auto">
+      <!-- Celestial Body Selector with Left/Right Navigation Arrows -->
+      <div class="pb-2.5 border-b border-slate-800/90 flex flex-col gap-1.5">
+        <div class="flex items-center gap-1.5">
+          <!-- Left / Previous Body Button -->
+          <button id="btnPrevBody" type="button" title="Previous celestial body" class="p-2 bg-slate-950 hover:bg-slate-800 active:bg-slate-700 border border-slate-700/90 hover:border-slate-400 rounded-lg text-slate-300 hover:text-white transition flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="relative flex-1">
+            <select id="selectBody" class="w-full bg-slate-950 hover:bg-slate-900 border border-slate-700/90 hover:border-slate-400 text-slate-100 font-semibold text-[13px] py-2 pl-2.5 pr-7 rounded-lg appearance-none cursor-pointer focus:outline-none focus:border-indigo-500 transition shadow-sm">
+              <option value="planet">Planet</option>
+              <option value="mercury">Mercury (e = 0.206)</option>
+              <option value="venus">Venus (e = 0.007)</option>
+              <option value="earth">Earth (e = 0.017)</option>
+              <option value="mars">Mars (e = 0.093)</option>
+              <option value="jupiter">Jupiter (e = 0.048)</option>
+              <option value="saturn">Saturn (e = 0.054)</option>
+              <option value="uranus">Uranus (e = 0.047)</option>
+              <option value="neptune">Neptune (e = 0.009)</option>
+              <option value="pluto">Pluto (e = 0.249)</option>
+              <option value="halley">Halley's Comet (e = 0.967)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </div>
+
+          <!-- Right / Next Body Button -->
+          <button id="btnNextBody" type="button" title="Next celestial body" class="p-2 bg-slate-950 hover:bg-slate-800 active:bg-slate-700 border border-slate-700/90 hover:border-slate-400 rounded-lg text-slate-300 hover:text-white transition flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Connecting Line Checkbox -->
+      <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-3 flex flex-col justify-between hover:border-slate-500/80 transition shadow-sm">
+        <label class="flex items-center gap-2.5 cursor-pointer group">
+          <input type="checkbox" id="chkConnectingLine" checked class="mt-0.5">
+          <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition">Connecting Line</span>
+        </label>
+      </div>
+
+      <!-- Box 1: Show Foci Checkbox -->
+      <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-3 flex flex-col gap-2.5 hover:border-slate-500/80 transition shadow-sm">
+        <!-- Kepler's First Law Header -->
+        <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono pb-1 border-b border-slate-800/80">
+          <span class="text-indigo-400 font-semibold">Kepler's First Law</span>
+          <span>c = a × e</span>
+        </div>
+
+        <div>
+          <label class="flex items-center gap-2.5 cursor-pointer group">
+            <input type="checkbox" id="chkFoci" class="mt-0.5">
+            <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition">Show Foci</span>
+          </label>
+
+          <!-- String Property Sub-Option (Always visible, active only when Show Foci is checked) -->
+          <div id="stringPropertyWrapper" class="mt-2 pt-2 border-t border-slate-800/80">
+            <label id="lblStringProperty" class="flex items-center gap-2.5 cursor-default opacity-40 transition select-none">
+              <input type="checkbox" id="chkStringProperty" disabled class="cursor-default disabled:opacity-50">
+              <span class="text-[13px] font-semibold text-slate-200">String Property</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 2: Kepler's Second Law Checkbox -->
+      <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-3 flex flex-col justify-between hover:border-slate-500/80 transition shadow-sm">
+        <div>
+          <label class="flex items-start gap-2.5 cursor-pointer group">
+            <input type="checkbox" id="chkKeplerSlices" class="mt-0.5">
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition">Kepler's Second Law</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                An imaginary line connecting a planet to a star will sweep out equal areas in equal intervals of time.
+              </p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Box 3: Planet Telemetry (Speed & Distance) -->
+      <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 flex flex-col gap-2 hover:border-slate-700/90 transition shadow-sm">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-800/80">
+          <span class="text-xs font-semibold text-slate-200">Planet Telemetry</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-0.5">
+          <div class="bg-slate-900/90 border border-slate-800/80 rounded-lg p-2.5 flex flex-col">
+            <span class="text-xs text-slate-300 font-medium">Distance (r)</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="txtPlanetDist" class="text-base font-bold font-mono text-yellow-400">1.00</span>
+              <span class="text-xs font-mono text-slate-400">AU</span>
+            </div>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800/80 rounded-lg p-2.5 flex flex-col">
+            <span class="text-xs text-slate-300 font-medium">Speed (v)</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span id="txtPlanetSpeed" class="text-base font-bold font-mono text-sky-300">29.8</span>
+              <span class="text-xs font-mono text-slate-400">km/s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 4: Velocity Vector Checkbox -->
+      <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-3 flex flex-col justify-between hover:border-slate-500/80 transition shadow-sm">
+        <label class="flex items-center gap-2.5 cursor-pointer group">
+          <input type="checkbox" id="chkVelocityVector" checked class="mt-0.5">
+          <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition">Velocity Vector</span>
+        </label>
+      </div>
+
+      <!-- Box 5: Gravity Vector Checkbox -->
+      <div class="bg-slate-950/80 border border-slate-700/80 rounded-xl p-3 flex flex-col justify-between hover:border-slate-500/80 transition shadow-sm">
+        <label class="flex items-center gap-2.5 cursor-pointer group">
+          <input type="checkbox" id="chkGravityVector" class="mt-0.5">
+          <span class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition">Gravity Vector</span>
+        </label>
+      </div>
+    </aside>
+
+    <!-- Interactive Orbit Canvas -->
+    <div class="relative flex-1 w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden" id="canvasContainer">
+      <canvas id="orbitCanvas" class="w-full h-full block"></canvas>
+
+      <!-- Minimal Legend in Top Corner -->
+      <div class="absolute top-3 left-3 pointer-events-none hidden sm:flex items-center gap-3 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-xs text-slate-400">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Sun</span>
+        <span class="flex items-center gap-1.5"><span id="legendPlanetDot" class="w-2.5 h-2.5 rounded-full bg-sky-400"></span> <span id="legendPlanetName">Planet</span></span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full border border-violet-400 border-dashed"></span> Focus</span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const orbitalPeriod = 12.0; // 1 full orbital period = 12.0 seconds
+    let isRunning = true;
+    let simTime = 0.0;
+    let lastTimestamp = performance.now();
+
+    // Unified Celestial Bodies Database
+    const CELESTIAL_BODIES = [
+      {
+        id: 'planet',
+        name: 'Planet',
+        e: 0.30,
+        a_real: 1.00,
+        isFixed: false,
+        colors: { primary: '#67e8f9', mid: '#0284c7', dark: '#0369a1', glow: 'rgba(56, 189, 248, 0.35)', dot: '#38bdf8' }
+      },
+      {
+        id: 'mercury',
+        name: 'Mercury',
+        e: 0.2056,
+        a_real: 0.387,
+        isFixed: true,
+        colors: { primary: '#e2e8f0', mid: '#94a3b8', dark: '#475569', glow: 'rgba(148, 163, 184, 0.35)', dot: '#cbd5e1' }
+      },
+      {
+        id: 'venus',
+        name: 'Venus',
+        e: 0.0068,
+        a_real: 0.723,
+        isFixed: true,
+        colors: { primary: '#fef08a', mid: '#eab308', dark: '#a16207', glow: 'rgba(234, 179, 8, 0.35)', dot: '#facc15' }
+      },
+      {
+        id: 'earth',
+        name: 'Earth',
+        e: 0.0167,
+        a_real: 1.000,
+        isFixed: true,
+        colors: { primary: '#93c5fd', mid: '#2563eb', dark: '#15803d', glow: 'rgba(59, 130, 246, 0.35)', dot: '#60a5fa' }
+      },
+      {
+        id: 'mars',
+        name: 'Mars',
+        e: 0.0934,
+        a_real: 1.524,
+        isFixed: true,
+        colors: { primary: '#fdba74', mid: '#ea580c', dark: '#9a3412', glow: 'rgba(234, 88, 12, 0.35)', dot: '#f97316' }
+      },
+      {
+        id: 'jupiter',
+        name: 'Jupiter',
+        e: 0.0489,
+        a_real: 5.204,
+        isFixed: true,
+        colors: { primary: '#fed7aa', mid: '#d97706', dark: '#78350f', glow: 'rgba(217, 119, 6, 0.35)', dot: '#fbbf24' }
+      },
+      {
+        id: 'saturn',
+        name: 'Saturn',
+        e: 0.0565,
+        a_real: 9.582,
+        isFixed: true,
+        colors: { primary: '#fef9c3', mid: '#ca8a04', dark: '#713f12', glow: 'rgba(202, 138, 4, 0.35)', dot: '#fde047' }
+      },
+      {
+        id: 'uranus',
+        name: 'Uranus',
+        e: 0.0463,
+        a_real: 19.201,
+        isFixed: true,
+        colors: { primary: '#a5f3fc', mid: '#06b6d4', dark: '#0e7490', glow: 'rgba(6, 182, 212, 0.35)', dot: '#22d3ee' }
+      },
+      {
+        id: 'neptune',
+        name: 'Neptune',
+        e: 0.0095,
+        a_real: 30.047,
+        isFixed: true,
+        colors: { primary: '#60a5fa', mid: '#1d4ed8', dark: '#1e3a8a', glow: 'rgba(29, 78, 216, 0.35)', dot: '#3b82f6' }
+      },
+      {
+        id: 'pluto',
+        name: 'Pluto',
+        e: 0.2488,
+        a_real: 39.482,
+        isFixed: true,
+        colors: { primary: '#e2e8f0', mid: '#b45309', dark: '#451a03', glow: 'rgba(180, 83, 9, 0.35)', dot: '#d97706' }
+      },
+      {
+        id: 'halley',
+        name: "Halley's Comet",
+        e: 0.9671,
+        a_real: 17.834,
+        isFixed: true,
+        isComet: true,
+        colors: { primary: '#cffafe', mid: '#38bdf8', dark: '#0284c7', glow: 'rgba(56, 189, 248, 0.65)', dot: '#7dd3fc' }
+      }
+    ];
+
+    let currentBodyIndex = 0;
+    let userEccentricity = 0.30;
+    let savedCustomEccentricity = 0.30;
+
+    // Controls states
+    let showConnectingLine = true;
+    let showFoci = false;
+    let showStringProperty = false;
+    let showKeplerSlices = false;
+    let showVelocityVector = true;
+    let showGravityVector = false;
+
+    // Canvas & View
+    const canvas = document.getElementById('orbitCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = 0;
+    let height = 0;
+    let scale = 1.0;
+
+    // Background starfield
+    const stars = [];
+    const NUM_STARS = 140;
+
+    // Celestial color temperatures (soft silver, crisp blue-white, faint warm amber)
+    const STAR_TINTS = [
+      '248, 250, 252', // Pure silver-white
+      '224, 242, 254', // Soft blue-white (B/A class)
+      '254, 243, 199', // Gentle warm gold (G/K class)
+      '207, 250, 254'  // Cool diamond cyan
+    ];
+
+    const SHIP_TYPES = ['saucer', 'interceptor', 'bioPod', 'retroRocket', 'crystalMonolith', 'ringCruiser'];
+
+    const alienShip = {
+      active: false,
+      type: 'saucer',
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      wobblePhase: 0,
+      wobbleOffset: 0,
+      scale: 0.65,
+      timeSinceLast: 0,
+      nextSpawnDelay: 20 + Math.random() * 20,
+      animTimer: 0,
+      particles: []
+    };
+
+    function scheduleNextAlienSpawn() {
+      alienShip.active = false;
+      alienShip.timeSinceLast = 0;
+      alienShip.nextSpawnDelay = 20.0 + Math.random() * 20.0;
+    }
+
+    function distToSegment(px, py, x1, y1, x2, y2) {
+      const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+      if (l2 === 0) return Math.hypot(px - x1, py - y1);
+      let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      const projX = x1 + t * (x2 - x1);
+      const projY = y1 + t * (y2 - y1);
+      return Math.hypot(px - projX, py - projY);
+    }
+
+    function spawnAlien() {
+      alienShip.type = SHIP_TYPES[Math.floor(Math.random() * SHIP_TYPES.length)];
+      alienShip.particles = [];
+      alienShip.wobblePhase = Math.random() * Math.PI * 2;
+      alienShip.animTimer = 0;
+
+      const sunScreen = toScreen(userEccentricity * 1.0, 0);
+      const SUN_SAFE_DISTANCE = 95;
+
+      let startX = 0, startY = 0, targetX = 0, targetY = 0;
+      let validPath = false;
+
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const fromLeft = Math.random() > 0.5;
+        startY = height * (0.08 + Math.random() * 0.84);
+        targetY = height * (0.08 + Math.random() * 0.84);
+
+        startX = fromLeft ? -60 : width + 60;
+        targetX = fromLeft ? width + 60 : -60;
+
+        const distanceToSun = distToSegment(sunScreen.x, sunScreen.y, startX, startY, targetX, targetY);
+        if (distanceToSun >= SUN_SAFE_DISTANCE) {
+          validPath = true;
+          break;
+        }
+      }
+
+      if (!validPath) {
+        const routeAbove = sunScreen.y > height / 2;
+        startY = routeAbove ? height * 0.12 : height * 0.88;
+        targetY = routeAbove ? height * 0.18 : height * 0.82;
+        const fromLeft = Math.random() > 0.5;
+        startX = fromLeft ? -60 : width + 60;
+        targetX = fromLeft ? width + 60 : -60;
+      }
+
+      alienShip.x = startX;
+      alienShip.y = startY;
+
+      const dx = targetX - startX;
+      const dy = targetY - startY;
+      const dist = Math.hypot(dx, dy) || 1;
+
+      const speed = 75 + Math.random() * 45;
+      alienShip.vx = (dx / dist) * speed;
+      alienShip.vy = (dy / dist) * speed;
+      alienShip.angle = Math.atan2(dy, dx);
+      alienShip.scale = 0.60 + Math.random() * 0.12;
+      alienShip.active = true;
+    }
+
+    function updateAlien(dt) {
+      if (!alienShip.active) {
+        alienShip.timeSinceLast += dt;
+        if (alienShip.timeSinceLast >= alienShip.nextSpawnDelay) {
+          spawnAlien();
+        }
+        return;
+      }
+
+      alienShip.wobblePhase += dt * 3.5;
+      alienShip.wobbleOffset = Math.sin(alienShip.wobblePhase) * 4.0;
+      alienShip.animTimer += dt;
+
+      alienShip.x += alienShip.vx * dt;
+      alienShip.y += alienShip.vy * dt;
+
+      if (Math.random() < 0.75) {
+        let pColor = 'rgba(56, 189, 248,';
+        if (alienShip.type === 'saucer') pColor = Math.random() > 0.5 ? 'rgba(74, 222, 128,' : 'rgba(56, 189, 248,';
+        else if (alienShip.type === 'bioPod') pColor = 'rgba(236, 72, 153,';
+        else if (alienShip.type === 'retroRocket') pColor = Math.random() > 0.5 ? 'rgba(249, 115, 22,' : 'rgba(234, 179, 8,';
+        else if (alienShip.type === 'crystalMonolith') pColor = 'rgba(192, 132, 252,';
+        else if (alienShip.type === 'ringCruiser') pColor = 'rgba(45, 212, 191,';
+
+        alienShip.particles.push({
+          x: alienShip.x - Math.cos(alienShip.angle) * 14,
+          y: alienShip.y + alienShip.wobbleOffset - Math.sin(alienShip.angle) * 14,
+          vx: -alienShip.vx * 0.18 + (Math.random() - 0.5) * 12,
+          vy: -alienShip.vy * 0.18 + (Math.random() - 0.5) * 12,
+          alpha: 0.85,
+          radius: 1.2 + Math.random() * 1.6,
+          color: pColor
+        });
+      }
+
+      for (let i = alienShip.particles.length - 1; i >= 0; i--) {
+        const p = alienShip.particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.alpha -= dt * 1.8;
+        if (p.alpha <= 0) {
+          alienShip.particles.splice(i, 1);
+        }
+      }
+
+      const margin = 110;
+      if (
+        (alienShip.vx > 0 && alienShip.x > width + margin) ||
+        (alienShip.vx < 0 && alienShip.x < -margin) ||
+        alienShip.y < -margin ||
+        alienShip.y > height + margin
+      ) {
+        scheduleNextAlienSpawn();
+      }
+    }
+
+    function drawAlienShip() {
+      for (const p of alienShip.particles) {
+        ctx.fillStyle = `${p.color} ${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (!alienShip.active) return;
+
+      const posX = alienShip.x;
+      const posY = alienShip.y + alienShip.wobbleOffset;
+      const sc = alienShip.scale;
+      const t = alienShip.animTimer;
+
+      ctx.save();
+      ctx.translate(posX, posY);
+      ctx.rotate(alienShip.angle);
+      if (alienShip.vx < 0) {
+        ctx.scale(1, -1);
+      }
+      ctx.scale(sc, sc);
+
+      switch (alienShip.type) {
+        case 'saucer': {
+          const hullGrad = ctx.createLinearGradient(0, -8, 0, 8);
+          hullGrad.addColorStop(0, '#94a3b8');
+          hullGrad.addColorStop(0.5, '#f1f5f9');
+          hullGrad.addColorStop(1, '#334155');
+          ctx.fillStyle = hullGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, 2, 22, 7, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(186, 230, 253, 0.55)';
+          ctx.beginPath();
+          ctx.ellipse(0, -2, 10, 9, 0, Math.PI, 0);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#4ade80';
+          ctx.beginPath();
+          ctx.ellipse(0, -4, 4, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#090d16';
+          ctx.beginPath();
+          ctx.ellipse(-1.6, -4.5, 1.2, 1.6, -0.2, 0, Math.PI * 2);
+          ctx.ellipse(1.6, -4.5, 1.2, 1.6, 0.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          for (let i = 0; i < 5; i++) {
+            const lx = -14 + i * 7;
+            const phase = Math.floor((t * 7 + i) % 3);
+            ctx.fillStyle = phase === 0 ? '#38bdf8' : (phase === 1 ? '#4ade80' : '#facc15');
+            ctx.beginPath();
+            ctx.arc(lx, 3, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          break;
+        }
+
+        case 'interceptor': {
+          const bodyGrad = ctx.createLinearGradient(16, 0, -18, 0);
+          bodyGrad.addColorStop(0, '#38bdf8');
+          bodyGrad.addColorStop(0.4, '#1e293b');
+          bodyGrad.addColorStop(1, '#0f172a');
+          ctx.fillStyle = bodyGrad;
+
+          ctx.beginPath();
+          ctx.moveTo(22, 0);
+          ctx.lineTo(-14, -13);
+          ctx.lineTo(-8, -4);
+          ctx.lineTo(-16, 0);
+          ctx.lineTo(-8, 4);
+          ctx.lineTo(-14, 13);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#7dd3fc';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(-16, -7, 4, 3);
+          ctx.fillRect(-16, 4, 4, 3);
+
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+          ctx.beginPath();
+          ctx.ellipse(4, 0, 7, 2.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        }
+
+        case 'bioPod': {
+          const bioGrad = ctx.createRadialGradient(2, 0, 2, 0, 0, 16);
+          bioGrad.addColorStop(0, '#f472b6');
+          bioGrad.addColorStop(0.6, '#a855f7');
+          bioGrad.addColorStop(1, 'rgba(79, 70, 229, 0.4)');
+          ctx.fillStyle = bioGrad;
+
+          ctx.beginPath();
+          ctx.ellipse(2, 0, 15, 9, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fbcfe8';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          const pulse = 2.5 + Math.sin(t * 8) * 1.0;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(3, 0, pulse, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(236, 72, 153, 0.7)';
+          ctx.lineWidth = 1.2;
+          for (let k = -2; k <= 2; k++) {
+            const wave = Math.sin(t * 10 + k) * 3;
+            ctx.beginPath();
+            ctx.moveTo(-10, k * 3);
+            ctx.quadraticCurveTo(-18, k * 4 + wave, -24, k * 5 - wave);
+            ctx.stroke();
+          }
+          break;
+        }
+
+        case 'retroRocket': {
+          const rocketGrad = ctx.createLinearGradient(0, -6, 0, 6);
+          rocketGrad.addColorStop(0, '#f87171');
+          rocketGrad.addColorStop(0.3, '#f1f5f9');
+          rocketGrad.addColorStop(0.8, '#cbd5e1');
+          rocketGrad.addColorStop(1, '#94a3b8');
+          ctx.fillStyle = rocketGrad;
+
+          ctx.beginPath();
+          ctx.moveTo(22, 0);
+          ctx.quadraticCurveTo(8, -7, -12, -6);
+          ctx.lineTo(-12, 6);
+          ctx.quadraticCurveTo(8, 7, 22, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.moveTo(-6, -6);
+          ctx.lineTo(-16, -12);
+          ctx.lineTo(-12, -4);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(-6, 6);
+          ctx.lineTo(-16, 12);
+          ctx.lineTo(-12, 4);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(6, 0, 2.4, 0, Math.PI * 2);
+          ctx.arc(-1, 0, 2.4, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        }
+
+        case 'crystalMonolith': {
+          const prismGrad = ctx.createLinearGradient(-15, -10, 15, 10);
+          prismGrad.addColorStop(0, '#c084fc');
+          prismGrad.addColorStop(0.5, '#6366f1');
+          prismGrad.addColorStop(1, '#38bdf8');
+          ctx.fillStyle = prismGrad;
+
+          ctx.beginPath();
+          ctx.moveTo(18, 0);
+          ctx.lineTo(0, -11);
+          ctx.lineTo(-16, -7);
+          ctx.lineTo(-9, 0);
+          ctx.lineTo(-16, 7);
+          ctx.lineTo(0, 11);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = '#e9d5ff';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.save();
+          ctx.rotate(t * 4);
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(-2.5, -2.5, 5, 5);
+          ctx.restore();
+          break;
+        }
+
+        case 'ringCruiser': {
+          ctx.strokeStyle = '#2dd4bf';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 12, 15, 0, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(-14, -2.5, 28, 5);
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(-14, -2.5, 28, 5);
+
+          const coreGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 5);
+          coreGrad.addColorStop(0, '#ffffff');
+          coreGrad.addColorStop(0.5, '#38bdf8');
+          coreGrad.addColorStop(1, 'rgba(59, 130, 246, 0.2)');
+          ctx.fillStyle = coreGrad;
+          ctx.beginPath();
+          ctx.arc(0, 0, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath();
+          ctx.arc(14, 0, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        }
+      }
+
+      ctx.restore();
+    }
+
+    const SLICE_BASE_RGB = [
+      [59, 130, 246],
+      [147, 51, 234],
+      [236, 72, 153],
+      [239, 68, 68],
+      [249, 115, 22],
+      [234, 179, 8],
+      [34, 197, 94],
+      [20, 184, 166],
+      [6, 182, 212],
+      [99, 102, 241],
+      [168, 85, 247],
+      [244, 63, 94]
+    ];
+
+    const SLICE_STROKES = [
+      'rgba(96, 165, 250, 0.55)',
+      'rgba(192, 132, 252, 0.55)',
+      'rgba(244, 114, 182, 0.55)',
+      'rgba(248, 113, 113, 0.55)',
+      'rgba(251, 146, 60, 0.55)',
+      'rgba(250, 204, 21, 0.55)',
+      'rgba(74, 222, 128, 0.55)',
+      'rgba(45, 212, 191, 0.55)',
+      'rgba(34, 211, 238, 0.55)',
+      'rgba(129, 140, 248, 0.55)',
+      'rgba(192, 132, 252, 0.55)',
+      'rgba(251, 113, 133, 0.55)'
+    ];
+
+    // DOM Elements
+    const chkConnectingLine = document.getElementById('chkConnectingLine');
+    const chkFoci = document.getElementById('chkFoci');
+    const chkStringProperty = document.getElementById('chkStringProperty');
+    const lblStringProperty = document.getElementById('lblStringProperty');
+    const stringPropertyWrapper = document.getElementById('stringPropertyWrapper');
+    const chkKeplerSlices = document.getElementById('chkKeplerSlices');
+    const chkVelocityVector = document.getElementById('chkVelocityVector');
+    const chkGravityVector = document.getElementById('chkGravityVector');
+    const sliderEccentricity = document.getElementById('sliderEccentricity');
+    const txtEccentricityVal = document.getElementById('txtEccentricityVal');
+    const txtPlanetDist = document.getElementById('txtPlanetDist');
+    const txtPlanetSpeed = document.getElementById('txtPlanetSpeed');
+
+    const selectBody = document.getElementById('selectBody');
+    const btnPrevBody = document.getElementById('btnPrevBody');
+    const btnNextBody = document.getElementById('btnNextBody');
+
+    const legendPlanetDot = document.getElementById('legendPlanetDot');
+    const legendPlanetName = document.getElementById('legendPlanetName');
+
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnPlayPauseText = document.getElementById('btnPlayPauseText');
+    const iconPause = document.getElementById('iconPause');
+    const iconPlay = document.getElementById('iconPlay');
+    const btnReset = document.getElementById('btnReset');
+
+    const btnMobilePlayPause = document.getElementById('btnMobilePlayPause');
+    const iconMobilePause = document.getElementById('iconMobilePause');
+    const iconMobilePlay = document.getElementById('iconMobilePlay');
+
+    const btnPresetZero = document.getElementById('btnPresetZero');
+    const btnPresetLow = document.getElementById('btnPresetLow');
+    const btnPresetMid = document.getElementById('btnPresetMid');
+    const btnPresetHigh = document.getElementById('btnPresetHigh');
+    const btnPresetMax = document.getElementById('btnPresetMax');
+
+    const presetButtons = [btnPresetZero, btnPresetLow, btnPresetMid, btnPresetHigh, btnPresetMax];
+
+    function solveKepler(M, e) {
+      let E = M;
+      for (let i = 0; i < 25; i++) {
+        const f = E - e * Math.sin(E) - M;
+        const fPrime = 1 - e * Math.cos(E);
+        const dE = -f / fPrime;
+        E += dE;
+        if (Math.abs(dE) < 1e-7) break;
+      }
+      return E;
+    }
+
+    function calculateOrbitalState(t, period, e, bodyData) {
+      const a = 1.0;
+      const b = a * Math.sqrt(Math.max(0, 1 - e * e));
+      const c = a * e;
+
+      const n = (2 * Math.PI) / period;
+      const M = (n * t) % (2 * Math.PI);
+      const E = solveKepler(M, e);
+
+      const x = a * Math.cos(E);
+      const y = b * Math.sin(E);
+
+      const dx = x - c;
+      const dy = y;
+      const r_norm = Math.sqrt(dx * dx + dy * dy);
+
+      const a_real = bodyData ? bodyData.a_real : 1.0;
+      const r_real = r_norm * a_real;
+
+      const velocity = 29.78 * Math.sqrt(Math.max(0, (2.0 / r_real) - (1.0 / a_real)));
+
+      const dE_dt = n / (1 - e * Math.cos(E));
+      const vx_AU = -a * Math.sin(E) * dE_dt;
+      const vy_AU = b * Math.cos(E) * dE_dt;
+      const vNorm = Math.sqrt(vx_AU * vx_AU + vy_AU * vy_AU) || 1;
+      const vx_unit = vx_AU / vNorm;
+      const vy_unit = vy_AU / vNorm;
+
+      const monthFraction = ((t % period) + period) % period / period;
+      const sliceIndex = Math.min(11, Math.floor(monthFraction * 12));
+
+      return {
+        a, b, c,
+        E, x, y,
+        r: r_real,
+        velocity,
+        vx_unit, vy_unit,
+        sliceIndex
+      };
+    }
+
+    function initStarfield() {
+      stars.length = 0;
+      for (let i = 0; i < NUM_STARS; i++) {
+        // Exactly 30% of stars exhibit noticeable celestial twinkling
+        const doesTwinkle = Math.random() < 0.30;
+        stars.push({
+          x: Math.random(),
+          y: Math.random(),
+          baseRadius: Math.random() * 1.2 + 0.4,
+          baseAlpha: Math.random() * 0.5 + 0.3,
+          twinkles: doesTwinkle,
+          speed1: 1.8 + Math.random() * 2.2,
+          speed2: 0.9 + Math.random() * 1.4,
+          phase: Math.random() * Math.PI * 2,
+          color: STAR_TINTS[Math.floor(Math.random() * STAR_TINTS.length)]
+        });
+      }
+    }
+
+    function resizeCanvas() {
+      const container = document.getElementById('canvasContainer');
+      width = container.clientWidth;
+      height = container.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      const minDimension = Math.min(width, height);
+      scale = minDimension / 2.38;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function toScreen(xAU, yAU) {
+      const centerX = width / 2;
+      const centerY = height / 2;
+      return {
+        x: centerX + xAU * scale,
+        y: centerY - yAU * scale
+      };
+    }
+
+    function drawStars(timeSec = 0) {
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = 'rgba(30, 41, 59, 0.3)';
+      ctx.lineWidth = 1;
+      const gridSize = 60;
+      const startX = (width / 2) % gridSize;
+      const startY = (height / 2) % gridSize;
+
+      ctx.beginPath();
+      for (let x = startX; x < width; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+      }
+      for (let y = startY; y < height; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+      }
+      ctx.stroke();
+
+      for (const star of stars) {
+        let currentAlpha = star.baseAlpha;
+        let currentRadius = star.baseRadius;
+
+        if (star.twinkles) {
+          // Atmospheric scintillation with noticeable brightness variation & subtle pulse
+          const shimmer = Math.sin(timeSec * star.speed1 + star.phase) * 0.65
+                        + Math.cos(timeSec * star.speed2 + star.phase * 1.5) * 0.35;
+          currentAlpha = Math.max(0.12, Math.min(1.0, star.baseAlpha + shimmer * 0.38));
+          currentRadius = Math.max(0.3, star.baseRadius * (1.0 + shimmer * 0.22));
+
+          // Soft micro-sparkle when twinkling star peaks in brightness
+          if (currentAlpha > 0.85) {
+            ctx.fillStyle = `rgba(${star.color}, ${(currentAlpha * 0.25).toFixed(3)})`;
+            ctx.beginPath();
+            ctx.arc(star.x * width, star.y * height, currentRadius * 2.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.fillStyle = `rgba(${star.color}, ${currentAlpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(star.x * width, star.y * height, currentRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Set to true to make each sector light up while the connecting line is in it
+    const HIGHLIGHT_SECTORS = false;
+
+    function drawKeplerSlices(period, e, timeNow) {
+      const a = 1.0;
+      const b = a * Math.sqrt(Math.max(0, 1 - e * e));
+      const c = a * e;
+      const sunPos = toScreen(c, 0);
+
+      const numSlices = 12;
+      const stepsPerSlice = 24;
+
+      // Continuous orbital progress across the 12 equal-time sectors
+      const monthFraction = (((timeNow % period) + period) % period) / period;
+      const exactPos = monthFraction * numSlices;
+
+      for (let i = 0; i < numSlices; i++) {
+        const M1 = (2 * Math.PI * i) / numSlices;
+        const M2 = (2 * Math.PI * (i + 1)) / numSlices;
+
+        ctx.beginPath();
+        ctx.moveTo(sunPos.x, sunPos.y);
+
+        for (let s = 0; s <= stepsPerSlice; s++) {
+          const frac = s / stepsPerSlice;
+          const M_step = M1 + (M2 - M1) * frac;
+          const E_step = solveKepler(M_step, e);
+          const pt = toScreen(a * Math.cos(E_step), b * Math.sin(E_step));
+          ctx.lineTo(pt.x, pt.y);
+        }
+        ctx.closePath();
+
+        // Calculate smooth fade-in/out glow factor using a continuous cosine cross-fade
+        const center = i + 0.5;
+        let dist = Math.abs(exactPos - center);
+        if (dist > numSlices / 2) {
+          dist = numSlices - dist;
+        }
+
+        let glowFactor = 0;
+        if (dist <= 0.35) {
+          // Plateau at peak brightness in the core of the sector
+          glowFactor = 1.0;
+        } else if (dist < 0.65) {
+          // Smooth sinusoidal cross-fade across the boundary
+          const t = (dist - 0.35) / 0.30;
+          glowFactor = 0.5 * (1 + Math.cos(Math.PI * t));
+        } else {
+          glowFactor = 0;
+        }
+
+        if (!HIGHLIGHT_SECTORS) glowFactor = 0;
+        const [r, g, b_col] = SLICE_BASE_RGB[i % SLICE_BASE_RGB.length];
+
+        // Smooth color brightening & opacity scaling based on glowFactor
+        // Softer sector highlight so the sweeping glow trail stays the focus
+        const fillAlpha = 0.22 + 0.22 * glowFactor;
+        const brightR = Math.round(r + (255 - r) * (0.12 * glowFactor));
+        const brightG = Math.round(g + (255 - g) * (0.12 * glowFactor));
+        const brightB = Math.round(b_col + (255 - b_col) * (0.12 * glowFactor));
+
+        ctx.fillStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${fillAlpha.toFixed(3)})`;
+        ctx.fill();
+
+        if (glowFactor > 0.01) {
+          ctx.lineWidth = 1 + 0.6 * glowFactor;
+          ctx.strokeStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${(0.55 + 0.2 * glowFactor).toFixed(3)})`;
+        } else {
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = SLICE_STROKES[i % SLICE_STROKES.length];
+        }
+        ctx.stroke();
+      }
+
+      drawSweepTrail(e, a, b, sunPos, monthFraction);
+    }
+
+    // Glowing trail dragged behind the connecting line (Kepler's 2nd law).
+    // The trail spans a fixed fraction of the orbital PERIOD, so it always covers
+    // the same area: long and thin near aphelion, short and wide near perihelion.
+    const TRAIL_TIME_FRACTION = 1 / 8;   // trail length = 1/8 of a period (1.5 sectors)
+    const TRAIL_PEAK_ALPHA = 0.6;        // brightness right behind the line
+
+    // Colour of a Kepler sector, lifted toward white by `lift` (0..1), as "r, g, b"
+    function sectorRGB(i, lift) {
+      const [r, g, bl] = SLICE_BASE_RGB[((i % 12) + 12) % 12];
+      return [r + (255 - r) * lift, g + (255 - g) * lift, bl + (255 - bl) * lift]
+        .map(Math.round).join(', ');
+    }
+    const TRAIL_COLOR_LIFT = 0.35; // how much the sector colour is brightened in the wake
+
+    function drawSweepTrail(e, a, b, sunPos, monthFraction) {
+      const twoPi = Math.PI * 2;
+      const sectorSize = twoPi / 12;
+      const Mnow = monthFraction * twoPi;
+      const span = TRAIL_TIME_FRACTION * twoPi;
+      const samples = 48;
+
+      // Points behind the line, as a fraction t of the trail (0 = at the line, 1 = tail end),
+      // plus the exact sector boundaries the trail crosses so colours change sharply there
+      const marks = [];
+      for (let k = 0; k <= samples; k++) {
+        const t = k / samples;
+        marks.push({ t, sector: Math.floor((Mnow - span * t) / sectorSize + 1e-9) });
+      }
+      for (let j = Math.floor(Mnow / sectorSize); j * sectorSize > Mnow - span; j--) {
+        const t = (Mnow - j * sectorSize) / span;
+        if (t > 0 && t < 1) marks.push({ t, boundary: j });
+      }
+      marks.sort((p, q) => p.t - q.t);
+
+      for (const m of marks) {
+        const M = Mnow - span * m.t;
+        const E = solveKepler(((M % twoPi) + twoPi) % twoPi, e);
+        m.pt = toScreen(a * Math.cos(E), b * Math.sin(E));
+      }
+
+      const currentSector = marks[0].sector;
+      const tip = marks[0].pt;
+
+      // Conic gradient centred on the Sun: each part of the wake takes its sector's colour,
+      // brightest right behind the line and fading toward the tail
+      let fill;
+      if (typeof ctx.createConicGradient === 'function') {
+        const lineAngle = Math.atan2(tip.y - sunPos.y, tip.x - sunPos.x);
+        fill = ctx.createConicGradient(lineAngle, sunPos.x, sunPos.y);
+        let lastOffset = 0;
+        for (let k = 0; k < marks.length; k++) {
+          const m = marks[k];
+          let d = Math.atan2(m.pt.y - sunPos.y, m.pt.x - sunPos.x) - lineAngle;
+          d = ((d % twoPi) + twoPi) % twoPi;
+          if (k === 0) d = 0;
+          const off = Math.min(0.998, Math.max(lastOffset, d / twoPi));
+          lastOffset = off;
+          const fade = 1 - m.t;
+          const alpha = (TRAIL_PEAK_ALPHA * fade * fade).toFixed(3);
+          if (m.boundary !== undefined) {
+            // Sector ahead of the boundary, then the sector behind it, at the same angle
+            fill.addColorStop(off, `rgba(${sectorRGB(m.boundary, TRAIL_COLOR_LIFT)}, ${alpha})`);
+            fill.addColorStop(off, `rgba(${sectorRGB(m.boundary - 1, TRAIL_COLOR_LIFT)}, ${alpha})`);
+          } else {
+            fill.addColorStop(off, `rgba(${sectorRGB(m.sector, TRAIL_COLOR_LIFT)}, ${alpha})`);
+          }
+        }
+        const tail = sectorRGB(marks[marks.length - 1].sector, TRAIL_COLOR_LIFT);
+        fill.addColorStop(lastOffset + 0.001, `rgba(${tail}, 0)`);
+        fill.addColorStop(1, `rgba(${tail}, 0)`);
+      } else {
+        fill = `rgba(${sectorRGB(currentSector, TRAIL_COLOR_LIFT)}, 0.3)`;
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(sunPos.x, sunPos.y);
+      for (const m of marks) ctx.lineTo(m.pt.x, m.pt.y);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      // Strong glow on the line in the current sector's colour,
+      // clipped to the wake so none of it shows ahead of the line
+      ctx.clip();
+      const glowRGB = sectorRGB(currentSector, 0.45);
+      ctx.beginPath();
+      ctx.moveTo(sunPos.x, sunPos.y);
+      ctx.lineTo(tip.x, tip.y);
+      ctx.shadowColor = `rgba(${glowRGB}, 1)`;
+      ctx.shadowBlur = 22;
+      ctx.strokeStyle = `rgba(${glowRGB}, 0.85)`;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      ctx.stroke();
+      ctx.restore();
+
+      // Crisp leading edge drawn on top, with no glow
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(sunPos.x, sunPos.y);
+      ctx.lineTo(tip.x, tip.y);
+      ctx.strokeStyle = 'rgba(255, 250, 220, 0.95)';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawOrbitPath(e, bodyData) {
+      const a = 1.0;
+      const b = a * Math.sqrt(Math.max(0, 1 - e * e));
+
+      ctx.beginPath();
+      const numPoints = 180;
+      for (let i = 0; i <= numPoints; i++) {
+        const E = (i / numPoints) * 2 * Math.PI;
+        const pt = toScreen(a * Math.cos(E), b * Math.sin(E));
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const periPt = toScreen(a, 0);
+      const aphPt = toScreen(-a, 0);
+
+      const a_real = bodyData ? bodyData.a_real : 1.0;
+      const periDist = (a_real * (1 - e)).toFixed(2);
+      const aphDist = (a_real * (1 + e)).toFixed(2);
+
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.9)';
+      ctx.beginPath();
+      ctx.arc(periPt.x, periPt.y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fda4af';
+      ctx.font = '13px JetBrains Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(` Perihelion (${periDist} AU)`, periPt.x + 4, periPt.y - 6);
+
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+      ctx.beginPath();
+      ctx.arc(aphPt.x, aphPt.y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#7dd3fc';
+      ctx.textAlign = 'right';
+      ctx.fillText(`Aphelion (${aphDist} AU) `, aphPt.x - 4, aphPt.y - 6);
+    }
+
+    function drawFoci(e) {
+      const a = 1.0;
+      const c = a * e;
+
+      const f2 = toScreen(-c, 0);
+      const center = toScreen(0, 0);
+
+      ctx.beginPath();
+      const pRight = toScreen(a, 0);
+      const pLeft = toScreen(-a, 0);
+      ctx.moveTo(pLeft.x, pLeft.y);
+      ctx.lineTo(pRight.x, pRight.y);
+      ctx.strokeStyle = 'rgba(167, 139, 250, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Dot at the geometric center matching the major axis color
+      ctx.fillStyle = '#a78bfa';
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(f2.x, f2.y, 5.5, 0, Math.PI * 2);
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([2, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(192, 132, 252, 0.3)';
+      ctx.fill();
+    }
+
+    function drawSun(e) {
+      const a = 1.0;
+      const c = a * e;
+      const pos = toScreen(c, 0);
+
+      const glowGrad = ctx.createRadialGradient(pos.x, pos.y, 4.5, pos.x, pos.y, 28.5);
+      glowGrad.addColorStop(0, 'rgba(251, 191, 36, 0.7)');
+      glowGrad.addColorStop(0.4, 'rgba(245, 158, 11, 0.3)');
+      glowGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 28.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      const coreGrad = ctx.createRadialGradient(pos.x - 2, pos.y - 2, 1.5, pos.x, pos.y, 10.5);
+      coreGrad.addColorStop(0, '#fffbeb');
+      coreGrad.addColorStop(0.3, '#fde047');
+      coreGrad.addColorStop(0.8, '#f59e0b');
+      coreGrad.addColorStop(1, '#b45309');
+
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 10.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Sun', pos.x, pos.y - 16);
+    }
+
+    function drawVectorArrow(fromX, fromY, toX, toY, color, label = '', labelOffset = { x: 0, y: -6 }, subscript = '') {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy);
+      if (len < 1) return;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      const angle = Math.atan2(dy, dx);
+      const headLen = Math.min(11, Math.max(6, len * 0.25));
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      if (label) {
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.textBaseline = 'middle';
+
+        const lx = toX + labelOffset.x;
+        const ly = toY + labelOffset.y;
+
+        if (subscript) {
+          // 2pt larger base font (15px) with properly proportioned subscript (11px)
+          ctx.font = 'bold 15px JetBrains Mono, monospace';
+          const mainWidth = ctx.measureText(label).width;
+
+          ctx.font = 'bold 11px JetBrains Mono, monospace';
+          const subWidth = ctx.measureText(subscript).width;
+
+          const totalWidth = mainWidth + subWidth;
+          const startX = lx - totalWidth / 2;
+
+          // Draw main symbol
+          ctx.font = 'bold 15px JetBrains Mono, monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(label, startX, ly);
+
+          // Draw subscript slightly shifted down and clearly legible
+          ctx.font = 'bold 11px JetBrains Mono, monospace';
+          ctx.fillText(subscript, startX + mainWidth + 1, ly + 4);
+        } else {
+          ctx.font = 'bold 15px JetBrains Mono, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(label, lx, ly);
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawPlanet(state, bodyData) {
+      const sunPos = toScreen(state.c, 0);
+      const planetPos = toScreen(state.x, state.y);
+      const body = bodyData || CELESTIAL_BODIES[0];
+
+      // Radius vector (Sun -> Body)
+      if (showConnectingLine || (showFoci && showStringProperty)) {
+        ctx.beginPath();
+        ctx.moveTo(sunPos.x, sunPos.y);
+        ctx.lineTo(planetPos.x, planetPos.y);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // String property
+      if (showFoci && showStringProperty) {
+        const f2Pos = toScreen(-state.c, 0);
+        ctx.beginPath();
+        ctx.moveTo(f2Pos.x, f2Pos.y);
+        ctx.lineTo(planetPos.x, planetPos.y);
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Halley's Comet tail
+      if (body.isComet) {
+        const dx = planetPos.x - sunPos.x;
+        const dy = planetPos.y - sunPos.y;
+        const sunDist = Math.hypot(dx, dy) || 1;
+        const tailDirX = dx / sunDist;
+        const tailDirY = dy / sunDist;
+
+        const tailLength = Math.max(16, 75 * Math.pow(Math.max(0.05, 1.0 - (state.r / 15.0)), 1.5));
+        const tailGrad = ctx.createLinearGradient(
+          planetPos.x, planetPos.y,
+          planetPos.x + tailDirX * tailLength, planetPos.y + tailDirY * tailLength
+        );
+        tailGrad.addColorStop(0, 'rgba(165, 243, 252, 0.85)');
+        tailGrad.addColorStop(0.3, 'rgba(56, 189, 248, 0.45)');
+        tailGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+        ctx.strokeStyle = tailGrad;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(planetPos.x, planetPos.y);
+        ctx.lineTo(planetPos.x + tailDirX * tailLength, planetPos.y + tailDirY * tailLength);
+        ctx.stroke();
+      }
+
+      // Velocity tangent vector (scaled 25% longer)
+      const vUnitScreenX = state.vx_unit;
+      const vUnitScreenY = -state.vy_unit; // Invert y for canvas screen space
+
+      if (showVelocityVector) {
+        const vLength = Math.min(97.5, Math.max(33.75, (state.velocity / 29.78) * 67.5));
+        const vEndX = planetPos.x + vUnitScreenX * vLength;
+        const vEndY = planetPos.y + vUnitScreenY * vLength;
+
+        // Calculate outward normal perpendicular to velocity vector (pointing away from ellipse center)
+        const centerPos = toScreen(0, 0);
+        const rTipX = vEndX - centerPos.x;
+        const rTipY = vEndY - centerPos.y;
+
+        // Candidate normal N1 = (-vUnitScreenY, vUnitScreenX)
+        const dotN1 = rTipX * (-vUnitScreenY) + rTipY * vUnitScreenX;
+        const sign = dotN1 >= 0 ? 1 : -1;
+        const nOutX = -vUnitScreenY * sign;
+        const nOutY = vUnitScreenX * sign;
+
+        // Position 'v' label along the outward normal, outside the ellipse and clear of the arrowhead
+        const vLabelOffset = {
+          x: nOutX * 12 - vUnitScreenX * 4,
+          y: nOutY * 12 - vUnitScreenY * 4
+        };
+
+        drawVectorArrow(planetPos.x, planetPos.y, vEndX, vEndY, '#38bdf8', 'v', vLabelOffset);
+      }
+
+      // Gravity vector & parallel / perpendicular decomposition (scaled 25% longer)
+      if (showGravityVector) {
+        const dxSun = sunPos.x - planetPos.x;
+        const dySun = sunPos.y - planetPos.y;
+        const distSun = Math.hypot(dxSun, dySun) || 1;
+        const gUnitX = dxSun / distSun;
+        const gUnitY = dySun / distSun;
+
+        // Gravitational acceleration magnitude scaled smoothly for screen visibility (25% longer)
+        const gLength = Math.min(127.5, Math.max(33.75, 75 / Math.pow(Math.max(0.12, state.r), 0.75)));
+        const gVecX = gUnitX * gLength;
+        const gVecY = gUnitY * gLength;
+
+        // Parallel component along velocity vector: g_par = (g · v_hat) * v_hat
+        const gParDot = gVecX * vUnitScreenX + gVecY * vUnitScreenY;
+        const gParVecX = gParDot * vUnitScreenX;
+        const gParVecY = gParDot * vUnitScreenY;
+
+        // Perpendicular component: g_perp = g - g_par
+        const gPerpVecX = gVecX - gParVecX;
+        const gPerpVecY = gVecY - gParVecY;
+
+        const tipTotalX = planetPos.x + gVecX;
+        const tipTotalY = planetPos.y + gVecY;
+        const tipParX = planetPos.x + gParVecX;
+        const tipParY = planetPos.y + gParVecY;
+        const tipPerpX = planetPos.x + gPerpVecX;
+        const tipPerpY = planetPos.y + gPerpVecY;
+
+        // Dashed orthogonal projection lines completing the decomposition rectangle
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = 'rgba(203, 213, 225, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(tipParX, tipParY);
+        ctx.lineTo(tipTotalX, tipTotalY);
+        ctx.lineTo(tipPerpX, tipPerpY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Dynamic outward label offsets to prevent any overlap with vector shafts or heads:
+
+        // 1. Parallel component g_∥: offset perpendicular to velocity/tangent pointing away from total g
+        // gUnitX, gUnitY points toward sun; outward normal perpendicular to v pointing opposite to inward gravity:
+        const vPerpX = -vUnitScreenY;
+        const vPerpY = vUnitScreenX;
+        const dotVPerpWithG = vPerpX * gUnitX + vPerpY * gUnitY;
+        // Direction away from the interior of the decomposition box:
+        const parNormX = dotVPerpWithG > 0 ? -vPerpX : vPerpX;
+        const parNormY = dotVPerpWithG > 0 ? -vPerpY : vPerpY;
+        const parLabelOffset = {
+          x: parNormX * 13 + vUnitScreenX * (gParDot >= 0 ? 5 : -5),
+          y: parNormY * 13 + vUnitScreenY * (gParDot >= 0 ? 5 : -5)
+        };
+
+        // 2. Perpendicular component g_⊥: offset along outward velocity tangent, clear of arrow tip
+        const perpDirX = gPerpVecX / (Math.hypot(gPerpVecX, gPerpVecY) || 1);
+        const perpDirY = gPerpVecY / (Math.hypot(gPerpVecX, gPerpVecY) || 1);
+        // Tangent pointing away from the decomposition box interior:
+        const perpNormX = dotVPerpWithG > 0 ? -vUnitScreenX : vUnitScreenX;
+        const perpNormY = dotVPerpWithG > 0 ? -vUnitScreenY : vUnitScreenY;
+        const perpLabelOffset = {
+          x: perpDirX * 10 + perpNormX * 12,
+          y: perpDirY * 10 + perpNormY * 12
+        };
+
+        // 3. Total gravity g: offset beyond the arrow head and slightly to the side away from the component box
+        const totalNormX = -gUnitY * (dotVPerpWithG > 0 ? 1 : -1);
+        const totalNormY = gUnitX * (dotVPerpWithG > 0 ? 1 : -1);
+        const totalLabelOffset = {
+          x: gUnitX * 14 + totalNormX * 10,
+          y: gUnitY * 14 + totalNormY * 10
+        };
+
+        // Parallel component (green): changes orbital speed with subscript ∥
+        drawVectorArrow(planetPos.x, planetPos.y, tipParX, tipParY, '#34d399', 'g', parLabelOffset, '∥');
+
+        // Perpendicular component (purple): curves trajectory with subscript ⊥
+        drawVectorArrow(planetPos.x, planetPos.y, tipPerpX, tipPerpY, '#c084fc', 'g', perpLabelOffset, '⊥');
+
+        // Total gravity vector (rose/red): directed straight to Sun
+        drawVectorArrow(planetPos.x, planetPos.y, tipTotalX, tipTotalY, '#fb7185', 'g', totalLabelOffset);
+      }
+
+      // Planet Sphere
+      const sphereRadius = body.isComet ? 6.0 : (body.name === 'Jupiter' ? 10.5 : (body.name === 'Saturn' ? 9.5 : 7.5));
+      const planetGrad = ctx.createRadialGradient(planetPos.x - 2, planetPos.y - 2, 1, planetPos.x, planetPos.y, sphereRadius + 1);
+      planetGrad.addColorStop(0, body.colors.primary);
+      planetGrad.addColorStop(0.4, body.colors.mid);
+      planetGrad.addColorStop(0.8, body.colors.dark);
+      planetGrad.addColorStop(1, '#020617');
+
+      ctx.fillStyle = body.colors.glow;
+      ctx.beginPath();
+      ctx.arc(planetPos.x, planetPos.y, sphereRadius + 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = planetGrad;
+      ctx.beginPath();
+      ctx.arc(planetPos.x, planetPos.y, sphereRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Planet Name Label - anchored continuously on the outward radial vector from the Sun
+      // Using fixed center/middle alignment with continuous elliptical clearance eliminates all alignment step-jumps
+      const dxFromSun = planetPos.x - sunPos.x;
+      const dyFromSun = planetPos.y - sunPos.y;
+      const outAngle = Math.atan2(dyFromSun, dxFromSun);
+      const cosA = Math.cos(outAngle);
+      const sinA = Math.sin(outAngle);
+
+      ctx.save();
+      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+
+      // Measure text dimensions to calculate a smooth, continuous clearance margin around the planet sphere
+      const textWidth = ctx.measureText(body.name).width;
+      const halfW = textWidth / 2 + 5;
+      const halfH = 9;
+      const textRadialClearance = Math.hypot(halfW * cosA, halfH * sinA);
+      const labelDist = sphereRadius + textRadialClearance + 3;
+
+      const labelX = planetPos.x + cosA * labelDist;
+      const labelY = planetPos.y + sinA * labelDist;
+
+      ctx.fillText(body.name, labelX, labelY);
+      ctx.restore();
+    }
+
+    chkFoci.addEventListener('change', (e) => {
+      showFoci = e.target.checked;
+      if (showFoci) {
+        chkStringProperty.disabled = false;
+        chkStringProperty.classList.remove('cursor-default');
+        chkStringProperty.classList.add('cursor-pointer');
+        lblStringProperty.classList.remove('cursor-default', 'opacity-40');
+        lblStringProperty.classList.add('cursor-pointer');
+      } else {
+        chkStringProperty.disabled = true;
+        chkStringProperty.checked = false;
+        showStringProperty = false;
+        chkStringProperty.classList.remove('cursor-pointer');
+        chkStringProperty.classList.add('cursor-default');
+        lblStringProperty.classList.remove('cursor-pointer');
+        lblStringProperty.classList.add('cursor-default', 'opacity-40');
+      }
+    });
+
+    if (chkConnectingLine) {
+      chkConnectingLine.addEventListener('change', (e) => {
+        showConnectingLine = e.target.checked;
+      });
+    }
+
+    chkStringProperty.addEventListener('change', (e) => {
+      showStringProperty = e.target.checked;
+    });
+
+    chkKeplerSlices.addEventListener('change', (e) => {
+      showKeplerSlices = e.target.checked;
+    });
+
+    chkVelocityVector.addEventListener('change', (e) => {
+      showVelocityVector = e.target.checked;
+    });
+
+    chkGravityVector.addEventListener('change', (e) => {
+      showGravityVector = e.target.checked;
+    });
+
+    function updatePresetHighlights(val) {
+      const presets = [
+        { btn: btnPresetZero, target: 0.00 },
+        { btn: btnPresetLow, target: 0.30 },
+        { btn: btnPresetMid, target: 0.60 },
+        { btn: btnPresetHigh, target: 0.85 },
+        { btn: btnPresetMax, target: 0.98 }
+      ];
+      presets.forEach(({ btn, target }) => {
+        if (Math.abs(val - target) < 0.015) {
+          btn.className = 'px-2 py-0.5 bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/60 rounded text-indigo-300 hover:text-white transition';
+        } else {
+          btn.className = 'px-2 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition';
+        }
+      });
+    }
+
+    function setCelestialBody(index) {
+      currentBodyIndex = Math.max(0, Math.min(CELESTIAL_BODIES.length - 1, index));
+      const body = CELESTIAL_BODIES[currentBodyIndex];
+
+      selectBody.value = body.id;
+      legendPlanetName.textContent = body.name;
+      legendPlanetDot.style.backgroundColor = body.colors.dot;
+
+      if (body.isFixed) {
+        sliderEccentricity.disabled = true;
+        sliderEccentricity.classList.add('cursor-not-allowed', 'opacity-40');
+        sliderEccentricity.value = body.e;
+        txtEccentricityVal.textContent = body.e.toFixed(3);
+
+        presetButtons.forEach(btn => {
+          btn.disabled = true;
+          btn.classList.add('cursor-not-allowed', 'opacity-30');
+        });
+      } else {
+        sliderEccentricity.disabled = false;
+        sliderEccentricity.classList.remove('cursor-not-allowed', 'opacity-40');
+        userEccentricity = savedCustomEccentricity;
+        sliderEccentricity.value = userEccentricity;
+        txtEccentricityVal.textContent = userEccentricity.toFixed(2);
+
+        presetButtons.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.remove('cursor-not-allowed', 'opacity-30');
+        });
+        updatePresetHighlights(userEccentricity);
+      }
+    }
+
+    selectBody.addEventListener('change', (e) => {
+      const idx = CELESTIAL_BODIES.findIndex(b => b.id === e.target.value);
+      if (idx !== -1) setCelestialBody(idx);
+    });
+
+    btnPrevBody.addEventListener('click', () => {
+      const prevIdx = (currentBodyIndex - 1 + CELESTIAL_BODIES.length) % CELESTIAL_BODIES.length;
+      setCelestialBody(prevIdx);
+    });
+
+    btnNextBody.addEventListener('click', () => {
+      const nextIdx = (currentBodyIndex + 1) % CELESTIAL_BODIES.length;
+      setCelestialBody(nextIdx);
+    });
+
+    sliderEccentricity.addEventListener('input', (e) => {
+      userEccentricity = parseFloat(e.target.value);
+      savedCustomEccentricity = userEccentricity;
+      txtEccentricityVal.textContent = userEccentricity.toFixed(2);
+      updatePresetHighlights(userEccentricity);
+    });
+
+    function applyPreset(val) {
+      if (CELESTIAL_BODIES[currentBodyIndex].isFixed) return;
+      userEccentricity = val;
+      savedCustomEccentricity = val;
+      sliderEccentricity.value = val;
+      txtEccentricityVal.textContent = val.toFixed(2);
+      updatePresetHighlights(val);
+    }
+
+    btnPresetZero.addEventListener('click', () => applyPreset(0.00));
+    btnPresetLow.addEventListener('click', () => applyPreset(0.30));
+    btnPresetMid.addEventListener('click', () => applyPreset(0.60));
+    btnPresetHigh.addEventListener('click', () => applyPreset(0.85));
+    btnPresetMax.addEventListener('click', () => applyPreset(0.98));
+
+    function togglePlay() {
+      isRunning = !isRunning;
+      if (isRunning) {
+        btnPlayPauseText.textContent = 'Pause';
+        iconPause.classList.remove('hidden');
+        iconPlay.classList.add('hidden');
+        iconMobilePause.classList.remove('hidden');
+        iconMobilePlay.classList.add('hidden');
+        lastTimestamp = performance.now();
+      } else {
+        btnPlayPauseText.textContent = 'Resume';
+        iconPause.classList.add('hidden');
+        iconPlay.classList.remove('hidden');
+        iconMobilePause.classList.add('hidden');
+        iconMobilePlay.classList.remove('hidden');
+      }
+    }
+
+    btnPlayPause.addEventListener('click', togglePlay);
+    btnMobilePlayPause.addEventListener('click', togglePlay);
+
+    btnReset.addEventListener('click', () => {
+      simTime = 0.0;
+      lastTimestamp = performance.now();
+    });
+
+    function render(timestamp) {
+      const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.1);
+      lastTimestamp = timestamp;
+
+      if (isRunning) {
+        simTime += dt;
+      }
+
+      const realTimeSec = timestamp / 1000;
+      drawStars(realTimeSec);
+
+      updateAlien(dt);
+      drawAlienShip();
+
+      const currentBody = CELESTIAL_BODIES[currentBodyIndex];
+      const e = currentBody.isFixed ? currentBody.e : userEccentricity;
+
+      const state = calculateOrbitalState(simTime, orbitalPeriod, e, currentBody);
+
+      // Real-time telemetry update
+      txtPlanetDist.textContent = state.r.toFixed(2);
+      txtPlanetSpeed.textContent = state.velocity.toFixed(1);
+
+      if (showKeplerSlices) {
+        drawKeplerSlices(orbitalPeriod, e, simTime);
+      }
+
+      drawOrbitPath(e, currentBody);
+
+      if (showFoci) {
+        drawFoci(e);
+      }
+
+      drawSun(e);
+      drawPlanet(state, currentBody, dt);
+
+      requestAnimationFrame(render);
+    }
+
+    window.onload = function () {
+      initStarfield();
+      resizeCanvas();
+      setCelestialBody(0);
+      lastTimestamp = performance.now();
+      requestAnimationFrame(render);
+    };
+  </script>
+</body>
+</html>
