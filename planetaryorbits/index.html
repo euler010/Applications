@@ -1279,17 +1279,17 @@
 
         // Smooth color brightening & opacity scaling based on glowFactor
         // Softer sector highlight so the sweeping glow trail stays the focus
-        const fillAlpha = 0.22 + 0.38 * glowFactor;
-        const brightR = Math.round(r + (255 - r) * (0.22 * glowFactor));
-        const brightG = Math.round(g + (255 - g) * (0.22 * glowFactor));
-        const brightB = Math.round(b_col + (255 - b_col) * (0.22 * glowFactor));
+        const fillAlpha = 0.22 + 0.30 * glowFactor;
+        const brightR = Math.round(r + (255 - r) * (0.18 * glowFactor));
+        const brightG = Math.round(g + (255 - g) * (0.18 * glowFactor));
+        const brightB = Math.round(b_col + (255 - b_col) * (0.18 * glowFactor));
 
         ctx.fillStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${fillAlpha.toFixed(3)})`;
         ctx.fill();
 
         if (glowFactor > 0.01) {
-          ctx.lineWidth = 1 + 1.0 * glowFactor;
-          ctx.strokeStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${(0.55 + 0.3 * glowFactor).toFixed(3)})`;
+          ctx.lineWidth = 1 + 0.8 * glowFactor;
+          ctx.strokeStyle = `rgba(${brightR}, ${brightG}, ${brightB}, ${(0.55 + 0.24 * glowFactor).toFixed(3)})`;
         } else {
           ctx.lineWidth = 1;
           ctx.strokeStyle = SLICE_STROKES[i % SLICE_STROKES.length];
@@ -1303,8 +1303,8 @@
     // Glowing trail dragged behind the connecting line (Kepler's 2nd law).
     // The trail spans a fixed fraction of the orbital PERIOD, so it always covers
     // the same area: long and thin near aphelion, short and wide near perihelion.
-    const TRAIL_TIME_FRACTION = 1 / 8;   // trail length = 1/8 of a period (1.5 sectors)
-    const TRAIL_PEAK_ALPHA = 0.6;        // brightness right behind the line
+    const TRAIL_TIME_FRACTION = 1 / 16;  // trail length = 1/16 of a period (3/4 of a sector)
+    const TRAIL_PEAK_ALPHA = 0.85;       // brightness right behind the line
 
     // Colour of a Kepler sector, lifted toward white by `lift` (0..1), as "r, g, b"
     function sectorRGB(i, lift) {
@@ -1312,7 +1312,7 @@
       return [r + (255 - r) * lift, g + (255 - g) * lift, bl + (255 - bl) * lift]
         .map(Math.round).join(', ');
     }
-    const TRAIL_COLOR_LIFT = 0.35; // how much the sector colour is brightened in the wake
+    const TRAIL_COLOR_LIFT = 0.5;  // how much the sector colour is brightened in the wake
 
     function drawSweepTrail(e, a, b, sunPos, monthFraction) {
       const twoPi = Math.PI * 2;
@@ -1358,7 +1358,7 @@
           const off = Math.min(0.998, Math.max(lastOffset, d / twoPi));
           lastOffset = off;
           const fade = 1 - m.t;
-          const alpha = (TRAIL_PEAK_ALPHA * fade * fade).toFixed(3);
+          const alpha = (TRAIL_PEAK_ALPHA * Math.pow(fade, 1.5)).toFixed(3);
           if (m.boundary !== undefined) {
             // Sector ahead of the boundary, then the sector behind it, at the same angle
             fill.addColorStop(off, `rgba(${sectorRGB(m.boundary, TRAIL_COLOR_LIFT)}, ${alpha})`);
@@ -1390,9 +1390,9 @@
       ctx.moveTo(sunPos.x, sunPos.y);
       ctx.lineTo(tip.x, tip.y);
       ctx.shadowColor = `rgba(${glowRGB}, 1)`;
-      ctx.shadowBlur = 22;
-      ctx.strokeStyle = `rgba(${glowRGB}, 0.85)`;
-      ctx.lineWidth = 6;
+      ctx.shadowBlur = 28;
+      ctx.strokeStyle = `rgba(${glowRGB}, 0.95)`;
+      ctx.lineWidth = 8;
       ctx.stroke();
       ctx.stroke();
       ctx.restore();
