@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free-Body Diagram Practice</title>
+    <!-- Precompiled Tailwind v3 utility styles (replaces the Tailwind CDN script) -->
+    <style id="tailwind-styles">
+/* Tailwind v3 preflight (base reset) */
+*, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb;
+  --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; -moz-tab-size: 4; tab-size: 4;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  -webkit-tap-highlight-color: transparent; }
+body { margin: 0; line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+a { color: inherit; text-decoration: inherit; }
+b, strong { font-weight: bolder; }
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+sub { bottom: -0.25em; } sup { top: -0.5em; }
+button, input, optgroup, select, textarea { font-family: inherit; font-feature-settings: inherit; font-variation-settings: inherit;
+  font-size: 100%; font-weight: inherit; line-height: inherit; letter-spacing: inherit; color: inherit; margin: 0; padding: 0; }
+button, select { text-transform: none; }
+button, input:where([type='button']), input:where([type='reset']), input:where([type='submit']) {
+  -webkit-appearance: button; background-color: transparent; background-image: none; }
+:-moz-focusring { outline: auto; }
+blockquote, dl, dd, h1, h2, h3, h4, h5, h6, hr, figure, p, pre { margin: 0; }
+ol, ul, menu { list-style: none; margin: 0; padding: 0; }
+button, [role="button"] { cursor: pointer; }
+:disabled { cursor: default; }
+img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
+img, video { max-width: 100%; height: auto; }
+[hidden]:where(:not([hidden="until-found"])) { display: none !important; }
+
+/* Utilities */
+.pointer-events-none { pointer-events: none }
+.absolute { position: absolute }
+.relative { position: relative }
+.sticky { position: sticky }
+.inset-0 { inset: 0px }
+.left-3 { left: 0.75rem }
+.top-0 { top: 0px }
+.top-3 { top: 0.75rem }
+.z-10 { z-index: 10 }
+.z-30 { z-index: 30 }
+.mb-1 { margin-bottom: 0.25rem }
+.mb-2 { margin-bottom: 0.5rem }
+.mb-2\.5 { margin-bottom: 0.625rem }
+.mr-1 { margin-right: 0.25rem }
+.mt-0\.5 { margin-top: 0.125rem }
+.mt-2 { margin-top: 0.5rem }
+.mt-3 { margin-top: 0.75rem }
+.mx-auto { margin-left: auto; margin-right: auto }
+.my-0\.5 { margin-top: 0.125rem; margin-bottom: 0.125rem }
+.block { display: block }
+.flex { display: flex }
+.grid { display: grid }
+.hidden { display: none }
+.h-2\.5 { height: 0.625rem }
+.h-3\.5 { height: 0.875rem }
+.h-6 { height: 1.5rem }
+.h-8 { height: 2rem }
+.h-full { height: 100% }
+.max-h-36 { max-height: 9rem }
+.max-w-7xl { max-width: 80rem }
+.max-w-\[170px\] { max-width: 170px }
+.min-h-0 { min-height: 0px }
+.min-h-screen { min-height: 100vh }
+.min-w-0 { min-width: 0px }
+.w-2\.5 { width: 0.625rem }
+.w-3\.5 { width: 0.875rem }
+.w-6 { width: 1.5rem }
+.w-8 { width: 2rem }
+.w-full { width: 100% }
+.flex-1 { flex: 1 1 0% }
+.flex-col { flex-direction: column }
+.shrink-0 { flex-shrink: 0 }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)) }
+.items-center { align-items: center }
+.items-start { align-items: flex-start }
+.justify-between { justify-content: space-between }
+.justify-center { justify-content: center }
+.gap-1 { gap: 0.25rem }
+.gap-1\.5 { gap: 0.375rem }
+.gap-2 { gap: 0.5rem }
+.gap-2\.5 { gap: 0.625rem }
+.gap-3 { gap: 0.75rem }
+.gap-3\.5 { gap: 0.875rem }
+.gap-4 { gap: 1rem }
+.space-y-0\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.125rem }
+.space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem }
+.space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem }
+.space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem }
+.overflow-hidden { overflow: hidden }
+.overflow-x-auto { overflow-x: auto }
+.overflow-y-auto { overflow-y: auto }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.rounded { border-radius: 0.25rem }
+.rounded-2xl { border-radius: 1rem }
+.rounded-full { border-radius: 9999px }
+.rounded-lg { border-radius: 0.5rem }
+.rounded-md { border-radius: 0.375rem }
+.rounded-xl { border-radius: 0.75rem }
+.border { border-width: 1px }
+.border-b { border-bottom-width: 1px }
+.border-t { border-top-width: 1px }
+.border-dashed { border-style: dashed }
+.border-amber-200 { border-color: rgb(253 230 138 / 1) }
+.border-blue-100 { border-color: rgb(219 234 254 / 1) }
+.border-blue-200 { border-color: rgb(191 219 254 / 1) }
+.border-blue-500 { border-color: rgb(59 130 246 / 1) }
+.border-emerald-200 { border-color: rgb(167 243 208 / 1) }
+.border-emerald-300 { border-color: rgb(110 231 183 / 1) }
+.border-red-100 { border-color: rgb(254 226 226 / 1) }
+.border-slate-200 { border-color: rgb(226 232 240 / 1) }
+.border-slate-300 { border-color: rgb(203 213 225 / 1) }
+.border-slate-700 { border-color: rgb(51 65 85 / 1) }
+.bg-amber-50 { background-color: rgb(255 251 235 / 1) }
+.bg-amber-600 { background-color: rgb(217 119 6 / 1) }
+.bg-blue-50 { background-color: rgb(239 246 255 / 1) }
+.bg-blue-50\/90 { background-color: rgb(239 246 255 / 0.9) }
+.bg-blue-600 { background-color: rgb(37 99 235 / 1) }
+.bg-emerald-100 { background-color: rgb(209 250 229 / 1) }
+.bg-emerald-50 { background-color: rgb(236 253 245 / 1) }
+.bg-emerald-50\/40 { background-color: rgb(236 253 245 / 0.4) }
+.bg-emerald-50\/80 { background-color: rgb(236 253 245 / 0.8) }
+.bg-emerald-600 { background-color: rgb(5 150 105 / 1) }
+.bg-red-50\/60 { background-color: rgb(254 242 242 / 0.6) }
+.bg-slate-100 { background-color: rgb(241 245 249 / 1) }
+.bg-slate-50 { background-color: rgb(248 250 252 / 1) }
+.bg-slate-50\/90 { background-color: rgb(248 250 252 / 0.9) }
+.bg-slate-900\/90 { background-color: rgb(15 23 42 / 0.9) }
+.bg-white { background-color: rgb(255 255 255 / 1) }
+.p-1 { padding: 0.25rem }
+.p-2 { padding: 0.5rem }
+.p-2\.5 { padding: 0.625rem }
+.p-3 { padding: 0.75rem }
+.p-4 { padding: 1rem }
+.pl-3 { padding-left: 0.75rem }
+.px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem }
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem }
+.px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem }
+.px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem }
+.px-4 { padding-left: 1rem; padding-right: 1rem }
+.py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem }
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem }
+.py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem }
+.py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem }
+.text-center { text-align: center }
+.text-left { text-align: left }
+.text-\[10px\] { font-size: 10px }
+.text-\[11px\] { font-size: 11px }
+.text-base { font-size: 1rem; line-height: 1.5rem }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem }
+.text-xs { font-size: 0.75rem; line-height: 1rem }
+.font-bold { font-weight: 700 }
+.font-medium { font-weight: 500 }
+.font-semibold { font-weight: 600 }
+.italic { font-style: italic }
+.leading-relaxed { line-height: 1.625 }
+.leading-snug { line-height: 1.375 }
+.leading-tight { line-height: 1.25 }
+.tracking-wider { letter-spacing: 0.05em }
+.uppercase { text-transform: uppercase }
+.text-amber-600 { color: rgb(217 119 6 / 1) }
+.text-amber-900 { color: rgb(120 53 15 / 1) }
+.text-blue-400 { color: rgb(96 165 250 / 1) }
+.text-blue-600 { color: rgb(37 99 235 / 1) }
+.text-blue-700 { color: rgb(29 78 216 / 1) }
+.text-emerald-600 { color: rgb(5 150 105 / 1) }
+.text-emerald-700 { color: rgb(4 120 87 / 1) }
+.text-emerald-800 { color: rgb(6 95 70 / 1) }
+.text-emerald-900 { color: rgb(6 78 59 / 1) }
+.text-emerald-950 { color: rgb(2 44 34 / 1) }
+.text-red-600 { color: rgb(220 38 38 / 1) }
+.text-slate-400 { color: rgb(148 163 184 / 1) }
+.text-slate-500 { color: rgb(100 116 139 / 1) }
+.text-slate-600 { color: rgb(71 85 105 / 1) }
+.text-slate-700 { color: rgb(51 65 85 / 1) }
+.text-slate-800 { color: rgb(30 41 59 / 1) }
+.text-slate-900 { color: rgb(15 23 42 / 1) }
+.text-white { color: rgb(255 255 255 / 1) }
+.antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale }
+.shadow-lg { --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) }
+.shadow-sm { --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) }
+.shadow-blue-500\/25 { --tw-shadow-color: rgb(59 130 246 / 0.25); --tw-shadow: var(--tw-shadow-colored) }
+.ring-1 { --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000) }
+.ring-2 { --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000) }
+.ring-blue-400 { --tw-ring-color: rgb(96 165 250 / 1) }
+.ring-blue-500 { --tw-ring-color: rgb(59 130 246 / 1) }
+.transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms }
+.transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms }
+.cursor-pointer { cursor: pointer }
+.select-none { -webkit-user-select: none; user-select: none }
+.touch-none { touch-action: none }
+.hover\:border-blue-300:hover { border-color: rgb(147 197 253 / 1) }
+.hover\:bg-blue-100:hover { background-color: rgb(219 234 254 / 1) }
+.hover\:bg-blue-50:hover { background-color: rgb(239 246 255 / 1) }
+.hover\:bg-blue-700:hover { background-color: rgb(29 78 216 / 1) }
+.active\:bg-blue-800:active { background-color: rgb(30 64 175 / 1) }
+.hover\:bg-emerald-200:hover { background-color: rgb(167 243 208 / 1) }
+.hover\:bg-slate-200:hover { background-color: rgb(226 232 240 / 1) }
+.hover\:bg-slate-50:hover { background-color: rgb(248 250 252 / 1) }
+.hover\:text-blue-700:hover { color: rgb(29 78 216 / 1) }
+.hover\:text-rose-600:hover { color: rgb(225 29 72 / 1) }
+.focus\:ring-red-500:focus { --tw-ring-color: rgb(239 68 68 / 1) }
+@media (min-width: 640px) {
+.sm\:inline { display: inline }
+.sm\:p-4 { padding: 1rem }
+}
+@media (min-width: 1024px) {
+.lg\:col-span-4 { grid-column: span 4 / span 4 }
+.lg\:col-span-8 { grid-column: span 8 / span 8 }
+.lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)) }
+.lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+.lg\:border-l { border-left-width: 1px }
+.lg\:border-t-0 { border-top-width: 0px }
+}
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom high-contrast canvas cursor so it never vanishes against the white background */
+        .cursor-canvas-draw {
+            cursor: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='4' fill='%232563eb' stroke='%23ffffff' stroke-width='1.5'/%3E%3Cline x1='12' y1='2' x2='12' y2='8' stroke='%230f172a' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='12' y1='16' x2='12' y2='22' stroke='%230f172a' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='2' y1='12' x2='8' y2='12' stroke='%230f172a' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='16' y1='12' x2='22' y2='12' stroke='%230f172a' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, crosshair;
+        }
+        .cursor-handle-grab {
+            cursor: grab;
+        }
+        .cursor-handle-grabbing {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+            <div>
+                <h1 class="text-base font-bold text-slate-900 leading-tight">Physics Free-Body Diagram Practice</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- Left Sidebar: Scenario Details, Forces Palette, and Drawn Vectors (No fixed height or inner scrollbar) -->
+        <aside id="sidebar-panel" class="lg:col-span-4 flex flex-col gap-3.5">
+            
+            <!-- Scenario Card -->
+            <div id="scenario-card" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+
+                <h2 id="scenario-title" class="text-sm font-bold text-slate-900 leading-snug mb-2">
+                    Scenario 1: Box Pushed Across Horizontal Surface
+                </h2>
+                <p id="scenario-prompt" class="text-xs text-slate-600 leading-relaxed mb-1" style="font-size: 10pt;">
+                    A box is pushed to the right across a horizontal surface with a constant velocity by a horizontal force. Draw the complete free-body diagram.
+                </p>
+            </div>
+
+            <!-- Force Selection Palette -->
+            <div id="force-selection-card" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between mb-2.5">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Select Force to Draw</h3>
+                    <span class="text-[11px] font-medium text-slate-400">Click tool &rarr; Drag from box</span>
+                </div>
+                <div id="vector-toolbar" class="grid grid-cols-1 gap-1.5">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Drawn Vectors Manager -->
+            <div id="drawn-vectors-card" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Your Forces on Object</h3>
+                    <span id="drawn-summary" class="text-xs font-bold text-blue-600">0 drawn</span>
+                </div>
+                <div id="drawn-vectors-list" class="space-y-1.5">
+                    <p class="text-xs text-slate-400 italic py-2 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        No vectors drawn yet. Select a force and drag from the box center.
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Main Workspace -->
+        <section class="lg:col-span-8 flex flex-col gap-3 min-h-0">
+
+            <!-- Canvas Container: Synced to align with force card and prevent cutoffs -->
+            <div id="workspace-card" class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col shrink-0">
+
+                <!-- Top Workspace Controls: Action buttons, dynamic 1-10 progress tracker, and Check Answer -->
+                <div class="bg-slate-50/90 px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between gap-2 overflow-x-auto">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <!-- Previous / Next scenario arrows -->
+                        <button id="btn-prev" onclick="changeScenario(-1)" title="Previous scenario" aria-label="Previous scenario" class="w-8 h-8 rounded-xl bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-300 shadow-2xs flex items-center justify-center text-sm font-bold transition cursor-pointer shrink-0">
+                            &#9664;
+                        </button>
+                        <button id="btn-next" onclick="changeScenario(1)" title="Next scenario" aria-label="Next scenario" class="w-8 h-8 rounded-xl bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-300 shadow-2xs flex items-center justify-center text-sm font-bold transition cursor-pointer shrink-0">
+                            &#9654;
+                        </button>
+                        <button id="toggle-solution-btn" onclick="toggleSolutionView()" class="hidden px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 transition shadow-2xs cursor-pointer flex items-center gap-1.5 shrink-0">
+                            <span id="solution-btn-icon">&#128065;</span>
+                            <span id="solution-btn-text">Show Reference Solution</span>
+                        </button>
+                    </div>
+
+                    <!-- Scenario Completion Tracker: Dynamic 1 through 10 clickable progress badges -->
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white rounded-xl border border-slate-200 shadow-2xs shrink-0">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1 hidden sm:inline"><span id="scenario-count-label">Scenarios (10):</span></span>
+                        <div id="scenario-progress-tracker" class="flex items-center gap-1 shrink-0">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Check Answer Button in Top Right -->
+                    <button onclick="checkAnswers()" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-sm shadow-blue-500/25 transition cursor-pointer flex items-center gap-1.5 shrink-0">
+                        <span>Check Answer</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Dual or Single Canvas Grid: Full height inside card with absolute canvas -->
+                <div id="workspace-grid" class="flex-1 min-h-0 w-full relative grid grid-cols-1 bg-white">
+                    
+                    <!-- Student Drawing Canvas Column -->
+                    <div id="student-canvas-col" class="relative w-full h-full min-h-0 bg-white">
+                        <canvas id="student-canvas" class="absolute inset-0 block w-full h-full cursor-canvas-draw touch-none" style="touch-action: none;"></canvas>
+
+                        <!-- Clear All: top-left corner of the drawing area -->
+                        <button onclick="clearVectors()" class="absolute top-3 left-3 z-10 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-blue-50 hover:text-blue-700 rounded-xl border border-slate-300 hover:border-blue-300 transition shadow-2xs cursor-pointer flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <span>Clear All</span>
+                        </button>
+                        
+                        <!-- Real-time HUD while dragging -->
+                        <div id="drawing-hud" style="right: 0.75rem;" class="hidden absolute top-3 bg-slate-900/90 text-white backdrop-blur-xs px-3 py-1.5 rounded-xl text-xs font-mono shadow-lg flex items-center gap-3 pointer-events-none z-10 border border-slate-700">
+                            <span id="hud-force" class="font-bold text-blue-400">Force</span>
+                            <span id="hud-angle">Angle: 0&deg;</span>
+                            <span id="hud-mag">Len: 0px</span>
+                        </div>
+                    </div>
+
+                    <!-- Reference Solution Canvas Column (Hidden until requested) -->
+                    <div id="solution-canvas-col" class="hidden relative w-full h-full min-h-0 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 bg-white">
+                        <div class="bg-emerald-50/80 px-4 py-2 border-b border-emerald-200 flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                                <span class="text-xs font-bold text-emerald-950">Target Reference Solution</span>
+                            </div>
+                            <span class="text-[11px] text-emerald-800 font-semibold">Physical Equilibrium</span>
+                        </div>
+                        <div class="relative flex-1 min-h-0">
+                            <canvas id="solution-canvas" class="absolute inset-0 block w-full h-full"></canvas>
+                        </div>
+                        <!-- Force Breakdown Box located neatly below diagram so it never obstructs vectors -->
+                        <div id="solution-breakdown-card" class="border-t border-emerald-200 p-2.5 bg-emerald-50/40 text-xs shrink-0 max-h-36 overflow-y-auto">
+                            <h4 class="font-bold text-emerald-950 mb-1 flex items-center gap-1.5">
+                                <span>&#10003;</span>
+                                <span>Force Breakdown &amp; Rationale</span>
+                            </h4>
+                            <div id="solution-breakdown-list" class="space-y-0.5 text-slate-700 text-[11px] leading-relaxed">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Feedback Notification Banner -->
+            <div id="feedback-banner" class="hidden bg-white rounded-2xl p-4 border shadow-xs transition-all">
+                <div class="flex items-start gap-3">
+                    <div id="feedback-icon-container" class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold"></div>
+                    <div class="flex-1">
+                        <h4 id="feedback-title" class="text-xs font-bold uppercase tracking-wider mb-1"></h4>
+                        <div id="feedback-message" class="text-xs space-y-1.5 text-slate-700"></div>
+                        <div id="feedback-actions" class="mt-3 flex items-center gap-2.5 hidden">
+                            <button onclick="tryAgain()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition shadow-2xs cursor-pointer">
+                                &#9998; Try Again
+                            </button>
+                            <button onclick="revealSolution()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-lg transition border border-slate-300 cursor-pointer">
+                                &#128065; Show Solution
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // Physics constants
+        // Incline angle: a random whole number from 20 to 40 degrees, re-rolled each time an incline scenario loads
+        let INCLINE_DEG = 30;
+        let INCLINE_RAD = (INCLINE_DEG * Math.PI) / 180;
+
+        function randomizeInclineAngle() {
+            INCLINE_DEG = 20 + Math.floor(Math.random() * 21); // 20..40 inclusive
+            INCLINE_RAD = (INCLINE_DEG * Math.PI) / 180;
+            SCENARIOS = buildScenarios(); // rebuild targets/text that depend on the angle
+        }
+        const WORKSPACE_HEIGHT = 500; // drawing area height in px (excludes the control bar)
+
+        // Force definitions with subscripts
+        const ALL_FORCES = [
+            { id: 'fg', name: 'Gravity force', label: { base: 'F', sub: 'g' }, htmlName: 'Gravity force: F<sub>g</sub>', color: '#dc2626', desc: 'Points vertically downward toward Earth' },
+            { id: 'fn', name: 'Normal force', label: { base: 'F', sub: 'N' }, htmlName: 'Normal force: F<sub>N</sub>', color: '#2563eb', desc: 'Perpendicular to surface, pointing away' },
+            { id: 'ff', name: 'Friction force', label: { base: 'F', sub: 'f' }, htmlName: 'Friction force: F<sub>f</sub>', color: '#d97706', desc: 'Parallel to surface, opposes motion' },
+            { id: 't',  name: 'Tension force', label: { base: 'F', sub: 'T' }, htmlName: 'Tension force: F<sub>T</sub>', color: '#9333ea', desc: 'Pulling force exerted along a rope or cable' },
+            { id: 'fa', name: 'Applied force', label: { base: 'F', sub: 'A' }, htmlName: 'Applied force: F<sub>A</sub>', color: '#0891b2', desc: 'Direct contact push or pull force' },
+            { id: 'fd', name: 'Drag force (Air resistance)', label: { base: 'F', sub: 'D' }, htmlName: 'Drag force (Air resistance): F<sub>D</sub>', color: '#db2777', desc: 'Air resistance, opposes motion through the air' }
+        ];
+
+        /*
+            Physics Scenarios: Ordered exactly 1 through 10.
+            Canvas orientation: +X is right, +Y is DOWN.
+            - Downward is +PI/2 (+90 deg)
+            - Upward is -PI/2 (-90 deg)
+            - Right is 0 deg
+            - Left is PI (180 deg)
+            - Ramp tilts down to right at 30 deg:
+              Parallel downhill is +(PI - INCLINE_RAD) = +150 deg
+              Parallel uphill is -INCLINE_RAD = -30 deg
+              Perpendicular outward is -PI/2 - INCLINE_RAD = -120 deg
+              Perpendicular inward is +PI/2 - INCLINE_RAD = +60 deg
+        */
+        function buildScenarios() { return [
+            {
+                id: 'sc1',
+                title: 'Scenario 1: Box Pushed Across Horizontal Surface',
+                shortTitle: '1. Box Pushed Horizontally',
+                surfaceType: 'Horizontal Plane',
+                geomType: 'horizontal',
+                prompt: 'A box is pushed to the right across a horizontal surface with a constant velocity by a horizontal force. Draw the complete free-body diagram.',
+                hint: 'Constant velocity means zero net force: vertical forces balance (Fn = Fg) and horizontal forces balance (Fa = Ff).',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward.' },
+                    { id: 'fn', name: 'Normal force: F_N', htmlName: 'Normal force (F<sub>N</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Normal force (F<sub>N</sub>) acts vertically upward supporting the box (F<sub>N</sub> = F<sub>g</sub>).' },
+                    { id: 'fa', name: 'Applied force: F_A', htmlName: 'Applied force (F<sub>A</sub>)', targetAngle: 0, toleranceAngle: 0.33, refMag: 80, explanation: 'Applied force (F<sub>A</sub>) is directed horizontally to the right.' },
+                    { id: 'ff', name: 'Friction force: F_f', htmlName: 'Friction force (F<sub>f</sub>)', targetAngle: Math.PI, toleranceAngle: 0.33, refMag: 80, explanation: 'Friction force (F<sub>f</sub>) acts horizontally to the left opposing motion.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>N</sub>: Vertically upward (F<sub>N</sub> = F<sub>g</sub>)',
+                    '&bull; F<sub>A</sub>: Horizontally to the right',
+                    '&bull; F<sub>f</sub>: Horizontally to the left opposing motion (F<sub>f</sub> = F<sub>A</sub>)'
+                ]
+            },
+            {
+                id: 'sc2',
+                title: 'Scenario 2: Block Sliding to the Right, Coming to Rest',
+                shortTitle: '2. Block Sliding to Rest',
+                surfaceType: 'Horizontal Plane',
+                geomType: 'horizontal',
+                prompt: 'A block is sliding to the right on a non-smooth horizontal surface, slowing down and eventually coming to rest. Draw the complete free-body diagram.',
+                hint: 'No force is pushing the block forward after release! Gravity acts down, the normal force acts up, and friction acts left opposing sliding.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 'fn', name: 'Normal force: F_N', htmlName: 'Normal force (F<sub>N</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Normal force (F<sub>N</sub>) acts vertically upward, balancing gravity (F<sub>N</sub> = F<sub>g</sub>).' },
+                    { id: 'ff', name: 'Friction force: F_f', htmlName: 'Friction force (F<sub>f</sub>)', targetAngle: Math.PI, toleranceAngle: 0.33, refMag: 75, explanation: 'Friction force (F<sub>f</sub>) acts horizontally to the left opposing the forward motion (causing deceleration).' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward toward Earth',
+                    '&bull; F<sub>N</sub>: Vertically upward supporting the block (F<sub>N</sub> = F<sub>g</sub>)',
+                    '&bull; F<sub>f</sub>: Horizontally to the left opposing motion',
+                    '&bull; Note: There is NO applied forward force once the block is sliding on its own'
+                ]
+            },
+            {
+                id: 'sc11',
+                title: 'Scenario 3: Skydiver Accelerating Downward',
+                shortTitle: '3. Skydiver Accelerating',
+                surfaceType: 'Free Fall (No Surface)',
+                geomType: 'freefall',
+                prompt: 'A skydiver is accelerating downwards in free fall without his chute open, and the drag force on him is equal to one half of his weight. Draw the complete free-body diagram.',
+                hint: 'Nothing touches the skydiver, so there is no normal force or friction. Gravity pulls down and air drag pushes up, opposing the downward motion. Drag is half the weight, so the net force is downward.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 120, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 'fd', name: 'Drag force: F_D', htmlName: 'Drag force (F<sub>D</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 60, explanation: 'Drag force (F<sub>D</sub>) acts vertically upward, opposing the downward motion through the air.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward toward Earth',
+                    '&bull; F<sub>D</sub>: Vertically upward, opposing motion (F<sub>D</sub> = &frac12; F<sub>g</sub>)',
+                    '&bull; Net force is downward (F<sub>g</sub> &gt; F<sub>D</sub>), so the skydiver speeds up',
+                    '&bull; Note: No surface touches the skydiver, so there is NO normal force or friction'
+                ]
+            },
+            {
+                id: 'sc12',
+                title: 'Scenario 4: Skydiver at Terminal Velocity',
+                shortTitle: '4. Skydiver at Terminal Velocity',
+                surfaceType: 'Free Fall (No Surface)',
+                geomType: 'freefall',
+                prompt: 'A skydiver is in free fall without his chute open, and he has reached terminal velocity, during which time he falls at a constant velocity. Draw the complete free-body diagram.',
+                hint: 'Constant velocity means zero net force: the upward drag force must exactly balance gravity (F<sub>D</sub> = F<sub>g</sub>).',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 110, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 'fd', name: 'Drag force: F_D', htmlName: 'Drag force (F<sub>D</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 110, explanation: 'Drag force (F<sub>D</sub>) acts vertically upward and balances gravity at terminal velocity (F<sub>D</sub> = F<sub>g</sub>).' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward toward Earth',
+                    '&bull; F<sub>D</sub>: Vertically upward, opposing motion (F<sub>D</sub> = F<sub>g</sub>)',
+                    '&bull; Net force is zero, so velocity stays constant',
+                    '&bull; Note: No surface touches the skydiver, so there is NO normal force or friction'
+                ]
+            },
+            {
+                id: 'sc13',
+                title: 'Scenario 5: Box Pushed Left, Slowing Down',
+                shortTitle: '5. Box Pushed Left, Slowing',
+                surfaceType: 'Horizontal Plane',
+                geomType: 'horizontal',
+                prompt: 'A box is pushed to the left along a horizontal surface, but it is slowing down due to a friction force opposing its motion. Draw the complete free-body diagram.',
+                hint: 'The box moves left, so friction points right. It is slowing down, so the net horizontal force points right: F<sub>f</sub> &gt; F<sub>A</sub>.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 'fn', name: 'Normal force: F_N', htmlName: 'Normal force (F<sub>N</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Normal force (F<sub>N</sub>) acts vertically upward, balancing gravity (F<sub>N</sub> = F<sub>g</sub>).' },
+                    { id: 'fa', name: 'Applied force: F_A', htmlName: 'Applied force (F<sub>A</sub>)', targetAngle: Math.PI, toleranceAngle: 0.33, refMag: 50, explanation: 'Applied force (F<sub>A</sub>) pushes the box horizontally to the left.' },
+                    { id: 'ff', name: 'Friction force: F_f', htmlName: 'Friction force (F<sub>f</sub>)', targetAngle: 0, toleranceAngle: 0.33, refMag: 85, explanation: 'Friction force (F<sub>f</sub>) acts horizontally to the right, opposing the leftward motion.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>N</sub>: Vertically upward (F<sub>N</sub> = F<sub>g</sub>)',
+                    '&bull; F<sub>A</sub>: Horizontally to the left',
+                    '&bull; F<sub>f</sub>: Horizontally to the right, opposing motion',
+                    '&bull; The box slows down, so F<sub>f</sub> &gt; F<sub>A</sub> (net force points right, opposite the velocity)'
+                ]
+            },
+            {
+                id: 'sc14',
+                title: 'Scenario 6: Box Pushed Right, Speeding Up',
+                shortTitle: '6. Box Pushed Right, Speeding Up',
+                surfaceType: 'Horizontal Plane',
+                geomType: 'horizontal',
+                prompt: 'A box is pushed to the right along a horizontal surface, its motion is opposed by a friction force, and the box is speeding up due to the applied force. Draw the complete free-body diagram.',
+                hint: 'The box speeds up to the right, so the net horizontal force points right: F<sub>A</sub> &gt; F<sub>f</sub>.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 'fn', name: 'Normal force: F_N', htmlName: 'Normal force (F<sub>N</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Normal force (F<sub>N</sub>) acts vertically upward, balancing gravity (F<sub>N</sub> = F<sub>g</sub>).' },
+                    { id: 'fa', name: 'Applied force: F_A', htmlName: 'Applied force (F<sub>A</sub>)', targetAngle: 0, toleranceAngle: 0.33, refMag: 95, explanation: 'Applied force (F<sub>A</sub>) pushes the box horizontally to the right.' },
+                    { id: 'ff', name: 'Friction force: F_f', htmlName: 'Friction force (F<sub>f</sub>)', targetAngle: Math.PI, toleranceAngle: 0.33, refMag: 50, explanation: 'Friction force (F<sub>f</sub>) acts horizontally to the left, opposing the motion.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>N</sub>: Vertically upward (F<sub>N</sub> = F<sub>g</sub>)',
+                    '&bull; F<sub>A</sub>: Horizontally to the right',
+                    '&bull; F<sub>f</sub>: Horizontally to the left, opposing motion',
+                    '&bull; The box speeds up, so F<sub>A</sub> &gt; F<sub>f</sub> (net force points right, same as the velocity)'
+                ]
+            },
+            {
+                id: 'sc15',
+                title: 'Scenario 7: Bucket Raised at Constant Velocity',
+                shortTitle: '7. Bucket Raised, Constant Velocity',
+                surfaceType: 'Hanging from Rope',
+                geomType: 'hanging',
+                prompt: 'A bucket hanging from a rope is raised upwards at a constant velocity. Draw the complete free-body diagram.',
+                hint: 'Constant velocity means zero net force: the rope tension exactly balances gravity (F<sub>T</sub> = F<sub>g</sub>).',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 100, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 't', name: 'Tension force: F_T', htmlName: 'Tension force (F<sub>T</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 100, explanation: 'Tension force (F<sub>T</sub>) from the rope pulls the bucket vertically upward.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>T</sub>: Vertically upward along the rope',
+                    '&bull; Constant velocity, so net force is zero: F<sub>T</sub> = F<sub>g</sub>',
+                    '&bull; Note: No surface touches the bucket, so there is NO normal force or friction'
+                ]
+            },
+            {
+                id: 'sc16',
+                title: 'Scenario 8: Bucket Accelerated Upward',
+                shortTitle: '8. Bucket Accelerated Up',
+                surfaceType: 'Hanging from Rope',
+                geomType: 'hanging',
+                prompt: 'A bucket hanging from a rope is accelerated upwards. Draw the complete free-body diagram.',
+                hint: 'The acceleration is upward, so the net force is upward: F<sub>T</sub> &gt; F<sub>g</sub>.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 90, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 't', name: 'Tension force: F_T', htmlName: 'Tension force (F<sub>T</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 130, explanation: 'Tension force (F<sub>T</sub>) from the rope pulls the bucket vertically upward.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>T</sub>: Vertically upward along the rope',
+                    '&bull; Acceleration is upward, so F<sub>T</sub> &gt; F<sub>g</sub>',
+                    '&bull; Note: No surface touches the bucket, so there is NO normal force or friction'
+                ]
+            },
+            {
+                id: 'sc17',
+                title: 'Scenario 9: Bucket Accelerated Downward',
+                shortTitle: '9. Bucket Accelerated Down',
+                surfaceType: 'Hanging from Rope',
+                geomType: 'hanging',
+                prompt: 'A bucket hanging from a rope is accelerated downwards. Draw the complete free-body diagram.',
+                hint: 'The rope still pulls up, but the acceleration is downward, so the net force is downward: F<sub>T</sub> &lt; F<sub>g</sub>.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 120, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 't', name: 'Tension force: F_T', htmlName: 'Tension force (F<sub>T</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 70, explanation: 'Tension force (F<sub>T</sub>) from the rope still pulls the bucket vertically upward, even while it accelerates downward.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>T</sub>: Vertically upward along the rope (a rope can only pull)',
+                    '&bull; Acceleration is downward, so F<sub>T</sub> &lt; F<sub>g</sub>',
+                    '&bull; Note: No surface touches the bucket, so there is NO normal force or friction'
+                ]
+            },
+            {
+                id: 'sc18',
+                title: 'Scenario 10: Toy Car Slowed by Wind and Friction',
+                shortTitle: '10. Toy Car Slowed by Wind',
+                surfaceType: 'Horizontal Plane',
+                geomType: 'horizontal',
+                collinearPair: ['fd', 'ff'],
+                prompt: 'A toy car rolling to the right is slowing down due to a wind blowing left and a friction force opposing its motion. Draw the complete free-body diagram.',
+                hint: 'Nothing pushes the car forward. The wind (drag force) and friction both point left, opposite the motion, which is why the car slows down.',
+                targetForces: [
+                    { id: 'fg', name: 'Gravity force: F_g', htmlName: 'Gravity force (F<sub>g</sub>)', targetAngle: Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Gravity force (F<sub>g</sub>) acts vertically downward toward Earth.' },
+                    { id: 'fn', name: 'Normal force: F_N', htmlName: 'Normal force (F<sub>N</sub>)', targetAngle: -Math.PI / 2, toleranceAngle: 0.33, refMag: 95, explanation: 'Normal force (F<sub>N</sub>) acts vertically upward, balancing gravity (F<sub>N</sub> = F<sub>g</sub>).' },
+                    { id: 'fd', name: 'Drag force: F_D', htmlName: 'Drag force (F<sub>D</sub>)', targetAngle: Math.PI, toleranceAngle: 0.33, refMag: 70, explanation: 'The wind exerts a drag force (F<sub>D</sub>) horizontally to the left.' },
+                    { id: 'ff', name: 'Friction force: F_f', htmlName: 'Friction force (F<sub>f</sub>)', targetAngle: Math.PI, toleranceAngle: 0.33, refMag: 40, explanation: 'Friction (F<sub>f</sub>) acts horizontally to the left, opposing the rightward motion.' }
+                ],
+                breakdown: [
+                    '&bull; F<sub>g</sub>: Vertically downward',
+                    '&bull; F<sub>N</sub>: Vertically upward (F<sub>N</sub> = F<sub>g</sub>)',
+                    '&bull; F<sub>D</sub>: Horizontally to the left (wind)',
+                    '&bull; F<sub>f</sub>: Horizontally to the left, opposing motion',
+                    '&bull; Note: There is NO forward force; both horizontal forces point left, so the car slows down'
+                ]
+            }
+        ]; }
+        let SCENARIOS = buildScenarios();
+
+        let currentScenarioIndex = 0;
+        let selectedForceId = 'fg';
+        let userVectors = []; // { id, dx, dy, angle, length }
+        let isDrawing = false;
+        let isDraggingHead = false;
+        let dragOrigin = null;
+        let currentDragPoint = null;
+        let activePointerId = null;
+        let isSolutionVisible = false;
+        let showGravityComponentsEnabled = false;
+        let completedScenarios = new Set();
+
+        // DOM Elements
+        const studentCanvas = document.getElementById('student-canvas');
+        const studentCtx = studentCanvas.getContext('2d');
+        const solutionCanvas = document.getElementById('solution-canvas');
+        const solutionCtx = solutionCanvas.getContext('2d');
+        const drawingHud = document.getElementById('drawing-hud');
+        const hudForce = document.getElementById('hud-force');
+        const hudAngle = document.getElementById('hud-angle');
+        const hudMag = document.getElementById('hud-mag');
+
+        function initApp() {
+            populateScenarioDropdown();
+            renderProgressTracker();
+            initToolbar();
+            setScenario(0);
+            setupCanvasPointerEvents();
+            setupResizeObserver();
+            syncWorkspaceHeight();
+        }
+
+        function populateScenarioDropdown() {
+            const dropdown = document.getElementById('scenario-dropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '';
+            SCENARIOS.forEach((sc, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = sc.shortTitle;
+                dropdown.appendChild(opt);
+            });
+        }
+
+        function renderProgressTracker() {
+            const trackerContainer = document.getElementById('scenario-progress-tracker');
+            if (!trackerContainer) return;
+            trackerContainer.innerHTML = '';
+            const countLabel = document.getElementById('scenario-count-label');
+            if (countLabel) countLabel.textContent = `Scenarios (${SCENARIOS.length}):`;
+
+            SCENARIOS.forEach((sc, idx) => {
+                const isCurrent = currentScenarioIndex === idx;
+                const isDone = completedScenarios.has(sc.id);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => setScenario(idx);
+                btn.title = `${sc.shortTitle} - ${isDone ? 'Completed' : 'Pending'}`;
+
+                let baseClasses = 'w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center transition cursor-pointer shrink-0 ';
+                if (isCurrent) {
+                    baseClasses += isDone 
+                        ? 'bg-emerald-600 text-white ring-2 ring-blue-500 shadow-xs' 
+                        : 'bg-blue-600 text-white ring-2 ring-blue-400 shadow-xs';
+                } else if (isDone) {
+                    baseClasses += 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300';
+                } else {
+                    baseClasses += 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200';
+                }
+
+                btn.className = baseClasses;
+                btn.innerHTML = isDone ? '&#10003;' : (idx + 1);
+                trackerContainer.appendChild(btn);
+            });
+        }
+
+        function initToolbar() {
+            const toolbar = document.getElementById('vector-toolbar');
+            toolbar.innerHTML = '';
+            const sc = SCENARIOS[currentScenarioIndex];
+
+            ALL_FORCES.forEach(force => {
+                const isSelected = selectedForceId === force.id;
+                const isDrawn = userVectors.some(v => v.id === force.id);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `w-full text-left p-2.5 rounded-xl border transition flex items-center justify-between cursor-pointer ${
+                    isSelected 
+                    ? 'bg-blue-50/90 border-blue-500 ring-1 ring-blue-500 shadow-2xs' 
+                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                }`;
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs" style="background-color: ${force.color}"></span>
+                        <div class="truncate">
+                            <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <span>${force.htmlName}</span>
+                                ${isDrawn ? '<span class="text-[10px] text-blue-600 bg-blue-50 px-1.5 rounded font-mono font-medium border border-blue-100">Drawn</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                btn.onclick = () => {
+                    selectedForceId = force.id;
+                    initToolbar();
+                    drawStudentScene();
+                };
+
+                toolbar.appendChild(btn);
+
+                // Insert the Gravity Components toggle directly below Gravity (fg)
+                if (force.id === 'fg') {
+                    const isRamp = sc && sc.geomType === 'incline';
+                    const compDiv = document.createElement('div');
+                    compDiv.id = 'gravity-components-toggle-container';
+                    compDiv.className = `p-2 pl-3 bg-red-50/60 rounded-xl border border-red-100 my-0.5 transition ${isRamp ? '' : 'hidden'}`;
+                    compDiv.innerHTML = `
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="toggle-gravity-components" ${showGravityComponentsEnabled ? 'checked' : ''} onchange="toggleGravityComponents(this.checked)" class="w-3.5 h-3.5 text-red-600 rounded focus:ring-red-500 border-slate-300 cursor-pointer">
+                            <span class="text-[11px] font-semibold text-slate-700">Show Gravity Components (F<sub>gx</sub> and F<sub>gy</sub>)</span>
+                        </label>
+                    `;
+                    toolbar.appendChild(compDiv);
+                }
+            });
+
+            updateDrawnVectorsList();
+        }
+
+        function updateDrawnVectorsList() {
+            const listContainer = document.getElementById('drawn-vectors-list');
+            const summaryBadge = document.getElementById('drawn-summary');
+            summaryBadge.innerText = `${userVectors.length} drawn`;
+
+            if (userVectors.length === 0) {
+                listContainer.innerHTML = `
+                    <p class="text-xs text-slate-400 italic py-2 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        No vectors drawn yet. Select a force and drag from the box center.
+                    </p>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = '';
+            userVectors.forEach(vec => {
+                const forceDef = ALL_FORCES.find(f => f.id === vec.id) || { name: 'Force', htmlName: 'Force', color: '#000000' };
+                const length = Math.round(vec.length || Math.hypot(vec.dx, vec.dy));
+                let angleDeg = Math.round(((vec.angle !== undefined ? vec.angle : Math.atan2(vec.dy, vec.dx)) * 180) / Math.PI);
+
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs';
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${forceDef.color}"></span>
+                        <span class="font-bold text-slate-800">${forceDef.htmlName}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">(${length}px, ${angleDeg}&deg;)</span>
+                    </div>
+                    <button onclick="removeVector('${vec.id}')" title="Delete force" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function setScenario(index) {
+            currentScenarioIndex = index;
+            if (SCENARIOS[index].geomType === 'incline') randomizeInclineAngle();
+            const sc = SCENARIOS[index];
+
+            const dropdown = document.getElementById('scenario-dropdown');
+            if (dropdown) dropdown.value = index;
+
+            const scBadge = document.getElementById('scenario-badge');
+            if (scBadge) scBadge.innerText = `Scenario ${index + 1} of ${SCENARIOS.length}`;
+
+            const surfBadge = document.getElementById('surface-badge');
+            if (surfBadge) surfBadge.innerHTML = sc.surfaceType;
+
+            const scTitle = document.getElementById('scenario-title');
+            if (scTitle) scTitle.innerHTML = sc.title;
+
+            const scPrompt = document.getElementById('scenario-prompt');
+            if (scPrompt) scPrompt.innerHTML = sc.prompt;
+
+            // Gravity components toggle visibility
+            const gravToggle = document.getElementById('gravity-components-toggle-container');
+            if (gravToggle) {
+                if (sc.geomType === 'incline') {
+                    gravToggle.classList.remove('hidden');
+                } else {
+                    gravToggle.classList.add('hidden');
+                }
+            }
+
+            // Populate solution breakdown list
+            const breakdownList = document.getElementById('solution-breakdown-list');
+            if (breakdownList) {
+                breakdownList.innerHTML = sc.breakdown.map(item => `<div>${item}</div>`).join('');
+            }
+
+            // Reset solution view
+            isSolutionVisible = false;
+            const solCol = document.getElementById('solution-canvas-col');
+            if (solCol) solCol.classList.add('hidden');
+
+            const workspaceGrid = document.getElementById('workspace-grid');
+            if (workspaceGrid) {
+                workspaceGrid.classList.remove('lg:grid-cols-2');
+                workspaceGrid.classList.add('grid-cols-1');
+            }
+
+            const toggleBtn = document.getElementById('toggle-solution-btn');
+            if (toggleBtn) toggleBtn.classList.add('hidden');
+
+            const solBtnText = document.getElementById('solution-btn-text');
+            if (solBtnText) solBtnText.innerText = 'Show Reference Solution';
+
+            const feedbackBanner = document.getElementById('feedback-banner');
+            if (feedbackBanner) feedbackBanner.classList.add('hidden');
+
+            userVectors = [];
+            initToolbar();
+            renderProgressTracker();
+            syncWorkspaceHeight();
+            resizeCanvases();
+        }
+
+        function onScenarioSelect(val) {
+            setScenario(parseInt(val, 10));
+        }
+
+        function changeScenario(delta) {
+            let newIdx = currentScenarioIndex + delta;
+            if (newIdx < 0) newIdx = SCENARIOS.length - 1;
+            if (newIdx >= SCENARIOS.length) newIdx = 0;
+            setScenario(newIdx);
+        }
+
+        function toggleGravityComponents(checked) {
+            showGravityComponentsEnabled = checked;
+            drawStudentScene();
+            if (isSolutionVisible) {
+                drawSolutionScene();
+            }
+        }
+
+        function syncWorkspaceHeight() {
+            // Drawing area is fixed at 650px tall on every screen; the control bar above it adds its own height
+            const workspaceCard = document.getElementById('workspace-card');
+            const workspaceGrid = document.getElementById('workspace-grid');
+            if (workspaceCard) workspaceCard.style.height = 'auto';
+            if (workspaceGrid) {
+                workspaceGrid.style.flex = 'none';
+                workspaceGrid.style.height = `${WORKSPACE_HEIGHT}px`;
+            }
+        }
+
+        function getSceneGeometry(canvasWidth, canvasHeight) {
+            const sc = SCENARIOS[currentScenarioIndex];
+            const boxSize = 24;
+
+            // Incline geometry: scaled to fit comfortably, centered in workspace
+            let inclineHeight = Math.min(canvasHeight / 4.2, 100);
+            let rampLength = inclineHeight / Math.sin(INCLINE_RAD);
+            const maxRun = canvasWidth * 0.7; // keep shallow ramps inside the canvas
+            if (rampLength * Math.cos(INCLINE_RAD) > maxRun) {
+                rampLength = maxRun / Math.cos(INCLINE_RAD);
+                inclineHeight = rampLength * Math.sin(INCLINE_RAD);
+            }
+
+            if (sc.geomType === 'incline') {
+                const cosTheta = Math.cos(INCLINE_RAD);
+
+                // The system (box center / blue dot) is fixed at the exact center of the workspace
+                const boxCenterX = canvasWidth * 0.5;
+                const boxCenterY = canvasHeight * 0.5;
+
+                // Ramp contact point sits half a box below the center, along the inward normal (+60 deg)
+                const normAngle = -Math.PI / 2 - INCLINE_RAD;
+                const boxOffset = boxSize / 2;
+                const centerX = boxCenterX - boxOffset * Math.cos(normAngle);
+                const centerY = boxCenterY - boxOffset * Math.sin(normAngle);
+
+                // Ramp is built around that contact point
+                const topY = centerY - inclineHeight / 2;
+                const botY = centerY + inclineHeight / 2;
+
+                const halfL = rampLength / 2;
+                const botX = centerX - halfL * cosTheta;
+                const topX = centerX + halfL * cosTheta;
+
+                return {
+                    geomType: 'incline',
+                    centerX, centerY,
+                    rampLength,
+                    topX, topY,
+                    botX, botY,
+                    boxSize,
+                    boxCenterX, boxCenterY
+                };
+            } else if (sc.geomType === 'hanging') {
+                // Bucket hanging from a rope attached to a support above
+                return {
+                    geomType: 'hanging',
+                    boxSize,
+                    boxCenterX: canvasWidth * 0.5,
+                    boxCenterY: canvasHeight * 0.5,
+                    supportY: 34,
+                    canvasWidth, canvasHeight
+                };
+            } else if (sc.geomType === 'freefall') {
+                // No surface: object suspended in mid-air at the canvas center
+                return {
+                    geomType: 'freefall',
+                    boxSize,
+                    boxCenterX: canvasWidth * 0.5,
+                    boxCenterY: canvasHeight * 0.5,
+                    canvasWidth, canvasHeight
+                };
+            } else {
+                // Horizontal surface: centered vertically in canvas
+                const centerY = canvasHeight * 0.5;
+                const boxCenterY = centerY;
+                const groundY = boxCenterY + boxSize / 2;
+                const startX = canvasWidth * 0.12;
+                const endX = canvasWidth * 0.88;
+                const boxCenterX = canvasWidth * 0.5;
+
+                return {
+                    geomType: 'horizontal',
+                    groundY,
+                    startX, endX,
+                    boxSize,
+                    boxCenterX, boxCenterY
+                };
+            }
+        }
+
+        function renderBaseScene(ctx, geom) {
+            ctx.save();
+
+            if (geom.geomType === 'incline') {
+                // Wedge background rising from bottom-left to top-right
+                ctx.fillStyle = '#f8fafc';
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 2.5;
+
+                ctx.beginPath();
+                ctx.moveTo(geom.botX, geom.botY);
+                ctx.lineTo(geom.topX, geom.topY);
+                ctx.lineTo(geom.topX, geom.botY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Ground baseline extending past the ramp
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(geom.botX - 35, geom.botY);
+                ctx.lineTo(geom.topX + 35, geom.botY);
+                ctx.stroke();
+
+                // Angle arc (30 deg) at bottom-left corner
+                ctx.beginPath();
+                ctx.arc(geom.botX, geom.botY, 55, -INCLINE_RAD, 0, false);
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#475569';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                const labelA = INCLINE_RAD / 2;
+                ctx.fillText(`${INCLINE_DEG}\u00B0`, geom.botX + 68 * Math.cos(labelA), geom.botY - 68 * Math.sin(labelA) + 4);
+
+                // Box on incline: rotated by -INCLINE_RAD (-30 deg) so bottom edge sits flush on ramp
+                ctx.save();
+                ctx.translate(geom.boxCenterX, geom.boxCenterY);
+                ctx.rotate(-INCLINE_RAD);
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(-geom.boxSize / 2, -geom.boxSize / 2, geom.boxSize, geom.boxSize);
+
+                // Center Point Mass Dot
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+            } else if (geom.geomType === 'hanging') {
+                // Rope running up off the top of the canvas (held by someone out of view)
+                ctx.strokeStyle = '#a8a29e';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(geom.boxCenterX, 0);
+                ctx.lineTo(geom.boxCenterX, geom.boxCenterY - geom.boxSize / 2);
+                ctx.stroke();
+
+                // Bucket (point mass)
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(geom.boxCenterX - geom.boxSize / 2, geom.boxCenterY - geom.boxSize / 2, geom.boxSize, geom.boxSize);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(geom.boxCenterX, geom.boxCenterY, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (geom.geomType === 'freefall') {
+                // Caption in top-right corner noting there is no contact surface
+                ctx.fillStyle = '#64748b';
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('In the air: no contact surface', geom.canvasWidth - 14, 22);
+                ctx.textAlign = 'left';
+
+                // Object (skydiver as point mass)
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(geom.boxCenterX - geom.boxSize / 2, geom.boxCenterY - geom.boxSize / 2, geom.boxSize, geom.boxSize);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(geom.boxCenterX, geom.boxCenterY, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else {
+                // Horizontal ground line
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(geom.startX, geom.groundY);
+                ctx.lineTo(geom.endX, geom.groundY);
+                ctx.stroke();
+
+                // Ground hatching
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1.5;
+                const hatchSpacing = 16;
+                for (let x = geom.startX; x < geom.endX; x += hatchSpacing) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, geom.groundY);
+                    ctx.lineTo(x - 10, geom.groundY + 12);
+                    ctx.stroke();
+                }
+
+                // Box on ground
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(geom.boxCenterX - geom.boxSize / 2, geom.boxCenterY - geom.boxSize / 2, geom.boxSize, geom.boxSize);
+
+                // Center Point Mass Dot
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(geom.boxCenterX, geom.boxCenterY, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function drawVectorArrow(targetCtx, startX, startY, endX, endY, color, labelInfo, isDashed = false) {
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const length = Math.hypot(dx, dy);
+            if (length < 6) return;
+
+            const angle = Math.atan2(dy, dx);
+            const headLength = 13;
+
+            targetCtx.save();
+            targetCtx.strokeStyle = color;
+            targetCtx.fillStyle = color;
+            targetCtx.lineWidth = 3.5;
+            targetCtx.lineCap = 'round';
+            targetCtx.lineJoin = 'round';
+
+            if (isDashed) {
+                targetCtx.setLineDash([6, 6]);
+            }
+
+            // Shaft
+            targetCtx.beginPath();
+            targetCtx.moveTo(startX, startY);
+            targetCtx.lineTo(endX, endY);
+            targetCtx.stroke();
+
+            // Arrowhead tip
+            targetCtx.setLineDash([]);
+            targetCtx.beginPath();
+            targetCtx.moveTo(endX, endY);
+            targetCtx.lineTo(
+                endX - headLength * Math.cos(angle - Math.PI / 6),
+                endY - headLength * Math.sin(angle - Math.PI / 6)
+            );
+            targetCtx.lineTo(
+                endX - headLength * Math.cos(angle + Math.PI / 6),
+                endY - headLength * Math.sin(angle + Math.PI / 6)
+            );
+            targetCtx.closePath();
+            targetCtx.fill();
+
+            // Render label with typography subscripts
+            targetCtx.shadowColor = '#ffffff';
+            targetCtx.shadowBlur = 4;
+            const labelDist = 18;
+            const lx = endX + labelDist * Math.cos(angle) - 6;
+            const ly = endY + labelDist * Math.sin(angle) + 4;
+
+            if (typeof labelInfo === 'object' && labelInfo !== null) {
+                targetCtx.font = 'bold 13px Inter, sans-serif';
+                targetCtx.fillText(labelInfo.base || '', lx, ly);
+                const baseW = targetCtx.measureText(labelInfo.base || '').width;
+                if (labelInfo.sub) {
+                    targetCtx.font = 'bold 10px Inter, sans-serif';
+                    targetCtx.fillText(labelInfo.sub, lx + baseW + 1, ly + 3);
+                    const subW = targetCtx.measureText(labelInfo.sub).width;
+                    if (labelInfo.extra) {
+                        targetCtx.font = 'bold 11px Inter, sans-serif';
+                        targetCtx.fillText(labelInfo.extra, lx + baseW + subW + 2, ly);
+                    }
+                } else if (labelInfo.extra) {
+                    targetCtx.font = 'bold 11px Inter, sans-serif';
+                    targetCtx.fillText(labelInfo.extra, lx + baseW + 2, ly);
+                }
+            } else {
+                targetCtx.font = 'bold 12px Inter, sans-serif';
+                targetCtx.fillText(String(labelInfo), lx, ly);
+            }
+
+            targetCtx.restore();
+        }
+
+        function drawGravityComponents(targetCtx, originX, originY, fgDx, fgDy) {
+            if (!showGravityComponentsEnabled) return;
+            const fgLen = Math.hypot(fgDx, fgDy);
+            if (fgLen < 15) return;
+
+            // Unit vectors for parallel (downhill) and perpendicular (into ramp)
+            const uParaX = Math.cos(Math.PI - INCLINE_RAD);
+            const uParaY = Math.sin(Math.PI - INCLINE_RAD);
+
+            const uPerpX = Math.cos(Math.PI / 2 - INCLINE_RAD);
+            const uPerpY = Math.sin(Math.PI / 2 - INCLINE_RAD);
+
+            // Project actual gravity vector (fgDx, fgDy) onto both axes
+            const cPara = fgDx * uParaX + fgDy * uParaY;
+            const cPerp = fgDx * uPerpX + fgDy * uPerpY;
+
+            const paraEndX = originX + cPara * uParaX;
+            const paraEndY = originY + cPara * uParaY;
+
+            const perpEndX = originX + cPerp * uPerpX;
+            const perpEndY = originY + cPerp * uPerpY;
+
+            const tipX = originX + fgDx;
+            const tipY = originY + fgDy;
+
+            targetCtx.save();
+
+            // Dashed orthogonal projection lines closing precisely at tip of Fg
+            targetCtx.strokeStyle = '#fca5a5';
+            targetCtx.lineWidth = 1.5;
+            targetCtx.setLineDash([4, 4]);
+
+            targetCtx.beginPath();
+            targetCtx.moveTo(perpEndX, perpEndY);
+            targetCtx.lineTo(tipX, tipY);
+            targetCtx.stroke();
+
+            targetCtx.beginPath();
+            targetCtx.moveTo(paraEndX, paraEndY);
+            targetCtx.lineTo(tipX, tipY);
+            targetCtx.stroke();
+
+            targetCtx.restore();
+
+            // Draw Perpendicular component in light red (#ef4444)
+            if (Math.abs(cPerp) > 6) {
+                drawVectorArrow(
+                    targetCtx, 
+                    originX, originY, 
+                    perpEndX, perpEndY, 
+                    '#ef4444', 
+                    { base: 'F', sub: 'gy', extra: '' }, 
+                    true
+                );
+            }
+
+            // Draw Parallel component in light red (#ef4444)
+            if (Math.abs(cPara) > 6) {
+                drawVectorArrow(
+                    targetCtx, 
+                    originX, originY, 
+                    paraEndX, paraEndY, 
+                    '#ef4444', 
+                    { base: 'F', sub: 'gx', extra: '' }, 
+                    true
+                );
+            }
+        }
+
+        function drawVectorHeadHandle(targetCtx, x, y, color, isActivelyDragged = false) {
+            targetCtx.save();
+            targetCtx.beginPath();
+            targetCtx.arc(x, y, isActivelyDragged ? 9 : 7, 0, Math.PI * 2);
+            targetCtx.fillStyle = '#ffffff';
+            targetCtx.fill();
+            targetCtx.lineWidth = 2.5;
+            targetCtx.strokeStyle = color;
+            targetCtx.stroke();
+
+            targetCtx.beginPath();
+            targetCtx.arc(x, y, 3, 0, Math.PI * 2);
+            targetCtx.fillStyle = color;
+            targetCtx.fill();
+            targetCtx.restore();
+        }
+
+        function drawStudentScene() {
+            const width = studentCanvas.width / (window.devicePixelRatio || 1);
+            const height = studentCanvas.height / (window.devicePixelRatio || 1);
+            const sc = SCENARIOS[currentScenarioIndex];
+
+            studentCtx.clearRect(0, 0, width, height);
+            studentCtx.fillStyle = '#ffffff';
+            studentCtx.fillRect(0, 0, width, height);
+
+            const geom = getSceneGeometry(width, height);
+            renderBaseScene(studentCtx, geom);
+
+            // Determine active Gravity (Fg) vector offset for dynamic component projection
+            let activeFg = null;
+            if (isDrawing && selectedForceId === 'fg' && currentDragPoint) {
+                activeFg = {
+                    dx: currentDragPoint.x - geom.boxCenterX,
+                    dy: currentDragPoint.y - geom.boxCenterY
+                };
+            } else {
+                const drawnFg = userVectors.find(v => v.id === 'fg');
+                if (drawnFg) {
+                    activeFg = { dx: drawnFg.dx, dy: drawnFg.dy };
+                }
+            }
+
+            // Draw light-red gravity components if incline scenario
+            if (sc.geomType === 'incline' && activeFg && Math.hypot(activeFg.dx, activeFg.dy) > 15) {
+                drawGravityComponents(studentCtx, geom.boxCenterX, geom.boxCenterY, activeFg.dx, activeFg.dy);
+            }
+
+            // Helper to determine orthogonal offset for parallel collinear vectors (e.g. Ft and Fa in sc10)
+            const getCollinearOffset = (vecId, vecAngle) => {
+                const pair = sc.collinearPair || (sc.id === 'sc10' ? ['t', 'fa'] : null);
+                if (!pair) return { ox: 0, oy: 0 };
+                const hasA = userVectors.some(v => v.id === pair[0]);
+                const hasB = userVectors.some(v => v.id === pair[1]);
+                if (hasA && hasB && pair.includes(vecId)) {
+                    const normAngle = vecAngle + Math.PI / 2;
+                    const shift = vecId === pair[0] ? -5 : 5;
+                    return { ox: shift * Math.cos(normAngle), oy: shift * Math.sin(normAngle) };
+                }
+                return { ox: 0, oy: 0 };
+            };
+
+            // Draw user vectors
+            userVectors.forEach(vec => {
+                const isSelected = vec.id === selectedForceId;
+                const forceDef = ALL_FORCES.find(f => f.id === vec.id) || { color: '#000000', label: { base: 'F', sub: '' } };
+                
+                // If this vector is currently being adjusted, hide the static one
+                if (isDrawing && isSelected) return;
+
+                const vAngle = vec.angle !== undefined ? vec.angle : Math.atan2(vec.dy, vec.dx);
+                const { ox, oy } = getCollinearOffset(vec.id, vAngle);
+
+                const sX = geom.boxCenterX + ox;
+                const sY = geom.boxCenterY + oy;
+                const endX = geom.boxCenterX + vec.dx + ox;
+                const endY = geom.boxCenterY + vec.dy + oy;
+
+                drawVectorArrow(studentCtx, sX, sY, endX, endY, forceDef.color, forceDef.label, false);
+
+                if (isSelected) {
+                    drawVectorHeadHandle(studentCtx, endX, endY, forceDef.color);
+                }
+            });
+
+            // Live dragging preview
+            if (isDrawing && dragOrigin && currentDragPoint) {
+                const forceDef = ALL_FORCES.find(f => f.id === selectedForceId) || { color: '#000000', label: { base: 'F', sub: '' } };
+                drawVectorArrow(studentCtx, geom.boxCenterX, geom.boxCenterY, currentDragPoint.x, currentDragPoint.y, forceDef.color, forceDef.label, true);
+                drawVectorHeadHandle(studentCtx, currentDragPoint.x, currentDragPoint.y, forceDef.color, true);
+            }
+        }
+
+        function drawSolutionScene() {
+            const sc = SCENARIOS[currentScenarioIndex];
+            const width = solutionCanvas.width / (window.devicePixelRatio || 1);
+            const height = solutionCanvas.height / (window.devicePixelRatio || 1);
+
+            solutionCtx.clearRect(0, 0, width, height);
+            solutionCtx.fillStyle = '#ffffff';
+            solutionCtx.fillRect(0, 0, width, height);
+
+            const geom = getSceneGeometry(width, height);
+            renderBaseScene(solutionCtx, geom);
+
+            // Draw gravity components on reference solution if incline
+            const targetFg = sc.targetForces.find(tf => tf.id === 'fg');
+            if (sc.geomType === 'incline' && targetFg) {
+                const targetDx = targetFg.refMag * Math.cos(targetFg.targetAngle);
+                const targetDy = targetFg.refMag * Math.sin(targetFg.targetAngle);
+                drawGravityComponents(solutionCtx, geom.boxCenterX, geom.boxCenterY, targetDx, targetDy);
+            }
+
+            sc.targetForces.forEach(tf => {
+                let ox = 0;
+                let oy = 0;
+                // If scenario 10, shift collinear Ft and Fa side-by-side so both are clearly readable
+                const pair = sc.collinearPair || (sc.id === 'sc10' ? ['t', 'fa'] : null);
+                if (pair && pair.includes(tf.id)) {
+                    const normAngle = tf.targetAngle + Math.PI / 2;
+                    const shift = tf.id === pair[0] ? -5 : 5;
+                    ox = shift * Math.cos(normAngle);
+                    oy = shift * Math.sin(normAngle);
+                }
+
+                const sX = geom.boxCenterX + ox;
+                const sY = geom.boxCenterY + oy;
+                const endX = geom.boxCenterX + tf.refMag * Math.cos(tf.targetAngle) + ox;
+                const endY = geom.boxCenterY + tf.refMag * Math.sin(tf.targetAngle) + oy;
+                const forceDef = ALL_FORCES.find(f => f.id === tf.id);
+                drawVectorArrow(solutionCtx, sX, sY, endX, endY, forceDef.color, forceDef.label, false);
+            });
+        }
+
+        function getSnapAngle(rawAngle) {
+            const sc = SCENARIOS[currentScenarioIndex];
+            let snapCandidates = [
+                Math.PI / 2,        // Straight Down (+90 deg)
+                -Math.PI / 2,       // Straight Up (-90 deg)
+                0,                  // Straight Right (0 deg)
+                Math.PI,            // Straight Left (180 deg)
+                -Math.PI            // Straight Left (-180 deg)
+            ];
+
+            if (sc.geomType === 'incline') {
+                snapCandidates.push(-INCLINE_RAD);                   // -30 deg (parallel uphill)
+                snapCandidates.push(Math.PI - INCLINE_RAD);          // +150 deg (parallel downhill)
+                snapCandidates.push(-Math.PI / 2 - INCLINE_RAD);     // -120 deg (normal outward)
+                snapCandidates.push(Math.PI / 2 - INCLINE_RAD);      // +60 deg (normal inward)
+            } else if (sc.id === 'sc8') {
+                snapCandidates.push((30 * Math.PI) / 180);           // +30 deg below horizontal
+            } else if (sc.id === 'sc9') {
+                snapCandidates.push((-45 * Math.PI) / 180);          // -45 deg above horizontal
+            }
+
+            const SNAP_THRESHOLD = 0.13; // ~7.5 degrees
+            for (let target of snapCandidates) {
+                let diff = Math.abs(rawAngle - target);
+                diff = Math.min(diff, Math.abs(diff - 2 * Math.PI), Math.abs(diff + 2 * Math.PI));
+                if (diff < SNAP_THRESHOLD) {
+                    return { angle: target, isSnapped: true };
+                }
+            }
+            return { angle: rawAngle, isSnapped: false };
+        }
+
+        // Helper to snap vector lengths to physical equilibrium targets when close
+        function getSnapLength(forceId, rawLen) {
+            const sc = SCENARIOS[currentScenarioIndex];
+            const fgVec = userVectors.find(v => v.id === 'fg');
+
+            if (forceId === 'fn' && fgVec && fgVec.length) {
+                let targetLen = fgVec.length;
+                if (sc.geomType === 'incline') {
+                    targetLen = fgVec.length * Math.cos(INCLINE_RAD); // F_g_perp
+                }
+                if (Math.abs(rawLen - targetLen) < 14) {
+                    return { length: Math.round(targetLen), isSnapped: true, targetName: sc.geomType === 'incline' ? 'F_gy' : 'F_g' };
+                }
+            } else if (forceId === 'fg') {
+                const fnVec = userVectors.find(v => v.id === 'fn');
+                if (fnVec && fnVec.length) {
+                    let targetLen = fnVec.length;
+                    if (sc.geomType === 'incline') {
+                        targetLen = fnVec.length / Math.cos(INCLINE_RAD);
+                    }
+                    if (Math.abs(rawLen - targetLen) < 14) {
+                        return { length: Math.round(targetLen), isSnapped: true, targetName: 'balances F_N' };
+                    }
+                }
+            } else if (forceId === 'fd' && fgVec && fgVec.length && (sc.id === 'sc11' || sc.id === 'sc12')) {
+                const half = sc.id === 'sc11';
+                const targetLen = half ? fgVec.length * 0.5 : fgVec.length;
+                if (Math.abs(rawLen - targetLen) < 14) {
+                    return { length: Math.round(targetLen), isSnapped: true, targetName: half ? '½ F_g' : 'F_g' };
+                }
+            } else if (forceId === 't' && sc.id === 'sc15' && fgVec && fgVec.length) {
+                const targetLen = fgVec.length;
+                if (Math.abs(rawLen - targetLen) < 14) {
+                    return { length: Math.round(targetLen), isSnapped: true, targetName: 'F_g' };
+                }
+            } else if (forceId === 'fs' && sc.id === 'sc3' && fgVec && fgVec.length) {
+                const targetLen = fgVec.length * Math.sin(INCLINE_RAD); // F_g_parallel
+                if (Math.abs(rawLen - targetLen) < 12) {
+                    return { length: Math.round(targetLen), isSnapped: true, targetName: 'F_gx' };
+                }
+            }
+            return { length: rawLen, isSnapped: false, targetName: '' };
+        }
+
+        function updateHud(startX, startY, endX, endY) {
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const rawLen = Math.hypot(dx, dy);
+            const lenSnap = getSnapLength(selectedForceId, rawLen);
+            const len = Math.round(lenSnap.length);
+            const rawAngle = Math.atan2(dy, dx);
+            const snapInfo = getSnapAngle(rawAngle);
+            const angleDeg = Math.round((snapInfo.angle * 180) / Math.PI);
+            const forceDef = ALL_FORCES.find(f => f.id === selectedForceId) || { htmlName: 'Force' };
+
+            hudForce.innerHTML = forceDef.htmlName;
+            hudAngle.innerHTML = `Angle: ${angleDeg}&deg;${snapInfo.isSnapped ? ' &#129522;' : ''}`;
+            hudMag.innerHTML = `Len: ${len}px${lenSnap.isSnapped ? ` (&approx; ${lenSnap.targetName} &#129522;)` : ''}`;
+            drawingHud.classList.remove('hidden');
+        }
+
+        function setupCanvasPointerEvents() {
+            studentCanvas.addEventListener('pointerdown', onPointerDown);
+            studentCanvas.addEventListener('pointermove', onPointerMove);
+            studentCanvas.addEventListener('pointerup', onPointerUp);
+            studentCanvas.addEventListener('pointercancel', onPointerUp);
+        }
+
+        function getCanvasLocalPoint(e) {
+            const rect = studentCanvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function onPointerDown(e) {
+            if (activePointerId !== null) return;
+            activePointerId = e.pointerId;
+            studentCanvas.setPointerCapture(e.pointerId);
+
+            const pt = getCanvasLocalPoint(e);
+            const width = studentCanvas.width / (window.devicePixelRatio || 1);
+            const height = studentCanvas.height / (window.devicePixelRatio || 1);
+            const geom = getSceneGeometry(width, height);
+
+            // Check if clicking near the arrowhead of the currently selected vector
+            const activeVector = userVectors.find(v => v.id === selectedForceId);
+            if (activeVector) {
+                const headX = geom.boxCenterX + activeVector.dx;
+                const headY = geom.boxCenterY + activeVector.dy;
+                if (Math.hypot(pt.x - headX, pt.y - headY) < 22) {
+                    isDraggingHead = true;
+                    isDrawing = true;
+                    dragOrigin = { x: geom.boxCenterX, y: geom.boxCenterY };
+                    currentDragPoint = { x: pt.x, y: pt.y };
+                    updateHud(geom.boxCenterX, geom.boxCenterY, pt.x, pt.y);
+                    drawStudentScene();
+                    return;
+                }
+            }
+
+            // Normal vector drawing from box center
+            isDraggingHead = false;
+            isDrawing = true;
+            dragOrigin = { x: geom.boxCenterX, y: geom.boxCenterY };
+            currentDragPoint = { x: pt.x, y: pt.y };
+            updateHud(geom.boxCenterX, geom.boxCenterY, pt.x, pt.y);
+            drawStudentScene();
+        }
+
+        function onPointerMove(e) {
+            if (!isDrawing || e.pointerId !== activePointerId) {
+                // Update cursor if hovering over vector head handle
+                const pt = getCanvasLocalPoint(e);
+                const width = studentCanvas.width / (window.devicePixelRatio || 1);
+                const height = studentCanvas.height / (window.devicePixelRatio || 1);
+                const geom = getSceneGeometry(width, height);
+                const activeVector = userVectors.find(v => v.id === selectedForceId);
+                if (activeVector) {
+                    const headX = geom.boxCenterX + activeVector.dx;
+                    const headY = geom.boxCenterY + activeVector.dy;
+                    if (Math.hypot(pt.x - headX, pt.y - headY) < 22) {
+                        studentCanvas.classList.remove('cursor-canvas-draw');
+                        studentCanvas.classList.add('cursor-handle-grab');
+                        return;
+                    }
+                }
+                studentCanvas.classList.remove('cursor-handle-grab');
+                studentCanvas.classList.add('cursor-canvas-draw');
+                return;
+            }
+
+            const pt = getCanvasLocalPoint(e);
+            const dx = pt.x - dragOrigin.x;
+            const dy = pt.y - dragOrigin.y;
+            let len = Math.hypot(dx, dy);
+
+            if (len > 4) {
+                const rawAngle = Math.atan2(dy, dx);
+                const snapInfo = getSnapAngle(rawAngle);
+                const lenSnap = getSnapLength(selectedForceId, len);
+                len = lenSnap.length;
+                currentDragPoint = {
+                    x: dragOrigin.x + len * Math.cos(snapInfo.angle),
+                    y: dragOrigin.y + len * Math.sin(snapInfo.angle)
+                };
+            } else {
+                currentDragPoint = { x: pt.x, y: pt.y };
+            }
+
+            updateHud(dragOrigin.x, dragOrigin.y, currentDragPoint.x, currentDragPoint.y);
+            drawStudentScene();
+        }
+
+        function onPointerUp(e) {
+            if (!isDrawing || e.pointerId !== activePointerId) return;
+
+            studentCanvas.releasePointerCapture(e.pointerId);
+            activePointerId = null;
+            isDrawing = false;
+            isDraggingHead = false;
+            drawingHud.classList.add('hidden');
+
+            const width = studentCanvas.width / (window.devicePixelRatio || 1);
+            const height = studentCanvas.height / (window.devicePixelRatio || 1);
+            const geom = getSceneGeometry(width, height);
+
+            const dx = currentDragPoint.x - geom.boxCenterX;
+            const dy = currentDragPoint.y - geom.boxCenterY;
+            let len = Math.hypot(dx, dy);
+
+            // Minimum length check (prevent tiny misclicks from creating vectors)
+            if (len >= 24) {
+                const rawAngle = Math.atan2(dy, dx);
+                const snapInfo = getSnapAngle(rawAngle);
+                const lenSnap = getSnapLength(selectedForceId, len);
+                len = lenSnap.length;
+                const finalAngle = snapInfo.angle;
+                const finalDx = len * Math.cos(finalAngle);
+                const finalDy = len * Math.sin(finalAngle);
+
+                // Overwrite or append vector
+                const existingIdx = userVectors.findIndex(v => v.id === selectedForceId);
+                const vecData = {
+                    id: selectedForceId,
+                    dx: finalDx,
+                    dy: finalDy,
+                    angle: finalAngle,
+                    length: len
+                };
+
+                if (existingIdx >= 0) {
+                    userVectors[existingIdx] = vecData;
+                } else {
+                    userVectors.push(vecData);
+                }
+            }
+
+            dragOrigin = null;
+            currentDragPoint = null;
+            initToolbar();
+            drawStudentScene();
+        }
+
+        function removeVector(forceId) {
+            userVectors = userVectors.filter(v => v.id !== forceId);
+            initToolbar();
+            drawStudentScene();
+        }
+
+        function clearVectors() {
+            userVectors = [];
+            initToolbar();
+            drawStudentScene();
+            document.getElementById('feedback-banner').classList.add('hidden');
+            document.getElementById('toggle-solution-btn').classList.add('hidden');
+        }
+
+        function getAngleDifference(a1, a2) {
+            let diff = Math.abs(a1 - a2) % (2 * Math.PI);
+            return diff > Math.PI ? 2 * Math.PI - diff : diff;
+        }
+
+        function checkAnswers() {
+            const sc = SCENARIOS[currentScenarioIndex];
+            let errors = [];
+            let successes = [];
+            const drawnForcesMap = new Map();
+
+            userVectors.forEach(v => drawnForcesMap.set(v.id, v));
+
+            // 1. Verify required target forces
+            sc.targetForces.forEach(tf => {
+                const userVec = drawnForcesMap.get(tf.id);
+                const displayName = tf.htmlName || tf.name;
+                if (!userVec) {
+                    errors.push(`Missing force: <strong>${displayName}</strong>. ${tf.explanation}`);
+                    return;
+                }
+
+                const userAngle = userVec.angle !== undefined ? userVec.angle : Math.atan2(userVec.dy, userVec.dx);
+                const userMag = userVec.length !== undefined ? userVec.length : Math.hypot(userVec.dx, userVec.dy);
+                const angleDiff = getAngleDifference(userAngle, tf.targetAngle);
+
+                if (userMag < 28) {
+                    errors.push(`<strong>${displayName}</strong> is drawn too short to clearly represent a vector.`);
+                    return;
+                }
+
+                if (angleDiff > tf.toleranceAngle) {
+                    const drawnDeg = Math.round((userAngle * 180) / Math.PI);
+                    const targetDeg = Math.round((tf.targetAngle * 180) / Math.PI);
+                    errors.push(`Direction of <strong>${displayName}</strong> is off (${drawnDeg}&deg; vs ~${targetDeg}&deg;). ${tf.explanation}`);
+                } else {
+                    successes.push(`<strong>${displayName}</strong>: Correct direction!`);
+                }
+            });
+
+            // 2. Check for unnecessary forces
+            userVectors.forEach(uv => {
+                if (!sc.targetForces.some(tf => tf.id === uv.id)) {
+                    const extraDef = ALL_FORCES.find(f => f.id === uv.id);
+                    const displayName = extraDef ? extraDef.htmlName : 'Force';
+                    errors.push(`Unnecessary force drawn: <strong>${displayName}</strong>. This force is not present in this scenario.`);
+                }
+            });
+
+            // 3. Scenario-specific physics proportion checks
+            if (errors.length === 0) {
+                // Incline scenarios: Normal force MUST balance the perpendicular component of gravity F_g_perp = F_g * cos(30°)
+                if (sc.geomType === 'incline') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const fnVec = drawnForcesMap.get('fn');
+                    if (fgVec && fnVec) {
+                        const targetFn = fgVec.length * Math.cos(INCLINE_RAD);
+                        const ratio = fnVec.length / targetFn;
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Normal force (F<sub>N</sub>)</strong> is too short. Perpendicular to the ramp, the forces must balance: <strong>F<sub>N</sub> &approx; F<sub>gy</sub></strong> (mg cos ${INCLINE_DEG}&deg;).`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Normal force (F<sub>N</sub>)</strong> is too long. Perpendicular to the ramp, the forces must balance: <strong>F<sub>N</sub> &approx; F<sub>gy</sub></strong> (mg cos ${INCLINE_DEG}&deg;).`);
+                        }
+                    }
+                }
+
+                // Horizontal surfaces without vertical applied forces: F_N must balance F_g
+                if (['sc1', 'sc2', 'sc13', 'sc14', 'sc18'].includes(sc.id)) {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const fnVec = drawnForcesMap.get('fn');
+                    if (fgVec && fnVec) {
+                        const ratio = fnVec.length / fgVec.length;
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Normal force (F<sub>N</sub>)</strong> is too short. Vertical forces must balance: <strong>F<sub>N</sub> &approx; F<sub>g</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Normal force (F<sub>N</sub>)</strong> is too long. Vertical forces must balance: <strong>F<sub>N</sub> &approx; F<sub>g</sub></strong>.`);
+                        }
+                    }
+                }
+
+                // Scenario 1: Horizontal constant velocity: Fa must balance fk
+                if (sc.id === 'sc1') {
+                    const faVec = drawnForcesMap.get('fa');
+                    const fkVec = drawnForcesMap.get('ff');
+                    if (faVec && fkVec) {
+                        const ratio = faVec.length / fkVec.length;
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Applied force (F<sub>A</sub>)</strong> is too short. At constant velocity, horizontal forces must balance: <strong>F<sub>A</sub> &approx; F<sub>f</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Applied force (F<sub>A</sub>)</strong> is too long. At constant velocity, horizontal forces must balance: <strong>F<sub>A</sub> &approx; F<sub>f</sub></strong>.`);
+                        }
+                    }
+                }
+
+                // Scenario 3: At rest on incline: Static friction balances downhill gravity component F_g_parallel = F_g * sin(30°)
+                if (sc.id === 'sc3') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const fsVec = drawnForcesMap.get('fs');
+                    if (fgVec && fsVec) {
+                        const targetFs = fgVec.length * Math.sin(INCLINE_RAD);
+                        const ratio = fsVec.length / targetFs;
+                        if (ratio < 0.72) {
+                            errors.push(`<strong>Static friction (F<sub>s</sub>)</strong> is too small. It must balance the downhill component of gravity: <strong>F<sub>s</sub> &approx; F<sub>gx</sub></strong> (mg sin ${INCLINE_DEG}&deg;).`);
+                        } else if (ratio > 1.30) {
+                            errors.push(`<strong>Static friction (F<sub>s</sub>)</strong> is too large. It must balance the downhill component of gravity: <strong>F<sub>s</sub> &approx; F<sub>gx</sub></strong> (mg sin ${INCLINE_DEG}&deg;).`);
+                        }
+                    }
+                }
+
+                if (sc.id === 'sc4') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const faVec = drawnForcesMap.get('fa');
+                    const fkVec = drawnForcesMap.get('ff');
+                    if (fgVec && faVec && fkVec) {
+                        const fgParallel = fgVec.length * Math.sin(INCLINE_RAD);
+                        const targetFa = fgParallel + fkVec.length;
+                        const ratio = faVec.length / targetFa;
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Applied force (F<sub>A</sub>)</strong> is too small. To push the box uphill at constant velocity, it must balance both kinetic friction and downhill gravity: <strong>F<sub>A</sub> &approx; F<sub>gx</sub> + F<sub>f</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Applied force (F<sub>A</sub>)</strong> is too large. At constant velocity, the uphill and downhill forces along the ramp must balance: <strong>F<sub>A</sub> &approx; F<sub>gx</sub> + F<sub>f</sub></strong>.`);
+                        }
+                    }
+                } else if (sc.id === 'sc6') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const tVec = drawnForcesMap.get('t');
+                    const fkVec = drawnForcesMap.get('ff');
+                    if (fgVec && tVec && fkVec) {
+                        const fgParallel = fgVec.length * Math.sin(INCLINE_RAD);
+                        const targetT = fgParallel + fkVec.length;
+                        const ratio = tVec.length / targetT;
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Tension force (F<sub>T</sub>)</strong> is too small. To pull the box uphill at constant velocity, it must balance both kinetic friction and downhill gravity: <strong>F<sub>T</sub> &approx; F<sub>gx</sub> + F<sub>f</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Tension force (F<sub>T</sub>)</strong> is too large. At constant velocity, the uphill and downhill forces along the ramp must balance: <strong>F<sub>T</sub> &approx; F<sub>gx</sub> + F<sub>f</sub></strong>.`);
+                        }
+                    }
+                } else if (sc.id === 'sc7') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const fkVec = drawnForcesMap.get('ff');
+                    if (fgVec && fkVec) {
+                        const fgParallel = fgVec.length * Math.sin(INCLINE_RAD);
+                        if (fkVec.length >= fgParallel * 1.25) {
+                            errors.push(`<strong>Friction force (F<sub>f</sub>)</strong> is too large. Since the box accelerates downhill, friction must be smaller than the downhill gravity component.`);
+                        }
+                    }
+                } else if (sc.id === 'sc8') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const fnVec = drawnForcesMap.get('fn');
+                    if (fgVec && fnVec && fnVec.length <= fgVec.length * 0.95) {
+                        errors.push(`<strong>Normal force (F<sub>N</sub>)</strong> must be noticeably larger than <strong>Gravity force (F<sub>g</sub>)</strong> because the applied downward push presses the box into the surface.`);
+                    }
+                } else if (sc.id === 'sc9') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const fnVec = drawnForcesMap.get('fn');
+                    if (fgVec && fnVec && fnVec.length >= fgVec.length * 0.95) {
+                        errors.push(`<strong>Normal force (F<sub>N</sub>)</strong> must be smaller than <strong>Gravity force (F<sub>g</sub>)</strong> because the upward pull partially supports the box's weight.`);
+                    }
+                } else if (sc.id === 'sc10') {
+                    const fgVec = drawnForcesMap.get('fg');
+                    const tVec = drawnForcesMap.get('t');
+                    const faVec = drawnForcesMap.get('fa');
+                    const fkVec = drawnForcesMap.get('ff');
+                    if (fgVec && tVec && faVec && fkVec) {
+                        const fgParallel = fgVec.length * Math.sin(INCLINE_RAD);
+                        const downhillTotal = fgParallel + fkVec.length;
+                        const uphillTotal = tVec.length + faVec.length;
+                        const ratio = uphillTotal / downhillTotal;
+                        if (ratio < 0.78) {
+                            errors.push(`The sum of the uphill forces (<strong>Tension force F<sub>T</sub> + Applied force F<sub>A</sub></strong>) is too small. At constant velocity, the uphill forces must balance both kinetic friction and the downhill gravity component: <strong>F<sub>T</sub> + F<sub>A</sub> &approx; F<sub>gx</sub> + F<sub>f</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`The sum of the uphill forces (<strong>Tension force F<sub>T</sub> + Applied force F<sub>A</sub></strong>) is too large. At constant velocity, the uphill forces must balance the downhill forces: <strong>F<sub>T</sub> + F<sub>A</sub> &approx; F<sub>gx</sub> + F<sub>f</sub></strong>.`);
+                        }
+                    }
+                }
+            }
+
+            // New horizontal scenarios: compare applied force and friction
+            if (errors.length === 0 && (sc.id === 'sc13' || sc.id === 'sc14')) {
+                const faVec = drawnForcesMap.get('fa');
+                const fkVec = drawnForcesMap.get('ff');
+                if (faVec && fkVec) {
+                    if (sc.id === 'sc13' && fkVec.length <= faVec.length * 1.05) {
+                        errors.push(`<strong>Friction force (F<sub>f</sub>)</strong> must be longer than <strong>Applied force (F<sub>A</sub>)</strong>. The box is slowing down, so the net force must point opposite its motion: <strong>F<sub>f</sub> &gt; F<sub>A</sub></strong>.`);
+                    } else if (sc.id === 'sc14' && faVec.length <= fkVec.length * 1.05) {
+                        errors.push(`<strong>Applied force (F<sub>A</sub>)</strong> must be longer than <strong>Friction force (F<sub>f</sub>)</strong>. The box is speeding up, so the net force must point in the direction of motion: <strong>F<sub>A</sub> &gt; F<sub>f</sub></strong>.`);
+                    }
+                }
+            }
+
+            // Bucket on a rope: compare tension and gravity
+            if (errors.length === 0 && ['sc15', 'sc16', 'sc17'].includes(sc.id)) {
+                const fgVec = drawnForcesMap.get('fg');
+                const tVec = drawnForcesMap.get('t');
+                if (fgVec && tVec) {
+                    const ratio = tVec.length / fgVec.length;
+                    if (sc.id === 'sc15') {
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Tension force (F<sub>T</sub>)</strong> is too short. At constant velocity the net force is zero: <strong>F<sub>T</sub> &approx; F<sub>g</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Tension force (F<sub>T</sub>)</strong> is too long. At constant velocity the net force is zero: <strong>F<sub>T</sub> &approx; F<sub>g</sub></strong>.`);
+                        }
+                    } else if (sc.id === 'sc16' && ratio <= 1.05) {
+                        errors.push(`<strong>Tension force (F<sub>T</sub>)</strong> must be longer than <strong>Gravity force (F<sub>g</sub>)</strong>. The bucket accelerates upward, so the net force is upward: <strong>F<sub>T</sub> &gt; F<sub>g</sub></strong>.`);
+                    } else if (sc.id === 'sc17' && ratio >= 0.95) {
+                        errors.push(`<strong>Tension force (F<sub>T</sub>)</strong> must be shorter than <strong>Gravity force (F<sub>g</sub>)</strong>. The bucket accelerates downward, so the net force is downward: <strong>F<sub>T</sub> &lt; F<sub>g</sub></strong>.`);
+                    }
+                }
+            }
+
+            // Scenarios 11 & 12: Skydiver drag proportions
+            if (errors.length === 0 && (sc.id === 'sc11' || sc.id === 'sc12')) {
+                const fgVec = drawnForcesMap.get('fg');
+                const fdVec = drawnForcesMap.get('fd');
+                if (fgVec && fdVec) {
+                    const ratio = fdVec.length / fgVec.length;
+                    if (sc.id === 'sc11') {
+                        if (ratio < 0.38) {
+                            errors.push(`<strong>Drag force (F<sub>D</sub>)</strong> is too short. The drag force equals one half of the weight: <strong>F<sub>D</sub> &approx; &frac12; F<sub>g</sub></strong>.`);
+                        } else if (ratio > 0.65) {
+                            errors.push(`<strong>Drag force (F<sub>D</sub>)</strong> is too long. The drag force equals one half of the weight: <strong>F<sub>D</sub> &approx; &frac12; F<sub>g</sub></strong>, so the skydiver still speeds up.`);
+                        }
+                    } else {
+                        if (ratio < 0.78) {
+                            errors.push(`<strong>Drag force (F<sub>D</sub>)</strong> is too short. At terminal velocity the net force is zero: <strong>F<sub>D</sub> &approx; F<sub>g</sub></strong>.`);
+                        } else if (ratio > 1.25) {
+                            errors.push(`<strong>Drag force (F<sub>D</sub>)</strong> is too long. At terminal velocity the net force is zero: <strong>F<sub>D</sub> &approx; F<sub>g</sub></strong>.`);
+                        }
+                    }
+                }
+            }
+
+            // If completely correct, record completion and update scenario progress tracker
+            if (errors.length === 0) {
+                completedScenarios.add(sc.id);
+                renderProgressTracker();
+            }
+
+            renderFeedback(errors, successes);
+        }
+
+        function renderFeedback(errors, successes) {
+            const banner = document.getElementById('feedback-banner');
+            const iconContainer = document.getElementById('feedback-icon-container');
+            const title = document.getElementById('feedback-title');
+            const msg = document.getElementById('feedback-message');
+            const actions = document.getElementById('feedback-actions');
+            const toggleSolBtn = document.getElementById('toggle-solution-btn');
+
+            banner.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'bg-amber-50', 'border-amber-200');
+            toggleSolBtn.classList.remove('hidden');
+
+            if (errors.length === 0) {
+                // Completely Correct
+                banner.classList.add('bg-emerald-50', 'border-emerald-200');
+                iconContainer.className = 'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold bg-emerald-600 text-white';
+                iconContainer.innerHTML = '&#10003;';
+                title.className = 'text-xs font-bold uppercase tracking-wider mb-1 text-emerald-900';
+                title.innerText = 'Excellent! Complete & Physically Correct';
+                actions.classList.add('hidden');
+
+                let html = '<p class="text-emerald-800 font-medium">All forces are accurately identified with proper directions and physical balance.</p>';
+                if (successes.length > 0) {
+                    html += '<ul class="mt-2 space-y-1">';
+                    successes.forEach(s => {
+                        html += `<li class="flex items-center gap-1.5 text-[11px] text-emerald-800"><span class="text-emerald-600 font-bold">&#10003;</span> ${s}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                msg.innerHTML = html;
+            } else {
+                // Incorrect
+                banner.classList.add('bg-amber-50', 'border-amber-200');
+                iconContainer.className = 'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold bg-amber-600 text-white';
+                iconContainer.innerHTML = '!';
+                title.className = 'text-xs font-bold uppercase tracking-wider mb-1 text-amber-900';
+                title.innerText = 'Diagram Needs Adjustment';
+                actions.classList.remove('hidden');
+
+                let html = '<div class="space-y-2">';
+                if (successes.length > 0) {
+                    html += '<div><span class="font-bold text-emerald-800 text-[11px] uppercase tracking-wider">Correct:</span>';
+                    html += '<ul class="mt-0.5 space-y-0.5">';
+                    successes.forEach(s => {
+                        html += `<li class="flex items-center gap-1.5 text-[11px] text-emerald-700"><span class="text-emerald-600 font-bold">&#10003;</span> ${s}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+
+                html += '<div><span class="font-bold text-amber-900 text-[11px] uppercase tracking-wider">Adjust or Add:</span>';
+                html += '<ul class="mt-0.5 space-y-1">';
+                errors.forEach(err => {
+                    html += `<li class="flex items-start gap-1.5 text-[11px] text-amber-900"><span class="text-amber-600 font-bold shrink-0 mt-0.5">&#10007;</span> <span>${err}</span></li>`;
+                });
+                html += '</ul></div>';
+                html += '</div>';
+
+                msg.innerHTML = html;
+            }
+
+            banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function tryAgain() {
+            document.getElementById('feedback-banner').classList.add('hidden');
+        }
+
+        function revealSolution() {
+            if (!isSolutionVisible) {
+                toggleSolutionView();
+            }
+        }
+
+        function toggleSolutionView() {
+            isSolutionVisible = !isSolutionVisible;
+            const solCol = document.getElementById('solution-canvas-col');
+            const grid = document.getElementById('workspace-grid');
+            const btnText = document.getElementById('solution-btn-text');
+
+            if (isSolutionVisible) {
+                solCol.classList.remove('hidden');
+                grid.classList.remove('grid-cols-1');
+                grid.classList.add('lg:grid-cols-2');
+                btnText.innerText = 'Hide Reference Solution';
+            } else {
+                solCol.classList.add('hidden');
+                grid.classList.remove('lg:grid-cols-2');
+                grid.classList.add('grid-cols-1');
+                btnText.innerText = 'Show Reference Solution';
+            }
+
+            resizeCanvases();
+        }
+
+        function resizeCanvases() {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const dpr = window.devicePixelRatio || 1;
+
+                    // Student Canvas
+                    const sContainer = studentCanvas.parentElement;
+                    if (!sContainer) return;
+                    const rect = sContainer.getBoundingClientRect();
+                    const sw = Math.round(rect.width) || 400;
+                    const sh = Math.round(rect.height) || 500;
+
+                    studentCanvas.width = sw * dpr;
+                    studentCanvas.height = sh * dpr;
+                    studentCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    drawStudentScene();
+
+                    // Solution Canvas (if visible)
+                    if (isSolutionVisible) {
+                        const solContainer = solutionCanvas.parentElement;
+                        if (solContainer) {
+                            const solRect = solContainer.getBoundingClientRect();
+                            const solw = Math.round(solRect.width) || 300;
+                            const solh = Math.round(solRect.height) || 500;
+
+                            solutionCanvas.width = solw * dpr;
+                            solutionCanvas.height = solh * dpr;
+                            solutionCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                            drawSolutionScene();
+                        }
+                    }
+                });
+            });
+        }
+
+        function setupResizeObserver() {
+            const resizeObserver = new ResizeObserver(() => {
+                syncWorkspaceHeight();
+                resizeCanvases();
+            });
+
+            const studentCol = document.getElementById('student-canvas-col');
+            if (studentCol) resizeObserver.observe(studentCol);
+
+            const forceCard = document.getElementById('force-selection-card');
+            if (forceCard) resizeObserver.observe(forceCard);
+
+            window.addEventListener('resize', () => {
+                syncWorkspaceHeight();
+                resizeCanvases();
+            });
+        }
+
+        // Initialize application on window load
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
