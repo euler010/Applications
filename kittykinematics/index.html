@@ -323,7 +323,7 @@ function syncInputs(){$('x0').value=P.x0;$('v0').value=P.v0;$('a').value=P.a;$('
 function reset(){t=0;running=false;ended=false;turn=null;computeEnd();R=ranges();dir=P.v0!==0?Math.sign(P.v0):(P.a!==0?Math.sign(P.a):1);us=0;syncInputs();readouts();status();setPlay();placeCat(pos(0));drawGraphs()}
 ['x0','v0','a'].forEach(k=>$(k).addEventListener('input',e=>{P[k]=parseFloat(e.target.value);sleeping=false;reset()}));
 document.querySelectorAll('.step').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.t,el=$(k),st=parseFloat(el.step),v=Math.round((parseFloat(el.value)+st*parseFloat(b.dataset.d))/st)*st;P[k]=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),parseFloat(v.toFixed(4))));sleeping=false;reset()}));
-document.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{const [x,v,a]=b.dataset.p.split(',').map(Number);P.x0=x;P.v0=v;P.a=a;sleeping=!!b.dataset.sleep;reset()}));
+document.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{const [x,v,a]=b.dataset.p.split(',').map(Number);P.x0=x;P.v0=v;P.a=a;sleeping=!!b.dataset.sleep;reset();if(sleeping){running=true;setPlay();status()}}));
 $('play').addEventListener('click',()=>{if(ended)reset();running=!running;setPlay();status()});
 $('reset').addEventListener('click',reset);
 document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{simSpeed=parseFloat(b.dataset.s);document.querySelectorAll('[data-s]').forEach(o=>o.setAttribute('aria-pressed',o===b?'true':'false'))}));
