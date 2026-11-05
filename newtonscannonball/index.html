@@ -4,15 +4,209 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Newton's Cannonball</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Three.js (r128) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <!-- Inter Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  
+
+  <!-- Utility Stylesheet (replaces Tailwind CSS) -->
+  <style>
+    /* ---------- Base reset ---------- */
+    *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+    html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+    body { margin: 0; line-height: inherit; }
+    h1, h2, h3, p { margin: 0; font-size: inherit; font-weight: inherit; }
+    button, input { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+    button { background-color: transparent; background-image: none; cursor: pointer; text-transform: none; -webkit-appearance: button; }
+    svg, canvas { display: block; vertical-align: middle; }
+
+    /* ---------- Layout & position ---------- */
+    .block { display: block; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .hidden { display: none; }
+    .flex-col { flex-direction: column; }
+    .flex-1 { flex: 1 1 0%; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .sticky { position: sticky; }
+    .top-0 { top: 0; }
+    .top-4 { top: 1rem; }
+    .left-4 { left: 1rem; }
+    .right-4 { right: 1rem; }
+    .z-20 { z-index: 20; }
+    .z-40 { z-index: 40; }
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+
+    /* ---------- Gaps & spacing ---------- */
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-5 { gap: 1.25rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .space-y-2\.5 > * + * { margin-top: 0.625rem; }
+    .space-y-3 > * + * { margin-top: 0.75rem; }
+    .p-1 { padding: 0.25rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-4 { padding: 1rem; }
+    .p-5 { padding: 1.25rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .pt-1 { padding-top: 0.25rem; }
+    .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+
+    /* ---------- Sizing ---------- */
+    .w-px { width: 1px; }
+    .w-2\.5 { width: 0.625rem; }
+    .w-3\.5 { width: 0.875rem; }
+    .w-4 { width: 1rem; }
+    .w-5 { width: 1.25rem; }
+    .w-8 { width: 2rem; }
+    .w-full { width: 100%; }
+    .h-2\.5 { height: 0.625rem; }
+    .h-3\.5 { height: 0.875rem; }
+    .h-4 { height: 1rem; }
+    .h-5 { height: 1.25rem; }
+    .h-8 { height: 2rem; }
+    .h-full { height: 100%; }
+    .min-w-0 { min-width: 0; }
+    .min-h-screen { min-height: 100vh; }
+    .min-h-\[500px\] { min-height: 500px; }
+    .max-h-\[50vh\] { max-height: 50vh; }
+
+    /* ---------- Typography ---------- */
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-black { font-weight: 900; }
+    .uppercase { text-transform: uppercase; }
+    .text-left { text-align: left; }
+    .whitespace-nowrap { white-space: nowrap; }
+    .leading-relaxed { line-height: 1.625; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wide { letter-spacing: 0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+
+    /* ---------- Text colors ---------- */
+    .text-slate-100 { color: #f1f5f9; }
+    .text-slate-200 { color: #e2e8f0; }
+    .text-slate-300 { color: #cbd5e1; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-950 { color: #020617; }
+    .text-cyan-300 { color: #67e8f9; }
+    .text-cyan-400 { color: #22d3ee; }
+    .text-amber-300 { color: #fcd34d; }
+    .text-amber-400 { color: #fbbf24; }
+    .text-rose-400 { color: #fb7185; }
+
+    /* ---------- Backgrounds ---------- */
+    .bg-slate-600 { background-color: #475569; }
+    .bg-slate-800 { background-color: #1e293b; }
+    .bg-slate-900 { background-color: #0f172a; }
+    .bg-slate-900\/60 { background-color: rgba(15, 23, 42, 0.6); }
+    .bg-slate-900\/80 { background-color: rgba(15, 23, 42, 0.8); }
+    .bg-slate-900\/90 { background-color: rgba(15, 23, 42, 0.9); }
+    .bg-slate-900\/95 { background-color: rgba(15, 23, 42, 0.95); }
+    .bg-slate-950 { background-color: #020617; }
+    .bg-slate-950\/60 { background-color: rgba(2, 6, 23, 0.6); }
+    .bg-cyan-500\/20 { background-color: rgba(6, 182, 212, 0.2); }
+    .bg-cyan-950 { background-color: #083344; }
+    .bg-cyan-950\/80 { background-color: rgba(8, 51, 68, 0.8); }
+    .bg-rose-950\/40 { background-color: rgba(76, 5, 25, 0.4); }
+
+    /* ---------- Gradients ---------- */
+    .bg-gradient-to-r { background-image: linear-gradient(to right, var(--grad-stops)); }
+    .bg-gradient-to-tr { background-image: linear-gradient(to top right, var(--grad-stops)); }
+    .from-amber-500 { --grad-from: #f59e0b; --grad-to: rgba(245, 158, 11, 0); --grad-stops: var(--grad-from), var(--grad-to); }
+    .via-amber-600 { --grad-to: rgba(217, 119, 6, 0); --grad-stops: var(--grad-from), #d97706, var(--grad-to); }
+    .to-orange-600 { --grad-to: #ea580c; }
+    .hover\:from-amber-400:hover { --grad-from: #fbbf24; --grad-to: rgba(251, 191, 36, 0); --grad-stops: var(--grad-from), var(--grad-to); }
+    .hover\:to-orange-500:hover { --grad-to: #f97316; }
+
+    /* ---------- Borders & radius ---------- */
+    .border { border-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-slate-700\/70 { border-color: rgba(51, 65, 85, 0.7); }
+    .border-slate-800 { border-color: #1e293b; }
+    .border-slate-800\/60 { border-color: rgba(30, 41, 59, 0.6); }
+    .border-cyan-500\/30 { border-color: rgba(6, 182, 212, 0.3); }
+    .border-cyan-700 { border-color: #0e7490; }
+    .border-cyan-700\/60 { border-color: rgba(14, 116, 144, 0.6); }
+    .border-amber-300\/40 { border-color: rgba(252, 211, 77, 0.4); }
+    .border-rose-800\/40 { border-color: rgba(159, 18, 57, 0.4); }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* ---------- Shadows ---------- */
+    .shadow-md { --shadow-color: rgba(0, 0, 0, 0.1); box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color); }
+    .shadow-lg { --shadow-color: rgba(0, 0, 0, 0.1); box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color); }
+    .shadow-xl { --shadow-color: rgba(0, 0, 0, 0.1); box-shadow: 0 20px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color); }
+    .shadow-amber-500\/20 { --shadow-color: rgba(245, 158, 11, 0.2); }
+
+    /* ---------- Effects & interaction ---------- */
+    .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+    .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .transition-colors { transition-property: color, background-color, border-color; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .duration-150 { transition-duration: 150ms; }
+    .duration-200 { transition-duration: 200ms; }
+    .cursor-pointer { cursor: pointer; }
+    .cursor-grab { cursor: grab; }
+    .select-none { -webkit-user-select: none; user-select: none; }
+    .pointer-events-none { pointer-events: none; }
+    .touch-manipulation { touch-action: manipulation; }
+
+    /* ---------- Hover / active states ---------- */
+    .hover\:bg-slate-800:hover { background-color: #1e293b; }
+    .hover\:border-slate-700:hover { border-color: #334155; }
+    .hover\:text-slate-200:hover { color: #e2e8f0; }
+    .hover\:text-cyan-400:hover { color: #22d3ee; }
+    .active\:scale-95:active { transform: scale(0.95); }
+    .active\:cursor-grabbing:active { cursor: grabbing; }
+
+    /* ---------- Responsive: small (≥640px) ---------- */
+    @media (min-width: 640px) {
+      .sm\:inline { display: inline; }
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* ---------- Responsive: large (≥1024px) ---------- */
+    @media (min-width: 1024px) {
+      .lg\:flex-row { flex-direction: row; }
+      .lg\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      .lg\:w-96 { width: 24rem; }
+      .lg\:min-h-0 { min-height: 0; }
+      .lg\:max-h-\[calc\(100vh-61px\)\] { max-height: calc(100vh - 61px); }
+      .lg\:border-t-0 { border-top-width: 0; }
+      .lg\:border-l { border-left-width: 1px; }
+    }
+  </style>
+
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -22,6 +216,14 @@
     }
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
+    }
+    /* Title text: same amber-to-orange gradient as the Fire! button */
+    .title-gradient {
+      background-image: linear-gradient(to right, #f59e0b, #d97706, #ea580c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: #f59e0b; /* fallback for browsers without text clipping */
     }
     /* Custom dark scrollbars for webkit and standard browsers */
     * {
@@ -106,13 +308,8 @@
   <!-- Top Navigation Header -->
   <header class="bg-slate-900/90 border-b border-slate-800 px-5 py-3 flex items-center justify-between backdrop-blur-md sticky top-0 z-40">
     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-        <svg class="w-5 h-5 text-slate-950" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="12" r="10" />
-        </svg>
-      </div>
       <div>
-        <h1 class="text-base font-bold text-slate-100 tracking-tight">Newton's Cannonball</h1>
+        <h1 class="title-gradient text-base font-bold tracking-tight">Newton's Cannonball</h1>
       </div>
     </div>
 
@@ -310,20 +507,51 @@
        ========================================================================== */
     let soundEnabled = true;
     let audioCtx = null;
+    let audioUnlocked = false;
+    const noiseBufferCache = {}; // pre-generated noise, keyed by duration
+
+    // Create the audio engine. Browsers allow this at page load, but keep it
+    // paused ("suspended") until the person first clicks, taps or presses a key.
+    function createAudioContext() {
+      if (audioCtx) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      audioCtx = new AudioContextClass({ latencyHint: 'interactive' });
+      // Pre-build the noise used by the cannon blast so nothing is computed on Fire
+      createNoiseBuffer(0.12);
+      createNoiseBuffer(1.3);
+    }
 
     function initAudio() {
-      if (!audioCtx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContextClass();
-      }
-      if (audioCtx.state === 'suspended') {
+      createAudioContext();
+      if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
     }
 
-    // Noise buffer generator for explosions
+    // On the very first interaction anywhere on the page (dragging the slider,
+    // rotating the view, any button), wake the audio engine and play a silent
+    // sound so the speakers are already running before Fire is pressed.
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      initAudio();
+      if (!audioCtx) return;
+      audioUnlocked = true;
+      const silent = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+      const src = audioCtx.createBufferSource();
+      src.buffer = silent;
+      src.connect(audioCtx.destination);
+      src.start(0);
+      ['pointerdown', 'touchstart', 'keydown'].forEach(evt =>
+        window.removeEventListener(evt, unlockAudio, true));
+    }
+    ['pointerdown', 'touchstart', 'keydown'].forEach(evt =>
+      window.addEventListener(evt, unlockAudio, true));
+
+    // Noise buffer generator for explosions (cached after the first build)
     function createNoiseBuffer(duration = 1.0) {
       if (!audioCtx) return null;
+      if (noiseBufferCache[duration]) return noiseBufferCache[duration];
       const bufferSize = Math.floor(audioCtx.sampleRate * duration);
       const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const output = buffer.getChannelData(0);
@@ -334,6 +562,7 @@
         lastOut = output[i];
         output[i] *= 3.0;
       }
+      noiseBufferCache[duration] = buffer;
       return buffer;
     }
 
@@ -471,18 +700,26 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
 
-    // Subtle starfield
-    const starCount = 650;
+    // Subtle starfield: stars spread evenly over a sky sphere that moves with the
+    // camera, so every direction and every zoom level shows the same star density.
+    const starCount = 3500;
+    const STAR_SKY_RADIUS = 150000; // km from the camera (inside the camera's far plane)
     const starGeo = new THREE.BufferGeometry();
     const starCoords = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount * 3; i += 3) {
-      starCoords[i] = (Math.random() - 0.5) * 120000;
-      starCoords[i + 1] = (Math.random() - 0.5) * 120000;
-      starCoords[i + 2] = -25000 - Math.random() * 50000;
+      // Uniform random direction on a sphere
+      const u = Math.random() * 2 - 1;
+      const theta = Math.random() * Math.PI * 2;
+      const s = Math.sqrt(1 - u * u);
+      starCoords[i] = STAR_SKY_RADIUS * s * Math.cos(theta);
+      starCoords[i + 1] = STAR_SKY_RADIUS * s * Math.sin(theta);
+      starCoords[i + 2] = STAR_SKY_RADIUS * u;
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starCoords, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0x94a3b8, size: 220, sizeAttenuation: true, transparent: true, opacity: 0.65 });
+    const starMat = new THREE.PointsMaterial({ color: 0x94a3b8, size: 1.4, sizeAttenuation: false, transparent: true, opacity: 0.65, depthWrite: false });
     const stars = new THREE.Points(starGeo, starMat);
+    stars.renderOrder = -1;
+    stars.frustumCulled = false;
     scene.add(stars);
 
     // High-Resolution Procedural Earth Map with Accurate Geography
@@ -1581,11 +1818,15 @@
         cannonballs[i].update(physicsDt, dtSec);
       }
 
+      // Keep the star sky centered on the camera so it surrounds the view at any zoom
+      stars.position.copy(camera.position);
+
       renderer.render(scene, camera);
     }
 
     // Startup Initialization
     window.onload = function() {
+      createAudioContext(); // prepare sound engine and blast noise ahead of time
       handleResize();
       speedSlider.value = 0;
       updateSpeedUI();
