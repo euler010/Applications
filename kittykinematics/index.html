@@ -50,9 +50,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--x);outline-offs
 .transport{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .play{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);padding:9px 20px;font-weight:600;min-width:104px}
 .play:hover{border-color:var(--accent);opacity:.9}
-.transport>button{padding-top:5px;padding-bottom:5px}
-.transport>.play{padding-top:6px;padding-bottom:6px}
-.transport .seg button{padding-top:5px;padding-bottom:5px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .seg button{border:0;border-radius:0;padding:8px 11px;font-family:var(--mono);font-size:12px}
 .seg button+button{border-left:1px solid var(--line)}
@@ -298,4 +295,62 @@ function drawGraphs(){const cs=getComputedStyle(document.documentElement);const 
     c.textAlign='center';c.textBaseline='top';for(let s=0;s<=TMAX;s+=2)c.fillText(String(s),px(s),B+6);
     c.textAlign='right';c.fillText('t (s)',Rr,B+6);
     c.strokeStyle=col.line;c.lineWidth=1;c.strokeRect(L+.5,T+.5,Rr-L,B-T);
-    c.save();c.beginPath();c.rect(L,T-2,Rr-L,B-T
+    c.save();c.beginPath();c.rect(L,T-2,Rr-L,B-T+4);c.clip();
+    if(showPred){c.setLineDash([5,5]);c.globalAlpha=.4;c.strokeStyle=color;c.lineWidth=2;c.beginPath();for(let i=0;i<=200;i++){const tv=tEnd*i/200;i?c.lineTo(px(tv),py(g.fn(tv))):c.moveTo(px(tv),py(g.fn(tv)))}c.stroke();c.setLineDash([]);c.globalAlpha=1}
+    if(tt!==null&&(t>=tt||showPred)){c.setLineDash([3,4]);c.strokeStyle=col.muted;c.lineWidth=1;c.beginPath();c.moveTo(px(tt),T);c.lineTo(px(tt),B);c.stroke();c.setLineDash([]);c.fillStyle=col.muted;c.textAlign=px(tt)>Rr-80?'right':'left';c.textBaseline='top';c.fillText('turns around',px(tt)+(c.textAlign==='left'?5:-5),T+4)}
+    if(t>0){c.strokeStyle=color;c.lineWidth=2.5;c.lineJoin='round';c.beginPath();const n=Math.max(2,Math.ceil(240*t/TMAX));for(let i=0;i<=n;i++){const tv=t*i/n;i?c.lineTo(px(tv),py(g.fn(tv))):c.moveTo(px(tv),py(g.fn(tv)))}c.stroke()}
+    c.fillStyle=color;c.beginPath();c.arc(px(t),py(g.fn(t)),4.5,0,Math.PI*2);c.fill();
+    c.restore()}}
+
+/* UI */
+function readouts(){$('rt').innerHTML=fmt(t,2)+'<em>s</em>';$('rx').innerHTML=fmt(pos(t),2)+'<em>m</em>';$('rv').innerHTML=fmt(vel(t),2)+'<em>m/s</em>';$('ra').innerHTML=fmt(P.a,2)+'<em>m/s²</em>'}
+function status(){const tt=turnTime();let s;
+  if(sleeping){$('status').textContent=`She's fast asleep at x = ${fmt(pos(t),1)} m. With v = 0 and a = 0, she isn't going anywhere.`;return}
+  const xn=pos(t),off=Math.abs(xn)>12.3,back=off&&Math.sign(vel(t))===-Math.sign(xn)&&Math.abs(vel(t))>0.02;
+  if(ended)s=`Time's up at t = ${TRUN} s. She finished at x = ${fmt(xn,2)} m${off?', off screen':''}.`;
+  else if(running&&off)s=back?`She's off screen at x = ${fmt(xn,1)} m and heading back.`:`She's off screen at x = ${fmt(xn,1)} m and still moving away.`;
+  else if(!running&&t===0)s=tt!==null?`Ready. With these settings she'll turn around at t = ${fmt(tt,2)} s.`:'Ready. Press play.';
+  else if(!running)s='Paused.';
+  else if(tt!==null&&t>=tt)s=`She turned around at t = ${fmt(tt,2)} s, at x = ${fmt(pos(tt),2)} m, where her velocity hit zero.`;
+  else if(Math.abs(vel(t))<0.05)s='Standing still for an instant.';
+  else{const speeding=P.a!==0&&Math.sign(P.a)===Math.sign(vel(t));s=P.a===0?'Moving at constant velocity.':speeding?'Speeding up: velocity and acceleration point the same way.':'Slowing down: acceleration points against her velocity.'}
+  $('status').textContent=s}
+function setPlay(){$('play').textContent=running?'Pause':ended?'Replay':t>0?'Resume':'Play'}
+function syncInputs(){$('x0').value=P.x0;$('v0').value=P.v0;$('a').value=P.a;$('x0o').textContent=fmt(P.x0,1);$('v0o').textContent=fmt(P.v0,1);$('ao').textContent=fmt(P.a,2)}
+function reset(){t=0;running=false;ended=false;turn=null;computeEnd();R=ranges();dir=P.v0!==0?Math.sign(P.v0):(P.a!==0?Math.sign(P.a):1);us=0;syncInputs();readouts();status();setPlay();placeCat(pos(0));drawGraphs()}
+['x0','v0','a'].forEach(k=>$(k).addEventListener('input',e=>{P[k]=parseFloat(e.target.value);sleeping=false;reset()}));
+document.querySelectorAll('.step').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.t,el=$(k),st=parseFloat(el.step),v=Math.round((parseFloat(el.value)+st*parseFloat(b.dataset.d))/st)*st;P[k]=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),parseFloat(v.toFixed(4))));sleeping=false;reset()}));
+document.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{const [x,v,a]=b.dataset.p.split(',').map(Number);P.x0=x;P.v0=v;P.a=a;sleeping=!!b.dataset.sleep;reset()}));
+$('play').addEventListener('click',()=>{if(ended)reset();running=!running;setPlay();status()});
+$('reset').addEventListener('click',reset);
+document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{simSpeed=parseFloat(b.dataset.s);document.querySelectorAll('[data-s]').forEach(o=>o.setAttribute('aria-pressed',o===b?'true':'false'))}));
+$('pred').addEventListener('change',drawGraphs);
+window.addEventListener('resize',drawGraphs);
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawGraphs)}catch(e){}
+new MutationObserver(drawGraphs).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+let last=null,statusTick=0;
+function frame(now){if(last===null)last=now;const rdt=Math.min((now-last)/1000,0.05);last=now;
+  const sdt=rdt*simSpeed;
+  if(running){t+=sdt;if(t>=tEnd){t=tEnd;running=false;ended=true;setPlay();status()}
+    const v=vel(t);if(Math.abs(v)>0.02){const nd=Math.sign(v);if(nd!==dir){turn={from:dir,to:nd,p:0};dir=nd}}
+    poseCat(sdt,running?Math.abs(v)*PPM/K:0);placeCat(pos(t));readouts();drawGraphs();
+    if(++statusTick%10===0)status()}
+  else if(ended&&us>0){poseCat(rdt,0);placeCat(pos(t))}
+  else if(t===0&&!running){poseCat(rdt,0);placeCat(pos(0))}
+  else if(turn){placeCat(pos(t))}
+  if(turn){turn.p+=rdt/0.9;if(turn.p>=1){turn=null;placeCat(pos(t))}}
+  bt+=rdt;const s=bt>3.4?0.12:1;if(bt>3.54)bt=0;$('eyes').setAttribute('transform',`translate(0,74) scale(1,${s}) translate(0,-74)`);
+  if(sleeping)animSleep(now/1000);
+  requestAnimationFrame(frame)}
+function animSleep(t){const b=0.5-0.5*Math.cos(2*Math.PI*t/3.6);
+  $('zbody').setAttribute('transform',`translate(96,176) scale(${(1+0.012*b).toFixed(4)},${(1+0.05*b).toFixed(4)}) translate(-96,-176)`);
+  $('zhead').setAttribute('transform',`translate(0,${(-2.2*b).toFixed(2)})`);$('ztail').setAttribute('transform',`translate(0,${(-0.8*b).toFixed(2)})`);
+  for(let i=0;i<3;i++){const z=$('z'+i),p=((t/3.6)+i/3)%1,x=166+p*34+Math.sin(p*6)*3,y=104-p*70,sc=0.8+p,o=p<0.15?p/0.15:1-(p-0.15)/0.85;z.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${sc.toFixed(2)})`);z.setAttribute('opacity',Math.max(0,o).toFixed(2))}}
+reset();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawGraphs);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
