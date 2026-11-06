@@ -107,8 +107,8 @@ canvas{display:block;width:100%;height:190px}
         <p class="sub">Try a scenario</p>
         <div class="presets">
           <button type="button" data-p="-9,0,0.6" class="sel">Speeding up</button>
-          <button type="button" data-p="-2,4,-1">Turnaround</button>
-          <button type="button" data-p="-8,1.5,0">Steady walk</button>
+          <button type="button" data-p="-4,4,-0.8">Turnaround</button>
+          <button type="button" data-p="-8,2,0">Steady walk</button>
           <button type="button" data-p="8,-0.5,-0.8">Leftward dash</button>
           <button type="button" data-p="3,0,0" data-sleep="1">Sleeping</button>
         </div>
@@ -276,7 +276,7 @@ function poseCat(dt,uTarget){
 }
 function placeCat(xm){const X=LX+(xm+10)*PPM;
   $('cat').style.display=sleeping?'none':'';$('catS').style.display=sleeping?'':'none';$('arrows').style.display=sleeping?'none':'';
-  if(sleeping)$('catS').setAttribute('transform',`translate(${X.toFixed(2)},${FLOOR}) scale(${K.toFixed(4)}) translate(-100,-150)`);const T=turnState(),k=K*T.cs,Y=FLOOR+T.dy;
+  if(sleeping)$('catS').setAttribute('transform',`translate(${X.toFixed(2)},${FLOOR}) scale(${(K*1.08).toFixed(4)}) translate(-100,-150)`);const T=turnState(),k=K*T.cs,Y=FLOOR+T.dy;
   $('cat').setAttribute('transform',`translate(${X.toFixed(2)},${Y.toFixed(2)}) scale(${k.toFixed(4)}) translate(-150,${(-FY+sy).toFixed(2)})`);
   rig(T.th,headY);
   $('marker').setAttribute('d',`M${X} ${FLOOR+2} l-7 11 h14 z`);
