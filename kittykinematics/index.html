@@ -26,7 +26,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
 header{display:grid;gap:6px}
 h1{margin:0;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;text-wrap:balance}
-.lab{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+.lab{display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-rows:auto 1fr;gap:18px;align-items:start}
+.lab>header{grid-column:1;grid-row:1}
+.leftcol{grid-column:1;grid-row:2}
+.stagecol{grid-column:2;grid-row:1 / span 2}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:16px;min-width:0}
 .ctl{display:grid;gap:6px}
 .ctl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -77,18 +80,17 @@ figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:8
 figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 figcaption .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:1px}
 canvas{display:block;width:100%;height:190px}
-@media (max-width:900px){.lab{grid-template-columns:1fr}.leftcol{order:2}}
+@media (max-width:900px){.lab{grid-template-columns:1fr;grid-template-rows:none}.lab>header,.leftcol,.stagecol{grid-column:auto;grid-row:auto}.lab>header{order:0}.stagecol{order:1}.leftcol{order:2}}
 @media (max-width:640px){.graphs{grid-template-columns:1fr}}
 @media (max-width:520px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.check{margin-left:0}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Kitty Kinematics</h1>
-  </header>
-
   <section class="lab">
+    <header>
+      <h1>Kitty Kinematics</h1>
+    </header>
     <div class="leftcol">
       <div class="panel">
       <div class="ctl" data-k="x0">
