@@ -269,7 +269,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 (() => {
   const X_MAX = 0.50;            // meters: maximum stretch = maximum compression
   const MASS = 2.0;              // kg
-  const state = { x: 0, v: 0, k: 20, dragging: false, grabOffset: 0, friction: false, paused: false, vec: 'F' };
+  const state = { x: 0, v: 0, k: 20, dragging: false, grabOffset: 0, friction: false, paused: false, vecs: { F: true, v: false, a: false } };
   let gSize = { w: 0, h: 0 };
   let raf = null, lastT = 0;
   let view = 'force';            // 'force' | 'pt'
@@ -384,14 +384,15 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     // so it shrinks smoothly to nothing at equilibrium (kept inside the canvas on narrow screens)
     // Vector above the block: spring force (6 px per N), velocity (40 px per m/s) or acceleration (8 px per m/s²)
     const free = !state.friction && !state.dragging;
-    let val = 0, scale = 0, col = C.force, lab = 'Fs';
-    if (state.vec === 'F') { val = -state.k * state.x; scale = 6; }
-    else if (state.vec === 'v') { val = free ? state.v : vEst; scale = 40; col = C.vel; lab = 'v'; }
-    else if (state.vec === 'a') { val = free ? -(state.k / MASS) * state.x : aEst; scale = 8; col = C.acc; lab = 'a'; }
-    if (state.vec) {
+    // F_s is shown alone; v and a can be shown together (v nearest the block, a stacked above it)
+    const shown = [];
+    if (state.vecs.F) shown.push([-state.k * state.x, 6, C.force, 'Fs']);
+    if (state.vecs.v) shown.push([free ? state.v : vEst, 40, C.vel, 'v']);
+    if (state.vecs.a) shown.push([free ? -(state.k / MASS) * state.x : aEst, 8, C.acc, 'a']);
+    shown.forEach(([val, scale, col, lab], i) => {
       const tip = Math.max(4, Math.min(w - 4, mx + val * scale));
-      arrow(ctx, mx, tip, mTop - 12, col, lab, true);
-    }
+      arrow(ctx, mx, tip, mTop - 12 - i * 26, col, lab, true);
+    });
   }
 
   function niceMax(v) { const steps = [5, 10, 15, 20, 25, 30, 40, 50, 60]; return steps.find(s => s >= v) || Math.ceil(v / 10) * 10; }
@@ -527,7 +528,9 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
     // Guides + marker
     ctx.setLineDash([3, 3]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(X(state.x), Y(F)); ctx.lineTo(X(state.x), Y(0));
+    ctx.beginPath();
+    // The vertical guide is left out when the stored-energy triangle is shaded (its edge already marks x)
+    if (!showEnergy) { ctx.moveTo(X(state.x), Y(F)); ctx.lineTo(X(state.x), Y(0)); }
     ctx.moveTo(X(state.x), Y(F)); ctx.lineTo(pad.l, Y(F)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = C.force; ctx.strokeStyle = C.panel; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(X(state.x), Y(F), 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -609,13 +612,16 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     document.getElementById('icoPlay').toggleAttribute('hidden', !state.paused);
   });
 
-  // Vector picker: checking one box clears the others; unchecking all hides the vector
+  // Vector picker: F_s is on by itself; v and a can be on together.
+  // Turning F_s on switches v and a off; turning v or a on switches F_s off.
   const vecBoxes = { F: document.getElementById('vecF'), v: document.getElementById('vecV'), a: document.getElementById('vecA') };
+  const setVec = (key, on) => { state.vecs[key] = on; vecBoxes[key].checked = on; };
   Object.entries(vecBoxes).forEach(([key, box]) => {
-    box.checked = key === state.vec;
+    box.checked = state.vecs[key];
     box.addEventListener('change', () => {
-      if (box.checked) { state.vec = key; Object.entries(vecBoxes).forEach(([k2, b2]) => { if (k2 !== key) b2.checked = false; }); }
-      else state.vec = null;
+      setVec(key, box.checked);
+      if (box.checked && key === 'F') { setVec('v', false); setVec('a', false); }
+      if (box.checked && key !== 'F') setVec('F', false);
       render();
     });
   });
