@@ -121,6 +121,8 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; lett
 /* Circle and SHM: animation on the left two-thirds, control panel on the right third */
 #pageCircle { grid-template-columns: minmax(0, 2fr) minmax(330px, 1fr); align-items: stretch; }
 @media (max-width: 780px) { #pageCircle { grid-template-columns: minmax(0, 1fr); } }
+.cpanel .sideb { justify-self: start; min-width: 8.5em; margin-bottom: 2px; }
+.cpanel .sideb[aria-pressed="true"] { background: var(--mass); border-color: var(--mass); color: #ffffff; }
 .cpanel .cread { display: grid; gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 .fm { font-size: 1.05em; margin-left: 2px; }
 .fm mi { font-style: normal; font-family: var(--font-body); }
@@ -254,6 +256,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
           <label class="sw vv"><input type="checkbox" role="switch" id="cComp" autocomplete="off"><span class="track"></span><span class="nm">v<sub>x</sub></span></label>
         </div>
         <div class="cread">
+          <button id="cSide" class="sideb" type="button" aria-pressed="false">Side View</button>
           <div class="ro"><div class="k">Angular speed <math class="fm"><mi mathvariant="normal">ω</mi><mo>=</mo><msqrt><mi mathvariant="normal">k</mi><mo lspace="0" rspace="0">/</mo><mi mathvariant="normal">m</mi></msqrt></math></div><div class="v" id="cW">2.24 rad/s</div></div>
           <div class="ro"><div class="k">Angle θ = ωt</div><div class="v" id="cTh">0.0°</div></div>
           <div class="ro"><div class="k">Period T = 2π/ω</div><div class="v" id="cT">2.81 s</div></div>
@@ -722,6 +725,8 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   const kIn = document.getElementById('cK');   // amplitude is fixed at A = 0.40 m
   const S = { k: 10, A: 0.40, theta: 0, x: 0.40, v: 0, paused: false, dragging: false };
   const show = { proj: true, rad: true, vel: true, comp: false };
+  const tilt = { t: 0, target: 0 };   // 0 = front view, 1 = side (edge-on) view
+  let savedShow = null;               // Show settings saved when Side View is pressed
   let G = null, raf = null, lastT = 0, active = false;
 
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -786,7 +791,11 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     const { w, h, wallX, massW, massH, cx, cy, ppm, trackY } = G;
     ctx.clearRect(0, 0, w, h);
     const R = S.A * ppm, th = S.theta, c = Math.cos(th), s = Math.sin(th);
-    const px = cx + R * c, py = cy - R * s;                // ball on the circle (counterclockwise)
+    // Tilt: the circle tips back about its horizontal diameter. Seen from the front, every vertical
+    // distance from the centre shrinks by cos(phi); horizontal positions are unchanged.
+    const e = tilt.t * tilt.t * (3 - 2 * tilt.t);            // smooth ease in and out
+    const ky = Math.max(0, Math.cos(e * Math.PI / 2));
+    const px = cx + R * c, py = cy - R * s * ky;                // ball on the circle (counterclockwise)
     const sx = cx + S.x * ppm;                             // block centre on the spring
     const floorY = trackY + massH / 2, mTop = trackY - massH / 2, wallTop = mTop - 20;
     const vS = 68, vc = S.A * omega();                     // px per (m/s); ball speed v = A*omega
@@ -805,14 +814,14 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
     // Equilibrium line and amplitude guides at x = ±A
     ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(cx, cy - R - 12); ctx.lineTo(cx, floorY); ctx.stroke();
+    ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(cx, cy - R * ky - 12); ctx.lineTo(cx, floorY); ctx.stroke();
     ctx.strokeStyle = C.line; ctx.beginPath();
     ctx.moveTo(cx - R, cy); ctx.lineTo(cx - R, floorY); ctx.moveTo(cx + R, cy); ctx.lineTo(cx + R, floorY); ctx.stroke();
     ctx.setLineDash([]);
 
     // Circle and its horizontal diameter
     ctx.strokeStyle = C.steel; ctx.globalAlpha = 0.55;
-    ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(cx, cy, R, R * ky, 0, 0, TAU); ctx.stroke();
     ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - R - 14, cy); ctx.lineTo(cx + R + 14, cy); ctx.stroke();
     ctx.globalAlpha = 1;
 
@@ -821,11 +830,11 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
       ctx.strokeStyle = C.steel; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
       const tn = ((th % TAU) + TAU) % TAU;
-      if (tn > 0.02) { ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(cx, cy, 24, 0, -tn, true); ctx.stroke(); }
+      if (tn > 0.02 && ky > 0.02) { ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse(cx, cy, 24, 24 * ky, 0, 0, -tn, true); ctx.stroke(); }
       ctx.fillStyle = C.ink; ctx.font = 'italic 600 13px ' + FB; ctx.textAlign = 'center';
-      ctx.fillText('θ', cx + 38 * Math.cos(tn / 2), cy - 38 * Math.sin(tn / 2) + 4);
+      ctx.fillText('θ', cx + 38 * Math.cos(tn / 2), cy - 38 * Math.sin(tn / 2) * ky + 4);
       ctx.fillStyle = C.steel; ctx.font = '600 13px ' + FD;
-      ctx.fillText('A', cx + 0.6 * R * c - 12 * s, cy - 0.6 * R * s - 12 * c + 4);
+      ctx.fillText('A', cx + 0.6 * R * c - 12 * s, cy - 0.6 * R * s * ky - 12 * c + 4);
     }
 
     // Projection: the ball's shadow on the diameter, and a line straight down to the block
@@ -865,9 +874,13 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
     // Velocity: tangent to the circle
     if (show.vel && vc > 0) {
-      const [tx, ty] = fitTip(px, py, px - vS * vc * s, py - vS * vc * c);
+      const [tx, ty] = fitTip(px, py, px - vS * vc * s, py - vS * vc * c * ky);
+      // Label: in the front view it sits just past the arrow tip (as before). As the circle tips into
+      // Side View it moves smoothly to the middle of the arrow, just above it, like the block's "v" label.
       const L = Math.hypot(tx - px, ty - py) || 1;
-      arrow(px, py, tx, ty, C.vel, 'v', false, tx + (tx - px) / L * 12, ty + (ty - py) / L * 12 + 4);
+      const fx = tx + (tx - px) / L * 12, fy = ty + (ty - py) / L * 12 + 4;   // front-view position
+      const sxL = (px + tx) / 2, syL = Math.min(py, ty) - 9;                  // side-view position
+      arrow(px, py, tx, ty, C.vel, 'v', false, fx + (sxL - fx) * e, fy + (syL - fy) * e);
     }
 
     // Spring: floor, wall, coil, block
@@ -928,6 +941,10 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   function tick(t) {
     const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
     if (!S.paused && !S.dragging) step(dt);
+    // Tilt animation (3 s each way); it runs even while the motion is paused
+    if (tilt.t !== tilt.target) {
+      tilt.t = tilt.target > tilt.t ? Math.min(tilt.target, tilt.t + dt / 3) : Math.max(tilt.target, tilt.t - dt / 3);
+    }
     draw(); updateText();
     raf = requestAnimationFrame(tick);
   }
@@ -959,17 +976,36 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   };
   document.getElementById('cKDown').addEventListener('click', () => nudge(kIn, -1));
   document.getElementById('cKUp').addEventListener('click', () => nudge(kIn, 1));
-  [['cProj', 'proj'], ['cRad', 'rad'], ['cVel', 'vel'], ['cComp', 'comp']].forEach(([id, key]) => {
+  const SHOWS = [['cProj', 'proj'], ['cRad', 'rad'], ['cVel', 'vel'], ['cComp', 'comp']];
+  SHOWS.forEach(([id, key]) => {
     const box = document.getElementById(id);
     box.checked = show[key];
     box.addEventListener('change', () => { show[key] = box.checked; draw(); });
+  });
+
+  // Side View: switch every Show option off, then tip the circle edge-on over 3 s (Front View tips it back)
+  const sideBtn = document.getElementById('cSide');
+  sideBtn.addEventListener('click', () => {
+    tilt.target = tilt.target ? 0 : 1;
+    sideBtn.textContent = tilt.target ? 'Front View' : 'Side View';
+    sideBtn.setAttribute('aria-pressed', String(!!tilt.target));
+    if (tilt.target) {
+      // Remember the front-view Show settings, then show only the velocity vectors in the side view
+      savedShow = { ...show };
+      SHOWS.forEach(([id, key]) => { show[key] = key === 'vel'; document.getElementById(id).checked = key === 'vel'; });
+    } else if (savedShow) {
+      // Back to the front view: restore the Show settings from before Side View was pressed
+      SHOWS.forEach(([id, key]) => { show[key] = savedShow[key]; document.getElementById(id).checked = savedShow[key]; });
+      savedShow = null;
+    }
+    draw();
   });
 
   // Drag the ball around the circle to set the angle (the block follows)
   const setAngle = (x, y) => { S.theta = (Math.atan2(G.cy - y, x - G.cx) + TAU) % TAU; sync(); draw(); updateText(); };
   const local = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   cv.addEventListener('pointerdown', e => {
-    if (!G) return;
+    if (!G || tilt.t > 0.01) return;                  // dragging works only in the front view
     const [x, y] = local(e), d = Math.hypot(x - G.cx, y - G.cy);
     if (Math.abs(d - S.A * G.ppm) > 24) return;
     S.dragging = true; cv.setPointerCapture(e.pointerId); setAngle(x, y);
