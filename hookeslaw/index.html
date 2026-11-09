@@ -9,15 +9,16 @@
   --panel: #ffffff;
   --ink: #17202a;
   --muted: #5d6b7a;
-  --axis: #36424e;
-  --vel: #2a8c5c;
-  --acc: #c03a68;
-  --energy: #7b4fc4;
+  --axis: #1c252e;
+  --fric-on: #9b4f4a;
+  --vel: #c8372d;
+  --acc: #2a8c5c;
+  --energy: #e0359a;
   --line: #c9d1da;
   --steel: #4f6478;
   --mass: #1f5f73;
   --mass-edge: #123f4d;
-  --force: #d9822b;
+  --force: #7b4fc4;
   --disp: #3a6fd8;
   --wall: #8a97a5;
   --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
@@ -25,12 +26,12 @@
   --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #c4cdd6; --vel: #5cc995; --acc: #f07aa0; --energy: #b79cf2;
-  --steel: #9fb3c6; --mass: #3b95ad; --mass-edge: #7cc3d6; --force: #f0a050; --disp: #7ea4f2; --wall: #5d6b7a;
+  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #e1e6eb; --vel: #f2726a; --acc: #5cc995; --energy: #ff6cbf; --fric-on: #a85a54;
+  --steel: #9fb3c6; --mass: #3b95ad; --mass-edge: #7cc3d6; --force: #b79cf2; --disp: #7ea4f2; --wall: #5d6b7a;
   color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #c4cdd6; --vel: #5cc995; --acc: #f07aa0; --energy: #b79cf2;
-  --steel: #9fb3c6; --mass: #3b95ad; --mass-edge: #7cc3d6; --force: #f0a050; --disp: #7ea4f2; --wall: #5d6b7a;
+  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #e1e6eb; --fric-on: #a85a54; --vel: #f2726a; --acc: #5cc995; --energy: #ff6cbf;
+  --steel: #9fb3c6; --mass: #3b95ad; --mass-edge: #7cc3d6; --force: #b79cf2; --disp: #7ea4f2; --wall: #5d6b7a;
   color-scheme: dark }
 
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); }
@@ -50,12 +51,17 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; lett
 .hint { color: var(--muted); font-size: 0.9rem; margin: 0; }
 
 .bench { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+/* Vector picker, top-left of the spring workspace (one at a time) */
+.vecsel { position: absolute; top: 14px; left: 14px; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px 16px; max-width: calc(100% - 200px); }
+.sw.fs { --c: var(--force); } .sw.vb { --c: var(--vel); } .sw.ab { --c: var(--acc); }
+.vecsel .sw { font-size: 0.95rem; }
 .topctl { position: absolute; top: 10px; right: 10px; z-index: 1; display: flex; gap: 8px; }
 .fric { background: var(--panel); min-width: 7.5em; }
 .play { background: var(--panel); width: 36px; padding: 0; display: grid; place-items: center; }
 .play svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; display: block; }
 [hidden] { display: none !important; }
 .fric[aria-pressed="false"] { background: var(--mass); border-color: var(--mass); color: #ffffff; }
+.fric[aria-pressed="true"] { background: var(--fric-on); border-color: var(--fric-on); color: #ffffff; }
 #work, #circ {
   display: block; width: 100%; height: 220px; touch-action: none; outline: none;
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M10 15 V7.4 a2 2 0 0 1 4 0 V11 a1.5 1.5 0 0 1 3 0 V11.8 a1.5 1.5 0 0 1 3 0 V12.8 a1.5 1.5 0 0 1 3 0 V20 c0 3.5 -2.2 6 -5.2 6 H15 c-2 0 -3.2 -0.9 -4.6 -2.8 L5.6 17.4 a1.7 1.7 0 0 1 2.5 -2.3 L10 16.8 Z' fill='white' stroke='white' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cpath d='M10 15 V7.4 a2 2 0 0 1 4 0 V11 a1.5 1.5 0 0 1 3 0 V11.8 a1.5 1.5 0 0 1 3 0 V12.8 a1.5 1.5 0 0 1 3 0 V20 c0 3.5 -2.2 6 -5.2 6 H15 c-2 0 -3.2 -0.9 -4.6 -2.8 L5.6 17.4 a1.7 1.7 0 0 1 2.5 -2.3 L10 16.8 Z' fill='%2317202a'/%3E%3Cpath d='M14 11 V16 M17 11.8 V16 M20 12.8 V16.3' stroke='white' stroke-width='0.9' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") 12 6, pointer;
@@ -67,11 +73,13 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; lett
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; }
 .label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
 #graph { display: block; width: 100%; height: 250px; }
-#graphLabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#graphLabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: none; letter-spacing: normal; font-size: 0.9rem; font-weight: 600; color: var(--axis); }
 .tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
 /* Function switches keep their space in both views so the card never changes height */
 /* Both option groups share one grid cell, so the row is the same height in either view */
-.tabopts { display: grid; margin-left: auto; justify-items: end; }
+/* Options (Stored energy, or x/v/a switches) on the left; Force / Functions buttons pushed to the right */
+.tabopts { display: grid; order: -1; margin-right: auto; justify-items: start; }
+#tabForce { margin-left: auto; }   /* keeps the buttons on the right even when they wrap on a phone */
 .tabopts > * { grid-area: 1 / 1; }
 .fnsw { display: flex; flex-wrap: wrap; gap: 6px 14px; visibility: hidden; }
 .sw.u { --c: var(--energy); }
@@ -96,8 +104,39 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; lett
 .pages { display: flex; flex-wrap: wrap; gap: 6px; }
 .pages button[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel); }
 .page { display: grid; gap: 16px; min-width: 0; }
+/* Spring and Force: workspace and graph side by side (half each), readings across the bottom */
+#pageSpring { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+#pageSpring > .lower { display: contents; }
+#pageSpring .rd { grid-column: 1 / -1; display: grid; gap: 14px 28px; align-items: start; }
+#pageSpring .rd .eq { margin: 0; padding: 0; border: 0; font-size: clamp(0.9rem, 2.16vw, 1.215rem); line-height: 1.5; color: var(--ink); }
+#pageSpring .rd .eq .fres { color: var(--force); }
+#pageSpring .rd .eq .uline { color: var(--energy); }
+#pageSpring .rd .eq .uline.off { display: none; }
+#pageSpring .rd .kctl { margin: 0; padding: 0; border: 0; }
+/* Return to Equilibrium sits in the bottom-right corner of the spring workspace */
+.bench .resetb { position: absolute; right: 10px; bottom: 10px; z-index: 1; background: var(--panel); white-space: nowrap; }
+#pageSpring .bench { display: flex; flex-direction: column; }
+#pageSpring #work { flex: 1 1 0; height: 0; min-height: 290px; }
+@media (max-width: 780px) { #pageSpring { grid-template-columns: minmax(0, 1fr); } }
+/* Circle and SHM: animation on the left two-thirds, control panel on the right third */
+#pageCircle { grid-template-columns: minmax(0, 2fr) minmax(330px, 1fr); align-items: stretch; }
+@media (max-width: 780px) { #pageCircle { grid-template-columns: minmax(0, 1fr); } }
+.cpanel .cread { display: grid; gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.fm { font-size: 1.05em; margin-left: 2px; }
+.fm mi { font-style: normal; font-family: var(--font-body); }
+@media (min-width: 781px) {
+  /* Graph on the left, spring on the right; readings stay across the bottom */
+  #pageSpring .bench { order: 2; }
+  #pageSpring .rd { order: 3; }
+  /* Bottom row, left to right: equation | spring constant */
+  #pageSpring .rd { grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr); }
+}
 .topctl button { background: var(--panel); }
-.opts { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+/* Two aligned columns of switches; one column if the panel is too narrow for two */
+.opts { display: grid; grid-template-columns: repeat(2, max-content); gap: 12px 14px; }
+.opts .sw { font-size: 0.84rem; }
+.cpanel { container-type: inline-size; }
+@container (max-width: 289px) { .opts { grid-template-columns: max-content; } }
 .opts .sw { font-family: var(--font-body); }
 .sw.p { --c: var(--disp); } .sw.r { --c: var(--steel); } .sw.vv { --c: var(--vel); }
 
@@ -136,24 +175,30 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
   <section class="page" id="pageSpring" role="tabpanel">
   <div class="bench">
+    <div class="vecsel" role="group" aria-label="Vector shown on the block">
+      <label class="sw fs"><input type="checkbox" role="switch" id="vecF" checked autocomplete="off"><span class="track"></span><span class="nm">F<sub>s</sub></span></label>
+      <label class="sw vb"><input type="checkbox" role="switch" id="vecV" autocomplete="off"><span class="track"></span><span class="nm">v</span></label>
+      <label class="sw ab"><input type="checkbox" role="switch" id="vecA" autocomplete="off"><span class="track"></span><span class="nm">a</span></label>
+    </div>
     <div class="topctl">
       <button id="play" class="play" type="button" aria-label="Pause" title="Pause">
         <svg id="icoPause" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.4" height="12" rx="0.8"/><rect x="9.6" y="2" width="3.4" height="12" rx="0.8"/></svg>
         <svg id="icoPlay" viewBox="0 0 16 16" aria-hidden="true" hidden><path d="M4 2.2 L13.5 8 L4 13.8 Z"/></svg>
       </button>
-      <button id="friction" class="fric" type="button" aria-pressed="true" title="Toggle friction between the block and the floor">Friction</button>
+      <button id="friction" class="fric" type="button" aria-pressed="false" title="Toggle friction between the block and the floor">Friction Off</button>
     </div>
+    <button id="reset" class="resetb" type="button">Return to Equilibrium</button>
     <canvas id="work" tabindex="0" aria-label="Spring and mass workspace. Use left and right arrow keys to move the mass."></canvas>
   </div>
 
   <div class="lower">
     <div class="card">
       <div class="tabs" role="tablist" aria-label="Graph type">
-        <button type="button" role="tab" id="tabForce" aria-selected="true" aria-controls="graph">Restoring Force</button>
+        <button type="button" role="tab" id="tabForce" aria-selected="true" aria-controls="graph">Force</button>
         <button type="button" role="tab" id="tabPT" aria-selected="false" aria-controls="graph">Functions</button>
         <div class="tabopts">
         <div class="fnsw show" id="esw" role="group" aria-label="Graph options">
-          <label class="sw u"><input type="checkbox" id="swU" autocomplete="off"><span class="box" aria-hidden="true"></span><span class="nm">Stored energy</span></label>
+          <label class="sw u"><input type="checkbox" role="switch" id="swU" autocomplete="off"><span class="track"></span><span class="nm">Stored energy</span></label>
         </div>
         <div class="fnsw" id="fnsw" role="group" aria-label="Functions to graph">
           <label class="sw x"><input type="checkbox" role="switch" id="swX" checked autocomplete="off"><span class="track"></span><span class="nm">x(t)</span></label>
@@ -162,10 +207,12 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
         </div>
         </div>
       </div>
-      <p class="label" id="graphLabel">Restoring force magnitude vs. displacement</p>
+      <p class="label" id="graphLabel">Restoring Force Magnitude vs. Displacement</p>
       <canvas id="graph" role="tabpanel" aria-label="Graph of spring force magnitude versus displacement"></canvas>
     </div>
-    <div class="card">
+    <div class="card rd">
+      <div class="eq" id="eq" aria-live="off">|F<sub>s</sub>| = k|x|
+= (20 N/m)(0.000 m) = 0.00 N</div>
       <div class="controls kctl">
         <label for="k">Spring constant k <output id="kOut">20 N/m</output></label>
         <div class="krow">
@@ -173,16 +220,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
           <input type="range" id="k" min="5" max="80" step="5" value="20" autocomplete="off">
           <button type="button" class="kstep" id="kUp" aria-label="Increase spring constant">+</button>
         </div>
-        <button id="reset" type="button">Return to Equilibrium</button>
       </div>
-      <p class="label">Readings</p>
-      <div class="readouts">
-        <div class="ro x"><div class="k">Displacement x</div><div class="v" id="xVal">0.000 m</div></div>
-        <div class="ro f"><div class="k">|F<sub>s</sub>|</div><div class="v" id="fVal">0.00 N</div></div>
-        <div class="ro u off" id="uRo"><div class="k">Stored energy U = ½kx²</div><div class="v" id="uVal">0.00 J</div></div>
-      </div>
-      <div class="eq" id="eq">|F<sub>s</sub>| = k|x|
-      = (20 N/m)(0.000 m) = 0.00 N</div>
     </div>
   </div>
   </section>
@@ -199,8 +237,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
       <canvas id="circ" aria-label="A ball in uniform circular motion above a mass on a spring; the ball's horizontal position matches the block's position."></canvas>
     </div>
 
-    <div class="lower">
-      <div class="card">
+    <div class="card cpanel">
         <div class="controls kctl">
           <label for="cK">Spring constant k <output id="cKOut">10 N/m</output></label>
           <div class="krow">
@@ -208,33 +245,19 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
             <input type="range" id="cK" min="5" max="80" step="5" value="10" autocomplete="off">
             <button type="button" class="kstep" id="cKUp" aria-label="Increase spring constant">+</button>
           </div>
-          <label for="cA">Amplitude A (circle radius) <output id="cAOut">0.40 m</output></label>
-          <div class="krow">
-            <button type="button" class="kstep" id="cADown" aria-label="Decrease amplitude">−</button>
-            <input type="range" id="cA" min="0.1" max="0.5" step="0.05" value="0.4" autocomplete="off">
-            <button type="button" class="kstep" id="cAUp" aria-label="Increase amplitude">+</button>
-          </div>
         </div>
         <p class="label">Show</p>
         <div class="opts">
-          <label class="sw p"><input type="checkbox" id="cProj" checked autocomplete="off"><span class="box" aria-hidden="true"></span><span class="nm">Projection line</span></label>
-          <label class="sw r"><input type="checkbox" id="cRad" checked autocomplete="off"><span class="box" aria-hidden="true"></span><span class="nm">Radius &amp; angle</span></label>
-          <label class="sw vv"><input type="checkbox" id="cVel" checked autocomplete="off"><span class="box" aria-hidden="true"></span><span class="nm">Velocity vectors</span></label>
+          <label class="sw p"><input type="checkbox" role="switch" id="cProj" checked autocomplete="off"><span class="track"></span><span class="nm">Projection line</span></label>
+          <label class="sw r"><input type="checkbox" role="switch" id="cRad" checked autocomplete="off"><span class="track"></span><span class="nm">Radius &amp; angle</span></label>
+          <label class="sw vv"><input type="checkbox" role="switch" id="cVel" checked autocomplete="off"><span class="track"></span><span class="nm">Velocity vectors</span></label>
+          <label class="sw vv"><input type="checkbox" role="switch" id="cComp" autocomplete="off"><span class="track"></span><span class="nm">v<sub>x</sub></span></label>
         </div>
-      </div>
-      <div class="card">
-        <p class="label">Readings</p>
-        <div class="readouts">
-          <div class="ro x"><div class="k">x of ball (shadow)</div><div class="v" id="cXc">+0.400 m</div></div>
-          <div class="ro x"><div class="k">x of block on spring</div><div class="v" id="cXs">+0.400 m</div></div>
+        <div class="cread">
+          <div class="ro"><div class="k">Angular speed <math class="fm"><mi mathvariant="normal">ω</mi><mo>=</mo><msqrt><mi mathvariant="normal">k</mi><mo lspace="0" rspace="0">/</mo><mi mathvariant="normal">m</mi></msqrt></math></div><div class="v" id="cW">2.24 rad/s</div></div>
           <div class="ro"><div class="k">Angle θ = ωt</div><div class="v" id="cTh">0.0°</div></div>
-          <div class="ro"><div class="k">Angular speed ω = √(k/m)</div><div class="v" id="cW">2.24 rad/s</div></div>
           <div class="ro"><div class="k">Period T = 2π/ω</div><div class="v" id="cT">2.81 s</div></div>
-          <div class="ro"><div class="k">Difference |x<sub>block</sub> − x<sub>ball</sub>|</div><div class="v" id="cDiff">0.000 m</div></div>
         </div>
-        <div class="eq" id="cEq">x = A cos θ = A cos(ωt)
-= (0.40 m) cos(  0.0°) = +0.400 m</div>
-      </div>
     </div>
   </section>
 </div>
@@ -243,7 +266,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 (() => {
   const X_MAX = 0.50;            // meters: maximum stretch = maximum compression
   const MASS = 2.0;              // kg
-  const state = { x: 0, v: 0, k: 20, dragging: false, grabOffset: 0, friction: true, paused: false };
+  const state = { x: 0, v: 0, k: 20, dragging: false, grabOffset: 0, friction: false, paused: false, vec: 'F' };
   let gSize = { w: 0, h: 0 };
   let raf = null, lastT = 0;
   let view = 'force';            // 'force' | 'pt'
@@ -279,7 +302,9 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     const cx = w / 2;
     // Range in px: mass must stay clear of the right edge and leave room for a compressed spring on the left
     const rangePx = Math.min(w * 0.32, cx - wallX - massW / 2 - 44, w - 24 - cx - massW / 2);
-    const trackY = 118;
+    // Centre the scene vertically in the workspace (it is taller when beside the graph)
+    // and keep its top labels below the pause / friction buttons
+    const trackY = Math.round(Math.max(160, (h - (massH / 2 + 40) + 118) / 2));
     return { w, h, wallX, massW, massH, cx, rangePx, trackY, ppm: rangePx / X_MAX };
   }
   const massCenterPx = () => G.cx + state.x * G.ppm;
@@ -317,9 +342,9 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     ctx.fillRect(cx - rangePx, floorY - 4, rangePx * 2, 4); ctx.globalAlpha = 1;
 
     // Wall with hatching
-    ctx.fillStyle = C.wall; ctx.fillRect(wallX - 6, 22, 6, floorY - 22 + 1);
+    ctx.fillStyle = C.wall; ctx.fillRect(wallX - 6, trackY - 96, 6, floorY - (trackY - 96) + 1);
     ctx.strokeStyle = C.wall; ctx.lineWidth = 1.2;
-    for (let y = 26; y < floorY; y += 10) { ctx.beginPath(); ctx.moveTo(wallX - 6, y); ctx.lineTo(wallX - 16, y + 10); ctx.stroke(); }
+    for (let y = trackY - 92; y < floorY; y += 10) { ctx.beginPath(); ctx.moveTo(wallX - 6, y); ctx.lineTo(wallX - 16, y + 10); ctx.stroke(); }
 
     // Ruler: ticks every 0.1 m, limits marked
     const rulerY = floorY + 14;
@@ -330,13 +355,13 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
       ctx.beginPath(); ctx.moveTo(px, rulerY); ctx.lineTo(px, rulerY + (major ? 9 : 5)); ctx.stroke();
       if (major || w > 560) ctx.fillText((i / 10).toFixed(1), px, rulerY + 22);
     }
-    ctx.fillText('x (m)', Math.min(w - 22, cx + rangePx + 30), rulerY + 22);
+    ctx.fillText('x (m)', Math.min(w - 22, cx + rangePx + 44), rulerY + 22);
 
     // Equilibrium line
     ctx.setLineDash([4, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, floorY); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(cx, trackY - 98); ctx.lineTo(cx, floorY); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = C.muted; ctx.font = '600 12px ' + css('--font-body');
-    ctx.fillText('Equilibrium', cx, 14);
+    ctx.fillText('Equilibrium', cx, trackY - 104);
 
     // Spring + mass
     const mx = massCenterPx(), mLeft = mx - massW / 2, mTop = trackY - massH / 2;
@@ -351,12 +376,19 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     ctx.fillText('m = ' + MASS.toFixed(1) + ' kg', 12, h - 12);
 
     // Displacement arrow (from equilibrium to mass center) and restoring force arrow on the mass
-    arrow(ctx, cx, mx, 34, C.disp, 'x', true);
+    arrow(ctx, cx, mx, trackY - 84, C.disp, 'x', true);
     // Force arrow starts at the block's center; its length is proportional to |F| (6 px per newton),
     // so it shrinks smoothly to nothing at equilibrium (kept inside the canvas on narrow screens)
-    const F = state.k * state.x, fLen = Math.abs(F) * 6;
-    const tip = Math.max(4, Math.min(w - 4, mx - Math.sign(state.x) * fLen));
-    arrow(ctx, mx, tip, mTop - 12, C.force, 'Fs', true);
+    // Vector above the block: spring force (6 px per N), velocity (40 px per m/s) or acceleration (8 px per m/s²)
+    const free = !state.friction && !state.dragging;
+    let val = 0, scale = 0, col = C.force, lab = 'Fs';
+    if (state.vec === 'F') { val = -state.k * state.x; scale = 6; }
+    else if (state.vec === 'v') { val = free ? state.v : vEst; scale = 40; col = C.vel; lab = 'v'; }
+    else if (state.vec === 'a') { val = free ? -(state.k / MASS) * state.x : aEst; scale = 8; col = C.acc; lab = 'a'; }
+    if (state.vec) {
+      const tip = Math.max(4, Math.min(w - 4, mx + val * scale));
+      arrow(ctx, mx, tip, mTop - 12, col, lab, true);
+    }
   }
 
   function niceMax(v) { const steps = [5, 10, 15, 20, 25, 30, 40, 50, 60]; return steps.find(s => s >= v) || Math.ceil(v / 10) * 10; }
@@ -500,14 +532,11 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
   function updateText() {
     const x = state.x, F = Math.abs(state.k * x);
-    document.getElementById('xVal').textContent = (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(3) + ' m';
-    // Pad numbers with figure spaces so every reading keeps a constant width
-    const pad = (s, n) => s.padStart(n, ' ');
-    document.getElementById('fVal').textContent = pad(F.toFixed(2), 5) + ' N';
-    document.getElementById('uVal').textContent = pad((0.5 * state.k * x * x).toFixed(2), 5) + ' J';
-    document.getElementById('uRo').classList.toggle('off', !showEnergy);
+    // Spring force equation with live numbers; the stored-energy line appears only when switched on
+    const U = 0.5 * state.k * x * x;
     document.getElementById('eq').innerHTML =
-      `|F<sub>s</sub>| = k|x|\n= (${pad(String(state.k), 3)} N/m)(${Math.abs(x).toFixed(3)} m) = ${pad(F.toFixed(2), 5)} N`;
+      `|F<sub>s</sub>| = k|x|\n= (${state.k} N/m)(${Math.abs(x).toFixed(3)} m) = <span class="fres">${F.toFixed(2)} N</span>` +
+      `<span class="uline${showEnergy ? '' : ' off'}">\nU = ½kx² = ${U.toFixed(2)} J</span>`;
     document.getElementById('kOut').textContent = state.k + ' N/m';
     document.getElementById('kDown').disabled = state.k <= +kInput.min;
     document.getElementById('kUp').disabled = state.k >= +kInput.max;
@@ -561,7 +590,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   const fricBtn = document.getElementById('friction');
   fricBtn.addEventListener('click', () => {
     state.friction = !state.friction;
-    fricBtn.textContent = state.friction ? 'Friction' : 'No Friction';
+    fricBtn.textContent = state.friction ? 'Friction On' : 'Friction Off';
     fricBtn.setAttribute('aria-pressed', String(state.friction));
     state.v = 0;
     render();
@@ -577,6 +606,17 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     document.getElementById('icoPlay').toggleAttribute('hidden', !state.paused);
   });
 
+  // Vector picker: checking one box clears the others; unchecking all hides the vector
+  const vecBoxes = { F: document.getElementById('vecF'), v: document.getElementById('vecV'), a: document.getElementById('vecA') };
+  Object.entries(vecBoxes).forEach(([key, box]) => {
+    box.checked = key === state.vec;
+    box.addEventListener('change', () => {
+      if (box.checked) { state.vec = key; Object.entries(vecBoxes).forEach(([k2, b2]) => { if (k2 !== key) b2.checked = false; }); }
+      else state.vec = null;
+      render();
+    });
+  });
+
   // Graph tabs
   const tabForce = document.getElementById('tabForce'), tabPT = document.getElementById('tabPT');
   function setView(v) {
@@ -584,7 +624,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     tabForce.setAttribute('aria-selected', String(v === 'force'));
     tabPT.setAttribute('aria-selected', String(v === 'pt'));
     document.getElementById('graphLabel').textContent =
-      v === 'force' ? 'Restoring force magnitude vs. displacement' : 'Functions of time (last 6 s)';
+      v === 'force' ? 'Restoring Force Magnitude vs. Displacement' : 'Functions of Time (Last 6 s)';
     graph.setAttribute('aria-label', v === 'force'
       ? 'Graph of spring force magnitude versus displacement'
       : 'Graphs of position, velocity and acceleration versus time');
@@ -646,12 +686,26 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   document.getElementById('kUp').addEventListener('click', () => nudgeK(1));
 
   window.addEventListener('resize', resize);
+  if (window.ResizeObserver) {
+    let lw = 0, lh = 0;
+    // Resize on the next frame, outside the observer callback, so redrawing never re-triggers it
+    let pending = false;
+    new ResizeObserver(() => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        const r = work.getBoundingClientRect();
+        if (r.width !== lw || r.height !== lh) { lw = r.width; lh = r.height; resize(); }
+      });
+    }).observe(work);
+  }
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   mq.addEventListener?.('change', resize);
   new MutationObserver(resize).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   kInput.value = 20; // always start at k = 20 N/m, even if the browser restored an old slider value
-  state.x = 0.25; // open in a working state: stretched 0.25 m
+  state.x = 0;    // start at rest at equilibrium, with friction off
   document.fonts?.ready.then(resize);
   resize();
   startSim();
@@ -665,9 +719,9 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 (() => {
   const MASS = 2.0, TAU = Math.PI * 2, BALL_R = 15;
   const cv = document.getElementById('circ'), ctx = cv.getContext('2d');
-  const kIn = document.getElementById('cK'), aIn = document.getElementById('cA');
+  const kIn = document.getElementById('cK');   // amplitude is fixed at A = 0.40 m
   const S = { k: 10, A: 0.40, theta: 0, x: 0.40, v: 0, paused: false, dragging: false };
-  const show = { proj: true, rad: true, vel: true };
+  const show = { proj: true, rad: true, vel: true, comp: false };
   let G = null, raf = null, lastT = 0, active = false;
 
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -789,7 +843,27 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     ctx.fillStyle = C.mass; ctx.strokeStyle = C.edge; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(px, py, BALL_R, 0, TAU); ctx.fill(); ctx.stroke();
 
-    // Velocity: tangent to the circle, and its horizontal part
+    // Horizontal component of the ball's velocity, v_x (dashed)
+    if (show.comp && vc > 0) {
+      // Draws "v" with a subscript, centred on (x, y)
+      const sub = (x, y, main, s2) => {
+        ctx.fillStyle = C.vel; ctx.textAlign = 'left';
+        ctx.font = '600 13px ' + FD; const mw = ctx.measureText(main).width;
+        ctx.font = '600 10px ' + FD; const sw = ctx.measureText(s2).width;
+        const x0 = x - (mw + sw) / 2;
+        ctx.font = '600 13px ' + FD; ctx.fillText(main, x0, y + 4);
+        ctx.font = '600 10px ' + FD; ctx.fillText(s2, x0 + mw, y + 8);
+      };
+      const [xx] = fitTip(px, py, px - vS * vc * s, py);
+      arrow(px, py, xx, py, C.vel, '', true);
+      // The label rides just outside the ball, radially away from the circle's centre (above the ball at
+      // the top, below it at the bottom, beside it at the sides), shifted toward the middle of the arrow.
+      // Every term varies smoothly with the angle, so the label glides around and never jumps or vanishes.
+      const dLab = BALL_R + 18;
+      sub(px + (xx - px) / 2 + dLab * c, py - dLab * s, 'v', 'x');
+    }
+
+    // Velocity: tangent to the circle
     if (show.vel && vc > 0) {
       const [tx, ty] = fitTip(px, py, px - vS * vc * s, py - vS * vc * c);
       const L = Math.hypot(tx - px, ty - py) || 1;
@@ -833,21 +907,12 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   const padS = (s, n) => s.padStart(n, ' ');
   function updateText() {
     const w0 = omega(), tn = ((S.theta % TAU) + TAU) % TAU, deg = tn * 180 / Math.PI;
-    const xc = S.A * Math.cos(S.theta);
-    document.getElementById('cXc').textContent = sgn(xc);
-    document.getElementById('cXs').textContent = sgn(S.x);
-    document.getElementById('cTh').textContent = padS(deg.toFixed(1), 5) + '°';
+    document.getElementById('cTh').textContent = deg.toFixed(1) + '°';
     document.getElementById('cW').textContent = w0.toFixed(2) + ' rad/s';
     document.getElementById('cT').textContent = (TAU / w0).toFixed(2) + ' s';
-    document.getElementById('cDiff').textContent = Math.abs(S.x - xc).toFixed(3) + ' m';
-    document.getElementById('cEq').textContent =
-      `x = A cos θ = A cos(ωt)\n= (${S.A.toFixed(2)} m) cos(${padS(deg.toFixed(1), 5)}°) = ${sgn(xc)}`;
     document.getElementById('cKOut').textContent = S.k + ' N/m';
-    document.getElementById('cAOut').textContent = S.A.toFixed(2) + ' m';
     document.getElementById('cKDown').disabled = S.k <= +kIn.min;
     document.getElementById('cKUp').disabled = S.k >= +kIn.max;
-    document.getElementById('cADown').disabled = S.A <= +aIn.min + 1e-9;
-    document.getElementById('cAUp').disabled = S.A >= +aIn.max - 1e-9;
   }
 
   function step(dt) {
@@ -885,7 +950,6 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   });
   document.getElementById('cReset').addEventListener('click', () => { S.theta = 0; sync(); draw(); updateText(); });
   kIn.addEventListener('input', () => { S.k = +kIn.value; sync(); draw(); updateText(); });
-  aIn.addEventListener('input', () => { S.A = Math.round(+aIn.value * 100) / 100; sync(); draw(); updateText(); });
   const nudge = (inp, d) => {
     const st = +inp.step;
     let v = Math.round((+inp.value + d * st) * 100) / 100;
@@ -895,9 +959,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   };
   document.getElementById('cKDown').addEventListener('click', () => nudge(kIn, -1));
   document.getElementById('cKUp').addEventListener('click', () => nudge(kIn, 1));
-  document.getElementById('cADown').addEventListener('click', () => nudge(aIn, -1));
-  document.getElementById('cAUp').addEventListener('click', () => nudge(aIn, 1));
-  [['cProj', 'proj'], ['cRad', 'rad'], ['cVel', 'vel']].forEach(([id, key]) => {
+  [['cProj', 'proj'], ['cRad', 'rad'], ['cVel', 'vel'], ['cComp', 'comp']].forEach(([id, key]) => {
     const box = document.getElementById(id);
     box.checked = show[key];
     box.addEventListener('change', () => { show[key] = box.checked; draw(); });
@@ -919,7 +981,17 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   window.addEventListener('resize', resize);
   if (window.ResizeObserver) {
     let lastW = 0;
-    new ResizeObserver(() => { const w = cv.getBoundingClientRect().width; if (w !== lastW) { lastW = w; resize(); } }).observe(cv);
+    // Resize on the next frame: resize() changes the canvas height, which must not happen inside the callback
+    let pending = false;
+    new ResizeObserver(() => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        const w = cv.getBoundingClientRect().width;
+        if (w !== lastW) { lastW = w; resize(); }
+      });
+    }).observe(cv);
   }
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', resize);
   new MutationObserver(resize).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -940,7 +1012,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   navCircle.addEventListener('click', () => go('circle'));
   window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 
-  kIn.value = 10; aIn.value = 0.4;   // Circle and SHM starts at k = 10 N/m
+  kIn.value = 10;   // Circle and SHM starts at k = 10 N/m
   sync();
   showPage(location.hash.slice(1));
 })();
