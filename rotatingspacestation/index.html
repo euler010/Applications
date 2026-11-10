@@ -46,6 +46,9 @@ aside{background:var(--panel);border:1px solid var(--line);border-radius:6px;pad
 .ctl label{font-size:14px}
 .ctl output{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--accent)}
 .ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent)}
+.steprow{grid-column:1/-1;display:flex;gap:8px;align-items:center}
+.steprow input{flex:1;min-width:0}
+.steprow button{width:30px;height:28px;padding:0;font-size:17px;line-height:1;flex:none}
 .ctl small{grid-column:1/-1;color:var(--muted);font-size:12.5px}
 .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 button{font:600 14px var(--f-body);padding:9px 10px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
@@ -107,7 +110,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       </div>
       <div class="group">
         <div class="ctl"><label for="speed">Time scale</label><output id="speedo"></output>
-          <input id="speed" type="range" min="0" max="5" step="1" value="2"></div>
+          <div class="steprow"><button id="spdm" aria-label="Slower">−</button><input id="speed" type="range" min="0" max="4" step="1" value="2"><button id="spdp" aria-label="Faster">+</button></div></div>
         <label class="chk"><input type="checkbox" id="ghost" checked> Show predicted path</label>
       </div>
     </aside>
@@ -146,7 +149,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 (function(){
 const $=id=>document.getElementById(id);
 const TAU=Math.PI*2, H_REL=1.6, EYE=1.7, FWD=0.5, TMAX=600, NS=400;
-const SPEEDS=[0.25,0.5,1,2,4,8];
+const SPEEDS=[0.25,0.5,1,2,4];
 const P={R:100,rpm:3,v:30,alpha:50,delta:30,speed:1,frame:'inertial',ghost:true,zoom:false};
 let S=null, t=0, playing=false, pre=0, spinning=false; // pre = station angle turned before the throw
 
@@ -227,6 +230,8 @@ function updateLabels(){
   if(id==='delta'&&Math.abs(v)<3){v=v<0?-3:3;e.target.value=v;}
   P[id]=v;$('aimmsg').textContent='';recompute();}));
 $('speed').addEventListener('input',e=>{P.speed=SPEEDS[e.target.value];updateLabels();});
+const stepSpeed=d=>{const el=$('speed');el.value=Math.min(SPEEDS.length-1,Math.max(0,+el.value+d));P.speed=SPEEDS[el.value];updateLabels();};
+$('spdm').addEventListener('click',()=>stepSpeed(-1));$('spdp').addEventListener('click',()=>stepSpeed(1));
 $('ghost').addEventListener('change',e=>P.ghost=e.target.checked);
 $('zoom').addEventListener('change',e=>P.zoom=e.target.checked);
 $('vecs').addEventListener('change',e=>P.vecs=e.target.checked);
