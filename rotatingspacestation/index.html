@@ -310,8 +310,18 @@ function draw2D(){
     g2.beginPath();g2.moveTo(ex,ey);g2.lineTo(ex-ux*8-uy*4.5,ey-uy*8+ux*4.5);g2.lineTo(ex-ux*8+uy*4.5,ey-uy*8-ux*4.5);g2.closePath();g2.fill();
     if(label){g2.font='500 12px "JetBrains Mono",ui-monospace,monospace';g2.fillStyle=col.hull;
       // label centred just beyond the arrow tip; the offset varies smoothly with direction so it never jumps
-      const tw=g2.measureText(label).width,off=8+Math.abs(ux)*tw/2+Math.abs(uy)*8;
-      g2.textAlign='center';g2.textBaseline='middle';g2.fillText(label,ex+ux*off,ey+uy*off);g2.textAlign='left';g2.textBaseline='alphabetic';}};
+      // label sits beside the arrow (offset perpendicular to it), slid away from the person so it never overlaps either
+      const tw=g2.measureText(label).width,hh=8;
+      const px=inertial?sx:ex, py=inertial?sy:ey, vx=inertial?ux:-ux, vy=inertial?uy:-uy, nx=vy*S.dir, ny=-vx*S.dir; // side away from the catcher, so it also clears the throw arrow
+      const along=Math.max(Lpx/2,Math.abs(vx)*tw/2+Math.abs(vy)*hh+2), perp=Math.abs(nx)*tw/2+Math.abs(ny)*hh+8;
+      // prefer the side away from the catcher; switch sides if that would run off the canvas, and clamp as a last resort
+      const fits=(x,y)=>x-tw/2>=4&&x+tw/2<=W-4&&y-hh>=4&&y+hh<=H-4;
+      let lx=px+vx*along+nx*perp, ly=py+vy*along+ny*perp;
+      if(!fits(lx,ly)){ // fallback 1: just past the far end of the arrow, away from the person; fallback 2: the other side
+        const a2=Lpx+Math.abs(vx)*tw/2+Math.abs(vy)*hh+6, bx=px+vx*a2, by=py+vy*a2, ax=px+vx*along-nx*perp, ay=py+vy*along-ny*perp;
+        if(fits(bx,by)){lx=bx;ly=by;}else if(fits(ax,ay)){lx=ax;ly=ay;}}
+      lx=Math.min(Math.max(lx,tw/2+4),W-tw/2-4);ly=Math.min(Math.max(ly,hh+4),H-hh-4);
+      g2.textAlign='center';g2.textBaseline='middle';g2.fillText(label,lx,ly);g2.textAlign='left';g2.textBaseline='alphabetic';}};
   const lbl=`${inertial?'a':'g'} = ${fmt(acc,2)} m/s²`;
   arrow(S.phiA,col.thr,lbl);
   // aim arrow before throw
