@@ -1,8 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Hooke's Law Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+body { margin: 0; }
 /* Layout: a single lab bench — workspace band on top, small instrument graph and readouts beneath */
 :root {
   --bg: #eef1f4;
@@ -165,6 +171,8 @@ button {
 button:hover { border-color: var(--steel); }
 button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header>
@@ -1059,3 +1067,5 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   showPage(location.hash.slice(1));
 })();
 </script>
+</body>
+</html>
