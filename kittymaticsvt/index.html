@@ -98,9 +98,9 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
     <canvas id="gv" aria-label="Velocity versus time graph. Click to add points, drag a point to move it."></canvas>
   </figure>
   <div class="stage">
-    <svg viewBox="0 58 1000 164" role="img" aria-labelledby="stageT">
+    <svg viewBox="0 48 1000 174" role="img" aria-labelledby="stageT">
       <title id="stageT">Your cat on a number line</title>
-      <text x="990" y="76" fill="#8a7f70" font-size="13" font-family="JetBrains Mono, monospace" text-anchor="end">x (m)</text>
+      <text x="990" y="66" fill="#8a7f70" font-size="13" font-family="JetBrains Mono, monospace" text-anchor="end">x (m)</text>
       <g id="axis"></g>
       <g id="disp"><path id="dLine" stroke="#2861a6" stroke-width="3" stroke-linecap="round" fill="none"/><path id="dHead" fill="#2861a6"/><text id="dLab" fill="#2861a6" font-size="13" font-family="JetBrains Mono, monospace"></text></g>
       <g id="arrows">
@@ -188,7 +188,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
 <script>
 (function(){
 const $=id=>document.getElementById(id);
-const TMAX=10,VMAX=5,LX=50,RX=950,FLOOR=150,K=0.363,MIN_DT=0.05,SNAP=0.5;
+const TMAX=10,VMAX=5,LX=50,RX=950,FLOOR=150,K=0.4356,MIN_DT=0.05,SNAP=0.5;
 let XTSTEP=1,XTLO=-2,XTHI=2,X0=0,XLO=-10,XHI=10,TICK=1,PPM=(RX-LX)/20;
 let pts=[],cum=[0],hist=[];
 let t=0,running=false,ended=false,simSpeed=1,tEnd=0,dirty=true;
@@ -317,7 +317,7 @@ function placeCat(xm){const X=xToX(xm);
   $('cat').setAttribute('transform',`translate(${X.toFixed(2)},${FLOOR}) scale(${K}) translate(-150,${(-FY+sy+crouchX).toFixed(2)})`);
   rig(T.th,headY,T.thHead);
   $('marker').setAttribute('d',`M${X} ${FLOOR+2} l-7 11 h14 z`);
-  arrow('v',X,80,vel(t)*18);dispArrow(X,xm)}
+  arrow('v',X,68,vel(t)*18);dispArrow(X,xm)}
 function arrow(k,X,y,len){const line=$(k+'Line'),hd=$(k+'Head'),lab=$(k+'Lab');if(Math.abs(len)<3){line.setAttribute('d','');hd.setAttribute('d','');lab.setAttribute('x',X);lab.setAttribute('y',y+5);lab.setAttribute('opacity','0.55');return}
   const s=Math.sign(len),x1=X+len,xb=x1-s*9;line.setAttribute('d',`M${X} ${y} H${xb}`);hd.setAttribute('d',`M${x1} ${y} L${xb} ${y-6} L${xb} ${y+6} Z`);lab.setAttribute('x',X-s*12);lab.setAttribute('y',y+5);lab.setAttribute('opacity','1')}
 function dispArrow(X,xm){const X0p=xToX(X0),y=FLOOR+52,len=X-X0p,line=$('dLine'),hd=$('dHead'),lab=$('dLab');
