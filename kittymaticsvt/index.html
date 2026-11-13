@@ -1,1 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kittymatics: Velocity and Displacement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#eef1f5; --surface:#ffffff; --ink:#17202b; --muted:#5a6575; --line:#d8dde5; --grid:#e8ebf0; --axis:#3d4654;
+  --x:#2861a6; --v:#cc2b2b; --pos:#2861a6; --neg:#d07a12; --accent:#17202b; --accent-ink:#ffffff;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Public Sans", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
+  --x:#73aaf0; --v:#f26d6d; --pos:#73aaf0; --neg:#f0a24a; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
+  --x:#73aaf0; --v:#f26d6d; --pos:#73aaf0; --neg:#f0a24a; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:1040px;margin:0 auto;padding-block:26px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+header{display:grid;gap:4px}
+h1{margin:0;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em}
+.lede{margin:0;color:var(--muted);font-size:14px;max-width:70ch}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,select{font:inherit;cursor:pointer;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:0 11px;font-size:13px;font-weight:500;height:30px;box-sizing:border-box}
+button:hover:not(:disabled),select:hover{border-color:var(--muted)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--x);outline-offset:2px}
+.play{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;min-width:96px}
+.play:hover:not(:disabled){border-color:var(--accent);opacity:.9}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;height:30px;box-sizing:border-box}
+.seg button{border:0;border-radius:0;height:28px;font-size:12px}
+.seg.mono button{font-family:var(--mono)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 196px;gap:14px;align-items:start}
+.vtfig{grid-column:1;grid-row:1} .tools{grid-column:2;grid-row:1}
+.stage{grid-column:1;grid-row:2} .pb{grid-column:2;grid-row:2}
+#xfig{grid-column:1;grid-row:3}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0}
+.side .sub{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.side .seg{display:flex}.side .seg button{flex:1;padding:0 6px}
+.side .row{display:flex;gap:8px}.side .row button{flex:1}
+.side .check{padding:2px 0}
+.ctl{display:grid;gap:4px;min-width:150px}.ctl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ctl label{font-weight:600;font-size:13px}.ctl output{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;color:var(--x)}.ctl .unit{color:var(--muted);font-size:12px}
+input[type=range]{width:100%;margin:0;accent-color:var(--x);height:22px}
+@media (max-width:760px){.main{grid-template-columns:minmax(0,1fr)}.vtfig,.tools,.stage,.pb,#xfig{grid-column:auto;grid-row:auto}
+  .side{flex-direction:row;flex-wrap:wrap;align-items:center;background:none;border:0;padding:0}.side .sub{display:none}.side .seg{display:inline-flex}.side .seg button{flex:none;padding:0 11px}}
+.check{display:inline-flex;gap:9px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+.check input{appearance:none;-webkit-appearance:none;margin:0;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:background .18s;flex:none}
+.check input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .18s}
+.check input:checked{background:var(--ink)}
+.check input:checked::after{transform:translateX(16px)}
+@media (prefers-reduced-motion:reduce){.check input,.check input::after{transition:none}}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 8px;display:grid;gap:6px;min-width:0}
+figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 14px;font-weight:600;font-size:14px}
+figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+.legend{display:flex;gap:14px;font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
+.legend b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+#gv{display:block;width:100%;height:300px;touch-action:none;cursor:crosshair}
+#gx{display:block;width:100%;height:170px}
+.stage{background:#ffffff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stage svg{display:block;width:100%;height:auto}
+.readouts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.ro{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.ro span{font-size:12px;color:var(--muted)}
+.ro strong{font-family:var(--mono);font-weight:500;font-size:clamp(17px,2.2vw,22px);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ro em{font-style:normal;font-size:12px;color:var(--muted);margin-left:3px}
+.ro.v strong{color:var(--v)} .ro.x strong{color:var(--x)}
+.status{margin:0;min-height:1.55em;color:var(--muted);font-size:14px}
+.hide{display:none}
+@media (max-width:620px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}#gv{height:250px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Kittymatics: Velocity and Displacement</h1>  </header>
 
+  <div class="main">
+  <div class="side tools" aria-label="Drawing tools">
+    <p class="sub">Draw</p>
+    <div class="seg" role="group" aria-label="Drawing mode">
+      <button type="button" data-m="free" aria-pressed="true">Freehand</button>
+      <button type="button" data-m="line" aria-pressed="false">Segments</button>
+    </div>
+    <label class="check"><input type="checkbox" role="switch" id="snap" checked> Snap to grid</label>
+    <select id="ex" aria-label="Load an example graph">
+      <option value="">Examples…</option>
+      <option value="0,0;3,3;7,3;10,0">Speed up, cruise, stop</option>
+      <option value="0,4;10,-4">Turnaround</option>
+      <option value="0,3;3,3;4,-3;7,-3;8,0;10,0">Out and back</option>
+      <option value="0,2;2,2;3,0;5,0;6,-3;9,-3;10,0">Stop, then reverse</option>
+    </select>
+    <div class="row"><button type="button" id="undo" disabled>Undo</button>
+    <button type="button" id="clear" disabled>Clear</button></div>
+    <div class="ctl">
+      <div class="ctl-top"><label for="x0">Initial Position</label><span><output id="x0o">0.0</output> <span class="unit">m</span></span></div>
+      <input type="range" id="x0" min="-10" max="10" step="0.5" value="0">
+    </div>
+  </div>
+
+  <figure class="vtfig">
+    <figcaption>
+      <span><span class="sw" style="background:var(--v)"></span>Velocity vs. time <small>v (m/s)</small></span>
+      <span class="legend">
+        <span><span class="sw" style="background:var(--pos);opacity:.55"></span>area above <b id="aPos">+0.00 m</b></span>
+        <span><span class="sw" style="background:var(--neg);opacity:.55"></span>area below <b id="aNeg">−0.00 m</b></span>
+      </span>
+    </figcaption>
+    <canvas id="gv" aria-label="Velocity versus time graph. Click to add points, drag a point to move it."></canvas>
+  </figure>
+
+  <div class="side pb" aria-label="Playback">
+    <p class="sub">Playback</p>
+    <div class="row"><button type="button" class="play" id="play" disabled>Play</button>
+    <button type="button" id="reset">Reset</button></div>
+    <div class="seg mono" role="group" aria-label="Playback speed">
+      <button type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+      <button type="button" data-s="1" aria-pressed="true">1×</button>
+      <button type="button" data-s="2" aria-pressed="false">2×</button>
+    </div>
+    <label class="check"><input type="checkbox" role="switch" id="showx" checked> Show x–t graph</label>
+  </div>
+
+  <div class="stage">
+    <svg viewBox="0 58 1000 164" role="img" aria-labelledby="stageT">
+      <title id="stageT">Your cat on a number line</title>
+      <text x="990" y="76" fill="#8a7f70" font-size="13" font-family="JetBrains Mono, monospace" text-anchor="end">x (m)</text>
+      <g id="axis"></g>
+      <g id="disp"><path id="dLine" stroke="#2861a6" stroke-width="3" stroke-linecap="round" fill="none"/><path id="dHead" fill="#2861a6"/><text id="dLab" fill="#2861a6" font-size="13" font-family="JetBrains Mono, monospace"></text></g>
+      <g id="arrows">
+        <path id="vLine" stroke="#cc2b2b" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path id="vHead" fill="#cc2b2b"/>
+        <text id="vLab" fill="#cc2b2b" font-size="15" font-family="JetBrains Mono, monospace" text-anchor="middle">v</text>
+      </g>
+      <path id="marker" fill="#2861a6"/>
+      <g id="cat"><g id="pitch">
+        <g id="tw"><g id="tail"><path d="M82 96 C44 88 36 30 58 18 C70 12 76 26 66 30" stroke="#121214" stroke-width="9" fill="none" stroke-linecap="round"/></g></g>
+        <g id="backL" stroke-linejoin="round" stroke-width="3"><g id="w0" fill="#0c0c0e" stroke="#0c0c0e"><path id="pl0"/><path id="pu0"/><circle id="ph0" r="16" stroke="none"/><circle id="pk0" r="5.5" stroke="none"/></g><g id="w2" fill="#08080a" stroke="#08080a"><path id="pl2"/><path id="pu2"/><circle id="ps2" r="10.5" stroke="none"/><circle id="pk2" r="6" stroke="none"/></g></g>
+        <g id="bw"><ellipse cx="135" cy="112" rx="58" ry="24" fill="#121214"/>
+        <path d="M78 110 C78 94 92 84 110 84 C130 84 150 89 162 96 L152 112 L94 116 Z" fill="#121214"/>
+        <path d="M146 92 C164 90 176 86 186 82 L206 94 C206 110 202 124 195 133 C187 140 168 140 154 133 Z" fill="#121214"/>
+        <path d="M94 92 Q138 82 176 94 Q140 94 98 98 Z" fill="#2a2a31" opacity="0.55"/>
+        <path d="M110 92 Q140 86 164 95 Q140 94 114 96 Z" fill="#34343c" opacity="0.5"/></g>
+        <g id="frontL" stroke-linejoin="round" stroke-width="3"><g id="w1" fill="#121214" stroke="#121214"><path id="pl1"/><path id="pu1"/><circle id="ph1" r="15" stroke="none"/><circle id="pk1" r="5.5" stroke="none"/></g><g id="w3" fill="#121214" stroke="#121214"><path id="pl3"/><path id="pu3"/><circle id="ps3" r="10.5" stroke="none"/><circle id="pk3" r="6" stroke="none"/></g></g>
+        <g id="headAll">
+          <polygon id="earL" fill="#121214"/><polygon id="earR" fill="#121214"/>
+          <path d="M179 84 C175.5 74 178.5 62 185 58 C191 54.5 199 53 206 53 C213 53 221 54.5 227 58 C233.5 62 236.5 74 233 84 C229 94 219 100 206 100 C193 100 183 94 179 84 Z" fill="#121214"/>
+          <polygon id="inL" fill="#8a5a50"/><polygon id="inR" fill="#8a5a50"/>
+          <g id="sheen"><path d="M198 58 Q207 55 216 58 Q207 59 198 60 Z" fill="#2a2a31" opacity="0.6"/></g>
+          <g id="eyes">
+            <ellipse cx="198" cy="74" rx="7" ry="7.5" fill="#cfd43c"/><ellipse cx="219" cy="74" rx="7" ry="7.5" fill="#cfd43c"/>
+            <ellipse cx="198" cy="74" rx="7" ry="7.5" fill="none" stroke="#8f9420" stroke-width="1"/><ellipse cx="219" cy="74" rx="7" ry="7.5" fill="none" stroke="#8f9420" stroke-width="1"/>
+            <ellipse cx="198" cy="74" rx="2" ry="6" fill="#0a0a0a"/><ellipse cx="219" cy="74" rx="2" ry="6" fill="#0a0a0a"/>
+            <circle cx="200" cy="71" r="1.5" fill="#fff"/><circle cx="221" cy="71" r="1.5" fill="#fff"/>
+          </g>
+          <g id="nose"><path d="M205 86 L213 86 L209 90 Z" fill="#45454c"/></g>
+          <g stroke="#9a9aa2" stroke-width="0.7" opacity="0.9" fill="none"><path id="wR0"/><path id="wR1"/><path id="wR2"/><path id="wL0"/><path id="wL1"/><path id="wL2"/></g>
+        </g>
+      </g></g>
+    </svg>
+  </div>
+
+  <figure id="xfig">
+    <figcaption><span><span class="sw" style="background:var(--x)"></span>Position vs. time <small>x (m)</small></span></figcaption>
+    <canvas id="gx" aria-label="Position versus time graph, traced as she moves"></canvas>
+  </figure>
+  </div>
+
+  <div class="readouts">
+    <div class="ro"><span>Time</span><strong id="rt">0.00<em>s</em></strong></div>
+    <div class="ro v"><span>Velocity</span><strong id="rv">0.00<em>m/s</em></strong></div>
+    <div class="ro x"><span>Position</span><strong id="rx">0.00<em>m</em></strong></div>
+    <div class="ro"><span>Distance walked</span><strong id="rd">0.00<em>m</em></strong></div>
+  </div>
+  <p class="status" id="status" aria-live="polite"></p>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const TMAX=10,VMAX=5,LX=50,RX=950,FLOOR=150,K=0.363,MIN_DT=0.05,SNAP=0.5;
+let X0=0,XLO=-10,XHI=10,TICK=1,PPM=(RX-LX)/20;
+let pts=[],cum=[0],hist=[];
+let t=0,running=false,ended=false,simSpeed=1,tEnd=0,dirty=true;
+let mode='free',snap=true,hover=null,drag=null,stroke=null,flash='',flashT=0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=(n,d)=>{const s=Math.abs(n)<0.5*Math.pow(10,-d)?0:n;return (s<0?'−':'')+Math.abs(s).toFixed(d)};
+const fmtS=(n,d)=>{const s=fmt(n,d);return s[0]==='−'||s==='0.'+'0'.repeat(d)||Number(s)===0?s:'+'+s};
+
+/* ---------- velocity function: piecewise linear through pts ---------- */
+function rebuild(){cum=[0];for(let i=1;i<pts.length;i++)cum[i]=cum[i-1]+(pts[i].t-pts[i-1].t)*(pts[i].v+pts[i-1].v)/2;tEnd=pts.length>1?pts[pts.length-1].t:0}
+function segIdx(tt){let i=0;while(i<pts.length-2&&pts[i+1].t<=tt)i++;return i}
+function vel(tt){if(!pts.length)return 0;const n=pts.length;if(n===1||tt<=0)return pts[0].v;if(tt>=pts[n-1].t)return pts[n-1].v;const i=segIdx(tt),a=pts[i],b=pts[i+1];return a.v+(b.v-a.v)*(tt-a.t)/(b.t-a.t)}
+function pos(tt){if(pts.length<2)return X0;tt=clamp(tt,0,tEnd);const i=segIdx(tt),a=pts[i],b=pts[i+1],ve=a.v+(b.v-a.v)*(tt-a.t)/(b.t-a.t);return X0+cum[i]+(tt-a.t)*(a.v+ve)/2}
+function areas(tt){let P=0,N=0;
+  const add=(s,va,e,vb)=>{if(e<=s)return;if(va>=0&&vb>=0)P+=(e-s)*(va+vb)/2;else if(va<=0&&vb<=0)N+=(e-s)*(va+vb)/2;else{const tc=s+(e-s)*va/(va-vb),A1=(tc-s)*va/2,A2=(e-tc)*vb/2;if(va>0){P+=A1;N+=A2}else{N+=A1;P+=A2}}};
+  for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];if(a.t>=tt)break;const e=Math.min(b.t,tt),ve=a.v+(b.v-a.v)*(e-a.t)/(b.t-a.t);add(a.t,a.v,e,ve)}
+  return {P,N}}
+function turnTimes(){const out=[];let last=0,zt=null;
+  const visit=(tt,v)=>{const s=v>1e-9?1:v<-1e-9?-1:0;if(s===0){if(zt===null)zt=tt;return}if(last&&s!==last&&zt!==null)out.push(zt);last=s;zt=null};
+  for(let i=0;i<pts.length;i++){if(i>0){const a=pts[i-1],b=pts[i];if(a.v*b.v<0)visit(a.t+(b.t-a.t)*a.v/(a.v-b.v),0)}visit(pts[i].t,pts[i].v)}
+  return out}
+
+/* ---------- number line ---------- */
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
+function computeRange(){let lo=Math.min(0,X0),hi=Math.max(0,X0);if(pts.length>1)for(let i=0;i<=600;i++){const x=pos(tEnd*i/600);if(x<lo)lo=x;if(x>hi)hi=x}
+  const pad=Math.max(1.5,(hi-lo)*0.07);lo-=pad;hi+=pad;if(hi-lo<20){const c=(lo+hi)/2;lo=c-10;hi=c+10}
+  TICK=niceStep((hi-lo)/20);XLO=Math.floor(lo/TICK)*TICK;XHI=Math.ceil(hi/TICK)*TICK;PPM=(RX-LX)/(XHI-XLO)}
+const xToX=xm=>LX+(xm-XLO)*PPM;
+function drawAxis(){let s=`<line x1="${LX-12}" y1="${FLOOR}" x2="${RX+12}" y2="${FLOOR}" stroke="#b9ae9f" stroke-width="3" stroke-linecap="round"/>`;
+  const k0=Math.round(XLO/TICK),k1=Math.round(XHI/TICK);
+  for(let k=k0;k<=k1;k++){const m=k*TICK,X=xToX(m),big=k%2===0;s+=`<line x1="${X}" y1="${FLOOR+1}" x2="${X}" y2="${FLOOR+(big?13:7)}" stroke="#a69a89" stroke-width="${m===0?2.5:1.5}"/>`;
+    if(big)s+=`<text x="${X}" y="${FLOOR+32}" fill="${m===0?'#3d362c':'#6f6556'}" font-size="${m===0?16:14}" font-weight="${m===0?600:400}" font-family="JetBrains Mono, monospace" text-anchor="middle">${m<0?'−'+(-m):m}</text>`}
+  $('axis').innerHTML=s}
+
+/* ---------- cat rig (from Kittymatics) ---------- */
+const HIP=[[94,112],[117,114],[175,110],[191,110]],KNEE=[[90,144],[116,146],[173,148],[192.5,148]],FY=182,FOOT=[[89,FY],[119,FY],[173,FY],[195,FY]];
+const CEN=[HIP[0][0],HIP[1][0],FOOT[2][0],FOOT[3][0]];
+const OFF=[0,0.5,0.25,0.75];const L1=[],L2=[];
+for(let i=0;i<4;i++){const h=HIP[i],k=KNEE[i],f=FOOT[i];L1[i]=Math.hypot(k[0]-h[0],k[1]-h[1]);L2[i]=Math.hypot(f[0]-k[0],f[1]-k[1])}
+const ZL=[-12,12,-12,12],WID=[[26,10,10,8],[26,10,10,8],[19,9,9,8],[19,9,9,8]];
+function joints(i,hx,hy,fx,fy,extra){const dx=fx-hx,dy=fy-hy;let d=Math.hypot(dx,dy);const mx=L1[i]+L2[i]-0.01,sf=4;if(d>mx-sf)d=mx-sf*Math.exp(-(d-(mx-sf))/sf);d=Math.max(Math.abs(L1[i]-L2[i])+1,d);
+  const a0=Math.atan2(dy,dx),c=(L1[i]*L1[i]+d*d-L2[i]*L2[i])/(2*L1[i]*d),al=Math.acos(Math.max(-1,Math.min(1,c))),t1=a0+al,kx=hx+L1[i]*Math.cos(t1),ky=hy+L1[i]*Math.sin(t1);
+  let ex=hx+d*Math.cos(a0),ey=hy+d*Math.sin(a0);if(extra){const t2=Math.atan2(ey-ky,ex-kx)+extra*Math.PI/180;ex=kx+L2[i]*Math.cos(t2);ey=ky+L2[i]*Math.sin(t2)}
+  return [hx,hy,kx,ky,ex,ey]}
+function quad(x1,y1,x2,y2,w1,w2){const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  return `M${(x1+nx*w1/2).toFixed(2)} ${(y1+ny*w1/2).toFixed(2)} L${(x2+nx*w2/2).toFixed(2)} ${(y2+ny*w2/2).toFixed(2)} L${(x2-nx*w2/2).toFixed(2)} ${(y2-ny*w2/2).toFixed(2)} L${(x1-nx*w1/2).toFixed(2)} ${(y1-ny*w1/2).toFixed(2)} Z`}
+const LJ=[0,1,2,3].map(i=>joints(i,HIP[i][0],HIP[i][1],FOOT[i][0],FOOT[i][1],0));
+const GS={f:1,D:0.65,H:0,crouch:0.5,bw:0,br:0,tail:3,pitch:0,W:0,fb:0,hl:1,hcf:0,hb:0},GW={f:1.05,D:0.65,H:7,crouch:8,bw:1.1,br:0,tail:5,pitch:0.3,W:45,fb:6,hl:0.7,hcf:0.2,hb:-4},GR={f:2.6,D:0.38,H:13,crouch:8,bw:0.5,br:3,tail:10,pitch:1.2,W:80,fb:6,hl:1,hcf:0.2,hb:-6};
+function lerpG(A,B,s){const o={};for(const k in A)o[k]=A[k]+(B[k]-A[k])*s;return o}
+function gait(u){let g=u<=80?lerpG(GS,GW,u/80):lerpG(GW,GR,Math.min(1,(u-80)/200));if(u>280)g.f=GR.f*Math.sqrt(u/280);return g}
+function swingX(s,S,D){const p0=-S/2,p1=S/2,m=-0.5*S*(1-D)/D;const s2=s*s,s3=s2*s;return (2*s3-3*s2+1)*p0+(s3-2*s2+s)*m+(-2*s3+3*s2)*p1+(s3-s2)*m}
+let ph=0,us=0,sy=0.5,sp=0,dir=1,bt=0,cur=gait(0),headY=0,turn=null;
+const ease=p=>0.5-0.5*Math.cos(Math.PI*Math.min(1,Math.max(0,p)));
+const PARTS=[['tw',82,0,0.5],['bw',140,0,0.48]].map(([id,ax,z,m])=>({el:$(id),ax,z,m}));
+let nearBack=false;
+function turnState(){const base=d=>d>0?0:Math.PI;if(!turn)return {th:base(dir),cs:1,dy:0};const p=turn.p,e=ease(p);return {th:base(turn.from)+(base(turn.to)-base(turn.from))*e,cs:1,dy:2*Math.sin(Math.PI*p)}}
+function rig(th,headY){const c=Math.cos(th),s=Math.sin(th);
+  for(const q of PARTS){const dxp=(q.ax-150)*c+q.z*s,sx=(c>=0?1:-1)*Math.max(q.m,Math.abs(c));q.el.setAttribute('transform',`translate(${(150+dxp).toFixed(2)},0) scale(${sx.toFixed(4)},1) translate(${-q.ax},0)`)}
+  const P=(x,z)=>150+(x-150)*c+z*s;
+  for(let i=0;i<4;i++){const [hx,hy,kx,ky,ex,ey]=LJ[i],z=ZL[i],W=WID[i],HX=P(hx,z),KX=P(kx,z),EX=P(ex,z);
+    $('pu'+i).setAttribute('d',quad(HX,hy,KX,ky,W[0],W[1]));$('pl'+i).setAttribute('d',quad(KX,ky,EX,ey,W[2],W[3]));
+    $('pk'+i).setAttribute('cx',KX.toFixed(2));$('pk'+i).setAttribute('cy',ky.toFixed(2));
+    const top=$(i>=2?'ps'+i:'ph'+i);top.setAttribute('cx',HX.toFixed(2));top.setAttribute('cy',hy.toFixed(2))}
+  const nb=th>Math.PI/2;if(nb!==nearBack){nearBack=nb;const B=$('backL'),F=$('frontL');if(nb){B.appendChild($('w1'));B.appendChild($('w3'));F.appendChild($('w0'));F.appendChild($('w2'))}else{B.appendChild($('w0'));B.appendChild($('w2'));F.appendChild($('w1'));F.appendChild($('w3'))}}
+  headT=(1-c)/2;head(headT);
+  $('headAll').setAttribute('transform',`translate(${((HC-150)*c+150-HC).toFixed(2)},${headY.toFixed(2)})`)}
+const HC=206,mirA=a=>a.map((v,i)=>i%2===0?2*HC-v:v),lerpA=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const EARL=[183,68,188,30,206,56],EARR=[212,56,232,32,230,70],INL=[189,62,191,40,201,56],INR=[216,56,228,42,227,64];
+const EARL_M=[...mirA([230,70]),...mirA([232,32]),...mirA([212,56])],EARR_M=[...mirA([206,56]),...mirA([188,30]),...mirA([183,68])];
+const INL_M=[...mirA([227,64]),...mirA([228,42]),...mirA([216,56])],INR_M=[...mirA([201,56]),...mirA([191,40]),...mirA([189,62])];
+const WR=[[216,90,236,84,258,86],[216,92,238,92,260,98],[216,94,234,98,252,108]],WL=[[200,90,180,84,160,86],[200,92,178,94,158,100],[200,94,182,98,164,108]];
+const WR_M=WL.map(mirA),WL_M=WR.map(mirA);
+const ptsS=a=>{let r='';for(let i=0;i<a.length;i+=2)r+=a[i].toFixed(1)+','+a[i+1].toFixed(1)+' ';return r};
+const qp=a=>`M${a[0].toFixed(1)} ${a[1]} Q${a[2].toFixed(1)} ${a[3]} ${a[4].toFixed(1)} ${a[5]}`;
+let headT=0,blinkS=1;
+function setEyes(){$('eyes').setAttribute('transform',`translate(${(-5*headT).toFixed(2)},0) translate(0,74) scale(1,${blinkS}) translate(0,-74)`)}
+function head(t){$('earL').setAttribute('points',ptsS(lerpA(EARL,EARL_M,t)));$('earR').setAttribute('points',ptsS(lerpA(EARR,EARR_M,t)));
+  $('inL').setAttribute('points',ptsS(lerpA(INL,INL_M,t)));$('inR').setAttribute('points',ptsS(lerpA(INR,INR_M,t)));
+  for(let i=0;i<3;i++){$('wR'+i).setAttribute('d',qp(lerpA(WR[i],WR_M[i],t)));$('wL'+i).setAttribute('d',qp(lerpA(WL[i],WL_M[i],t)))}
+  setEyes();$('nose').setAttribute('transform',`translate(${(-6*t).toFixed(2)},0)`);$('sheen').setAttribute('transform',`translate(${(-2*t).toFixed(2)},0)`)}
+function poseCat(dt,uTarget){
+  us+=(uTarget-us)*Math.min(1,dt*10);if(us<0.05&&uTarget===0)us=0;
+  const g=gait(us);for(const k in cur)cur[k]+=(g[k]-cur[k])*Math.min(1,dt*8);
+  ph+=2*Math.PI*cur.f*dt;
+  const ty=cur.crouch+cur.bw*Math.cos(ph*2)+cur.br*Math.cos(ph);sy+=(ty-sy)*Math.min(1,dt*12);
+  sp+=(cur.pitch*Math.sin(ph)-sp)*Math.min(1,dt*10);
+  const S=us*cur.D/cur.f,ground=FY-sy,hc=cur.hcf*cur.crouch;
+  for(let i=0;i<4;i++){const front=i>=2,cx=CEN[i]+(front?cur.fb:cur.hb),gy=ground;let u=(ph/(2*Math.PI)+OFF[i])%1;if(u<0)u+=1;let fx,fy,extra=0;
+    if(u<cur.D){const s=u/cur.D;fx=cx+S/2-S*s;fy=gy}
+    else{const s=(u-cur.D)/(1-cur.D);fx=cx+swingX(s,S,cur.D);
+      if(front){fy=gy-cur.H*0.35*Math.sin(Math.PI*s);extra=cur.W*Math.max(0,Math.sin(Math.PI*Math.min(1,s*1.35)))}else fy=gy-cur.H*cur.hl*Math.sin(Math.PI*s)}
+    LJ[i]=joints(i,HIP[i][0],HIP[i][1]-(front?0:hc),fx,fy,extra)}
+  $('pitch').setAttribute('transform',`rotate(${sp.toFixed(3)} 140 112)`);
+  $('tail').setAttribute('transform',`rotate(${(cur.tail*Math.sin(ph*0.5)).toFixed(2)} 82 100)`);
+  headY=-0.4*(sy-cur.crouch);
+}
+function placeCat(xm){const X=xToX(xm);
+  const T=turnState(),k=K*T.cs,Y=FLOOR+T.dy;
+  $('cat').setAttribute('transform',`translate(${X.toFixed(2)},${Y.toFixed(2)}) scale(${k.toFixed(4)}) translate(-150,${(-FY+sy).toFixed(2)})`);
+  rig(T.th,headY);
+  $('marker').setAttribute('d',`M${X} ${FLOOR+2} l-7 11 h14 z`);
+  arrow('v',X,80,vel(t)*18);dispArrow(X,xm)}
+function arrow(k,X,y,len){const line=$(k+'Line'),hd=$(k+'Head'),lab=$(k+'Lab');if(Math.abs(len)<3){line.setAttribute('d','');hd.setAttribute('d','');lab.setAttribute('x',X);lab.setAttribute('y',y+5);lab.setAttribute('opacity','0.55');return}
+  const s=Math.sign(len),x1=X+len,xb=x1-s*9;line.setAttribute('d',`M${X} ${y} H${xb}`);hd.setAttribute('d',`M${x1} ${y} L${xb} ${y-6} L${xb} ${y+6} Z`);lab.setAttribute('x',X-s*12);lab.setAttribute('y',y+5);lab.setAttribute('opacity','1')}
+function dispArrow(X,xm){const X0p=xToX(X0),y=FLOOR+52,len=X-X0p,line=$('dLine'),hd=$('dHead'),lab=$('dLab');
+  if(Math.abs(len)<6){line.setAttribute('d','');hd.setAttribute('d','');lab.textContent='';return}
+  const s=Math.sign(len),xb=X-s*8;line.setAttribute('d',`M${X0p} ${y} H${xb}`);hd.setAttribute('d',`M${X} ${y} L${xb} ${y-5} L${xb} ${y+5} Z`);
+  lab.textContent=`Δx = ${fmtS(xm-X0,2)} m`;const lx=X+s*8,anchorEnd=s<0;let x=lx,ae=anchorEnd;
+  if(!ae&&x>RX-40){x=X-14;ae=true;lab.setAttribute('y',y-8)}else if(ae&&x<LX+40){x=X+14;ae=false;lab.setAttribute('y',y-8)}else lab.setAttribute('y',y+4.5);
+  lab.setAttribute('x',x.toFixed(1));lab.setAttribute('text-anchor',ae?'end':'start')}
+
+/* ---------- canvases ---------- */
+const gv=$('gv'),cv=gv.getContext('2d'),gx=$('gx'),cx=gx.getContext('2d');
+function geom(c){const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}return {w,h,dpr,L:46,Rr:w-14,T:12,B:h-26}}
+const tpx=(g,tt)=>g.L+tt/TMAX*(g.Rr-g.L), vpy=(g,v)=>g.B-(v+VMAX)/(2*VMAX)*(g.B-g.T);
+const pxT=(g,x)=>(x-g.L)/(g.Rr-g.L)*TMAX, pyV=(g,y)=>(g.B-y)/(g.B-g.T)*2*VMAX-VMAX;
+function colors(){const cs=getComputedStyle(document.documentElement),C=k=>cs.getPropertyValue('--'+k).trim();return {grid:C('grid'),line:C('line'),muted:C('muted'),ink:C('ink'),axis:C('axis'),v:C('v'),x:C('x'),pos:C('pos'),neg:C('neg'),surface:C('surface')}}
+function seg(c,x1,y1,x2,y2){c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()}
+function frameAxes(c,g,col,y0,y1,step,dec){
+  c.font='11px "JetBrains Mono", ui-monospace, monospace';c.lineWidth=1;
+  const py=v=>g.B-(v-y0)/(y1-y0)*(g.B-g.T);
+  for(let s=0;s<=TMAX;s++){c.strokeStyle=col.grid;seg(c,tpx(g,s)+.5,g.T,tpx(g,s)+.5,g.B)}
+  c.fillStyle=col.axis;c.textAlign='right';c.textBaseline='middle';
+  for(let k=Math.ceil(y0/step-1e-9);k*step<=y1+1e-9;k++){const v=k*step,Y=Math.round(py(v))+.5,z=Math.abs(v)<1e-9;c.strokeStyle=z?col.muted:col.grid;c.lineWidth=z?1.4:1;seg(c,g.L,Y,g.Rr,Y);c.lineWidth=1;c.fillText(fmt(v,dec),g.L-6,Y)}
+  c.textAlign='center';c.textBaseline='top';for(let s=0;s<=TMAX;s+=2)c.fillText(String(s),tpx(g,s),g.B+6);
+  c.textAlign='right';c.textBaseline='bottom';c.fillText('t (s)',g.Rr-5,g.B-4);
+  c.strokeStyle=col.line;c.strokeRect(g.L+.5,g.T+.5,g.Rr-g.L,g.B-g.T);
+  return py}
+
+function candidate(rt,rv){let tt=clamp(rt,0,TMAX),v=clamp(rv,-VMAX,VMAX);
+  if(snap){tt=Math.round(tt/SNAP)*SNAP;v=Math.round(v/SNAP)*SNAP}
+  if(!pts.length)return {t:0,v,ok:true};
+  const lt=pts[pts.length-1].t;
+  if(lt>=TMAX-1e-9)return {t:tt,v,ok:false,why:'full'};
+  if(snap&&rt>lt+MIN_DT&&tt<lt+MIN_DT)tt=Math.min(TMAX,lt+SNAP);
+  if(tt<lt+MIN_DT-1e-9)return {t:tt,v,ok:false,why:'back'};
+  return {t:tt,v,ok:true}}
+
+function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c.clearRect(0,0,g.w,g.h);
+  const py=frameAxes(c,g,col,-VMAX,VMAX,1,0),px=tt=>tpx(g,tt),y0=py(0);
+  const n=pts.length;
+  // area swept so far
+  if(n>1&&t>0){c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();
+    c.save();c.beginPath();c.rect(g.L,g.T,g.Rr-g.L,y0-g.T);c.clip();c.globalAlpha=.3;c.fillStyle=col.pos;c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();c.fill();c.restore();
+    c.save();c.beginPath();c.rect(g.L,y0,g.Rr-g.L,g.B-y0);c.clip();c.globalAlpha=.3;c.fillStyle=col.neg;c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();c.fill();c.restore()}
+  // invalid region hint
+  const cand=hover&&!drag&&!stroke&&mode==='line'&&!hover.onPt?candidate(hover.t,hover.v):null;
+  if(cand&&!cand.ok&&n){c.fillStyle=col.muted;c.globalAlpha=.08;c.fillRect(g.L,g.T,px(pts[n-1].t)-g.L,g.B-g.T);c.globalAlpha=1}
+  // turnaround markers
+  for(const tz of turnTimes()){const X=px(tz);c.strokeStyle=col.muted;c.setLineDash([3,4]);seg(c,X,g.T,X,g.B);c.setLineDash([]);
+    if(t>=tz){c.fillStyle=col.muted;c.font='11px "JetBrains Mono", monospace';c.textBaseline='top';c.textAlign=X>g.Rr-90?'right':'left';c.fillText('turns around',X+(c.textAlign==='left'?5:-5),g.T+4)}}
+  // the curve
+  if(n>1){c.strokeStyle=col.v;c.lineWidth=2.5;c.lineJoin='round';c.beginPath();pts.forEach((p,i)=>i?c.lineTo(px(p.t),py(p.v)):c.moveTo(px(p.t),py(p.v)));c.stroke()}
+  // preview
+  if(cand){c.lineWidth=2;c.setLineDash([6,5]);
+    if(!n){c.strokeStyle=col.v;c.globalAlpha=.5;seg(c,px(0),py(cand.v),px(0)+40,py(cand.v));c.globalAlpha=1}
+    else if(cand.ok){const l=pts[n-1];c.strokeStyle=col.v;c.globalAlpha=.6;seg(c,px(l.t),py(l.v),px(cand.t),py(cand.v));c.globalAlpha=1}
+    c.setLineDash([]);
+    const X=px(cand.t),Y=py(cand.v);
+    if(cand.ok){c.fillStyle=col.v;c.globalAlpha=.6;c.beginPath();c.arc(X,Y,5,0,Math.PI*2);c.fill();c.globalAlpha=1;
+      c.fillStyle=col.ink;c.font='11px "JetBrains Mono", monospace';c.textBaseline='bottom';c.textAlign=X>g.Rr-110?'right':'left';c.fillText(`(${fmt(cand.t,2)} s, ${fmt(cand.v,2)} m/s)`,X+(c.textAlign==='left'?9:-9),Y-6)}
+    else{c.strokeStyle=col.muted;c.lineWidth=2;const r=5;seg(c,X-r,Y-r,X+r,Y+r);seg(c,X-r,Y+r,X+r,Y-r)}}
+  // vertices
+  const small=n>12;
+  pts.forEach((p,i)=>{const hot=(hover&&hover.onPt===i)||(drag&&drag.i===i);const r=hot?6.5:small?2.5:4.5;c.beginPath();c.arc(px(p.t),py(p.v),r,0,Math.PI*2);c.fillStyle=hot?col.v:col.surface;c.fill();c.lineWidth=2;c.strokeStyle=col.v;c.stroke()});
+  // time cursor
+  if(n>1&&(t>0||running)){const X=px(t);c.strokeStyle=col.ink;c.globalAlpha=.5;c.lineWidth=1;seg(c,X,g.T,X,g.B);c.globalAlpha=1;c.fillStyle=col.v;c.beginPath();c.arc(X,py(vel(t)),5,0,Math.PI*2);c.fill()}
+  // empty hint
+  if(!n){c.fillStyle=col.muted;c.font='500 14px "Public Sans", system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';
+    c.fillText(mode==='line'?'Click to set her starting velocity at t = 0':'Press and drag to the right to sketch her velocity',(g.L+g.Rr)/2,g.T+(g.B-g.T)*0.22)}
+}
+function drawXT(col){if($('xfig').classList.contains('hide'))return;const g=geom(gx),c=cx;c.setTransform(g.dpr,0,0,g.dpr,0,0);c.clearRect(0,0,g.w,g.h);
+  const span=XHI-XLO,step=niceStep(span/4),py=frameAxes(c,g,col,XLO,XHI,step,0);
+  if(pts.length>1&&t>0){c.save();c.beginPath();c.rect(g.L,g.T-2,g.Rr-g.L,g.B-g.T+4);c.clip();c.strokeStyle=col.x;c.lineWidth=2.5;c.lineJoin='round';c.beginPath();const m=Math.max(2,Math.ceil(300*t/TMAX));for(let i=0;i<=m;i++){const tv=t*i/m;i?c.lineTo(tpx(g,tv),py(pos(tv))):c.moveTo(tpx(g,tv),py(pos(tv)))}c.stroke();c.restore()}
+  c.fillStyle=col.x;c.beginPath();c.arc(tpx(g,t),py(pos(t)),4.5,0,Math.PI*2);c.fill()}
+function drawGraphs(){const col=colors();drawVT(col);drawXT(col);dirty=false}
+
+/* ---------- UI ---------- */
+function readouts(){const A=areas(t);$('rt').innerHTML=fmt(t,2)+'<em>s</em>';$('rv').innerHTML=fmt(vel(t),2)+'<em>m/s</em>';$('rx').innerHTML=fmt(pos(t),2)+'<em>m</em>';$('rd').innerHTML=fmt(A.P-A.N,2)+'<em>m</em>';
+  $('aPos').textContent='+'+fmt(A.P,2).replace('−','')+' m';$('aNeg').textContent='−'+fmt(-A.N,2).replace('−','')+' m'}
+function status(){let s;const n=pts.length;
+  if(flash&&performance.now()<flashT)s=flash;
+  else if(!n)s=mode==='line'?'Click anywhere on the graph to set her starting velocity at t = 0 s.':'Press on the graph and drag to the right. Your sketch starts at t = 0 s.';
+  else if(n===1)s=mode==='line'?'Now click to the right to add the next point. Each segment joins the last one, so the graph stays continuous.':'Drag to the right to keep sketching.';
+  else if(ended){const A=areas(tEnd);s=`Done at t = ${fmt(tEnd,2)} s. Area above (${fmt(A.P,2)} m) plus area below (${fmt(A.N,2)} m) = ${fmt(pos(tEnd)-X0,2)} m of displacement. Starting from x = ${fmt(X0,1)} m, she ends at x = ${fmt(pos(tEnd),2)} m after walking ${fmt(A.P-A.N,2)} m.`}
+  else if(running){const v=vel(t);s=v>0.05?'Moving right (v > 0): area above the axis adds to her position.':v<-0.05?'Moving left (v < 0): area below the axis counts as negative, so her position decreases.':'v = 0: she is standing still at this instant.'}
+  else if(t>0)s=`Paused at t = ${fmt(t,2)} s.`;
+  else s=tEnd<TMAX?`Her motion lasts until t = ${fmt(tEnd,2)} s, where your graph ends. Keep adding points, or press Play.`:'Graph complete. Press Play.';
+  $('status').textContent=s}
+function setButtons(){$('play').textContent=running?'Pause':ended?'Replay':t>0?'Resume':'Play';$('play').disabled=pts.length<2;$('undo').disabled=!hist.length;$('clear').disabled=!pts.length}
+function firstDir(){for(const p of pts)if(Math.abs(p.v)>0.02)return Math.sign(p.v);return 1}
+function resetPlay(){t=0;running=false;ended=false;turn=null;dir=firstDir();us=0;readouts();status();setButtons();placeCat(X0);dirty=true}
+function changed(){rebuild();computeRange();drawAxis();resetPlay()}
+function pushHist(){hist.push(pts.map(p=>({...p})));if(hist.length>200)hist.shift()}
+function say(msg){flash=msg;flashT=performance.now()+2600;status();setTimeout(status,2700)}
+
+function evtPt(e){const r=gv.getBoundingClientRect(),g=geom(gv),x=e.clientX-r.left,y=e.clientY-r.top;return {x,y,t:pxT(g,x),v:pyV(g,y),g}}
+function hitPt(p,touch){const g=p.g,R=touch?18:10;let best=-1,bd=R;pts.forEach((q,i)=>{const d=Math.hypot(tpx(g,q.t)-p.x,vpy(g,q.v)-p.y);if(d<=bd){bd=d;best=i}});return best}
+function rdp(a,eps,g){if(a.length<3)return a;const A=a[0],B=a[a.length-1],ax=tpx(g,A.t),ay=vpy(g,A.v),bx=tpx(g,B.t),by=vpy(g,B.v),L=Math.hypot(bx-ax,by-ay)||1;let dm=0,id=0;
+  for(let i=1;i<a.length-1;i++){const x=tpx(g,a[i].t),y=vpy(g,a[i].v),d=Math.abs((bx-ax)*(ay-y)-(ax-x)*(by-ay))/L;if(d>dm){dm=d;id=i}}
+  if(dm>eps){const l=rdp(a.slice(0,id+1),eps,g),r=rdp(a.slice(id),eps,g);return l.slice(0,-1).concat(r)}return [A,B]}
+
+gv.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();const p=evtPt(e),touch=e.pointerType!=='mouse';
+  const hi=hitPt(p,touch);
+  if(hi>=0){pushHist();drag={i:hi,moved:false};gv.setPointerCapture(e.pointerId);gv.style.cursor='grabbing';dirty=true;return}
+  if(mode==='line'){const c=candidate(p.t,p.v);
+    if(!c.ok){say(c.why==='full'?'The graph already reaches t = 10 s. Drag a point to change it, or Undo.':'Time only moves forward: add the next point to the right of the last one.');return}
+    pushHist();pts.push({t:c.t,v:c.v});changed();return}
+  // freehand
+  if(pts.length&&pts[pts.length-1].t>=TMAX-1e-9){say('The graph already reaches t = 10 s. Undo or Clear to redraw.');return}
+  pushHist();const startLen=pts.length;
+  if(!pts.length)pts.push({t:0,v:clamp(p.v,-VMAX,VMAX)});
+  stroke={from:Math.max(0,startLen-1),startLen};gv.setPointerCapture(e.pointerId);changed()});
+gv.addEventListener('pointermove',e=>{const p=evtPt(e);
+  if(drag){const i=drag.i;let v=clamp(p.v,-VMAX,VMAX),tt=p.t;if(snap){v=Math.round(v/SNAP)*SNAP;tt=Math.round(tt/SNAP)*SNAP}
+    if(i===0)tt=0;else{const lo=pts[i-1].t+MIN_DT,hiT=i<pts.length-1?pts[i+1].t-MIN_DT:TMAX;tt=clamp(tt,lo,hiT)}
+    pts[i]={t:tt,v};drag.moved=true;changed();return}
+  if(stroke){const l=pts[pts.length-1],tt=Math.min(TMAX,p.t);if(tt>=l.t+0.04){pts.push({t:tt,v:clamp(p.v,-VMAX,VMAX)});changed()}return}
+  const onPt=hitPt(p,e.pointerType!=='mouse');hover={t:p.t,v:p.v,onPt:onPt>=0?onPt:null};
+  if(onPt>=0)gv.style.cursor='grab';else if(mode==='line'){gv.style.cursor=candidate(p.t,p.v).ok?'crosshair':'not-allowed'}else gv.style.cursor='crosshair';
+  dirty=true});
+function endPointer(){if(drag){if(!drag.moved)hist.pop();drag=null;gv.style.cursor='grab';setButtons();dirty=true}
+  if(stroke){const g=geom(gv),head=pts.slice(0,stroke.from),tail=pts.slice(stroke.from);
+    if(pts.length===stroke.startLen&&stroke.startLen>0)hist.pop();
+    else pts=head.concat(rdp(tail,1.2,g));stroke=null;changed()}}
+gv.addEventListener('pointerup',endPointer);gv.addEventListener('pointercancel',endPointer);
+gv.addEventListener('pointerleave',()=>{if(!drag&&!stroke){hover=null;dirty=true}});
+
+document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(o=>o.setAttribute('aria-pressed',o===b?'true':'false'));status();dirty=true}));
+$('snap').addEventListener('change',e=>{snap=e.target.checked;dirty=true});
+function undo(){if(!hist.length)return;pts=hist.pop();changed()}
+$('undo').addEventListener('click',undo);
+$('x0').addEventListener('input',e=>{X0=parseFloat(e.target.value);$('x0o').textContent=fmt(X0,1);changed()});
+$('clear').addEventListener('click',()=>{if(!pts.length)return;pushHist();pts=[];changed()});
+$('ex').addEventListener('change',e=>{const val=e.target.value;if(!val)return;pushHist();pts=val.split(';').map(s=>{const [a,b]=s.split(',').map(Number);return {t:a,v:b}});e.target.value='';changed()});
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}});
+$('play').addEventListener('click',()=>{if(pts.length<2)return;if(ended)resetPlay();running=!running;setButtons();status()});
+$('reset').addEventListener('click',resetPlay);
+document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{simSpeed=parseFloat(b.dataset.s);document.querySelectorAll('[data-s]').forEach(o=>o.setAttribute('aria-pressed',o===b?'true':'false'))}));
+$('showx').addEventListener('change',e=>{$('xfig').classList.toggle('hide',!e.target.checked);dirty=true});
+window.addEventListener('resize',()=>{dirty=true});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{dirty=true})}catch(e){}
+new MutationObserver(()=>{dirty=true}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+let lastNow=null,tick=0;
+function frame(now){if(lastNow===null)lastNow=now;const rdt=Math.min((now-lastNow)/1000,0.05);lastNow=now;const sdt=rdt*simSpeed;
+  if(running){t+=sdt;if(t>=tEnd){t=tEnd;running=false;ended=true;setButtons();status()}
+    const v=vel(t);if(Math.abs(v)>0.02){const nd=Math.sign(v);if(nd!==dir){turn={from:dir,to:nd,p:0};dir=nd}}
+    poseCat(sdt,running?Math.abs(v)*PPM/K:0);placeCat(pos(t));readouts();dirty=true;
+    if(++tick%10===0)status()}
+  else if(ended&&us>0){poseCat(rdt,0);placeCat(pos(t))}
+  else if(t===0){poseCat(rdt,0);placeCat(X0)}
+  else if(turn)placeCat(pos(t));
+  if(turn){turn.p+=rdt/0.9;if(turn.p>=1){turn=null;placeCat(pos(t))}}
+  bt+=rdt;blinkS=bt>3.4?0.12:1;if(bt>3.54)bt=0;setEyes();
+  if(dirty)drawGraphs();
+  requestAnimationFrame(frame)}
+changed();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{dirty=true});
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
