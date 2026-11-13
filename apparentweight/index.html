@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apparent Weight Simulator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @keyframes snapSpark {
+      0% { opacity: 1; transform: scale(1) rotate(0deg); }
+      50% { opacity: 0.8; transform: scale(1.6) rotate(18deg); }
+      100% { opacity: 0; transform: scale(2.2) rotate(45deg); }
+    }
+    .snap-effect {
+      animation: snapSpark 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+    .metal-plate {
+      background: linear-gradient(145deg, #ffffff, #f8fafc);
+      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8), 0 4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Zero-G Reorientation & Floating Animations */
+    .limb-anim {
+      transform-box: fill-box;
+      transform-origin: top center;
+      transition: transform 0.3s ease-out;
+    }
+    .tail-anim {
+      transform-box: fill-box;
+      transform-origin: left bottom;
+      transition: transform 0.3s ease-out;
+    }
+    @keyframes zeroGLiftOff {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-40px) rotate(1deg); }
+    }
+    @keyframes zeroGDrift {
+      0% { transform: translateY(-40px) rotate(1deg); }
+      25% { transform: translateY(-46px) rotate(4deg); }
+      50% { transform: translateY(-36px) rotate(-3deg); }
+      75% { transform: translateY(-48px) rotate(4.5deg); }
+      100% { transform: translateY(-40px) rotate(1deg); }
+    }
+    @keyframes reorientArmL {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-30deg); }
+      60% { transform: rotate(18deg); }
+      85% { transform: rotate(-10deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes reorientArmR {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(34deg); }
+      65% { transform: rotate(-20deg); }
+      85% { transform: rotate(12deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes reorientLegL {
+      0% { transform: rotate(0deg); }
+      35% { transform: rotate(16deg); }
+      70% { transform: rotate(-14deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes reorientLegR {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-16deg); }
+      65% { transform: rotate(18deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes dogPawsFront {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(-22deg); }
+      50% { transform: rotate(16deg); }
+      75% { transform: rotate(-8deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes dogPawsBack {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(18deg); }
+      60% { transform: rotate(-15deg); }
+      85% { transform: rotate(8deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes dogTailCurl {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(25deg); }
+      70% { transform: rotate(-15deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .is-lifting {
+      animation: zeroGLiftOff 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+    }
+    .is-floating {
+      animation: zeroGDrift 4.5s ease-in-out infinite !important;
+    }
+    .is-lifting .limb-arm-left,
+    .is-floating .limb-arm-left {
+      animation: reorientArmL 3.4s ease-in-out infinite;
+    }
+    .is-lifting .limb-arm-right,
+    .is-floating .limb-arm-right {
+      animation: reorientArmR 3.8s ease-in-out infinite;
+    }
+    .is-lifting .limb-leg-left,
+    .is-floating .limb-leg-left {
+      animation: reorientLegL 4.0s ease-in-out infinite;
+    }
+    .is-lifting .limb-leg-right,
+    .is-floating .limb-leg-right {
+      animation: reorientLegR 3.6s ease-in-out infinite;
+    }
+    .is-lifting .limb-dog-f1,
+    .is-floating .limb-dog-f1 {
+      animation: dogPawsFront 2.8s ease-in-out infinite;
+    }
+    .is-lifting .limb-dog-f2,
+    .is-floating .limb-dog-f2 {
+      animation: dogPawsFront 3.2s ease-in-out infinite reverse;
+    }
+    .is-lifting .limb-dog-b1,
+    .is-floating .limb-dog-b1 {
+      animation: dogPawsBack 3.0s ease-in-out infinite;
+    }
+    .is-lifting .limb-dog-b2,
+    .is-floating .limb-dog-b2 {
+      animation: dogPawsBack 3.4s ease-in-out infinite reverse;
+    }
+    .is-lifting .tail-dog,
+    .is-floating .tail-dog {
+      animation: dogTailCurl 2.2s ease-in-out infinite;
+    }
+  </style>
+  <style id="utilities">
+    /* ===== Utility stylesheet (replaces the Tailwind CDN) =====
+       Same class names and values as Tailwind v3, so the markup is unchanged.
+       Breakpoints: sm = 640px, lg = 1024px. */
+
+    /* --- Base reset --- */
+    *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+    *, ::before, ::after { --tw-translate-x: 0; --tw-translate-y: 0; --tw-scale: 1; --tw-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; }
+    html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; }
+    body { margin: 0; line-height: inherit; }
+    h1, h2, h3, p { margin: 0; font-size: inherit; font-weight: inherit; }
+    button, input { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+    button { background-color: transparent; background-image: none; cursor: pointer; text-transform: none; }
+    sub { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; bottom: -0.25em; }
+    svg, canvas { display: block; vertical-align: middle; }
+    [hidden] { display: none; }
+
+    @keyframes tw-pulse { 50% { opacity: .5; } }
+
+    /* --- Utilities --- */
+    .cursor-pointer { cursor:pointer }
+    .pointer-events-none { pointer-events:none }
+    .select-none { -webkit-user-select:none;user-select:none }
+    .absolute { position:absolute }
+    .relative { position:relative }
+    .sticky { position:sticky }
+    .bottom-1\/2 { bottom:50% }
+    .inset-0 { inset:0px }
+    .left-1\/2 { left:50% }
+    .right-3 { right:0.75rem }
+    .right-4 { right:1rem }
+    .top-0 { top:0px }
+    .top-1\/2 { top:50% }
+    .z-0 { z-index:0 }
+    .z-10 { z-index:10 }
+    .z-20 { z-index:20 }
+    .z-30 { z-index:30 }
+    .z-40 { z-index:40 }
+    .block { display:block }
+    .flex { display:flex }
+    .grid { display:grid }
+    .hidden { display:none }
+    .flex-1 { flex:1 1 0% }
+    .flex-col { flex-direction:column }
+    .flex-wrap { flex-wrap:wrap }
+    .items-baseline { align-items:baseline }
+    .items-center { align-items:center }
+    .items-start { align-items:flex-start }
+    .justify-between { justify-content:space-between }
+    .justify-center { justify-content:center }
+    .justify-end { justify-content:flex-end }
+    .overflow-hidden { overflow:hidden }
+    .overflow-visible { overflow:visible }
+    .grid-cols-1 { grid-template-columns:repeat(1,minmax(0,1fr)) }
+    .grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)) }
+    .grid-cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)) }
+    .gap-0\.5 { gap:0.125rem }
+    .gap-1 { gap:0.25rem }
+    .gap-1\.5 { gap:0.375rem }
+    .gap-2 { gap:0.5rem }
+    .gap-2\.5 { gap:0.625rem }
+    .gap-3 { gap:0.75rem }
+    .gap-4 { gap:1rem }
+    .gap-5 { gap:1.25rem }
+    .gap-6 { gap:1.5rem }
+    .gap-7 { gap:1.75rem }
+    .mx-auto { margin-left:auto;margin-right:auto }
+    .my-1 { margin-top:0.25rem;margin-bottom:0.25rem }
+    .-mb-0\.5 { margin-bottom:-0.125rem }
+    .-mb-1 { margin-bottom:-0.25rem }
+    .-mt-1 { margin-top:-0.25rem }
+    .mb-0\.5 { margin-bottom:0.125rem }
+    .mb-1 { margin-bottom:0.25rem }
+    .mb-2 { margin-bottom:0.5rem }
+    .mb-\[127px\] { margin-bottom:127px }
+    .mb-\[131px\] { margin-bottom:131px }
+    .mb-\[135px\] { margin-bottom:135px }
+    .mt-0\.5 { margin-top:0.125rem }
+    .mt-1 { margin-top:0.25rem }
+    .p-3 { padding:0.75rem }
+    .p-3\.5 { padding:0.875rem }
+    .p-4 { padding:1rem }
+    .p-5 { padding:1.25rem }
+    .px-1 { padding-left:0.25rem;padding-right:0.25rem }
+    .px-2 { padding-left:0.5rem;padding-right:0.5rem }
+    .px-2\.5 { padding-left:0.625rem;padding-right:0.625rem }
+    .px-3 { padding-left:0.75rem;padding-right:0.75rem }
+    .px-4 { padding-left:1rem;padding-right:1rem }
+    .py-0\.5 { padding-top:0.125rem;padding-bottom:0.125rem }
+    .py-1\.5 { padding-top:0.375rem;padding-bottom:0.375rem }
+    .py-2\.5 { padding-top:0.625rem;padding-bottom:0.625rem }
+    .py-3 { padding-top:0.75rem;padding-bottom:0.75rem }
+    .pb-1 { padding-bottom:0.25rem }
+    .pb-3 { padding-bottom:0.75rem }
+    .pt-2 { padding-top:0.5rem }
+    .h-1 { height:0.25rem }
+    .h-1\.5 { height:0.375rem }
+    .h-10 { height:2.5rem }
+    .h-14 { height:3.5rem }
+    .h-2 { height:0.5rem }
+    .h-2\.5 { height:0.625rem }
+    .h-24 { height:6rem }
+    .h-3 { height:0.75rem }
+    .h-3\.5 { height:0.875rem }
+    .h-36 { height:9rem }
+    .h-4 { height:1rem }
+    .h-48 { height:12rem }
+    .h-52 { height:13rem }
+    .h-8 { height:2rem }
+    .h-\[132px\] { height:132px }
+    .h-\[136px\] { height:136px }
+    .h-\[270px\] { height:270px }
+    .h-\[390px\] { height:390px }
+    .h-\[93px\] { height:93px }
+    .h-full { height:100% }
+    .max-w-\[128px\] { max-width:128px }
+    .max-w-\[95px\] { max-width:95px }
+    .w-1\.5 { width:0.375rem }
+    .w-12 { width:3rem }
+    .w-2 { width:0.5rem }
+    .w-24 { width:6rem }
+    .w-28 { width:7rem }
+    .w-3\.5 { width:0.875rem }
+    .w-36 { width:9rem }
+    .w-4 { width:1rem }
+    .w-48 { width:12rem }
+    .w-72 { width:18rem }
+    .w-8 { width:2rem }
+    .w-\[120px\] { width:120px }
+    .w-\[4px\] { width:4px }
+    .w-\[92px\] { width:92px }
+    .w-\[94px\] { width:94px }
+    .w-full { width:100% }
+    .min-h-screen { min-height:100vh }
+    .max-w-7xl { max-width:80rem }
+    .border { border-width:1px }
+    .border-2 { border-width:2px }
+    .border-b { border-bottom-width:1px }
+    .border-t { border-top-width:1px }
+    .border-amber-300 { border-color:#fcd34d }
+    .border-blue-200 { border-color:#bfdbfe }
+    .border-blue-300 { border-color:#93c5fd }
+    .border-blue-600 { border-color:#2563eb }
+    .border-emerald-200 { border-color:#a7f3d0 }
+    .border-emerald-300 { border-color:#6ee7b7 }
+    .border-rose-200 { border-color:#fecdd3 }
+    .border-rose-300 { border-color:#fda4af }
+    .border-slate-100 { border-color:#f1f5f9 }
+    .border-slate-200 { border-color:#e2e8f0 }
+    .border-slate-300 { border-color:#cbd5e1 }
+    .rounded { border-radius:0.25rem }
+    .rounded-2xl { border-radius:1rem }
+    .rounded-full { border-radius:9999px }
+    .rounded-lg { border-radius:0.5rem }
+    .rounded-md { border-radius:0.375rem }
+    .rounded-xl { border-radius:0.75rem }
+    .rounded-b { border-bottom-right-radius:0.25rem;border-bottom-left-radius:0.25rem }
+    .bg-amber-100 { background-color:#fef3c7 }
+    .bg-amber-50 { background-color:#fffbeb }
+    .bg-blue-50 { background-color:#eff6ff }
+    .bg-blue-50\/80 { background-color:rgb(239 246 255 / 0.8) }
+    .bg-blue-500\/50 { background-color:rgb(59 130 246 / 0.5) }
+    .bg-emerald-50 { background-color:#ecfdf5 }
+    .bg-emerald-500 { background-color:#10b981 }
+    .bg-rose-100 { background-color:#ffe4e6 }
+    .bg-rose-50 { background-color:#fff1f2 }
+    .bg-rose-500 { background-color:#f43f5e }
+    .bg-sky-300 { background-color:#7dd3fc }
+    .bg-sky-400 { background-color:#38bdf8 }
+    .bg-slate-100 { background-color:#f1f5f9 }
+    .bg-slate-200 { background-color:#e2e8f0 }
+    .bg-slate-400 { background-color:#94a3b8 }
+    .bg-slate-50 { background-color:#f8fafc }
+    .bg-slate-800 { background-color:#1e293b }
+    .bg-slate-900 { background-color:#0f172a }
+    .bg-white { background-color:#ffffff }
+    .bg-white\/95 { background-color:rgb(255 255 255 / 0.95) }
+    .bg-gradient-to-b { background-image:linear-gradient(to bottom,var(--tw-gradient-stops)) }
+    .bg-gradient-to-r { background-image:linear-gradient(to right,var(--tw-gradient-stops)) }
+    .from-slate-200 { --tw-gradient-from:#e2e8f0;--tw-gradient-to:rgb(226 232 240 / 0);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to) }
+    .from-slate-300 { --tw-gradient-from:#cbd5e1;--tw-gradient-to:rgb(203 213 225 / 0);--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to) }
+    .via-blue-100 { --tw-gradient-to:rgb(219 234 254 / 0);--tw-gradient-stops:var(--tw-gradient-from),#dbeafe,var(--tw-gradient-to) }
+    .via-slate-300 { --tw-gradient-to:rgb(203 213 225 / 0);--tw-gradient-stops:var(--tw-gradient-from),#cbd5e1,var(--tw-gradient-to) }
+    .via-slate-400 { --tw-gradient-to:rgb(148 163 184 / 0);--tw-gradient-stops:var(--tw-gradient-from),#94a3b8,var(--tw-gradient-to) }
+    .to-slate-200 { --tw-gradient-to:#e2e8f0 }
+    .to-slate-500 { --tw-gradient-to:#64748b }
+    .italic { font-style:italic }
+    .text-center { text-align:center }
+    .uppercase { text-transform:uppercase }
+    .font-serif { font-family:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif }
+    .font-bold { font-weight:700 }
+    .font-extrabold { font-weight:800 }
+    .font-medium { font-weight:500 }
+    .font-semibold { font-weight:600 }
+    .text-\[10px\] { font-size:10px }
+    .text-\[13px\] { font-size:13px }
+    .text-\[14px\] { font-size:14px }
+    .text-\[20px\] { font-size:20px }
+    .text-base { font-size:1rem;line-height:1.5rem }
+    .text-lg { font-size:1.125rem;line-height:1.75rem }
+    .text-sm { font-size:0.875rem;line-height:1.25rem }
+    .text-xs { font-size:0.75rem;line-height:1rem }
+    .leading-none { line-height:1 }
+    .leading-snug { line-height:1.375 }
+    .tracking-tight { letter-spacing:-0.025em }
+    .tracking-wide { letter-spacing:0.025em }
+    .tracking-wider { letter-spacing:0.05em }
+    .fill-current { fill:currentColor }
+    .text-amber-400 { color:#fbbf24 }
+    .text-amber-700 { color:#b45309 }
+    .text-amber-800 { color:#92400e }
+    .text-black { color:#000000 }
+    .text-blue-600 { color:#2563eb }
+    .text-blue-700 { color:#1d4ed8 }
+    .text-blue-900 { color:#1e3a8a }
+    .text-emerald-500 { color:#10b981 }
+    .text-emerald-600 { color:#059669 }
+    .text-emerald-700 { color:#047857 }
+    .text-rose-500 { color:#f43f5e }
+    .text-rose-600 { color:#e11d48 }
+    .text-rose-700 { color:#be123c }
+    .text-sky-300 { color:#7dd3fc }
+    .text-sky-400 { color:#38bdf8 }
+    .text-slate-400 { color:#94a3b8 }
+    .text-slate-500 { color:#64748b }
+    .text-slate-600 { color:#475569 }
+    .text-slate-700 { color:#334155 }
+    .text-slate-800 { color:#1e293b }
+    .text-slate-900 { color:#0f172a }
+    .accent-blue-600 { accent-color:#2563eb }
+    .-translate-x-1\/2 { --tw-translate-x:-50%;transform:translate(var(--tw-translate-x,0),var(--tw-translate-y,0)) scale(var(--tw-scale,1)) }
+    .-translate-y-1\/2 { --tw-translate-y:-50%;transform:translate(var(--tw-translate-x,0),var(--tw-translate-y,0)) scale(var(--tw-scale,1)) }
+    .origin-bottom { transform-origin:bottom }
+    .origin-top { transform-origin:top }
+    .drop-shadow-\[0_1px_4px_rgba\(56\,189\,248\,0\.6\)\] { filter:drop-shadow(0 1px 4px rgba(56,189,248,0.6)) }
+    .drop-shadow-\[0_2px_6px_rgba\(56\,189\,248\,0\.7\)\] { filter:drop-shadow(0 2px 6px rgba(56,189,248,0.7)) }
+    .drop-shadow-md { filter:drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06)) }
+    .drop-shadow-sm { filter:drop-shadow(0 1px 1px rgb(0 0 0 / 0.05)) }
+    .backdrop-blur { -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px) }
+    .shadow { --tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .shadow-2xl { --tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .shadow-\[0_0_8px_rgba\(255\,255\,255\,0\.4\)\] { --tw-shadow:0 0 8px rgba(255,255,255,0.4);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .shadow-\[0_0_8px_rgba\(56\,189\,248\,0\.7\)\] { --tw-shadow:0 0 8px rgba(56,189,248,0.7);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .shadow-lg { --tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .shadow-md { --tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .shadow-sm { --tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .ring-2 { --tw-ring-shadow:0 0 0 2px var(--tw-ring-color,rgb(59 130 246 / 0.5));box-shadow:var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow,0 0 #0000) }
+    .ring-sky-200 { --tw-ring-color:#bae6fd }
+    .ring-slate-400 { --tw-ring-color:#94a3b8 }
+    .transition { transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms }
+    .transition-all { transition-property:all;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms }
+    .transition-opacity { transition-property:opacity;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms }
+    .transition-transform { transition-property:transform;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms }
+    .duration-150 { transition-duration:150ms }
+    .duration-200 { transition-duration:200ms }
+    .duration-300 { transition-duration:300ms }
+    .ease-out { transition-timing-function:cubic-bezier(0,0,0.2,1) }
+    .animate-pulse { animation:tw-pulse 2s cubic-bezier(0.4,0,0.6,1) infinite }
+
+    /* --- State variants --- */
+    .hover\:border-blue-300:hover { border-color:#93c5fd }
+    .hover\:border-rose-300:hover { border-color:#fda4af }
+    .hover\:bg-blue-50\/70:hover { background-color:rgb(239 246 255 / 0.7) }
+    .hover\:bg-rose-50:hover { background-color:#fff1f2 }
+    .hover\:bg-slate-100:hover { background-color:#f1f5f9 }
+    .hover\:bg-slate-200:hover { background-color:#e2e8f0 }
+    .hover\:bg-slate-200\/80:hover { background-color:rgb(226 232 240 / 0.8) }
+    .hover\:text-blue-700:hover { color:#1d4ed8 }
+    .hover\:text-rose-700:hover { color:#be123c }
+    .hover\:text-slate-900:hover { color:#0f172a }
+    .focus\:ring-blue-500:focus { --tw-ring-color:#3b82f6 }
+    .active\:scale-95:active { --tw-scale:0.95;transform:translate(var(--tw-translate-x,0),var(--tw-translate-y,0)) scale(var(--tw-scale,1)) }
+    .active\:scale-\[0\.99\]:active { --tw-scale:0.99;transform:translate(var(--tw-translate-x,0),var(--tw-translate-y,0)) scale(var(--tw-scale,1)) }
+    .selection\:bg-blue-600 *::selection, .selection\:bg-blue-600::selection { background-color:#2563eb }
+    .selection\:text-white *::selection, .selection\:text-white::selection { color:#ffffff }
+
+    /* --- Responsive --- */
+    @media (min-width: 640px) {
+      .sm\:right-10 { right:2.5rem }
+      .sm\:right-6 { right:1.5rem }
+      .sm\:inline { display:inline }
+      .sm\:gap-2\.5 { gap:0.625rem }
+      .sm\:gap-9 { gap:2.25rem }
+      .sm\:p-4 { padding:1rem }
+      .sm\:max-w-\[110px\] { max-width:110px }
+      .sm\:w-32 { width:8rem }
+      .sm\:w-80 { width:20rem }
+    }
+    @media (min-width: 1024px) {
+      .lg\:col-span-5 { grid-column:span 5 / span 5 }
+      .lg\:col-span-7 { grid-column:span 7 / span 7 }
+      .lg\:grid-cols-12 { grid-template-columns:repeat(12,minmax(0,1fr)) }
+      .lg\:p-6 { padding:1.5rem }
+      .lg\:px-8 { padding-left:2rem;padding-right:2rem }
+      .lg\:text-xl { font-size:1.25rem;line-height:1.75rem }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+  <header class="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center">
+        <h1 class="text-lg lg:text-xl font-bold tracking-tight text-slate-900">
+          Apparent Weight Simulator
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- FBD Checkbox in header -->
+        <label class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 cursor-pointer transition select-none shadow-sm">
+          <input id="toggle-fbd-checkbox" type="checkbox" checked class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer">
+          <span>Free-Body Diagram</span>
+        </label>
+
+        <!-- Spring and Mass Checkbox in header (default unchecked) -->
+        <label class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 cursor-pointer transition select-none shadow-sm">
+          <input id="toggle-spring-checkbox" type="checkbox" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer">
+          <span>Spring and Mass</span>
+        </label>
+
+        <!-- Audio Mute toggle (Default Muted) -->
+        <button id="audio-toggle-btn" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 shadow-sm transition flex items-center gap-1.5">
+          <svg id="sound-icon-on" class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+          <span id="audio-label">Muted</span>
+        </button>
+
+        <!-- Reset Simulation -->
+        <button id="reset-sim-btn" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 hover:text-slate-900 shadow-sm transition flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT PANEL: Simulation Stage (Elevator Frame of Reference) -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+      
+      <!-- Stage Container (10% less tall: 390px) -->
+      <div class="relative bg-slate-100 border border-slate-300 rounded-2xl overflow-hidden shadow-lg flex flex-col h-[390px]">
+        
+        <!-- Status Bar atop simulator (No floor or height text) -->
+        <div class="px-4 py-2.5 bg-white/95 border-b border-slate-200 flex items-center justify-between z-20 text-xs font-mono-num shadow-sm">
+          <div class="flex items-center gap-2">
+            <span id="motion-badge" class="px-2 py-0.5 rounded font-semibold tracking-wide bg-slate-100 text-slate-700 border border-slate-300">
+              AT REST
+            </span>
+            <span id="status-desc" class="text-black text-sm font-semibold hidden sm:inline">a = 0.00 m/s², v = 0.00 m/s</span>
+          </div>
+        </div>
+
+        <!-- Viewport: Centered Frame of Reference on Elevator -->
+        <div id="shaft-viewport" class="relative flex-1 overflow-hidden bg-slate-900 flex items-center justify-center select-none">
+          
+          <!-- Direction-Clear Canvas Shaft Background -->
+          <canvas id="shaft-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+          <!-- Tension Cable (Intact State: extends upward into infinity, no top pulley) -->
+          <div id="main-cable" class="absolute bottom-1/2 left-1/2 -translate-x-1/2 mb-[135px] top-0 w-[4px] bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 shadow-[0_0_8px_rgba(255,255,255,0.4)] z-10 origin-bottom"></div>
+
+          <!-- Broken Waving Cable SVG (Activated on Malfunction) -->
+          <svg id="broken-cable-svg" class="absolute bottom-1/2 left-1/2 -translate-x-1/2 mb-[131px] w-48 h-48 pointer-events-none hidden z-20 overflow-visible" viewBox="-80 -150 160 160">
+            <path id="waving-cable-path" d="M 0,0 Q 0,-40 0,-80" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+            <path id="frayed-tip-1" d="M 0,-80 Q -6,-88 -10,-95" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" />
+            <path id="frayed-tip-2" d="M 0,-80 Q 4,-90 6,-98" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" />
+            <path id="frayed-tip-3" d="M 0,-80 Q -2,-92 -2,-102" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" />
+          </svg>
+
+          <!-- Cable Snap Spark Particle Container -->
+          <div id="spark-container" class="absolute left-1/2 -translate-x-1/2 bottom-1/2 mb-[127px] pointer-events-none hidden z-30">
+            <svg class="w-24 h-24 text-amber-400 snap-effect" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l2.4 6.9 7.3.3-5.7 4.6 2 7.2L12 16.7 6 21l2-7.2L2.3 9.2l7.3-.3z"/>
+            </svg>
+          </div>
+
+          <!-- Elevator Cab (LOCKED AT VERTICAL CENTER: 270px) -->
+          <div id="elevator-cab" class="relative w-72 sm:w-80 h-[270px] rounded-xl border-2 border-slate-300 bg-white/95 shadow-2xl backdrop-blur flex flex-col justify-between p-3 z-20">
+            
+            <!-- Cab Ceiling Trim (Yellow light removed) -->
+            <div class="w-full flex items-center justify-center pb-1 border-b border-slate-200">
+              <div class="w-24 h-1 rounded-full bg-slate-200"></div>
+            </div>
+
+            <!-- Cabin Inner Chamber with Scale, Rider, and Spring-Mass -->
+            <div class="relative flex-1 flex flex-col items-center justify-end overflow-hidden pb-1">
+
+              <!-- Spring-Mass Apparatus (Suspended from cab ceiling to the right of rider, default hidden) -->
+              <div id="spring-mass-container" class="absolute right-3 sm:right-6 top-0 w-12 flex flex-col items-center pointer-events-none z-10 hidden">
+                <svg id="spring-mass-svg" class="w-12 h-36 overflow-visible" viewBox="0 0 48 140">
+                  <!-- Ceiling mount bracket -->
+                  <rect x="14" y="0" width="20" height="4" rx="1.5" fill="#64748b" />
+                  <rect x="22" y="4" width="4" height="6" fill="#475569" />
+                  <!-- Spring coil path -->
+                  <path id="spring-coil-path" d="M 24,10 L 32.5,17.2 L 15.5,31.7 L 24,39" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                  <!-- Suspended cube mass -->
+                  <g id="spring-cube-group" transform="translate(0, 64)">
+                    <rect x="22" y="0" width="4" height="5" fill="#475569" />
+                    <!-- Isometric 3D block -->
+                    <polygon points="12,11 24,5 36,11 24,17" fill="#60a5fa" stroke="#3b82f6" stroke-width="1" />
+                    <polygon points="12,11 24,17 24,29 12,23" fill="#2563eb" stroke="#1d4ed8" stroke-width="1" />
+                    <polygon points="36,11 24,17 24,29 36,23" fill="#1d4ed8" stroke="#1e40af" stroke-width="1" />
+                    <text x="24" y="23" font-size="8" font-family="'JetBrains Mono', monospace" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">m</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Rider Wrapper (floats and flails limbs in zero-g) -->
+              <div id="rider-wrapper" class="relative z-10 transition-transform duration-300 ease-out flex flex-col items-center">
+                
+                <!-- SVG: Woman (50 kg) -->
+                <svg id="rider-woman" class="w-[92px] h-[132px] drop-shadow-md block -mb-0.5" viewBox="0 0 100 144" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Flowing dark hair back -->
+                  <path d="M36 22 C30 36, 31 52, 38 60 C42 62, 39 48, 42 36 Z" fill="#262626" />
+                  <path d="M64 22 C70 36, 69 52, 62 60 C58 62, 61 48, 58 36 Z" fill="#262626" />
+                  
+                  <!-- Left Arm -->
+                  <g class="limb-anim limb-arm-left">
+                    <path d="M38 45 L29 72 L33.5 73.5 L41.5 48 Z" fill="#c27803" />
+                    <circle cx="30.5" cy="74" r="2.8" fill="#fed7aa" />
+                  </g>
+                  
+                  <!-- Left Leg -->
+                  <g class="limb-anim limb-leg-left">
+                    <path d="M41 84 L47.5 84 L46.5 138 L41 138 Z" fill="#1e293b" />
+                    <rect x="38" y="138" width="8.5" height="3" rx="1.5" fill="#f8fafc" />
+                    <path d="M37.5 141 Q43 139.5 46.5 141 L46.5 144 L37 144 Z" fill="#ffffff" />
+                    <rect x="36.5" y="143" width="10.5" height="1" fill="#cbd5e1" />
+                  </g>
+
+                  <!-- Right Leg -->
+                  <g class="limb-anim limb-leg-right">
+                    <path d="M52.5 84 L59 84 L59 138 L53.5 138 Z" fill="#1e293b" />
+                    <rect x="53.5" y="138" width="8.5" height="3" rx="1.5" fill="#f8fafc" />
+                    <path d="M53.5 141 Q57 139.5 62.5 141 L63 144 L53.5 144 Z" fill="#ffffff" />
+                    <rect x="53" y="143" width="10.5" height="1" fill="#cbd5e1" />
+                  </g>
+
+                  <!-- Torso: Breton striped tee & Open Toffee Cardigan -->
+                  <path d="M39 41 C43 38, 57 38, 61 41 L63 76 C59 81, 55 84, 50 84 C45 84, 41 81, 37 76 Z" fill="#ffffff" />
+                  <line x1="43" y1="48" x2="57" y2="48" stroke="#1e3a8a" stroke-width="2" />
+                  <line x1="42" y1="56" x2="58" y2="56" stroke="#1e3a8a" stroke-width="2" />
+                  <line x1="42" y1="64" x2="58" y2="64" stroke="#1e3a8a" stroke-width="2" />
+                  <line x1="43" y1="72" x2="57" y2="72" stroke="#1e3a8a" stroke-width="2" />
+                  <path d="M38 42 L45 42 L44 80 L37 76 Z" fill="#d97706" />
+                  <path d="M62 42 L55 42 L56 80 L63 76 Z" fill="#d97706" />
+                  
+                  <rect x="40" y="81" width="20" height="3.5" rx="1" fill="#0f172a" />
+                  <rect x="48.5" y="81" width="3" height="3.5" rx="0.5" fill="#fde68a" />
+
+                  <!-- Head & Face -->
+                  <rect x="48" y="32" width="4" height="9" fill="#fed7aa" />
+                  <ellipse cx="50" cy="25" rx="7.8" ry="8.8" fill="#fed7aa" />
+                  <ellipse cx="47.5" cy="24.5" rx="0.9" ry="1.2" fill="#1e293b" />
+                  <ellipse cx="52.5" cy="24.5" rx="0.9" ry="1.2" fill="#1e293b" />
+                  <path d="M46 22.8 Q47.5 21.8 49 22.8" stroke="#262626" stroke-width="0.8" fill="none" />
+                  <path d="M51 22.8 Q52.5 21.8 54 22.8" stroke="#262626" stroke-width="0.8" fill="none" />
+                  <path d="M48.5 28 Q50 29.5 51.5 28" stroke="#e11d48" stroke-width="0.9" fill="none" stroke-linecap="round" />
+                  <path d="M42 21 C43 12, 57 12, 58 21 C62 16, 59 10, 50 10 C41 10, 38 16, 42 21 Z" fill="#262626" />
+
+                  <!-- Right Arm -->
+                  <g class="limb-anim limb-arm-right">
+                    <path d="M62 45 L71 72 L66.5 73.5 L58.5 48 Z" fill="#c27803" />
+                    <circle cx="69.5" cy="74" r="2.8" fill="#fed7aa" />
+                  </g>
+                </svg>
+
+                <!-- SVG: Man (75 kg) -->
+                <svg id="rider-man" class="w-[94px] h-[136px] drop-shadow-md hidden -mb-0.5" viewBox="0 0 100 146" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Left Arm -->
+                  <g class="limb-anim limb-arm-left">
+                    <path d="M35 43 L26 73 L30.5 75 L37.5 47 Z" fill="#3f6212" />
+                    <circle cx="27.5" cy="75" r="2.9" fill="#fde68a" />
+                  </g>
+
+                  <!-- Left Leg -->
+                  <g class="limb-anim limb-leg-left">
+                    <path d="M39 86 L47 86 L46 139 L39 139 Z" fill="#1e293b" />
+                    <rect x="36.5" y="139" width="10" height="3.5" rx="1.5" fill="#f8fafc" />
+                    <path d="M35.5 142.5 Q41 141 47 142.5 L47 146 L35 146 Z" fill="#cbd5e1" />
+                  </g>
+
+                  <!-- Right Leg -->
+                  <g class="limb-anim limb-leg-right">
+                    <path d="M53 86 L61 86 L61 139 L54 139 Z" fill="#1e293b" />
+                    <rect x="53.5" y="139" width="10" height="3.5" rx="1.5" fill="#f8fafc" />
+                    <path d="M53 142.5 Q58.5 141 64.5 142.5 L65 146 L53 146 Z" fill="#cbd5e1" />
+                  </g>
+
+                  <!-- Torso -->
+                  <path d="M35 41 L65 41 L63 86 L37 86 Z" fill="#4d7c0f" />
+                  <polygon points="46,41 50,47 54,41" fill="#ffffff" />
+                  <path d="M48 44 L48 83" stroke="#365314" stroke-width="1.5" stroke-dasharray="2 2" />
+                  <rect x="38" y="52" width="6" height="7" rx="1" fill="#3f6212" />
+                  <rect x="56" y="52" width="6" height="7" rx="1" fill="#3f6212" />
+                  <rect x="37" y="83" width="26" height="3.5" rx="1" fill="#0f172a" />
+                  <rect x="48.5" y="83" width="3" height="3.5" rx="0.5" fill="#94a3b8" />
+
+                  <!-- Head & Face -->
+                  <rect x="47.5" y="31" width="5" height="9" fill="#fde68a" />
+                  <ellipse cx="50" cy="23.5" rx="8" ry="8.5" fill="#fde68a" />
+                  <path d="M42 20 C42 11, 58 11, 58 20 C62 16, 38 16, 42 20 Z" fill="#292524" />
+                  <circle cx="47" cy="22.5" r="1" fill="#1e293b" />
+                  <circle cx="53" cy="22.5" r="1" fill="#1e293b" />
+                  <path d="M45.5 20.5 Q47.5 19.8 49 20.5" stroke="#292524" stroke-width="0.8" fill="none" />
+                  <path d="M51 20.5 Q52.5 19.8 54.5 20.5" stroke="#292524" stroke-width="0.8" fill="none" />
+                  <path d="M47.5 27 Q50 29 52.5 27" stroke="#b91c1c" stroke-width="0.9" fill="none" stroke-linecap="round" />
+
+                  <!-- Right Arm -->
+                  <g class="limb-anim limb-arm-right">
+                    <path d="M65 43 L74 73 L69.5 75 L62.5 47 Z" fill="#3f6212" />
+                    <circle cx="72.5" cy="75" r="2.9" fill="#fde68a" />
+                  </g>
+                </svg>
+
+                <!-- SVG: Dog (25 kg) -->
+                <svg id="rider-dog" class="w-[120px] h-[93px] drop-shadow-md hidden -mb-0.5" viewBox="0 0 120 93" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Wagging Tail -->
+                  <g class="tail-anim tail-dog">
+                    <path d="M22 45 C10 40, 8 20, 16 12 C20 18, 22 30, 28 42 Z" fill="#d97706" />
+                  </g>
+
+                  <!-- Back Leg 1 -->
+                  <g class="limb-anim limb-dog-b1">
+                    <rect x="28" y="55" width="7" height="34" rx="3.5" fill="#b45309" />
+                    <ellipse cx="30" cy="90" rx="5.5" ry="3" fill="#92400e" />
+                  </g>
+
+                  <!-- Back Leg 2 -->
+                  <g class="limb-anim limb-dog-b2">
+                    <rect x="38" y="55" width="7" height="34" rx="3.5" fill="#d97706" />
+                    <ellipse cx="40" cy="90" rx="5.5" ry="3" fill="#b45309" />
+                  </g>
+
+                  <!-- Dog Body -->
+                  <ellipse cx="56" cy="50" rx="30" ry="18" fill="#d97706" />
+                  <ellipse cx="50" cy="46" rx="20" ry="14" fill="#f59e0b" />
+
+                  <!-- Front Leg 1 -->
+                  <g class="limb-anim limb-dog-f1">
+                    <rect x="70" y="55" width="7" height="34" rx="3.5" fill="#b45309" />
+                    <ellipse cx="72" cy="90" rx="5.5" ry="3" fill="#92400e" />
+                  </g>
+
+                  <!-- Front Leg 2 -->
+                  <g class="limb-anim limb-dog-f2">
+                    <rect x="80" y="55" width="7" height="34" rx="3.5" fill="#d97706" />
+                    <ellipse cx="82" cy="90" rx="5.5" ry="3" fill="#b45309" />
+                  </g>
+
+                  <!-- Head & Collar -->
+                  <path d="M72 50 L84 32 L98 38 L86 58 Z" fill="#d97706" />
+                  <path d="M80 40 L90 46" stroke="#ef4444" stroke-width="3" stroke-linecap="round" />
+                  <circle cx="86" cy="46" r="2" fill="#fbbf24" />
+                  <circle cx="94" cy="28" r="13" fill="#d97706" />
+                  <ellipse cx="106" cy="32" rx="9" ry="7" fill="#f59e0b" />
+                  <circle cx="112" cy="30" r="3" fill="#18181b" />
+                  <circle cx="96" cy="24" r="2.2" fill="#18181b" />
+                  <circle cx="97" cy="23" r="0.8" fill="#ffffff" />
+                  <path d="M86 20 C82 20, 80 34, 85 38 C88 38, 92 28, 90 20 Z" fill="#92400e" />
+                </svg>
+
+              </div>
+
+              <!-- Streamlined Bathroom Scale -->
+              <div class="relative w-28 sm:w-32 flex flex-col items-center">
+                <div class="w-full h-3 bg-gradient-to-r from-slate-200 via-blue-100 to-slate-200 rounded-md border border-blue-300 shadow flex items-center justify-center">
+                  <div class="w-8 h-1 bg-blue-500/50 rounded-full"></div>
+                </div>
+                <div class="w-24 h-1 bg-slate-400 rounded-b"></div>
+              </div>
+
+            </div>
+
+            <!-- Floor of elevator cab -->
+            <div class="w-full h-2.5 bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 rounded-b border-t border-slate-300"></div>
+          </div>
+
+          <!-- Point-Mass Free Body Diagram (FBD) and Acceleration Vector -->
+          <div id="point-mass-fbd-panel" class="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 flex items-center gap-7 sm:gap-9 z-30 transition-all duration-200 pointer-events-none select-none">
+            
+            <!-- Point Mass Force Diagram -->
+            <div class="relative w-12 h-52 flex items-center justify-center">
+              <div class="w-3.5 h-3.5 rounded-full bg-slate-800 shadow-md ring-2 ring-slate-400 z-20"></div>
+
+              <!-- Normal force vector FN -->
+              <div id="fbd-vector-fn" class="absolute bottom-1/2 left-1/2 -translate-x-1/2 mb-1 flex flex-col items-center transition-all duration-150 origin-bottom">
+                <span class="text-base font-bold text-emerald-600 mb-0.5 leading-none tracking-tight">F<sub>N</sub></span>
+                <svg class="w-4 h-4 -mb-1 text-emerald-500 fill-current drop-shadow-sm" viewBox="0 0 24 24"><path d="M12 3l-8 9h16z"/></svg>
+                <div id="fbd-stem-fn" class="w-1.5 bg-emerald-500 rounded-full h-14 shadow-sm"></div>
+              </div>
+
+              <!-- Gravity force vector Fg -->
+              <div id="fbd-vector-fg" class="absolute top-1/2 left-1/2 -translate-x-1/2 mt-1 flex flex-col items-center transition-all duration-150 origin-top">
+                <div id="fbd-stem-fg" class="w-1.5 bg-rose-500 rounded-full h-14 shadow-sm"></div>
+                <svg class="w-4 h-4 -mt-1 text-rose-500 fill-current drop-shadow-sm" viewBox="0 0 24 24"><path d="M12 21l-8-9h16z"/></svg>
+                <span class="text-base font-bold text-rose-600 mt-0.5 leading-none tracking-tight">F<sub>g</sub></span>
+              </div>
+            </div>
+
+            <!-- Acceleration Vector -->
+            <div id="fbd-accel-container" class="relative w-8 h-52 flex items-center justify-center transition-opacity duration-200">
+              <div class="w-2 h-2 rounded-full bg-sky-300 ring-2 ring-sky-200 z-20"></div>
+
+              <div id="fbd-accel-up" class="absolute bottom-1/2 left-1/2 -translate-x-1/2 mb-1 flex flex-col items-center transition-all duration-150 origin-bottom hidden">
+                <span class="text-base font-bold text-sky-300 mb-0.5 leading-none tracking-tight drop-shadow-[0_1px_4px_rgba(56,189,248,0.6)]">a</span>
+                <svg class="w-4 h-4 -mb-1 text-sky-400 fill-current drop-shadow-[0_2px_6px_rgba(56,189,248,0.7)]" viewBox="0 0 24 24"><path d="M12 3l-8 9h16z"/></svg>
+                <div id="fbd-stem-accel-up" class="w-1.5 bg-sky-400 rounded-full h-10 shadow-[0_0_8px_rgba(56,189,248,0.7)]"></div>
+              </div>
+
+              <div id="fbd-accel-down" class="absolute top-1/2 left-1/2 -translate-x-1/2 mt-1 flex flex-col items-center transition-all duration-150 origin-top hidden">
+                <div id="fbd-stem-accel-down" class="w-1.5 bg-sky-400 rounded-full h-10 shadow-[0_0_8px_rgba(56,189,248,0.7)]"></div>
+                <svg class="w-4 h-4 -mt-1 text-sky-400 fill-current drop-shadow-[0_2px_6px_rgba(56,189,248,0.7)]" viewBox="0 0 24 24"><path d="M12 21l-8-9h16z"/></svg>
+                <span class="text-base font-bold text-sky-300 mt-0.5 leading-none tracking-tight drop-shadow-[0_1px_4px_rgba(56,189,248,0.6)]">a</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Select Rider Section -->
+      <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex flex-col gap-2.5">
+        <div class="flex items-center justify-between gap-2.5">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500 max-w-[95px] sm:max-w-[110px] leading-snug select-none">
+            Select Elevator Rider
+          </label>
+          <div class="flex items-center gap-2.5 flex-1 justify-end">
+            <button id="btn-rider-woman" class="rider-select-btn py-1.5 px-3 rounded-lg border-2 border-blue-600 bg-blue-50/80 text-blue-900 flex flex-col items-center text-center gap-0.5 transition shadow-sm flex-1 max-w-[128px]">
+              <span class="text-xs font-bold text-slate-900">Woman</span>
+              <span class="text-[14px] font-mono-num text-blue-700 font-bold">50.0 kg</span>
+            </button>
+
+            <button id="btn-rider-man" class="rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]">
+              <span class="text-xs font-bold text-slate-800">Man</span>
+              <span class="text-[14px] font-mono-num text-slate-500 font-semibold">75.0 kg</span>
+            </button>
+
+            <button id="btn-rider-dog" class="rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]">
+              <span class="text-xs font-bold text-slate-800">Dog</span>
+              <span class="text-[14px] font-mono-num text-slate-500 font-semibold">25.0 kg</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Mass Adjuster slider -->
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500 font-medium">Custom Mass:</span>
+            <span id="custom-mass-val" class="text-xs font-mono-num font-bold text-blue-600">50.0 kg</span>
+          </div>
+          <input id="mass-slider" type="range" min="10" max="120" step="1" value="50" class="w-36 accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT PANEL: Telemetry, Acceleration Slider & Motion Presets -->
+    <section class="lg:col-span-5 flex flex-col gap-5">
+      
+      <!-- Telemetry Gauges Card -->
+      <div class="metal-plate rounded-2xl p-5 border border-slate-200 flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            Scale Telemetry
+          </h2>
+          <span id="weight-ratio-badge" class="px-2.5 py-0.5 rounded-full text-sm font-bold font-mono-num bg-slate-100 text-slate-700 border border-slate-300">
+            100% of True Weight
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- True Gravitational Weight and Mass Gauge (Left) -->
+          <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[13px] text-slate-500 font-semibold">True Weight and Mass</span>
+              <span class="text-[10px] font-bold text-rose-700 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">Gravity</span>
+            </div>
+            <div class="flex flex-col gap-1 my-1">
+              <div class="flex items-baseline gap-1.5">
+                <span id="telemetry-true-newtons" class="text-[20px] font-extrabold text-rose-600">490.0</span>
+                <span class="text-[14px] font-bold text-rose-600">N</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="telemetry-true-lbs" class="text-[20px] font-extrabold text-rose-600">110.2</span>
+                <span class="text-[14px] font-bold text-rose-600">lbs</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="telemetry-true-kg" class="text-[20px] font-extrabold text-rose-600">50.0</span>
+                <span class="text-[14px] font-bold text-rose-600">kg</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apparent Weight and Mass Gauge (Right) -->
+          <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[13px] text-slate-500 font-semibold">Apparent Weight and Mass</span>
+              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">Scale</span>
+            </div>
+            <div class="flex flex-col gap-1 my-1">
+              <div class="flex items-baseline gap-1.5">
+                <span id="telemetry-newtons" class="text-[20px] font-extrabold text-emerald-600">490.0</span>
+                <span class="text-[14px] font-bold text-emerald-600">N</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="telemetry-app-lbs" class="text-[20px] font-extrabold text-emerald-600">110.2</span>
+                <span class="text-[14px] font-bold text-emerald-600">lbs</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="telemetry-app-kg" class="text-[20px] font-extrabold text-emerald-600">50.0</span>
+                <span class="text-[14px] font-bold text-emerald-600">kg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Acceleration Control Slider -->
+        <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <label for="accel-slider" class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <span>Acceleration Slider (<span class="font-serif italic font-bold">a</span>):</span>
+            </label>
+            <span id="accel-slider-val" class="text-xs font-mono-num font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              0.00 m/s²
+            </span>
+          </div>
+
+          <!-- Slider with - and + stepper buttons -->
+          <div class="flex items-center gap-2">
+            <button id="btn-accel-minus" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-300 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-lg leading-none transition select-none shadow-sm" title="Decrease acceleration">−</button>
+            <input id="accel-slider" type="range" min="-9.80" max="9.80" step="0.05" value="0.00" class="flex-1 accent-blue-600 h-2 bg-slate-200 rounded-lg cursor-pointer">
+            <button id="btn-accel-plus" type="button" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-300 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-lg leading-none transition select-none shadow-sm" title="Increase acceleration">+</button>
+          </div>
+
+          <div class="flex justify-between text-[10px] font-mono-num text-black font-medium">
+            <span>-9.80 m/s² (Free Fall)</span>
+            <span>0.00 (Const v / Rest)</span>
+            <span>+9.80 m/s² (+1g)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Presets side by side -->
+      <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex flex-col">
+        <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
+          <button id="preset-const-velocity" class="py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/70 hover:border-blue-300 text-slate-800 hover:text-blue-700 font-bold text-xs shadow-sm transition flex items-center justify-center text-center">
+            Constant Velocity
+          </button>
+
+          <button id="btn-at-rest" class="py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-bold text-xs shadow-sm transition flex items-center justify-center text-center">
+            ⏹ Stop
+          </button>
+
+          <button id="preset-malfunction" class="py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 text-slate-700 hover:text-rose-700 font-bold text-xs shadow-sm transition flex items-center justify-center text-center active:scale-[0.99]">
+            Malfunction
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // Physics constants & simulator state
+    const G = 9.80; // Standard gravitational acceleration in m/s^2
+
+    // State management
+    const state = {
+      mass: 50.0, // kg
+      riderType: 'woman',
+      acceleration: 0.0, // m/s^2
+      velocity: 0.0, // m/s
+      position: 0.0, // height in meters
+      isMalfunction: false,
+      isFloating: false,
+      touchdownAnim: null,
+      soundEnabled: false,
+      lastTimestamp: null,
+      cableWavePhase: 0.0,
+      showFBD: true,
+      showSpringMass: false,
+      // Kinematic transition tracking
+      stopping: false,
+      stopTimer: 0,
+      stopDuration: 0,
+      initialStopVelocity: 0,
+      rampingAccelToZero: false,
+      rampTimer: 0,
+      rampDuration: 1.0 / 3.0,
+      initialRampAccel: 0,
+      liftOffTimeout: null
+    };
+
+    // DOM References
+    const cabEl = document.getElementById('elevator-cab');
+    const cableEl = document.getElementById('main-cable');
+    const brokenCableSvg = document.getElementById('broken-cable-svg');
+    const wavingCablePath = document.getElementById('waving-cable-path');
+    const frayedTip1 = document.getElementById('frayed-tip-1');
+    const frayedTip2 = document.getElementById('frayed-tip-2');
+    const frayedTip3 = document.getElementById('frayed-tip-3');
+    
+    const shaftCanvas = document.getElementById('shaft-canvas');
+    const ctx = shaftCanvas ? shaftCanvas.getContext('2d') : null;
+
+    const riderWoman = document.getElementById('rider-woman');
+    const riderMan = document.getElementById('rider-man');
+    const riderDog = document.getElementById('rider-dog');
+    const riderWrapper = document.getElementById('rider-wrapper');
+    const sparkContainer = document.getElementById('spark-container');
+
+    // Spring-Mass DOM references
+    const toggleSpringCheckbox = document.getElementById('toggle-spring-checkbox');
+    const springMassContainer = document.getElementById('spring-mass-container');
+    const springCoilPath = document.getElementById('spring-coil-path');
+    const springCubeGroup = document.getElementById('spring-cube-group');
+
+    // Spring physical parameters
+    const SPRING_L_NATURAL = 28;     // Natural unextended length (0g free-fall)
+    const SPRING_L_EQUILIBRIUM = 64;  // Resting length at 1g (a = 0)
+    let springCurrentL = SPRING_L_EQUILIBRIUM;
+    let springVelocity = 0;
+
+    // FBD Elements
+    const toggleFbdCheckbox = document.getElementById('toggle-fbd-checkbox');
+    const pointMassFbdPanel = document.getElementById('point-mass-fbd-panel');
+    const fbdStemFn = document.getElementById('fbd-stem-fn');
+    const fbdStemFg = document.getElementById('fbd-stem-fg');
+    const fbdVectorFn = document.getElementById('fbd-vector-fn');
+    const fbdAccelContainer = document.getElementById('fbd-accel-container');
+    const fbdAccelUp = document.getElementById('fbd-accel-up');
+    const fbdAccelDown = document.getElementById('fbd-accel-down');
+    const fbdStemAccelUp = document.getElementById('fbd-stem-accel-up');
+    const fbdStemAccelDown = document.getElementById('fbd-stem-accel-down');
+
+    // Telemetry DOM
+    const telemetryNewtons = document.getElementById('telemetry-newtons');
+    const telemetryTrueNewtons = document.getElementById('telemetry-true-newtons');
+    const telemetryAppLbs = document.getElementById('telemetry-app-lbs');
+    const telemetryTrueLbs = document.getElementById('telemetry-true-lbs');
+    const telemetryAppKg = document.getElementById('telemetry-app-kg');
+    const telemetryTrueKg = document.getElementById('telemetry-true-kg');
+    const weightRatioBadge = document.getElementById('weight-ratio-badge');
+
+    // Acceleration slider DOM
+    const accelSlider = document.getElementById('accel-slider');
+    const accelSliderVal = document.getElementById('accel-slider-val');
+    const btnAccelMinus = document.getElementById('btn-accel-minus');
+    const btnAccelPlus = document.getElementById('btn-accel-plus');
+
+    // Status bar DOM
+    const motionBadge = document.getElementById('motion-badge');
+    const statusDesc = document.getElementById('status-desc');
+
+    // Controls DOM
+    const btnWoman = document.getElementById('btn-rider-woman');
+    const btnMan = document.getElementById('btn-rider-man');
+    const btnDog = document.getElementById('btn-rider-dog');
+    const massSlider = document.getElementById('mass-slider');
+    const customMassVal = document.getElementById('custom-mass-val');
+
+    const presetConstVelocity = document.getElementById('preset-const-velocity');
+    const presetMalfunction = document.getElementById('preset-malfunction');
+    const btnAtRest = document.getElementById('btn-at-rest');
+    const resetSimBtn = document.getElementById('reset-sim-btn');
+    const audioToggleBtn = document.getElementById('audio-toggle-btn');
+    const audioLabel = document.getElementById('audio-label');
+    const soundIconOn = document.getElementById('sound-icon-on');
+
+    // Canvas resize handling
+    function resizeShaftCanvas() {
+      if (!shaftCanvas || !shaftCanvas.parentElement) return;
+      const rect = shaftCanvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      shaftCanvas.width = rect.width * dpr;
+      shaftCanvas.height = rect.height * dpr;
+      if (ctx) ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeShaftCanvas);
+
+    // Particle streaks for extreme speed clarity
+    const speedStreaks = [];
+    for (let i = 0; i < 35; i++) {
+      speedStreaks.push({
+        xRel: Math.random(),
+        yRel: Math.random(),
+        length: 15 + Math.random() * 30,
+        opacity: 0.15 + Math.random() * 0.35,
+        side: Math.random() > 0.5 ? 'left' : 'right'
+      });
+    }
+
+    // Direction-unambiguous shaft rendering on canvas
+    function renderShaftCanvas() {
+      if (!ctx || !shaftCanvas) return;
+      const w = shaftCanvas.parentElement.clientWidth;
+      const h = shaftCanvas.parentElement.clientHeight;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Deep industrial shaft background
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#0f172a');
+      grad.addColorStop(0.5, '#1e293b');
+      grad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Scale & layout
+      const pixelsPerMeter = 45;
+      const cabWidth = 320;
+      const leftRailX = Math.floor(w / 2 - cabWidth / 2 - 14);
+      const rightRailX = Math.floor(w / 2 + cabWidth / 2 + 14);
+
+      // Shaft Wall Bracing: repeating cross-trusses with distinct diagonal angles
+      // Truss segment height in meters: 2.0 meters (90 pixels)
+      const trussHeightPx = 90;
+      // In the elevator's frame of reference:
+      // Moving UP (+y position) causes the shaft walls to scroll DOWN (+screen y).
+      const relY = ((state.position * pixelsPerMeter) % trussHeightPx + trussHeightPx) % trussHeightPx;
+
+      ctx.lineWidth = 1.5;
+      const numSegments = Math.ceil(h / trussHeightPx) + 3;
+
+      for (let i = -2; i < numSegments; i++) {
+        const segTop = relY + i * trussHeightPx;
+        const segBottom = segTop + trussHeightPx;
+
+        // LEFT WALL STRUCTURAL TRUSS
+        ctx.strokeStyle = 'rgba(71, 85, 105, 0.45)';
+        // Horizontal girder
+        ctx.beginPath();
+        ctx.moveTo(0, segTop);
+        ctx.lineTo(leftRailX, segTop);
+        ctx.stroke();
+
+        // Directional diagonal cross-brace
+        ctx.beginPath();
+        ctx.moveTo(0, segTop);
+        ctx.lineTo(leftRailX, segBottom);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(leftRailX, segTop);
+        ctx.lineTo(0, segBottom);
+        ctx.stroke();
+
+        // RIGHT WALL STRUCTURAL TRUSS
+        ctx.strokeStyle = 'rgba(71, 85, 105, 0.45)';
+        ctx.beginPath();
+        ctx.moveTo(rightRailX, segTop);
+        ctx.lineTo(w, segTop);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(rightRailX, segTop);
+        ctx.lineTo(w, segBottom);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(w, segTop);
+        ctx.lineTo(rightRailX, segBottom);
+        ctx.stroke();
+
+        // Heavy steel mounting plates with rivets on rails
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(leftRailX - 7, segTop - 5, 14, 10);
+        ctx.fillRect(rightRailX - 7, segTop - 5, 14, 10);
+
+        // Highlight bolt
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(leftRailX - 2, segTop - 2, 4, 4);
+        ctx.fillRect(rightRailX - 2, segTop - 2, 4, 4);
+      }
+
+      // Vertical Guide Rails
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(leftRailX - 3, 0, 6, h);
+      ctx.fillRect(rightRailX - 3, 0, 6, h);
+
+      // Guide rail highlights
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(leftRailX - 1, 0, 2, h);
+      ctx.fillRect(rightRailX - 1, 0, 2, h);
+
+      // DYNAMIC OPTICAL MOTION STREAKS
+      // If moving, draw speed streaks in the direction of relative flow
+      const absV = Math.abs(state.velocity);
+      if (absV > 0.05) {
+        const velDir = Math.sign(state.velocity); // +1 is elevator UP, relative shaft flow is DOWN (+y)
+        const streakAlpha = Math.min(absV / 12, 0.85);
+
+        speedStreaks.forEach(s => {
+          // Calculate x in left or right wall zone
+          const x = s.side === 'left' 
+            ? s.xRel * (leftRailX - 10) 
+            : rightRailX + 10 + s.xRel * (w - rightRailX - 20);
+
+          // Update relative y based on velocity:
+          // Elevator moving UP (+velocity) means motes/streaks move DOWN (+yRel)
+          s.yRel = (s.yRel + (state.velocity * 0.008)) % 1;
+          if (s.yRel < 0) s.yRel += 1;
+
+          const y = s.yRel * h;
+          const len = s.length * (1 + absV * 0.4);
+
+          ctx.strokeStyle = `rgba(148, 163, 184, ${s.opacity * streakAlpha})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          // Direction of streak points along relative motion (behind the flow)
+          ctx.lineTo(x, y - velDir * len);
+          ctx.stroke();
+        });
+      }
+    }
+
+    function resetElevatorCables() {
+      if (state.liftOffTimeout) clearTimeout(state.liftOffTimeout);
+
+      // Check if rider was currently lifting or floating in zero-G
+      const wasInZeroG = state.isMalfunction || 
+                         riderWrapper.classList.contains('is-lifting') || 
+                         riderWrapper.classList.contains('is-floating');
+
+      state.isMalfunction = false;
+      state.stopping = false;
+      state.rampingAccelToZero = false;
+      sparkContainer.classList.add('hidden');
+      cableEl.classList.remove('hidden');
+      brokenCableSvg.classList.add('hidden');
+
+      if (wasInZeroG) {
+        // Sample exact instantaneous in-flight transform matrix
+        const currentTransform = window.getComputedStyle(riderWrapper).transform;
+        
+        // Also capture instantaneous limb angles for smooth return
+        const animatedLimbs = riderWrapper.querySelectorAll('.limb-anim, .tail-anim');
+        const limbSnapshots = [];
+        animatedLimbs.forEach(limb => {
+          limbSnapshots.push({
+            el: limb,
+            transform: window.getComputedStyle(limb).transform
+          });
+        });
+
+        // Remove CSS animation classes so Web Animations API has full control
+        riderWrapper.classList.remove('is-lifting', 'is-floating');
+
+        if (state.touchdownAnim) {
+          state.touchdownAnim.cancel();
+          state.touchdownAnim = null;
+        }
+
+        const startTransform = (currentTransform && currentTransform !== 'none')
+          ? currentTransform
+          : 'translateY(-40px)';
+
+        // Gracefully glide the rider body down onto the scale over 1.2 seconds
+        state.touchdownAnim = riderWrapper.animate([
+          { transform: startTransform },
+          { transform: 'translateY(0px) rotate(0deg)' }
+        ], {
+          duration: 1200,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+          fill: 'forwards'
+        });
+
+        state.touchdownAnim.onfinish = () => {
+          if (state.touchdownAnim) {
+            state.touchdownAnim.cancel();
+            state.touchdownAnim = null;
+          }
+          riderWrapper.style.transform = '';
+        };
+
+        // Smoothly settle limbs and tail back to neutral positions
+        limbSnapshots.forEach(({ el, transform }) => {
+          if (transform && transform !== 'none') {
+            const lAnim = el.animate([
+              { transform: transform },
+              { transform: 'rotate(0deg)' }
+            ], {
+              duration: 1000,
+              easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+              fill: 'forwards'
+            });
+            lAnim.onfinish = () => {
+              lAnim.cancel();
+              el.style.transform = '';
+            };
+          }
+        });
+      } else {
+        riderWrapper.classList.remove('is-lifting', 'is-floating');
+        if (state.touchdownAnim) {
+          state.touchdownAnim.cancel();
+          state.touchdownAnim = null;
+        }
+        riderWrapper.style.transform = '';
+      }
+    }
+
+    function syncAccelSlider(val) {
+      const clamped = Math.max(-9.80, Math.min(9.80, val));
+      accelSlider.value = clamped.toFixed(2);
+      accelSliderVal.textContent = `${clamped >= 0 ? '+' : ''}${clamped.toFixed(2)} m/s²`;
+    }
+
+    function applyAccelerationChange(newA) {
+      resetElevatorCables();
+      newA = Math.max(-9.80, Math.min(9.80, parseFloat(newA.toFixed(2))));
+      state.acceleration = newA;
+      state.stopping = false;
+      state.rampingAccelToZero = false;
+
+      // Start motion immediately if elevator is currently at rest
+      if (Math.abs(state.velocity) < 0.05 && Math.abs(newA) > 0.01) {
+        state.velocity = Math.sign(newA) * 0.35;
+      }
+
+      if (newA <= -9.75) {
+        triggerMalfunctionVisuals();
+      } else {
+        syncAccelSlider(newA);
+        if (newA > 0.05) {
+          updateBadge('ACCELERATING UP', 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold');
+        } else if (newA < -0.05) {
+          updateBadge('ACCELERATING DOWN', 'bg-rose-50 text-rose-700 border-rose-300 font-bold');
+        } else {
+          if (Math.abs(state.velocity) > 0.05) {
+            const dir = state.velocity > 0 ? 'UP' : 'DOWN';
+            updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+          } else {
+            updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+          }
+        }
+        playTone(newA >= 0 ? 'D4' : 'A3', '16n');
+        updatePhysicsDisplays();
+      }
+    }
+
+    accelSlider.addEventListener('input', (e) => {
+      applyAccelerationChange(parseFloat(e.target.value));
+    });
+
+    btnAccelMinus.addEventListener('click', () => {
+      const current = parseFloat(accelSlider.value);
+      applyAccelerationChange(current - 0.50);
+    });
+
+    btnAccelPlus.addEventListener('click', () => {
+      const current = parseFloat(accelSlider.value);
+      applyAccelerationChange(current + 0.50);
+    });
+
+    let audioReady = false;
+    let synth = null;
+    let noiseSynth = null;
+
+    function initAudio() {
+      if (audioReady) return;
+      try {
+        synth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.05, decay: 0.2, sustain: 0.1, release: 0.5 }
+        }).toDestination();
+        synth.volume.value = -12;
+
+        noiseSynth = new Tone.NoiseSynth({
+          noise: { type: 'pink' },
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0 }
+        }).toDestination();
+        noiseSynth.volume.value = -8;
+
+        audioReady = true;
+      } catch (err) {
+        console.warn('Audio initialization deferred:', err);
+      }
+    }
+
+    function playTone(note = 'C4', dur = '8n') {
+      if (!state.soundEnabled) return;
+      try {
+        if (!audioReady) initAudio();
+        if (Tone.context && Tone.context.state !== 'running') Tone.start();
+        if (synth) synth.triggerAttackRelease(note, dur);
+      } catch (e) {}
+    }
+
+    function playCableSnapSound() {
+      if (!state.soundEnabled) return;
+      try {
+        if (!audioReady) initAudio();
+        if (Tone.context && Tone.context.state !== 'running') Tone.start();
+        if (noiseSynth) noiseSynth.triggerAttackRelease('4n');
+        if (synth) synth.triggerAttackRelease(['G2', 'C2'], '2n');
+      } catch (e) {}
+    }
+
+    const selectedBtnClasses = 'rider-select-btn py-1.5 px-3 rounded-lg border-2 border-blue-600 bg-blue-50/80 text-blue-900 flex flex-col items-center text-center gap-0.5 transition shadow-sm flex-1 max-w-[128px]';
+    const unselectedBtnClasses = 'rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]';
+
+    function setRider(type, massVal = null) {
+      state.riderType = type;
+      if (type === 'woman') {
+        state.mass = massVal !== null ? massVal : 50.0;
+        riderWoman.classList.remove('hidden');
+        riderMan.classList.add('hidden');
+        riderDog.classList.add('hidden');
+        btnWoman.className = selectedBtnClasses;
+        btnMan.className = unselectedBtnClasses;
+        btnDog.className = unselectedBtnClasses;
+      } else if (type === 'man') {
+        state.mass = massVal !== null ? massVal : 75.0;
+        riderWoman.classList.add('hidden');
+        riderMan.classList.remove('hidden');
+        riderDog.classList.add('hidden');
+        btnMan.className = selectedBtnClasses;
+        btnWoman.className = unselectedBtnClasses;
+        btnDog.className = unselectedBtnClasses;
+      } else if (type === 'dog') {
+        state.mass = massVal !== null ? massVal : 25.0;
+        riderWoman.classList.add('hidden');
+        riderMan.classList.add('hidden');
+        riderDog.classList.remove('hidden');
+        btnDog.className = selectedBtnClasses;
+        btnWoman.className = unselectedBtnClasses;
+        btnDog.className = unselectedBtnClasses;
+      }
+
+      massSlider.value = state.mass;
+      customMassVal.textContent = state.mass.toFixed(1) + ' kg';
+      playTone('E4', '16n');
+      updatePhysicsDisplays();
+    }
+
+    btnWoman.addEventListener('click', () => setRider('woman', 50.0));
+    btnMan.addEventListener('click', () => setRider('man', 75.0));
+    btnDog.addEventListener('click', () => setRider('dog', 25.0));
+
+    massSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state.mass = val;
+      customMassVal.textContent = val.toFixed(1) + ' kg';
+      updatePhysicsDisplays();
+    });
+
+    presetConstVelocity.addEventListener('click', () => {
+      resetElevatorCables();
+      state.stopping = false;
+
+      // Ramp acceleration down to 0 over 1/3 second
+      if (Math.abs(state.acceleration) > 0.05) {
+        state.rampingAccelToZero = true;
+        state.rampTimer = 0;
+        state.rampDuration = 1.0 / 3.0;
+        state.initialRampAccel = state.acceleration;
+        const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.acceleration) > 0 ? 'UP' : 'DOWN';
+        updateBadge(`SETTLING TO CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+      } else if (Math.abs(state.velocity) > 0.05) {
+        state.acceleration = 0.0;
+        state.rampingAccelToZero = false;
+        syncAccelSlider(0.0);
+        const dir = state.velocity > 0 ? 'UP' : 'DOWN';
+        updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+      } else {
+        // If at rest: gently ramp to cruising speed upwards
+        state.rampingAccelToZero = true;
+        state.rampTimer = 0;
+        state.rampDuration = 1.0 / 3.0;
+        state.initialRampAccel = 3.0;
+        state.acceleration = 3.0;
+        syncAccelSlider(3.0);
+        updateBadge('SETTLING TO CONSTANT SPEED (UP)', 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+      }
+      playTone('C4', '8n');
+      updatePhysicsDisplays();
+    });
+
+    function triggerMalfunctionVisuals() {
+      if (state.liftOffTimeout) clearTimeout(state.liftOffTimeout);
+      if (state.touchdownAnim) {
+        state.touchdownAnim.cancel();
+        state.touchdownAnim = null;
+      }
+      riderWrapper.style.transform = '';
+
+      state.isMalfunction = true;
+      state.stopping = false;
+      state.rampingAccelToZero = false;
+      state.acceleration = -G; // Free fall: a = -9.80 m/s^2
+      syncAccelSlider(-G);
+
+      sparkContainer.classList.remove('hidden');
+      cableEl.classList.add('hidden');
+      brokenCableSvg.classList.remove('hidden');
+
+      playCableSnapSound();
+
+      updateBadge('MALFUNCTION: FREE FALL', 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse font-bold');
+
+      riderWrapper.classList.remove('is-floating');
+      riderWrapper.classList.add('is-lifting');
+
+      state.liftOffTimeout = setTimeout(() => {
+        if (state.isMalfunction) {
+          riderWrapper.classList.remove('is-lifting');
+          riderWrapper.classList.add('is-floating');
+        }
+      }, 1400);
+
+      updatePhysicsDisplays();
+    }
+
+    presetMalfunction.addEventListener('click', triggerMalfunctionVisuals);
+
+    btnAtRest.addEventListener('click', () => {
+      resetElevatorCables();
+      
+      if (Math.abs(state.velocity) < 0.05) {
+        state.velocity = 0.0;
+        state.acceleration = 0.0;
+        state.stopping = false;
+        syncAccelSlider(0.0);
+        updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+      } else {
+        state.stopping = true;
+        state.stopTimer = 0;
+        state.stopDuration = 2.0;
+        state.initialStopVelocity = state.velocity;
+        state.acceleration = -state.velocity / state.stopDuration;
+        syncAccelSlider(state.acceleration);
+        updateBadge('STOPPING...', 'bg-amber-100 text-amber-800 border-amber-300 font-bold animate-pulse');
+      }
+      playTone('C4', '8n');
+      updatePhysicsDisplays();
+    });
+
+    resetSimBtn.addEventListener('click', () => {
+      resetElevatorCables();
+      if (state.liftOffTimeout) clearTimeout(state.liftOffTimeout);
+      if (state.touchdownAnim) {
+        state.touchdownAnim.cancel();
+        state.touchdownAnim = null;
+      }
+      riderWrapper.style.transform = '';
+      riderWrapper.classList.remove('is-lifting', 'is-floating');
+      state.mass = 50.0;
+      state.acceleration = 0.0;
+      state.velocity = 0.0;
+      state.position = 0.0;
+      springCurrentL = SPRING_L_EQUILIBRIUM;
+      springVelocity = 0;
+      setRider('woman', 50.0);
+      syncAccelSlider(0.0);
+      updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+      updatePhysicsDisplays();
+    });
+
+    toggleFbdCheckbox.addEventListener('change', (e) => {
+      state.showFBD = e.target.checked;
+      if (state.showFBD) {
+        pointMassFbdPanel.classList.remove('hidden');
+      } else {
+        pointMassFbdPanel.classList.add('hidden');
+      }
+    });
+
+    toggleSpringCheckbox.addEventListener('change', (e) => {
+      state.showSpringMass = e.target.checked;
+      if (state.showSpringMass) {
+        springMassContainer.classList.remove('hidden');
+      } else {
+        springMassContainer.classList.add('hidden');
+      }
+    });
+
+    audioToggleBtn.addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      if (state.soundEnabled) {
+        audioLabel.textContent = 'SFX Active';
+        soundIconOn.classList.remove('text-slate-400');
+        soundIconOn.classList.add('text-emerald-600');
+        playTone('C5', '16n');
+      } else {
+        audioLabel.textContent = 'Muted';
+        soundIconOn.classList.remove('text-emerald-600');
+        soundIconOn.classList.add('text-slate-400');
+      }
+    });
+
+    function updateBadge(text, classNames) {
+      motionBadge.textContent = text;
+      motionBadge.className = 'px-2 py-0.5 rounded font-semibold tracking-wide border ' + classNames;
+    }
+
+    function updatePhysicsDisplays() {
+      const m = state.mass;
+      const a = state.acceleration;
+
+      // True weight (gravity force)
+      const Fg = m * G;
+
+      // Apparent weight (normal force FN). Cannot be negative (floor cannot pull down)
+      let Fn = m * (G + a);
+      if (Fn < 0.001 || state.isMalfunction) {
+        Fn = 0;
+      }
+
+      const trueWeightLbs = (m * 2.2046226);
+      const apparentWeightLbs = Fg > 0 ? (Fn / Fg) * trueWeightLbs : 0;
+      const mApparent = Fn / G;
+
+      // Telemetry cards
+      telemetryNewtons.textContent = Fn.toFixed(1);
+      telemetryTrueNewtons.textContent = Fg.toFixed(1);
+      telemetryAppLbs.textContent = apparentWeightLbs.toFixed(1);
+      telemetryTrueLbs.textContent = trueWeightLbs.toFixed(1);
+      if (telemetryAppKg) telemetryAppKg.textContent = mApparent.toFixed(1);
+      if (telemetryTrueKg) telemetryTrueKg.textContent = m.toFixed(1);
+
+      // Percentage badge
+      const ratio = Fg > 0 ? (Fn / Fg) : 1;
+      if (state.isMalfunction || Fn <= 0.01) {
+        weightRatioBadge.textContent = '0% (Weightless)';
+        weightRatioBadge.className = 'px-2.5 py-0.5 rounded-full text-sm font-bold font-mono-num bg-rose-100 text-rose-700 border border-rose-300';
+      } else {
+        const pct = Math.round(ratio * 100);
+        weightRatioBadge.textContent = `${pct}% of True Weight`;
+        if (pct > 105) {
+          weightRatioBadge.className = 'px-2.5 py-0.5 rounded-full text-sm font-bold font-mono-num bg-emerald-50 text-emerald-700 border border-emerald-300';
+        } else if (pct < 95) {
+          weightRatioBadge.className = 'px-2.5 py-0.5 rounded-full text-sm font-bold font-mono-num bg-amber-50 text-amber-700 border border-amber-300';
+        } else {
+          weightRatioBadge.className = 'px-2.5 py-0.5 rounded-full text-sm font-bold font-mono-num bg-slate-100 text-slate-700 border border-slate-300';
+        }
+      }
+
+      // Point Mass Free Body Diagram (FBD) vectors
+      const baseVectorHeight = 56;
+      const fnVectorHeight = Math.max((Fn / Fg) * baseVectorHeight, 0);
+      const fgVectorHeight = baseVectorHeight;
+
+      fbdStemFg.style.height = fgVectorHeight + 'px';
+      fbdStemFn.style.height = fnVectorHeight + 'px';
+
+      if (Fn <= 0.1) {
+        fbdVectorFn.style.opacity = '0';
+      } else {
+        fbdVectorFn.style.opacity = '1';
+      }
+
+      // Acceleration vector
+      const aAbs = Math.abs(a);
+      const accelVectorHeight = Math.min(Math.max((aAbs / G) * baseVectorHeight, 0), baseVectorHeight * 1.5);
+
+      if (a > 0.05) {
+        fbdAccelUp.classList.remove('hidden');
+        fbdAccelDown.classList.add('hidden');
+        fbdStemAccelUp.style.height = accelVectorHeight + 'px';
+        fbdAccelContainer.style.opacity = '1';
+      } else if (a < -0.05) {
+        fbdAccelUp.classList.add('hidden');
+        fbdAccelDown.classList.remove('hidden');
+        fbdStemAccelDown.style.height = accelVectorHeight + 'px';
+        fbdAccelContainer.style.opacity = '1';
+      } else {
+        fbdAccelUp.classList.add('hidden');
+        fbdAccelDown.classList.add('hidden');
+        fbdAccelContainer.style.opacity = '0.25';
+      }
+
+      // Status header telemetry
+      statusDesc.textContent = `a = ${a >= 0 ? '+' : ''}${a.toFixed(2)} m/s², v = ${state.velocity >= 0 ? '+' : ''}${state.velocity.toFixed(2)} m/s`;
+    }
+
+    function updateWavingCable(dt) {
+      if (!state.isMalfunction) return;
+
+      const waveSpeed = 8 + Math.min(Math.abs(state.velocity) * 0.5, 12);
+      state.cableWavePhase += waveSpeed * dt;
+
+      const p = state.cableWavePhase;
+      const x1 = Math.sin(p) * 25 + Math.cos(p * 1.5) * 10;
+      const y1 = -35 + Math.cos(p) * 6;
+
+      const x2 = Math.sin(p + 1.2) * 45 + Math.sin(p * 2.3) * 16;
+      const y2 = -70 + Math.cos(p * 1.8) * 10;
+
+      const xTip = Math.sin(p + 2.4) * 60 + Math.sin(p * 3.1) * 20;
+      const yTip = -105 + Math.cos(p * 2.1) * 12;
+
+      const pathD = `M 0,0 C ${x1},${y1} ${x2},${y2} ${xTip},${yTip}`;
+      wavingCablePath.setAttribute('d', pathD);
+
+      frayedTip1.setAttribute('d', `M ${xTip},${yTip} Q ${xTip - 8},${yTip - 8} ${xTip - 14},${yTip - 15}`);
+      frayedTip2.setAttribute('d', `M ${xTip},${yTip} Q ${xTip + 8},${yTip - 10} ${xTip + 14},${yTip - 18}`);
+      frayedTip3.setAttribute('d', `M ${xTip},${yTip} Q ${xTip - 2},${yTip - 14} ${xTip - 4},${yTip - 24}`);
+    }
+
+    // Dynamic zigzag spring drawing function
+    function renderSpringMass(len) {
+      if (!springCoilPath || !springCubeGroup) return;
+
+      const topY = 10;
+      const botY = Math.max(topY + 12, len);
+      const numCoils = 8;
+      const coilH = (botY - topY) / numCoils;
+      const midX = 24;
+      const amp = 8.5; // Amplitude of spring coil zigzags
+
+      let d = `M ${midX},${topY}`;
+      for (let i = 0; i < numCoils; i++) {
+        const y1 = topY + (i + 0.25) * coilH;
+        const y2 = topY + (i + 0.75) * coilH;
+        const yEnd = topY + (i + 1.0) * coilH;
+        d += ` L ${midX + amp},${y1.toFixed(1)} L ${midX - amp},${y2.toFixed(1)} L ${midX},${yEnd.toFixed(1)}`;
+      }
+
+      springCoilPath.setAttribute('d', d);
+      springCubeGroup.setAttribute('transform', `translate(0, ${botY.toFixed(1)})`);
+    }
+
+    // Main animation loop
+    function animate(timestamp) {
+      if (!state.lastTimestamp) state.lastTimestamp = timestamp;
+      const dt = Math.min((timestamp - state.lastTimestamp) / 1000, 0.05);
+      state.lastTimestamp = timestamp;
+
+      // Handle stopping transition
+      if (state.stopping) {
+        state.stopTimer += dt;
+        if (state.stopTimer >= state.stopDuration) {
+          state.velocity = 0.0;
+          state.acceleration = 0.0;
+          state.stopping = false;
+          syncAccelSlider(0.0);
+          updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+        } else {
+          const progress = state.stopTimer / state.stopDuration;
+          state.velocity = state.initialStopVelocity * (1 - progress);
+        }
+      }
+
+      // Handle acceleration ramp to 0 over 1/3 second
+      if (state.rampingAccelToZero) {
+        state.rampTimer += dt;
+        if (state.rampTimer >= state.rampDuration) {
+          state.acceleration = 0.0;
+          state.rampingAccelToZero = false;
+          syncAccelSlider(0.0);
+          if (Math.abs(state.velocity) > 0.05) {
+            const dir = state.velocity > 0 ? 'UP' : 'DOWN';
+            updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+          } else {
+            updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+          }
+        } else {
+          const progress = state.rampTimer / state.rampDuration;
+          state.acceleration = state.initialRampAccel * (1 - progress);
+          syncAccelSlider(state.acceleration);
+          const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.initialRampAccel) >= 0 ? 'UP' : 'DOWN';
+          updateBadge(`SETTLING TO CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+        }
+      }
+
+      // Kinematics integration
+      if (!state.stopping && (state.acceleration !== 0 || state.velocity !== 0)) {
+        state.velocity += state.acceleration * dt;
+      }
+
+      if (state.velocity !== 0) {
+        state.position += state.velocity * dt;
+      }
+      
+      updatePhysicsDisplays();
+
+      // Dynamic Spring-Mass physics simulation (Damped harmonic oscillator)
+      const gEff = Math.max(0, G + state.acceleration);
+      const targetL = SPRING_L_NATURAL + (SPRING_L_EQUILIBRIUM - SPRING_L_NATURAL) * (gEff / G);
+      const kSpring = 52;   // Spring stiffness
+      const cDamp = 9.2;    // Damping coefficient
+      const springForce = -kSpring * (springCurrentL - targetL) - cDamp * springVelocity;
+      springVelocity += springForce * dt;
+      springCurrentL += springVelocity * dt;
+
+      // In zero-g malfunction, add slight zero-g float drift
+      if (state.isMalfunction) {
+        const drift = Math.sin(state.cableWavePhase * 0.9) * 2.2;
+        renderSpringMass(springCurrentL + drift);
+      } else {
+        renderSpringMass(springCurrentL);
+      }
+
+      // Render high-clarity background on canvas
+      renderShaftCanvas();
+
+      // Update broken cable if in free fall
+      if (state.isMalfunction) {
+        updateWavingCable(dt);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    window.onload = function () {
+      resizeShaftCanvas();
+      setRider('woman', 50.0);
+      syncAccelSlider(0.0);
+      renderSpringMass(SPRING_L_EQUILIBRIUM);
+      updatePhysicsDisplays();
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>
