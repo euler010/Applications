@@ -546,8 +546,10 @@
                 <!-- SVG: Woman (50 kg): hoodie & ponytail -->
                 <svg id="rider-woman" class="w-[101px] h-[145px] drop-shadow-md block -mb-0.5" viewBox="0 0 100 144" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Ponytail (floats up in zero-g) -->
-                  <g class="limb-anim woman-tail">
-                    <path d="M56 14 C68 12 75 26 70 46 C66 47 64 36 61 29 C59 24 57 20 54.5 18 Z" fill="#2b1a10" />
+                  <g transform="translate(0 3)">
+                    <g class="limb-anim woman-tail">
+                      <path d="M56 14 C68 12 75 26 70 46 C66 47 64 36 61 29 C59 24 57 20 54.5 18 Z" fill="#2b1a10" />
+                    </g>
                   </g>
 
                   <!-- Left Leg -->
@@ -568,20 +570,22 @@
                   <path d="M38 44 Q50 39 62 44 L63.5 84 Q50 87.5 36.5 84 Z" fill="#e8705a" />
                   <path d="M42 66 L58 66 L60 76 L40 76 Z" fill="#d9604b" />
                   <rect x="37" y="80" width="26" height="4.5" rx="2" fill="#c9503c" />
-                  <rect x="47.5" y="30" width="5" height="10" fill="#b5763a" />
+                  <rect x="47.5" y="33" width="5" height="7" fill="#b5763a" />
                   <path d="M41 42.5 Q50 50 59 42.5 Q50 38.5 41 42.5 Z" fill="#c9503c" />
                   <path d="M47 46 L46.5 55 M53 46 L53.5 55" stroke="#ffffff" stroke-width="1" stroke-linecap="round" />
 
-                  <!-- Head & Face -->
-                  <ellipse cx="50" cy="23" rx="8.5" ry="9.5" fill="#c68642" />
-                  <path d="M41.3 24 C40 12 46 9.5 50.5 9.5 C56 9.5 60.5 13 59 24 C57.5 18 54 15.5 50 15.5 C46 16 43 18.5 41.3 24 Z" fill="#2b1a10" />
-                  <circle cx="56.5" cy="14.5" r="1.6" fill="#facc15" />
-                  <ellipse cx="46.8" cy="24" rx="0.95" ry="1.25" fill="#1e1b18" />
-                  <ellipse cx="53.2" cy="24" rx="0.95" ry="1.25" fill="#1e1b18" />
-                  <path d="M45.3 21.6 Q46.8 20.8 48.2 21.5 M51.8 21.5 Q53.2 20.8 54.7 21.6" stroke="#2b1a10" stroke-width="0.8" stroke-linecap="round" />
-                  <circle cx="45" cy="27" r="1.6" fill="#f87171" opacity="0.35" />
-                  <circle cx="55" cy="27" r="1.6" fill="#f87171" opacity="0.35" />
-                  <path d="M47.6 28 Q50 30.2 52.4 28" stroke="#7c2d12" stroke-width="0.9" stroke-linecap="round" />
+                  <!-- Head & Face (lowered to give a shorter neck) -->
+                  <g transform="translate(0 3)">
+                    <ellipse cx="50" cy="23" rx="8.5" ry="9.5" fill="#c68642" />
+                    <path d="M41.3 24 C40 12 46 9.5 50.5 9.5 C56 9.5 60.5 13 59 24 C57.5 18 54 15.5 50 15.5 C46 16 43 18.5 41.3 24 Z" fill="#2b1a10" />
+                    <circle cx="56.5" cy="14.5" r="1.6" fill="#facc15" />
+                    <ellipse cx="46.8" cy="24" rx="0.95" ry="1.25" fill="#1e1b18" />
+                    <ellipse cx="53.2" cy="24" rx="0.95" ry="1.25" fill="#1e1b18" />
+                    <path d="M45.3 21.6 Q46.8 20.8 48.2 21.5 M51.8 21.5 Q53.2 20.8 54.7 21.6" stroke="#2b1a10" stroke-width="0.8" stroke-linecap="round" />
+                    <circle cx="45" cy="27" r="1.6" fill="#f87171" opacity="0.35" />
+                    <circle cx="55" cy="27" r="1.6" fill="#f87171" opacity="0.35" />
+                    <path d="M47.6 28 Q50 30.2 52.4 28" stroke="#7c2d12" stroke-width="0.9" stroke-linecap="round" />
+                  </g>
 
                   <!-- Arms (drawn last so the sleeves sit over the hoodie) -->
                   <g class="limb-anim woman-arm-l">
