@@ -246,7 +246,7 @@ const FZ=ZL.slice();
 const ease=p=>0.5-0.5*Math.cos(Math.PI*Math.min(1,Math.max(0,p)));
 const PARTS=[['tw',82,0,0.5],['bw',140,0,0.48]].map(([id,ax,z,m])=>({el:$(id),ax,z,m}));
 let nearBack=false;
-const base=d=>d>0?0:Math.PI,TURN_DUR=0.6,BODY_A=0.08,BODY_B=0.92;
+const base=d=>d>0?0:Math.PI,T_MAX=0.6,T_MIN=0.12,V_TURN=0.5,BODY_A=0.08,BODY_B=0.92;
 const STEPS=[[[0.40,0.60],[0.82,1.00]],[[0.16,0.36],[0.60,0.80]],[[0.04,0.24],[0.48,0.68]],[[0.28,0.48],[0.72,0.92]]];
 const LIFT=[9,9,13,13];
 function headingAt(p){return base(turn.from)+(base(turn.to)-base(turn.from))*ease((p-BODY_A)/(BODY_B-BODY_A))}
@@ -256,6 +256,9 @@ function toLocal(w,th,cx){const c=Math.cos(th),s=Math.sin(th),x=w.x-cx;return {l
 function catLocalX(xm){return xm*PPM/K}
 function startTurn(from,to,xm){const th0=base(from),cx=catLocalX(xm);turn={from,to,p:0,feet:LJ.map((j,i)=>({pos:toWorld(j[4],FZ[i],th0,cx),done:0,st:null}))}}
 function turnBusy(){return turn.feet.some((f,i)=>f.st||f.done<STEPS[i].length)}
+let TS=[];
+function buildTurns(){TS=turnTimes().map(tz=>{const e=0.02,a=Math.abs(vel(tz+e)-vel(tz-e))/(2*e);return {tz,T:clamp(a>1e-6?2*V_TURN/a:T_MAX,T_MIN,T_MAX),done:false}});
+  for(let i=0;i<TS.length;i++){const g1=i?TS[i].tz-TS[i-1].tz:1e9,g2=i<TS.length-1?TS[i+1].tz-TS[i].tz:1e9;TS[i].T=Math.min(TS[i].T,0.9*g1,0.9*g2)}}
 function endTurn(){turn=null;crouchX=0;for(let i=0;i<4;i++)FZ[i]=ZL[i]}
 function turnState(){if(!turn)return {th:base(dir),thHead:base(dir)};return {th:headingAt(turn.p),thHead:headingAt(Math.min(1,turn.p+0.12))}}
 function turnFeet(xm){const pr=turn.p,p=Math.min(1,pr),th=headingAt(p),thEnd=base(turn.to),cx=catLocalX(xm);
@@ -365,8 +368,8 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
   const cand=hover&&!drag&&!stroke&&mode==='line'&&!hover.onPt?candidate(hover.t,hover.v):null;
   if(cand&&!cand.ok&&n){c.fillStyle=col.muted;c.globalAlpha=.08;c.fillRect(g.L,g.T,px(pts[n-1].t)-g.L,g.B-g.T);c.globalAlpha=1}
   // turnaround markers
-  for(const tz of turnTimes()){const X=px(tz);c.strokeStyle=col.muted;c.setLineDash([3,4]);seg(c,X,g.T,X,g.B);c.setLineDash([]);
-    if(t>=tz){c.fillStyle=col.muted;c.font='11px "JetBrains Mono", monospace';c.textBaseline='top';c.textAlign=X>g.Rr-90?'right':'left';c.fillText('turns around',X+(c.textAlign==='left'?5:-5),g.T+4)}}
+  let lastLab=-1e9;for(const tz of turnTimes()){const X=px(tz);c.strokeStyle=col.muted;c.setLineDash([3,4]);seg(c,X,g.T,X,g.B);c.setLineDash([]);
+    if(t>=tz&&X-lastLab>92){lastLab=X;c.fillStyle=col.muted;c.font='11px "JetBrains Mono", monospace';c.textBaseline='top';c.textAlign=X>g.Rr-90?'right':'left';c.fillText('turns around',X+(c.textAlign==='left'?5:-5),g.T+4)}}
   // the curve
   if(n>1){c.strokeStyle=col.v;c.lineWidth=2.5;c.lineJoin='round';c.beginPath();pts.forEach((p,i)=>i?c.lineTo(px(p.t),py(p.v)):c.moveTo(px(p.t),py(p.v)));c.stroke()}
   // preview
@@ -407,7 +410,7 @@ function status(){let s;const n=pts.length;
   $('status').textContent=s}
 function setButtons(){$('play').textContent=running?'Pause':ended?'Replay':t>0?'Resume':'Play';$('play').disabled=pts.length<2;$('undo').disabled=!hist.length;$('clear').disabled=!pts.length&&X0===0}
 function firstDir(){for(const p of pts)if(Math.abs(p.v)>0.02)return Math.sign(p.v);return 1}
-function resetPlay(){t=0;running=false;ended=false;endTurn();dir=firstDir();us=0;readouts();status();setButtons();placeCat(X0);dirty=true}
+function resetPlay(){t=0;running=false;ended=false;endTurn();buildTurns();dir=firstDir();us=0;readouts();status();setButtons();placeCat(X0);dirty=true}
 function changed(){rebuild();computeRange();drawAxis();resetPlay()}
 function pushHist(){hist.push({p:pts.map(q=>({...q})),x0:X0});if(hist.length>200)hist.shift()}
 function say(msg){flash=msg;flashT=performance.now()+2600;status();setTimeout(status,2700)}
@@ -466,13 +469,16 @@ new MutationObserver(()=>{dirty=true}).observe(document.documentElement,{attribu
 let lastNow=null,tick=0;
 function frame(now){if(lastNow===null)lastNow=now;const rdt=Math.min((now-lastNow)/1000,0.05);lastNow=now;const sdt=rdt*simSpeed;
   if(running){t+=sdt;if(t>=tEnd){t=tEnd;running=false;ended=true;setButtons();status()}
-    const v=vel(t);if(!turn&&Math.abs(v)>0.02){const nd=Math.sign(v);if(nd!==dir){startTurn(dir,nd,pos(t));dir=nd}}
+    const v=vel(t);
+    if(!turn)for(const S of TS){if(S.done)continue;if(t<S.tz-S.T/2)break;S.done=true;if(t<S.tz+S.T/2){const to=-dir;startTurn(dir,to,pos(t));turn.t0=S.tz-S.T/2;turn.T=S.T;dir=to}break}
+    if(!turn&&Math.abs(v)>0.02){const nd=Math.sign(v);if(nd!==dir){startTurn(dir,nd,pos(t));turn.t0=t;turn.T=T_MIN;dir=nd}}
+    if(turn)turn.p=(t-turn.t0)/turn.T;
     poseCat(sdt,running?Math.abs(v)*PPM/K:0);placeCat(pos(t));readouts();dirty=true;
     if(++tick%10===0)status()}
   else if(ended&&us>0){poseCat(rdt,0);placeCat(pos(t))}
   else if(t===0){poseCat(rdt,0);placeCat(X0)}
   else if(turn)placeCat(pos(t));
-  if(turn){turn.p+=rdt/TURN_DUR;if(turn.p>=1&&!turnBusy()){placeCat(pos(t));endTurn();placeCat(pos(t))}}
+  if(turn){if(!running&&ended)turn.p+=rdt/0.3;if(turn.p>=1&&!turnBusy()){placeCat(pos(t));endTurn();placeCat(pos(t))}}
   bt+=rdt;blinkS=bt>3.4?0.12:1;if(bt>3.54)bt=0;setEyes();
   if(dirty)drawGraphs();
   requestAnimationFrame(frame)}
