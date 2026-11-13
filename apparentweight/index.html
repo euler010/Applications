@@ -166,6 +166,24 @@
     .is-floating .woman-leg-r { animation: womanLegR 2.6s ease-in-out infinite; }
     .is-lifting .woman-tail { animation: womanTailLift 1.4s ease-out forwards; }
     .is-floating .woman-tail { animation: womanTail 2.4s ease-in-out infinite; }
+    /* Man rider: flannel & beard. In zero-g he tries to swim: slow breaststroke
+       arms and a frog kick. Each part eases into its pose during lift-off. */
+    @keyframes manArmLLift { from { transform: rotate(0deg); } to { transform: rotate(40deg); } }
+    @keyframes manArmL { 0%, 100% { transform: rotate(40deg); } 50% { transform: rotate(135deg); } }
+    @keyframes manArmRLift { from { transform: rotate(0deg); } to { transform: rotate(-40deg); } }
+    @keyframes manArmR { 0%, 100% { transform: rotate(-40deg); } 50% { transform: rotate(-135deg); } }
+    @keyframes manLegLLift { from { transform: rotate(0deg); } to { transform: rotate(6deg); } }
+    @keyframes manLegL { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(24deg); } }
+    @keyframes manLegRLift { from { transform: rotate(0deg); } to { transform: rotate(-6deg); } }
+    @keyframes manLegR { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(-24deg); } }
+    .is-lifting .man-arm-l { animation: manArmLLift 1.4s ease-out forwards; }
+    .is-floating .man-arm-l { animation: manArmL 2.4s ease-in-out infinite; }
+    .is-lifting .man-arm-r { animation: manArmRLift 1.4s ease-out forwards; }
+    .is-floating .man-arm-r { animation: manArmR 2.4s ease-in-out infinite; }
+    .is-lifting .man-leg-l { animation: manLegLLift 1.4s ease-out forwards; }
+    .is-floating .man-leg-l { animation: manLegL 2.4s ease-in-out infinite; }
+    .is-lifting .man-leg-r { animation: manLegRLift 1.4s ease-out forwards; }
+    .is-floating .man-leg-r { animation: manLegR 2.4s ease-in-out infinite; }
   </style>
   <style id="utilities">
     /* ===== Utility stylesheet (replaces the Tailwind CDN) =====
@@ -630,52 +648,34 @@
                   </g>
                 </svg>
 
-                <!-- SVG: Man (75 kg) -->
+                <!-- SVG: Man (75 kg): flannel & beard -->
                 <svg id="rider-man" class="w-[94px] h-[136px] drop-shadow-md hidden -mb-0.5" viewBox="0 0 100 146" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Left Arm -->
-                  <g class="limb-anim limb-arm-left">
-                    <path d="M35 43 L26 73 L30.5 75 L37.5 47 Z" fill="#3f6212" />
-                    <circle cx="27.5" cy="75" r="2.9" fill="#fde68a" />
+                  <defs><clipPath id="man-shirt-clip"><path d="M36 44 Q50 39 64 44 L64.5 87 Q50 89 35.5 87 Z"/></clipPath></defs>
+                  <g class="limb-anim man-leg-l"><path d="M40 86 L48.5 86 L47.5 138 L40.5 138 Z" fill="#2f4a7a"/>
+                    <path d="M37.5 137 L48.5 137 Q50 137 50 139.5 L50 144 L36 144 Q35 144 35 142 Q35 137 37.5 137 Z" fill="#7c4a1e"/><rect x="35" y="144" width="15" height="2" rx="1" fill="#3f2a14"/></g>
+                  <g class="limb-anim man-leg-r"><path d="M51.5 86 L60 86 L59.5 138 L52.5 138 Z" fill="#2f4a7a"/>
+                    <path d="M62.5 137 L51.5 137 Q50 137 50 139.5 L50 144 L64 144 Q65 144 65 142 Q65 137 62.5 137 Z" fill="#7c4a1e"/><rect x="50" y="144" width="15" height="2" rx="1" fill="#3f2a14"/></g>
+                  <path d="M36 44 Q50 39 64 44 L64.5 87 Q50 89 35.5 87 Z" fill="#b91c1c"/>
+                  <g clip-path="url(#man-shirt-clip)">
+                    <path d="M41 38 V90 M47 38 V90 M53 38 V90 M59 38 V90" stroke="#7f1d1d" stroke-width="1.8" opacity="0.7"/>
+                    <path d="M34 52 H66 M34 62 H66 M34 72 H66 M34 82 H66" stroke="#fecaca" stroke-width="1" opacity="0.45"/>
                   </g>
-
-                  <!-- Left Leg -->
-                  <g class="limb-anim limb-leg-left">
-                    <path d="M39 86 L47 86 L46 139 L39 139 Z" fill="#1e293b" />
-                    <rect x="36.5" y="139" width="10" height="3.5" rx="1.5" fill="#f8fafc" />
-                    <path d="M35.5 142.5 Q41 141 47 142.5 L47 146 L35 146 Z" fill="#cbd5e1" />
-                  </g>
-
-                  <!-- Right Leg -->
-                  <g class="limb-anim limb-leg-right">
-                    <path d="M53 86 L61 86 L61 139 L54 139 Z" fill="#1e293b" />
-                    <rect x="53.5" y="139" width="10" height="3.5" rx="1.5" fill="#f8fafc" />
-                    <path d="M53 142.5 Q58.5 141 64.5 142.5 L65 146 L53 146 Z" fill="#cbd5e1" />
-                  </g>
-
-                  <!-- Torso -->
-                  <path d="M35 41 L65 41 L63 86 L37 86 Z" fill="#4d7c0f" />
-                  <polygon points="46,41 50,47 54,41" fill="#ffffff" />
-                  <path d="M48 44 L48 83" stroke="#365314" stroke-width="1.5" stroke-dasharray="2 2" />
-                  <rect x="38" y="52" width="6" height="7" rx="1" fill="#3f6212" />
-                  <rect x="56" y="52" width="6" height="7" rx="1" fill="#3f6212" />
-                  <rect x="37" y="83" width="26" height="3.5" rx="1" fill="#0f172a" />
-                  <rect x="48.5" y="83" width="3" height="3.5" rx="0.5" fill="#94a3b8" />
-
-                  <!-- Head & Face -->
-                  <rect x="47.5" y="31" width="5" height="9" fill="#fde68a" />
-                  <ellipse cx="50" cy="23.5" rx="8" ry="8.5" fill="#fde68a" />
-                  <path d="M42 20 C42 11, 58 11, 58 20 C62 16, 38 16, 42 20 Z" fill="#292524" />
-                  <circle cx="47" cy="22.5" r="1" fill="#1e293b" />
-                  <circle cx="53" cy="22.5" r="1" fill="#1e293b" />
-                  <path d="M45.5 20.5 Q47.5 19.8 49 20.5" stroke="#292524" stroke-width="0.8" fill="none" />
-                  <path d="M51 20.5 Q52.5 19.8 54.5 20.5" stroke="#292524" stroke-width="0.8" fill="none" />
-                  <path d="M47.5 27 Q50 29 52.5 27" stroke="#b91c1c" stroke-width="0.9" fill="none" stroke-linecap="round" />
-
-                  <!-- Right Arm -->
-                  <g class="limb-anim limb-arm-right">
-                    <path d="M65 43 L74 73 L69.5 75 L62.5 47 Z" fill="#3f6212" />
-                    <circle cx="72.5" cy="75" r="2.9" fill="#fde68a" />
-                  </g>
+                  <path d="M50 46 V86" stroke="#7f1d1d" stroke-width="0.8"/>
+                  <circle cx="50" cy="55" r="0.9" fill="#fef2f2"/><circle cx="50" cy="65" r="0.9" fill="#fef2f2"/><circle cx="50" cy="75" r="0.9" fill="#fef2f2"/>
+                  <rect x="35.5" y="84" width="29" height="3.5" rx="1.5" fill="#57351a"/>
+                  <rect x="47" y="30" width="6" height="11" fill="#e6b48c"/>
+                  <path d="M43 41 L48.5 47 L50 42.5 Z M57 41 L51.5 47 L50 42.5 Z" fill="#991b1b"/>
+                  <ellipse cx="50" cy="22.5" rx="8.6" ry="9.3" fill="#f2c6a0"/>
+                  <path d="M41.5 21 C40.5 10.5 59.5 10.5 58.5 21 C56.5 15.5 44 15.5 41.5 21 Z" fill="#a0522d"/>
+                  <path d="M41.6 22.5 C42 33 46 36.5 50 36.5 C54 36.5 58 33 58.4 22.5 C56.8 27.8 54 29.6 50 29.6 C46 29.6 43.2 27.8 41.6 22.5 Z" fill="#a0522d"/>
+                  <path d="M46.3 28.3 Q50 26.6 53.7 28.3 Q50 29.8 46.3 28.3 Z" fill="#8b4513"/>
+                  <path d="M48.6 31 Q50 32 51.4 31" stroke="#7c2d12" stroke-width="0.8" stroke-linecap="round"/>
+                  <ellipse cx="46.6" cy="22.6" rx="0.95" ry="1.25" fill="#1e1b18"/><ellipse cx="53.4" cy="22.6" rx="0.95" ry="1.25" fill="#1e1b18"/>
+                  <path d="M44.8 20.2 Q46.6 19.3 48.2 20 M51.8 20 Q53.4 19.3 55.2 20.2" stroke="#8b4513" stroke-width="0.9" stroke-linecap="round"/>
+                  <g class="limb-anim man-arm-l"><path d="M37 45 C32 51 29.5 62 29 75 L34.5 76 C35 65 37 57 41 51 Z" fill="#a31919"/>
+                    <path d="M33.5 52 C31.8 58 31 65 30.8 72" stroke="#7f1d1d" stroke-width="1.4" opacity="0.7"/><circle cx="31.7" cy="78.5" r="3.1" fill="#f2c6a0"/></g>
+                  <g class="limb-anim man-arm-r"><path d="M63 45 C68 51 70.5 62 71 75 L65.5 76 C65 65 63 57 59 51 Z" fill="#a31919"/>
+                    <path d="M66.5 52 C68.2 58 69 65 69.2 72" stroke="#7f1d1d" stroke-width="1.4" opacity="0.7"/><circle cx="68.3" cy="78.5" r="3.1" fill="#f2c6a0"/></g>
                 </svg>
 
                 <!-- SVG: Dog (25 kg) -->
