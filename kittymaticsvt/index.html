@@ -39,9 +39,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
 .main{display:grid;grid-template-columns:minmax(0,1fr) 196px;gap:14px;align-items:start}
-.vtfig{grid-column:1;grid-row:1} .tools{grid-column:2;grid-row:1}
-.stage{grid-column:1;grid-row:2} .pb{grid-column:2;grid-row:2}
-#xfig{grid-column:1;grid-row:3}
+.left,.right{display:grid;gap:14px;min-width:0}
 .side{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0}
 .side .sub{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .side .seg{display:flex}.side .seg button{flex:1;padding:0 6px}
@@ -49,8 +47,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .side .check{padding:2px 0}
 .ctl{display:grid;gap:4px;min-width:150px}.ctl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ctl label{font-weight:600;font-size:13px}.ctl output{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;color:var(--x)}.ctl .unit{color:var(--muted);font-size:12px}
 input[type=range]{width:100%;margin:0;accent-color:var(--x);height:22px}
-@media (max-width:760px){.main{grid-template-columns:minmax(0,1fr)}.vtfig,.tools,.stage,.pb,#xfig{grid-column:auto;grid-row:auto}
-  .side{flex-direction:row;flex-wrap:wrap;align-items:center;background:none;border:0;padding:0}.side .sub{display:none}.side .seg{display:inline-flex}.side .seg button{flex:none;padding:0 11px}}
+@media (max-width:760px){.main{display:flex;flex-direction:column;align-items:stretch}.left,.right{display:contents}
+  .tools{order:1}.vtfig{order:2}.pb{order:3}.stage{order:4}#xfig{order:5}.readouts{order:6}
+  .side{flex-direction:row;flex-wrap:wrap;align-items:center;background:none;border:0;padding:0}.side .sub{display:none}.side .seg{display:inline-flex}.side .seg button{flex:none;padding:0 11px}
+  .readouts{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 .check{display:inline-flex;gap:9px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
 .check input{appearance:none;-webkit-appearance:none;margin:0;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:background .18s;flex:none}
 .check input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .18s}
@@ -67,7 +67,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
 #gx{display:block;width:100%;height:170px}
 .stage{background:#ffffff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .stage svg{display:block;width:100%;height:auto}
-.readouts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.readouts{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
 .ro{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px;min-width:0}
 .ro span{font-size:12px;color:var(--muted)}
 .ro strong{font-family:var(--mono);font-weight:500;font-size:clamp(17px,2.2vw,22px);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -75,7 +75,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
 .ro.v strong{color:var(--v)} .ro.x strong{color:var(--x)}
 .status{margin:0;min-height:1.55em;color:var(--muted);font-size:14px}
 .hide{display:none}
-@media (max-width:620px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}#gv{height:250px}}
+@media (max-width:620px){#gv{height:250px}}
 </style>
 </head>
 <body>
@@ -84,28 +84,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
     <h1>Kittymatics: Velocity and Displacement</h1>  </header>
 
   <div class="main">
-  <div class="side tools" aria-label="Drawing tools">
-    <p class="sub">Draw</p>
-    <div class="seg" role="group" aria-label="Drawing mode">
-      <button type="button" data-m="free" aria-pressed="true">Freehand</button>
-      <button type="button" data-m="line" aria-pressed="false">Segments</button>
-    </div>
-    <label class="check"><input type="checkbox" role="switch" id="snap" checked> Snap to grid</label>
-    <select id="ex" aria-label="Load an example graph">
-      <option value="">Examples…</option>
-      <option value="0,0;3,3;7,3;10,0">Speed up, cruise, stop</option>
-      <option value="0,4;10,-4">Turnaround</option>
-      <option value="0,3;3,3;4,-3;7,-3;8,0;10,0">Out and back</option>
-      <option value="0,2;2,2;3,0;5,0;6,-3;9,-3;10,0">Stop, then reverse</option>
-    </select>
-    <div class="row"><button type="button" id="undo" disabled>Undo</button>
-    <button type="button" id="clear" disabled>Clear</button></div>
-    <div class="ctl">
-      <div class="ctl-top"><label for="x0">Initial Position</label><span><output id="x0o">0.0</output> <span class="unit">m</span></span></div>
-      <input type="range" id="x0" min="-10" max="10" step="0.5" value="0">
-    </div>
-  </div>
-
+  <div class="left">
   <figure class="vtfig">
     <figcaption>
       <span><span class="sw" style="background:var(--v)"></span>Velocity vs. time <small>v (m/s)</small></span>
@@ -116,19 +95,6 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
     </figcaption>
     <canvas id="gv" aria-label="Velocity versus time graph. Click to add points, drag a point to move it."></canvas>
   </figure>
-
-  <div class="side pb" aria-label="Playback">
-    <p class="sub">Playback</p>
-    <div class="row"><button type="button" class="play" id="play" disabled>Play</button>
-    <button type="button" id="reset">Reset</button></div>
-    <div class="seg mono" role="group" aria-label="Playback speed">
-      <button type="button" data-s="0.5" aria-pressed="false">0.5×</button>
-      <button type="button" data-s="1" aria-pressed="true">1×</button>
-      <button type="button" data-s="2" aria-pressed="false">2×</button>
-    </div>
-    <label class="check"><input type="checkbox" role="switch" id="showx" checked> Show x–t graph</label>
-  </div>
-
   <div class="stage">
     <svg viewBox="0 58 1000 164" role="img" aria-labelledby="stageT">
       <title id="stageT">Your cat on a number line</title>
@@ -167,18 +133,51 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
       </g></g>
     </svg>
   </div>
-
   <figure id="xfig">
     <figcaption><span><span class="sw" style="background:var(--x)"></span>Position vs. time <small>x (m)</small></span></figcaption>
     <canvas id="gx" aria-label="Position versus time graph, traced as she moves"></canvas>
   </figure>
   </div>
-
+  <div class="right">
+  <div class="side tools" aria-label="Drawing tools">
+    <p class="sub">Draw</p>
+    <div class="seg" role="group" aria-label="Drawing mode">
+      <button type="button" data-m="free" aria-pressed="true">Freehand</button>
+      <button type="button" data-m="line" aria-pressed="false">Segments</button>
+    </div>
+    <label class="check"><input type="checkbox" role="switch" id="snap" checked> Snap to grid</label>
+    <select id="ex" aria-label="Load an example graph">
+      <option value="">Examples…</option>
+      <option value="0,0;3,3;7,3;10,0">Speed up, cruise, stop</option>
+      <option value="0,4;10,-4">Turnaround</option>
+      <option value="0,3;3,3;4,-3;7,-3;8,0;10,0">Out and back</option>
+      <option value="0,2;2,2;3,0;5,0;6,-3;9,-3;10,0">Stop, then reverse</option>
+    </select>
+    <div class="row"><button type="button" id="undo" disabled>Undo</button>
+    <button type="button" id="clear" disabled>Clear</button></div>
+    <div class="ctl">
+      <div class="ctl-top"><label for="x0">Initial Position</label><span><output id="x0o">0.0</output> <span class="unit">m</span></span></div>
+      <input type="range" id="x0" min="-10" max="10" step="0.5" value="0">
+    </div>
+  </div>
+  <div class="side pb" aria-label="Playback">
+    <p class="sub">Playback</p>
+    <div class="row"><button type="button" class="play" id="play" disabled>Play</button>
+    <button type="button" id="reset">Reset</button></div>
+    <div class="seg mono" role="group" aria-label="Playback speed">
+      <button type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+      <button type="button" data-s="1" aria-pressed="true">1×</button>
+      <button type="button" data-s="2" aria-pressed="false">2×</button>
+    </div>
+    <label class="check"><input type="checkbox" role="switch" id="showx" checked> Show x–t graph</label>
+  </div>
   <div class="readouts">
     <div class="ro"><span>Time</span><strong id="rt">0.00<em>s</em></strong></div>
     <div class="ro v"><span>Velocity</span><strong id="rv">0.00<em>m/s</em></strong></div>
     <div class="ro x"><span>Position</span><strong id="rx">0.00<em>m</em></strong></div>
     <div class="ro"><span>Distance walked</span><strong id="rd">0.00<em>m</em></strong></div>
+  </div>
+  </div>
   </div>
   <p class="status" id="status" aria-live="polite"></p>
 </div>
