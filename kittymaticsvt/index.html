@@ -10,17 +10,17 @@
 <style>
 :root{
   --bg:#eef1f5; --surface:#ffffff; --ink:#17202b; --muted:#5a6575; --line:#d8dde5; --grid:#e8ebf0; --axis:#3d4654;
-  --x:#2861a6; --v:#cc2b2b; --pos:#2861a6; --neg:#d07a12; --accent:#17202b; --accent-ink:#ffffff;
+  --x:#2861a6; --v:#cc2b2b; --pos:#b9d7f7; --neg:#f7bcbc; --accent:#17202b; --accent-ink:#ffffff;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body:"Public Sans", "Helvetica Neue", Arial, system-ui, sans-serif;
   --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
-  --x:#73aaf0; --v:#f26d6d; --pos:#73aaf0; --neg:#f0a24a; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}}
+  --x:#73aaf0; --v:#f26d6d; --pos:#34506f; --neg:#6e3a3e; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
-  --x:#73aaf0; --v:#f26d6d; --pos:#73aaf0; --neg:#f0a24a; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}
+  --x:#73aaf0; --v:#f26d6d; --pos:#34506f; --neg:#6e3a3e; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
 .wrap{max-width:1040px;margin:0 auto;padding-block:26px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
 header{display:grid;gap:4px}
@@ -110,8 +110,8 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
     <figcaption>
       <span><span class="sw" style="background:var(--v)"></span>Velocity vs. time <small>v (m/s)</small></span>
       <span class="legend">
-        <span><span class="sw" style="background:var(--pos);opacity:.55"></span>area above <b id="aPos">+0.00 m</b></span>
-        <span><span class="sw" style="background:var(--neg);opacity:.55"></span>area below <b id="aNeg">−0.00 m</b></span>
+        <span><span class="sw" style="background:var(--pos)"></span>area above <b id="aPos">+0.00 m</b></span>
+        <span><span class="sw" style="background:var(--neg)"></span>area below <b id="aNeg">−0.00 m</b></span>
       </span>
     </figcaption>
     <canvas id="gv" aria-label="Velocity versus time graph. Click to add points, drag a point to move it."></canvas>
@@ -330,8 +330,8 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
   const n=pts.length;
   // area swept so far
   if(n>1&&t>0){c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();
-    c.save();c.beginPath();c.rect(g.L,g.T,g.Rr-g.L,y0-g.T);c.clip();c.globalAlpha=.3;c.fillStyle=col.pos;c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();c.fill();c.restore();
-    c.save();c.beginPath();c.rect(g.L,y0,g.Rr-g.L,g.B-y0);c.clip();c.globalAlpha=.3;c.fillStyle=col.neg;c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();c.fill();c.restore()}
+    c.save();c.beginPath();c.rect(g.L,g.T,g.Rr-g.L,y0-g.T);c.clip();c.globalAlpha=.85;c.fillStyle=col.pos;c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();c.fill();c.restore();
+    c.save();c.beginPath();c.rect(g.L,y0,g.Rr-g.L,g.B-y0);c.clip();c.globalAlpha=.85;c.fillStyle=col.neg;c.beginPath();c.moveTo(px(0),y0);for(let i=0;i<n&&pts[i].t<t;i++)c.lineTo(px(pts[i].t),py(pts[i].v));c.lineTo(px(t),py(vel(t)));c.lineTo(px(t),y0);c.closePath();c.fill();c.restore()}
   // invalid region hint
   const cand=hover&&!drag&&!stroke&&mode==='line'&&!hover.onPt?candidate(hover.t,hover.v):null;
   if(cand&&!cand.ok&&n){c.fillStyle=col.muted;c.globalAlpha=.08;c.fillRect(g.L,g.T,px(pts[n-1].t)-g.L,g.B-g.T);c.globalAlpha=1}
