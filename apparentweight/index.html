@@ -462,7 +462,7 @@
         </label>
 
         <!-- Audio Mute toggle (Default Muted) -->
-        <button id="audio-toggle-btn" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 shadow-sm transition flex items-center gap-1.5">
+        <button id="audio-toggle-btn" aria-pressed="false" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 shadow-sm transition flex items-center gap-1.5">
           <svg id="sound-icon-on" class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
           <span id="audio-label">Muted</span>
         </button>
@@ -771,17 +771,17 @@
             Select Elevator Rider
           </label>
           <div class="flex items-center gap-2.5 flex-1 justify-end">
-            <button id="btn-rider-woman" class="rider-select-btn py-1.5 px-3 rounded-lg border-2 border-blue-600 bg-blue-50/80 text-blue-900 flex flex-col items-center text-center gap-0.5 transition shadow-sm flex-1 max-w-[128px]">
+            <button id="btn-rider-woman" aria-pressed="true" class="rider-select-btn py-1.5 px-3 rounded-lg border-2 border-blue-600 bg-blue-50/80 text-blue-900 flex flex-col items-center text-center gap-0.5 transition shadow-sm flex-1 max-w-[128px]">
               <span class="text-xs font-bold text-slate-900">Woman</span>
               <span class="text-[14px] font-mono-num text-blue-700 font-bold">50.0 kg</span>
             </button>
 
-            <button id="btn-rider-man" class="rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]">
+            <button id="btn-rider-man" aria-pressed="false" class="rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]">
               <span class="text-xs font-bold text-slate-800">Man</span>
               <span class="text-[14px] font-mono-num text-slate-500 font-semibold">75.0 kg</span>
             </button>
 
-            <button id="btn-rider-dog" class="rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]">
+            <button id="btn-rider-dog" aria-pressed="false" class="rider-select-btn py-1.5 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex flex-col items-center text-center gap-0.5 transition flex-1 max-w-[128px]">
               <span class="text-xs font-bold text-slate-800">Dog</span>
               <span class="text-[14px] font-mono-num text-slate-500 font-semibold">25.0 kg</span>
             </button>
@@ -820,7 +820,7 @@
           <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
             <div class="flex items-center justify-between mb-2">
               <span class="text-[13px] text-slate-500 font-semibold">True Weight and Mass</span>
-              <span class="text-[10px] font-bold text-rose-700 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">Gravity</span>
+              <span class="text-[10px] font-bold text-rose-700 bg-rose-50 px-1 rounded border border-rose-200">Gravity</span>
             </div>
             <div class="flex flex-col gap-1 my-1">
               <div class="flex items-baseline gap-1.5">
@@ -842,7 +842,7 @@
           <div class="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
             <div class="flex items-center justify-between mb-2">
               <span class="text-[13px] text-slate-500 font-semibold">Apparent Weight and Mass</span>
-              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">Scale</span>
+              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200">Scale</span>
             </div>
             <div class="flex flex-col gap-1 my-1">
               <div class="flex items-baseline gap-1.5">
@@ -911,6 +911,9 @@
   <script>
     // Physics constants & simulator state
     const G = 9.80; // Standard gravitational acceleration in m/s^2
+    const STOP_DURATION = 2.0;     // seconds for Stop to bring the elevator to rest
+    const CONST_V_DURATION = 2.0;  // seconds for Constant Velocity to ramp acceleration to 0
+    const CRUISE_SPEED = 0.5;      // m/s reached when Constant Velocity is pressed at rest
 
     // State management
     const state = {
@@ -934,7 +937,7 @@
       initialStopVelocity: 0,
       rampingAccelToZero: false,
       rampTimer: 0,
-      rampDuration: 1.0 / 3.0,
+      rampDuration: 2.0,
       initialRampAccel: 0,
       liftOffTimeout: null
     };
@@ -966,6 +969,7 @@
     // Spring physical parameters
     const SPRING_L_NATURAL = 28;     // Natural unextended length (0g free-fall)
     const SPRING_L_EQUILIBRIUM = 64;  // Resting length at 1g (a = 0)
+    const SPRING_L_MAX_DRAWN = 165;   // Longest drawn length that keeps the block inside the cab
     let springCurrentL = SPRING_L_EQUILIBRIUM;
     let springVelocity = 0;
 
@@ -1039,7 +1043,7 @@
     }
 
     // Direction-unambiguous shaft rendering on canvas
-    function renderShaftCanvas() {
+    function renderShaftCanvas(dt = 1 / 60) {
       if (!ctx || !shaftCanvas) return;
       const w = shaftCanvas.parentElement.clientWidth;
       const h = shaftCanvas.parentElement.clientHeight;
@@ -1056,7 +1060,7 @@
 
       // Scale & layout
       const pixelsPerMeter = 45;
-      const cabWidth = 320;
+      const cabWidth = cabEl.offsetWidth || 320; // 288px on phones, 320px from sm up
       const leftRailX = Math.floor(w / 2 - cabWidth / 2 - 14);
       const rightRailX = Math.floor(w / 2 + cabWidth / 2 + 14);
 
@@ -1069,6 +1073,14 @@
 
       ctx.lineWidth = 1.5;
       const numSegments = Math.ceil(h / trussHeightPx) + 3;
+
+      // At very high speed the repeating trusses move most of a segment per frame and
+      // start to strobe (appearing to slow down or run backwards). Fade them out as the
+      // per-frame shift approaches half a segment; the speed streaks carry the motion.
+      const shiftPerFrame = Math.abs(state.velocity) * pixelsPerMeter * Math.max(dt, 1 / 240);
+      const trussFade = 1 - Math.min(Math.max((shiftPerFrame - 15) / 20, 0), 1); // full <15px, gone >35px
+      ctx.save();
+      ctx.globalAlpha = trussFade;
 
       for (let i = -2; i < numSegments; i++) {
         const segTop = relY + i * trussHeightPx;
@@ -1120,6 +1132,7 @@
         ctx.fillRect(leftRailX - 2, segTop - 2, 4, 4);
         ctx.fillRect(rightRailX - 2, segTop - 2, 4, 4);
       }
+      ctx.restore();
 
       // Vertical Guide Rails
       ctx.fillStyle = '#334155';
@@ -1146,7 +1159,8 @@
 
           // Update relative y based on velocity:
           // Elevator moving UP (+velocity) means motes/streaks move DOWN (+yRel)
-          s.yRel = (s.yRel + (state.velocity * 0.008)) % 1;
+          // (scaled by dt so the speed is the same on 60 Hz and 120 Hz screens)
+          s.yRel = (s.yRel + (state.velocity * 0.48 * dt)) % 1;
           if (s.yRel < 0) s.yRel += 1;
 
           const y = s.yRel * h;
@@ -1163,20 +1177,44 @@
       }
     }
 
-    function resetElevatorCables() {
+    function isRiderAirborne() {
+      return riderWrapper.classList.contains('is-lifting') ||
+             riderWrapper.classList.contains('is-floating');
+    }
+
+    // Lift the rider off the scale (no-op if already airborne, so repeated calls don't restart the lift)
+    function startFloating() {
+      if (isRiderAirborne()) return;
       if (state.liftOffTimeout) clearTimeout(state.liftOffTimeout);
+      if (state.touchdownAnim) {
+        state.touchdownAnim.cancel();
+        state.touchdownAnim = null;
+      }
+      riderWrapper.style.transform = '';
+      riderWrapper.classList.add('is-lifting');
+      state.liftOffTimeout = setTimeout(() => {
+        if (riderWrapper.classList.contains('is-lifting')) {
+          riderWrapper.classList.remove('is-lifting');
+          riderWrapper.classList.add('is-floating');
+        }
+      }, 1400);
+    }
 
-      // Check if rider was currently lifting or floating in zero-G
-      const wasInZeroG = state.isMalfunction || 
-                         riderWrapper.classList.contains('is-lifting') || 
-                         riderWrapper.classList.contains('is-floating');
-
+    function resetElevatorCables() {
       state.isMalfunction = false;
       state.stopping = false;
       state.rampingAccelToZero = false;
       sparkContainer.classList.add('hidden');
       cableEl.classList.remove('hidden');
       brokenCableSvg.classList.add('hidden');
+      landRider();
+    }
+
+    // Glide an airborne rider back onto the scale. If a touchdown glide is already
+    // running, leave it alone so rapid repeated calls (e.g. slider drags) don't cancel it.
+    function landRider() {
+      if (state.liftOffTimeout) clearTimeout(state.liftOffTimeout);
+      const wasInZeroG = isRiderAirborne();
 
       if (wasInZeroG) {
         // Sample exact instantaneous in-flight transform matrix
@@ -1239,25 +1277,31 @@
             };
           }
         });
-      } else {
-        riderWrapper.classList.remove('is-lifting', 'is-floating');
-        if (state.touchdownAnim) {
-          state.touchdownAnim.cancel();
-          state.touchdownAnim = null;
-        }
-        riderWrapper.style.transform = '';
       }
+      // Not airborne: nothing to do (an in-progress touchdown glide is allowed to finish)
     }
 
+    // The slider's range is ±9.80, but Stop / Constant Velocity can produce larger
+    // accelerations. The thumb pins at the end; the readout shows the real value.
     function syncAccelSlider(val) {
       const clamped = Math.max(-9.80, Math.min(9.80, val));
       accelSlider.value = clamped.toFixed(2);
-      accelSliderVal.textContent = `${clamped >= 0 ? '+' : ''}${clamped.toFixed(2)} m/s²`;
+      accelSliderVal.textContent = `${val >= 0 ? '+' : ''}${val.toFixed(2)} m/s²`;
     }
 
+    let lastAccelToneAt = 0;
+
     function applyAccelerationChange(newA) {
-      resetElevatorCables();
       newA = Math.max(-9.80, Math.min(9.80, parseFloat(newA.toFixed(2))));
+
+      // Already in free fall and still at the free-fall end of the slider: keep the
+      // malfunction going instead of re-snapping the cable (and replaying its sound).
+      if (newA <= -9.75 && state.isMalfunction) {
+        syncAccelSlider(-G);
+        return;
+      }
+
+      resetElevatorCables();
       state.acceleration = newA;
       state.stopping = false;
       state.rampingAccelToZero = false;
@@ -1283,7 +1327,12 @@
             updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
           }
         }
-        playTone(newA >= 0 ? 'D4' : 'A3', '16n');
+        // Slider drags fire many events; play at most one tick every 120 ms
+        const now = performance.now();
+        if (now - lastAccelToneAt > 120) {
+          lastAccelToneAt = now;
+          playTone(newA >= 0 ? 'D4' : 'A3', '16n');
+        }
         updatePhysicsDisplays();
       }
     }
@@ -1374,8 +1423,11 @@
         riderDog.classList.remove('hidden');
         btnDog.className = selectedBtnClasses;
         btnWoman.className = unselectedBtnClasses;
-        btnDog.className = unselectedBtnClasses;
+        btnMan.className = unselectedBtnClasses;
       }
+      btnWoman.setAttribute('aria-pressed', String(type === 'woman'));
+      btnMan.setAttribute('aria-pressed', String(type === 'man'));
+      btnDog.setAttribute('aria-pressed', String(type === 'dog'));
 
       massSlider.value = state.mass;
       customMassVal.textContent = state.mass.toFixed(1) + ' kg';
@@ -1398,11 +1450,11 @@
       resetElevatorCables();
       state.stopping = false;
 
-      // Ramp acceleration down to 0 over 1/3 second
+      // Ramp acceleration down to 0 over 2 seconds
       if (Math.abs(state.acceleration) > 0.05) {
         state.rampingAccelToZero = true;
         state.rampTimer = 0;
-        state.rampDuration = 1.0 / 3.0;
+        state.rampDuration = CONST_V_DURATION;
         state.initialRampAccel = state.acceleration;
         const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.acceleration) > 0 ? 'UP' : 'DOWN';
         updateBadge(`SETTLING TO CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
@@ -1413,13 +1465,15 @@
         const dir = state.velocity > 0 ? 'UP' : 'DOWN';
         updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
       } else {
-        // If at rest: gently ramp to cruising speed upwards
+        // If at rest: gently ramp to a 0.5 m/s cruise upwards over 2 seconds
+        // (a ramps linearly from a0 to 0, so the speed gained is a0 * T / 2)
+        const a0 = 2 * CRUISE_SPEED / CONST_V_DURATION;
         state.rampingAccelToZero = true;
         state.rampTimer = 0;
-        state.rampDuration = 1.0 / 3.0;
-        state.initialRampAccel = 3.0;
-        state.acceleration = 3.0;
-        syncAccelSlider(3.0);
+        state.rampDuration = CONST_V_DURATION;
+        state.initialRampAccel = a0;
+        state.acceleration = a0;
+        syncAccelSlider(a0);
         updateBadge('SETTLING TO CONSTANT SPEED (UP)', 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
       }
       playTone('C4', '8n');
@@ -1427,13 +1481,7 @@
     });
 
     function triggerMalfunctionVisuals() {
-      if (state.liftOffTimeout) clearTimeout(state.liftOffTimeout);
-      if (state.touchdownAnim) {
-        state.touchdownAnim.cancel();
-        state.touchdownAnim = null;
-      }
-      riderWrapper.style.transform = '';
-
+      const alreadyFalling = state.isMalfunction;
       state.isMalfunction = true;
       state.stopping = false;
       state.rampingAccelToZero = false;
@@ -1444,19 +1492,12 @@
       cableEl.classList.add('hidden');
       brokenCableSvg.classList.remove('hidden');
 
-      playCableSnapSound();
+      if (!alreadyFalling) playCableSnapSound();
 
       updateBadge('MALFUNCTION: FREE FALL', 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse font-bold');
 
-      riderWrapper.classList.remove('is-floating');
-      riderWrapper.classList.add('is-lifting');
-
-      state.liftOffTimeout = setTimeout(() => {
-        if (state.isMalfunction) {
-          riderWrapper.classList.remove('is-lifting');
-          riderWrapper.classList.add('is-floating');
-        }
-      }, 1400);
+      // Lifts the rider, or leaves them drifting if they're already floating
+      startFloating();
 
       updatePhysicsDisplays();
     }
@@ -1475,7 +1516,7 @@
       } else {
         state.stopping = true;
         state.stopTimer = 0;
-        state.stopDuration = 2.0;
+        state.stopDuration = STOP_DURATION;
         state.initialStopVelocity = state.velocity;
         state.acceleration = -state.velocity / state.stopDuration;
         syncAccelSlider(state.acceleration);
@@ -1506,26 +1547,42 @@
       updatePhysicsDisplays();
     });
 
-    toggleFbdCheckbox.addEventListener('change', (e) => {
-      state.showFBD = e.target.checked;
-      if (state.showFBD) {
-        pointMassFbdPanel.classList.remove('hidden');
-      } else {
-        pointMassFbdPanel.classList.add('hidden');
+    // On narrow screens the free-body diagram sits over the right side of the cab.
+    // If it would cover the spring-mass, hang the spring on the left side instead.
+    function placeSpringMass() {
+      springMassContainer.style.left = '';
+      springMassContainer.style.right = '';
+      if (!state.showSpringMass || !state.showFBD) return;
+      const s = springMassContainer.getBoundingClientRect();
+      const f = pointMassFbdPanel.getBoundingClientRect();
+      const overlaps = s.left < f.right && s.right > f.left && s.top < f.bottom && s.bottom > f.top;
+      if (overlaps) {
+        springMassContainer.style.right = 'auto';
+        springMassContainer.style.left = '0.75rem';
       }
-    });
+    }
 
-    toggleSpringCheckbox.addEventListener('change', (e) => {
-      state.showSpringMass = e.target.checked;
-      if (state.showSpringMass) {
-        springMassContainer.classList.remove('hidden');
-      } else {
-        springMassContainer.classList.add('hidden');
-      }
-    });
+    // Apply the checkbox states (also used on load, since browsers such as Firefox
+    // restore checkbox states on reload)
+    function applyFbdVisibility() {
+      state.showFBD = toggleFbdCheckbox.checked;
+      pointMassFbdPanel.classList.toggle('hidden', !state.showFBD);
+      placeSpringMass();
+    }
+
+    function applySpringVisibility() {
+      state.showSpringMass = toggleSpringCheckbox.checked;
+      springMassContainer.classList.toggle('hidden', !state.showSpringMass);
+      placeSpringMass();
+    }
+
+    toggleFbdCheckbox.addEventListener('change', applyFbdVisibility);
+    toggleSpringCheckbox.addEventListener('change', applySpringVisibility);
+    window.addEventListener('resize', placeSpringMass);
 
     audioToggleBtn.addEventListener('click', () => {
       state.soundEnabled = !state.soundEnabled;
+      audioToggleBtn.setAttribute('aria-pressed', String(state.soundEnabled));
       if (state.soundEnabled) {
         audioLabel.textContent = 'SFX Active';
         soundIconOn.classList.remove('text-slate-400');
@@ -1541,6 +1598,14 @@
     function updateBadge(text, classNames) {
       motionBadge.textContent = text;
       motionBadge.className = 'px-2 py-0.5 rounded font-semibold tracking-wide border ' + classNames;
+    }
+
+    // Mark a capped vector stem as "off scale" with a break in the middle of the stem
+    function setOffScale(stemEl, offScale, dir, colorHex) {
+      stemEl.style.backgroundImage = offScale
+        ? `linear-gradient(${dir}, ${colorHex} 0 40%, transparent 40% 47%, ${colorHex} 47% 53%, transparent 53% 60%, ${colorHex} 60%)`
+        : '';
+      stemEl.style.backgroundColor = offScale ? 'transparent' : '';
     }
 
     function updatePhysicsDisplays() {
@@ -1586,12 +1651,18 @@
       }
 
       // Point Mass Free Body Diagram (FBD) vectors
+      // Arrows are drawn to scale up to a maximum length; beyond that (very large
+      // accelerations from Stop / Constant Velocity) they're capped so they stay on
+      // screen, and the stem fades at its far end to show it's off the scale.
       const baseVectorHeight = 56;
-      const fnVectorHeight = Math.max((Fn / Fg) * baseVectorHeight, 0);
+      const maxVectorHeight = baseVectorHeight * 2;   // = F_N at a = +1g
+      const rawFnHeight = Math.max((Fn / Fg) * baseVectorHeight, 0);
+      const fnVectorHeight = Math.min(rawFnHeight, maxVectorHeight);
       const fgVectorHeight = baseVectorHeight;
 
       fbdStemFg.style.height = fgVectorHeight + 'px';
       fbdStemFn.style.height = fnVectorHeight + 'px';
+      setOffScale(fbdStemFn, rawFnHeight > maxVectorHeight + 0.5, 'to bottom', '#10b981');
 
       if (Fn <= 0.1) {
         fbdVectorFn.style.opacity = '0';
@@ -1601,17 +1672,22 @@
 
       // Acceleration vector
       const aAbs = Math.abs(a);
-      const accelVectorHeight = Math.min(Math.max((aAbs / G) * baseVectorHeight, 0), baseVectorHeight * 1.5);
+      const maxAccelHeight = baseVectorHeight * 1.5;
+      const rawAccelHeight = Math.max((aAbs / G) * baseVectorHeight, 0);
+      const accelVectorHeight = Math.min(rawAccelHeight, maxAccelHeight);
+      const accelOffScale = rawAccelHeight > maxAccelHeight + 0.5;
 
       if (a > 0.05) {
         fbdAccelUp.classList.remove('hidden');
         fbdAccelDown.classList.add('hidden');
         fbdStemAccelUp.style.height = accelVectorHeight + 'px';
+        setOffScale(fbdStemAccelUp, accelOffScale, 'to bottom', '#38bdf8');
         fbdAccelContainer.style.opacity = '1';
       } else if (a < -0.05) {
         fbdAccelUp.classList.add('hidden');
         fbdAccelDown.classList.remove('hidden');
         fbdStemAccelDown.style.height = accelVectorHeight + 'px';
+        setOffScale(fbdStemAccelDown, accelOffScale, 'to top', '#38bdf8');
         fbdAccelContainer.style.opacity = '1';
       } else {
         fbdAccelUp.classList.add('hidden');
@@ -1724,6 +1800,15 @@
       
       updatePhysicsDisplays();
 
+      // The rider floats whenever the scale can't push (a <= -g): free fall, or a hard
+      // Stop while moving up fast. Lands again once the scale pushes back.
+      const weightless = state.isMalfunction || (G + state.acceleration) <= 0.001;
+      if (weightless) {
+        startFloating();
+      } else if (isRiderAirborne()) {
+        landRider();
+      }
+
       // Dynamic Spring-Mass physics simulation (Damped harmonic oscillator)
       const gEff = Math.max(0, G + state.acceleration);
       const targetL = SPRING_L_NATURAL + (SPRING_L_EQUILIBRIUM - SPRING_L_NATURAL) * (gEff / G);
@@ -1733,16 +1818,14 @@
       springVelocity += springForce * dt;
       springCurrentL += springVelocity * dt;
 
-      // In zero-g malfunction, add slight zero-g float drift
-      if (state.isMalfunction) {
-        const drift = Math.sin(state.cableWavePhase * 0.9) * 2.2;
-        renderSpringMass(springCurrentL + drift);
-      } else {
-        renderSpringMass(springCurrentL);
-      }
+      // In zero-g malfunction, add slight zero-g float drift.
+      // The drawn length is capped so the block stays inside the cab under very large
+      // accelerations (the spring physics itself is not limited).
+      const drift = state.isMalfunction ? Math.sin(state.cableWavePhase * 0.9) * 2.2 : 0;
+      renderSpringMass(Math.min(springCurrentL + drift, SPRING_L_MAX_DRAWN));
 
       // Render high-clarity background on canvas
-      renderShaftCanvas();
+      renderShaftCanvas(dt);
 
       // Update broken cable if in free fall
       if (state.isMalfunction) {
@@ -1754,6 +1837,8 @@
 
     window.onload = function () {
       resizeShaftCanvas();
+      applyFbdVisibility();
+      applySpringVisibility();
       setRider('woman', 50.0);
       syncAccelSlider(0.0);
       renderSpringMass(SPRING_L_EQUILIBRIUM);
