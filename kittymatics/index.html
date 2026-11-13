@@ -231,20 +231,46 @@ const GS={f:1,D:0.65,H:0,crouch:0.5,bw:0,br:0,tail:3,pitch:0,W:0,fb:0,hl:1,hcf:0
 function lerpG(A,B,s){const o={};for(const k in A)o[k]=A[k]+(B[k]-A[k])*s;return o}
 function gait(u){let g=u<=80?lerpG(GS,GW,u/80):lerpG(GW,GR,Math.min(1,(u-80)/200));if(u>280)g.f=GR.f*Math.sqrt(u/280);return g}
 function swingX(s,S,D){const p0=-S/2,p1=S/2,m=-0.5*S*(1-D)/D;const s2=s*s,s3=s2*s;return (2*s3-3*s2+1)*p0+(s3-2*s2+s)*m+(-2*s3+3*s2)*p1+(s3-s2)*m}
-let sleeping=false,ph=0,us=0,sy=0.5,sp=0,dir=1,bt=0,cur=gait(0),headY=0,turn=null;
+let sleeping=false,ph=0,us=0,sy=0.5,sp=0,dir=1,bt=0,cur=gait(0),headY=0,turn=null,crouchX=0;
+const FZ=ZL.slice();
 const ease=p=>0.5-0.5*Math.cos(Math.PI*Math.min(1,Math.max(0,p)));
 const PARTS=[['tw',82,0,0.5],['bw',140,0,0.48]].map(([id,ax,z,m])=>({el:$(id),ax,z,m}));
 let nearBack=false;
-function turnState(){const base=d=>d>0?0:Math.PI;if(!turn)return {th:base(dir),cs:1,dy:0};const p=turn.p,e=ease(p);return {th:base(turn.from)+(base(turn.to)-base(turn.from))*e,cs:1,dy:2*Math.sin(Math.PI*p)}}
-function rig(th,headY){const c=Math.cos(th),s=Math.sin(th);
+const base=d=>d>0?0:Math.PI,TURN_DUR=0.6,BODY_A=0.08,BODY_B=0.92;
+const STEPS=[[[0.40,0.60],[0.82,1.00]],[[0.16,0.36],[0.60,0.80]],[[0.04,0.24],[0.48,0.68]],[[0.28,0.48],[0.72,0.92]]];
+const LIFT=[9,9,13,13];
+function headingAt(p){return base(turn.from)+(base(turn.to)-base(turn.from))*ease((p-BODY_A)/(BODY_B-BODY_A))}
+function restLocal(i){return CEN[i]+(i>=2?cur.fb:cur.hb)}
+function toWorld(lx,lz,th,cx){const a=lx-150,c=Math.cos(th),s=Math.sin(th);return {x:cx+a*c+lz*s,z:-a*s+lz*c}}
+function toLocal(w,th,cx){const c=Math.cos(th),s=Math.sin(th),x=w.x-cx;return {lx:150+x*c-w.z*s,lz:x*s+w.z*c}}
+function catLocalX(xm){return xm*PPM/K}
+function startTurn(from,to,xm){const th0=base(from),cx=catLocalX(xm);turn={from,to,p:0,feet:LJ.map((j,i)=>({pos:toWorld(j[4],FZ[i],th0,cx),done:0,st:null}))}}
+function turnBusy(){return turn.feet.some((f,i)=>f.st||f.done<STEPS[i].length)}
+function endTurn(){turn=null;crouchX=0;for(let i=0;i<4;i++)FZ[i]=ZL[i]}
+function turnState(){if(!turn)return {th:base(dir),thHead:base(dir)};return {th:headingAt(turn.p),thHead:headingAt(Math.min(1,turn.p+0.12))}}
+function turnFeet(xm){const pr=turn.p,p=Math.min(1,pr),th=headingAt(p),thEnd=base(turn.to),cx=catLocalX(xm);
+  const load=p<0.1?ease(p/0.1):1-ease((p-0.1)/0.3),ext=Math.sin(Math.PI*Math.min(1,Math.max(0,(p-0.15)/0.7)));
+  crouchX=6*load-2.5*ext;
+  const gr=FY-sy-crouchX;
+  for(let i=0;i<4;i++){const f=turn.feet[i],W=STEPS[i],front=i>=2,hx=HIP[i][0],hy=HIP[i][1]-(front?0:cur.hcf*cur.crouch),R=L1[i]+L2[i];
+    if(!f.st&&f.done<W.length&&pr>=W[f.done][0]){const [a,b]=W[f.done],last=f.done===W.length-1;f.st={from:f.pos,a:pr,dur:Math.max(0.08,b-pr),tt:last?thEnd:headingAt(Math.min(1,b+0.15)),lift:LIFT[i],sched:true}}
+    if(!f.st){const L=toLocal(f.pos,th,cx);if(Math.hypot(L.lx-hx,L.lz-ZL[i],gr-hy)>R)f.st={from:f.pos,a:pr,dur:0.18,tt:headingAt(Math.min(1,p+0.25)),lift:LIFT[i]*0.8,sched:false}}
+    let pos=f.pos,lift=0;
+    if(f.st){const st=f.st,u=Math.min(1,(pr-st.a)/st.dur),e=u*u*(3-2*u),to=toWorld(restLocal(i),ZL[i],st.tt,cx);
+      pos={x:st.from.x+(to.x-st.from.x)*e,z:st.from.z+(to.z-st.from.z)*e};lift=st.lift*Math.sin(Math.PI*u);
+      if(u>=1){f.pos=to;pos=to;lift=0;if(st.sched)f.done++;f.st=null}}
+    let L=toLocal(pos,th,cx);
+    {const dx=L.lx-hx,dz=L.lz-ZL[i],dy=gr-lift-hy,h=Math.hypot(dx,dz),mh=Math.sqrt(Math.max(0,R*R*0.99-dy*dy));if(h>mh&&h>0){const k=mh/h;L={lx:hx+dx*k,lz:ZL[i]+dz*k}}}
+    FZ[i]=L.lz;LJ[i]=joints(i,hx,hy,L.lx,gr-lift,0)}}
+function rig(th,headY,thHead){const c=Math.cos(th),s=Math.sin(th),ch=Math.cos(thHead===undefined?th:thHead);
   for(const q of PARTS){const dxp=(q.ax-150)*c+q.z*s,sx=(c>=0?1:-1)*Math.max(q.m,Math.abs(c));q.el.setAttribute('transform',`translate(${(150+dxp).toFixed(2)},0) scale(${sx.toFixed(4)},1) translate(${-q.ax},0)`)}
   const P=(x,z)=>150+(x-150)*c+z*s;
-  for(let i=0;i<4;i++){const [hx,hy,kx,ky,ex,ey]=LJ[i],z=ZL[i],W=WID[i],HX=P(hx,z),KX=P(kx,z),EX=P(ex,z);
+  for(let i=0;i<4;i++){const [hx,hy,kx,ky,ex,ey]=LJ[i],z=ZL[i],W=WID[i],HX=P(hx,z),KX=P(kx,(z+FZ[i])/2),EX=P(ex,FZ[i]);
     $('pu'+i).setAttribute('d',quad(HX,hy,KX,ky,W[0],W[1]));$('pl'+i).setAttribute('d',quad(KX,ky,EX,ey,W[2],W[3]));
     $('pk'+i).setAttribute('cx',KX.toFixed(2));$('pk'+i).setAttribute('cy',ky.toFixed(2));
     const top=$(i>=2?'ps'+i:'ph'+i);top.setAttribute('cx',HX.toFixed(2));top.setAttribute('cy',hy.toFixed(2))}
   const nb=th>Math.PI/2;if(nb!==nearBack){nearBack=nb;const B=$('backL'),F=$('frontL');if(nb){B.appendChild($('w1'));B.appendChild($('w3'));F.appendChild($('w0'));F.appendChild($('w2'))}else{B.appendChild($('w0'));B.appendChild($('w2'));F.appendChild($('w1'));F.appendChild($('w3'))}}
-  headT=(1-c)/2;head(headT);
+  headT=(1-ch)/2;head(headT);
   $('headAll').setAttribute('transform',`translate(${((HC-150)*c+150-HC).toFixed(2)},${headY.toFixed(2)})`)}
 const HC=206,mirA=a=>a.map((v,i)=>i%2===0?2*HC-v:v),lerpA=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
 const EARL=[183,68,188,30,206,56],EARR=[212,56,232,32,230,70],INL=[189,62,191,40,201,56],INR=[216,56,228,42,227,64];
@@ -278,9 +304,9 @@ function poseCat(dt,uTarget){
 }
 function placeCat(xm){const X=LX+(xm+10)*PPM;
   $('cat').style.display=sleeping?'none':'';$('catS').style.display=sleeping?'':'none';$('arrows').style.display=sleeping?'none':'';
-  if(sleeping)$('catS').setAttribute('transform',`translate(${X.toFixed(2)},${FLOOR}) scale(${(K*1.08).toFixed(4)}) translate(-100,-150)`);const T=turnState(),k=K*T.cs,Y=FLOOR+T.dy;
-  $('cat').setAttribute('transform',`translate(${X.toFixed(2)},${Y.toFixed(2)}) scale(${k.toFixed(4)}) translate(-150,${(-FY+sy).toFixed(2)})`);
-  rig(T.th,headY);
+  if(sleeping)$('catS').setAttribute('transform',`translate(${X.toFixed(2)},${FLOOR}) scale(${(K*1.08).toFixed(4)}) translate(-100,-150)`);if(turn&&!sleeping)turnFeet(xm);const T=turnState();
+  $('cat').setAttribute('transform',`translate(${X.toFixed(2)},${FLOOR}) scale(${K}) translate(-150,${(-FY+sy+crouchX).toFixed(2)})`);
+  rig(T.th,headY,T.thHead);
   $('marker').setAttribute('d',`M${X} ${FLOOR+2} l-7 11 h14 z`);
   arrow('v',X,44,vel(t)*18);arrow('a',X,22,P.a*30);offInd(X,xm)}
 function offInd(X,xm){const g=$('off');if(X>1078||X<-78){const right=X>0,ex=right?986:14;g.setAttribute('opacity','1');$('offArrow').setAttribute('d',right?`M${ex} 96 l-14 -10 v20 z`:`M${ex} 96 l14 -10 v20 z`);const tx=$('offText');tx.setAttribute('x',right?ex-22:ex+22);tx.setAttribute('text-anchor',right?'end':'start');tx.textContent=`off screen · x = ${fmt(xm,1)} m`}else g.setAttribute('opacity','0')}
@@ -328,7 +354,7 @@ function status(){const tt=turnTime();let s;
   $('status').textContent=s}
 function setPlay(){$('play').textContent=running?'Pause':ended?'Replay':t>0?'Resume':'Play'}
 function syncInputs(){$('x0').value=P.x0;$('v0').value=P.v0;$('a').value=P.a;$('x0o').textContent=fmt(P.x0,1);$('v0o').textContent=fmt(P.v0,1);$('ao').textContent=fmt(P.a,2)}
-function reset(){t=0;running=false;ended=false;turn=null;computeEnd();R=ranges();dir=P.v0!==0?Math.sign(P.v0):(P.a!==0?Math.sign(P.a):1);us=0;syncInputs();readouts();status();setPlay();placeCat(pos(0));drawGraphs()}
+function reset(){t=0;running=false;ended=false;endTurn();computeEnd();R=ranges();dir=P.v0!==0?Math.sign(P.v0):(P.a!==0?Math.sign(P.a):1);us=0;syncInputs();readouts();status();setPlay();placeCat(pos(0));drawGraphs()}
 function selP(b){document.querySelectorAll('[data-p]').forEach(o=>o.classList.toggle('sel',o===b))}
 ['x0','v0','a'].forEach(k=>$(k).addEventListener('input',e=>{selP(null);P[k]=parseFloat(e.target.value);sleeping=false;reset()}));
 document.querySelectorAll('.step').forEach(b=>b.addEventListener('click',()=>{selP(null);const k=b.dataset.t,el=$(k),st=parseFloat(el.step),v=Math.round((parseFloat(el.value)+st*parseFloat(b.dataset.d))/st)*st;P[k]=Math.min(parseFloat(el.max),Math.max(parseFloat(el.min),parseFloat(v.toFixed(4))));sleeping=false;reset()}));
@@ -345,13 +371,13 @@ let last=null,statusTick=0;
 function frame(now){if(last===null)last=now;const rdt=Math.min((now-last)/1000,0.05);last=now;
   const sdt=rdt*simSpeed;
   if(running){t+=sdt;if(t>=tEnd){t=tEnd;running=false;ended=true;setPlay();status()}
-    const v=vel(t);if(Math.abs(v)>0.02){const nd=Math.sign(v);if(nd!==dir){turn={from:dir,to:nd,p:0};dir=nd}}
+    const v=vel(t);if(!turn&&Math.abs(v)>0.02){const nd=Math.sign(v);if(nd!==dir){startTurn(dir,nd,pos(t));dir=nd}}
     poseCat(sdt,running?Math.abs(v)*PPM/K:0);placeCat(pos(t));readouts();drawGraphs();
     if(++statusTick%10===0)status()}
   else if(ended&&us>0){poseCat(rdt,0);placeCat(pos(t))}
   else if(t===0&&!running){poseCat(rdt,0);placeCat(pos(0))}
   else if(turn){placeCat(pos(t))}
-  if(turn){turn.p+=rdt/0.9;if(turn.p>=1){turn=null;placeCat(pos(t))}}
+  if(turn){turn.p+=rdt/TURN_DUR;if(turn.p>=1&&!turnBusy()){placeCat(pos(t));endTurn();placeCat(pos(t))}}
   bt+=rdt;blinkS=bt>3.4?0.12:1;if(bt>3.54)bt=0;setEyes();
   if(sleeping)animSleep(now/1000);
   requestAnimationFrame(frame)}
