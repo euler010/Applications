@@ -375,11 +375,11 @@ function status(){let s;const n=pts.length;
   else if(t>0)s=`Paused at t = ${fmt(t,2)} s.`;
   else s=tEnd<TMAX?`Her motion lasts until t = ${fmt(tEnd,2)} s, where your graph ends. Keep adding points, or press Play.`:'Graph complete. Press Play.';
   $('status').textContent=s}
-function setButtons(){$('play').textContent=running?'Pause':ended?'Replay':t>0?'Resume':'Play';$('play').disabled=pts.length<2;$('undo').disabled=!hist.length;$('clear').disabled=!pts.length}
+function setButtons(){$('play').textContent=running?'Pause':ended?'Replay':t>0?'Resume':'Play';$('play').disabled=pts.length<2;$('undo').disabled=!hist.length;$('clear').disabled=!pts.length&&X0===0}
 function firstDir(){for(const p of pts)if(Math.abs(p.v)>0.02)return Math.sign(p.v);return 1}
 function resetPlay(){t=0;running=false;ended=false;turn=null;dir=firstDir();us=0;readouts();status();setButtons();placeCat(X0);dirty=true}
 function changed(){rebuild();computeRange();drawAxis();resetPlay()}
-function pushHist(){hist.push(pts.map(p=>({...p})));if(hist.length>200)hist.shift()}
+function pushHist(){hist.push({p:pts.map(q=>({...q})),x0:X0});if(hist.length>200)hist.shift()}
 function say(msg){flash=msg;flashT=performance.now()+2600;status();setTimeout(status,2700)}
 
 function evtPt(e){const r=gv.getBoundingClientRect(),g=geom(gv),x=e.clientX-r.left,y=e.clientY-r.top;return {x,y,t:pxT(g,x),v:pyV(g,y),g}}
@@ -416,10 +416,11 @@ gv.addEventListener('pointerleave',()=>{if(!drag&&!stroke){hover=null;dirty=true
 
 document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(o=>o.setAttribute('aria-pressed',o===b?'true':'false'));status();dirty=true}));
 $('snap').addEventListener('change',e=>{snap=e.target.checked;dirty=true});
-function undo(){if(!hist.length)return;pts=hist.pop();changed()}
+function setX0(v){X0=v;$('x0').value=v;$('x0o').textContent=fmt(v,1)}
+function undo(){if(!hist.length)return;const h=hist.pop();pts=h.p;setX0(h.x0);changed()}
 $('undo').addEventListener('click',undo);
 $('x0').addEventListener('input',e=>{X0=parseFloat(e.target.value);$('x0o').textContent=fmt(X0,1);changed()});
-$('clear').addEventListener('click',()=>{if(!pts.length)return;pushHist();pts=[];changed()});
+$('clear').addEventListener('click',()=>{if(!pts.length&&X0===0)return;pushHist();pts=[];setX0(0);changed()});
 $('ex').addEventListener('change',e=>{const val=e.target.value;if(!val)return;pushHist();pts=val.split(';').map(s=>{const [a,b]=s.split(',').map(Number);return {t:a,v:b}});e.target.value='';changed()});
 document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}});
 $('play').addEventListener('click',()=>{if(pts.length<2)return;if(ended)resetPlay();running=!running;setButtons();status()});
