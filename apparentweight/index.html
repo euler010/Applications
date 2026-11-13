@@ -30,7 +30,7 @@
       box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8), 0 4px 16px rgba(15, 23, 42, 0.06);
     }
 
-    /* Zero-G Reorientation & Floating Animations */
+    /* Zero-G floating, shared by all riders (each rider adds its own limb animations below) */
     .limb-anim {
       transform-box: fill-box;
       transform-origin: top center;
@@ -52,94 +52,11 @@
       75% { transform: translateY(-48px) rotate(4.5deg); }
       100% { transform: translateY(-40px) rotate(1deg); }
     }
-    @keyframes reorientArmL {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(-30deg); }
-      60% { transform: rotate(18deg); }
-      85% { transform: rotate(-10deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes reorientArmR {
-      0% { transform: rotate(0deg); }
-      30% { transform: rotate(34deg); }
-      65% { transform: rotate(-20deg); }
-      85% { transform: rotate(12deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes reorientLegL {
-      0% { transform: rotate(0deg); }
-      35% { transform: rotate(16deg); }
-      70% { transform: rotate(-14deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes reorientLegR {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(-16deg); }
-      65% { transform: rotate(18deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes dogPawsFront {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(-22deg); }
-      50% { transform: rotate(16deg); }
-      75% { transform: rotate(-8deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes dogPawsBack {
-      0% { transform: rotate(0deg); }
-      30% { transform: rotate(18deg); }
-      60% { transform: rotate(-15deg); }
-      85% { transform: rotate(8deg); }
-      100% { transform: rotate(0deg); }
-    }
-    @keyframes dogTailCurl {
-      0% { transform: rotate(0deg); }
-      30% { transform: rotate(25deg); }
-      70% { transform: rotate(-15deg); }
-      100% { transform: rotate(0deg); }
-    }
-
     .is-lifting {
       animation: zeroGLiftOff 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
     }
     .is-floating {
       animation: zeroGDrift 4.5s ease-in-out infinite !important;
-    }
-    .is-lifting .limb-arm-left,
-    .is-floating .limb-arm-left {
-      animation: reorientArmL 3.4s ease-in-out infinite;
-    }
-    .is-lifting .limb-arm-right,
-    .is-floating .limb-arm-right {
-      animation: reorientArmR 3.8s ease-in-out infinite;
-    }
-    .is-lifting .limb-leg-left,
-    .is-floating .limb-leg-left {
-      animation: reorientLegL 4.0s ease-in-out infinite;
-    }
-    .is-lifting .limb-leg-right,
-    .is-floating .limb-leg-right {
-      animation: reorientLegR 3.6s ease-in-out infinite;
-    }
-    .is-lifting .limb-dog-f1,
-    .is-floating .limb-dog-f1 {
-      animation: dogPawsFront 2.8s ease-in-out infinite;
-    }
-    .is-lifting .limb-dog-f2,
-    .is-floating .limb-dog-f2 {
-      animation: dogPawsFront 3.2s ease-in-out infinite reverse;
-    }
-    .is-lifting .limb-dog-b1,
-    .is-floating .limb-dog-b1 {
-      animation: dogPawsBack 3.0s ease-in-out infinite;
-    }
-    .is-lifting .limb-dog-b2,
-    .is-floating .limb-dog-b2 {
-      animation: dogPawsBack 3.4s ease-in-out infinite reverse;
-    }
-    .is-lifting .tail-dog,
-    .is-floating .tail-dog {
-      animation: dogTailCurl 2.2s ease-in-out infinite;
     }
     /* Woman rider: hoodie & ponytail. In zero-g her arms drift out to her sides,
        her legs pedal slowly and her ponytail floats up. Each part eases into its
@@ -184,6 +101,31 @@
     .is-floating .man-leg-l { animation: manLegL 2.4s ease-in-out infinite; }
     .is-lifting .man-leg-r { animation: manLegRLift 1.4s ease-out forwards; }
     .is-floating .man-leg-r { animation: manLegR 2.4s ease-in-out infinite; }
+
+    /* Dog rider: golden retriever. In zero-g he does the doggy paddle, his ear
+       flips up and his tail wags hard. During lift-off each leg eases to the
+       point in the paddle cycle where its loop begins. */
+    .dog-tail { transform-origin: right bottom; animation: dogTailIdle 1.2s ease-in-out infinite; }
+    @keyframes dogTailIdle { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(6deg); } }
+    @keyframes dogTail { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(18deg); } }
+    @keyframes dogPaddle { 0%, 100% { transform: rotate(-38deg); } 50% { transform: rotate(22deg); } }
+    @keyframes dogLiftF1 { from { transform: rotate(0deg); } to { transform: rotate(-38deg); } }
+    @keyframes dogLiftF2 { from { transform: rotate(0deg); } to { transform: rotate(22deg); } }
+    @keyframes dogLiftB1 { from { transform: rotate(0deg); } to { transform: rotate(9deg); } }
+    @keyframes dogLiftB2 { from { transform: rotate(0deg); } to { transform: rotate(-25deg); } }
+    @keyframes dogEarLift { from { transform: rotate(0deg); } to { transform: rotate(135deg); } }
+    @keyframes dogEar { 0%, 100% { transform: rotate(135deg); } 50% { transform: rotate(158deg); } }
+    .is-lifting .dog-f1 { animation: dogLiftF1 1.4s ease-out forwards; }
+    .is-lifting .dog-f2 { animation: dogLiftF2 1.4s ease-out forwards; }
+    .is-lifting .dog-b1 { animation: dogLiftB1 1.4s ease-out forwards; }
+    .is-lifting .dog-b2 { animation: dogLiftB2 1.4s ease-out forwards; }
+    .is-floating .dog-f1 { animation: dogPaddle 0.9s ease-in-out infinite; }
+    .is-floating .dog-f2 { animation: dogPaddle 0.9s ease-in-out -0.45s infinite; }
+    .is-floating .dog-b1 { animation: dogPaddle 0.9s ease-in-out -0.3s infinite; }
+    .is-floating .dog-b2 { animation: dogPaddle 0.9s ease-in-out -0.75s infinite; }
+    .is-lifting .dog-ear { animation: dogEarLift 1.2s ease-out forwards; }
+    .is-floating .dog-ear { animation: dogEar 1.8s ease-in-out infinite; }
+    .is-lifting .dog-tail, .is-floating .dog-tail { animation: dogTail 0.5s ease-in-out infinite; }
   </style>
   <style id="utilities">
     /* ===== Utility stylesheet (replaces the Tailwind CDN) =====
@@ -678,51 +620,26 @@
                     <path d="M66.5 52 C68.2 58 69 65 69.2 72" stroke="#7f1d1d" stroke-width="1.4" opacity="0.7"/><circle cx="68.3" cy="78.5" r="3.1" fill="#f2c6a0"/></g>
                 </svg>
 
-                <!-- SVG: Dog (25 kg) -->
+                <!-- SVG: Dog (25 kg): golden retriever -->
                 <svg id="rider-dog" class="w-[120px] h-[93px] drop-shadow-md hidden -mb-0.5" viewBox="0 0 120 93" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Wagging Tail -->
-                  <g class="tail-anim tail-dog">
-                    <path d="M22 45 C10 40, 8 20, 16 12 C20 18, 22 30, 28 42 Z" fill="#d97706" />
-                  </g>
-
-                  <!-- Back Leg 1 -->
-                  <g class="limb-anim limb-dog-b1">
-                    <rect x="28" y="55" width="7" height="34" rx="3.5" fill="#b45309" />
-                    <ellipse cx="30" cy="90" rx="5.5" ry="3" fill="#92400e" />
-                  </g>
-
-                  <!-- Back Leg 2 -->
-                  <g class="limb-anim limb-dog-b2">
-                    <rect x="38" y="55" width="7" height="34" rx="3.5" fill="#d97706" />
-                    <ellipse cx="40" cy="90" rx="5.5" ry="3" fill="#b45309" />
-                  </g>
-
-                  <!-- Dog Body -->
-                  <ellipse cx="56" cy="50" rx="30" ry="18" fill="#d97706" />
-                  <ellipse cx="50" cy="46" rx="20" ry="14" fill="#f59e0b" />
-
-                  <!-- Front Leg 1 -->
-                  <g class="limb-anim limb-dog-f1">
-                    <rect x="70" y="55" width="7" height="34" rx="3.5" fill="#b45309" />
-                    <ellipse cx="72" cy="90" rx="5.5" ry="3" fill="#92400e" />
-                  </g>
-
-                  <!-- Front Leg 2 -->
-                  <g class="limb-anim limb-dog-f2">
-                    <rect x="80" y="55" width="7" height="34" rx="3.5" fill="#d97706" />
-                    <ellipse cx="82" cy="90" rx="5.5" ry="3" fill="#b45309" />
-                  </g>
-
-                  <!-- Head & Collar -->
-                  <path d="M72 50 L84 32 L98 38 L86 58 Z" fill="#d97706" />
-                  <path d="M80 40 L90 46" stroke="#ef4444" stroke-width="3" stroke-linecap="round" />
-                  <circle cx="86" cy="46" r="2" fill="#fbbf24" />
-                  <circle cx="94" cy="28" r="13" fill="#d97706" />
-                  <ellipse cx="106" cy="32" rx="9" ry="7" fill="#f59e0b" />
-                  <circle cx="112" cy="30" r="3" fill="#18181b" />
-                  <circle cx="96" cy="24" r="2.2" fill="#18181b" />
-                  <circle cx="97" cy="23" r="0.8" fill="#ffffff" />
-                  <path d="M86 20 C82 20, 80 34, 85 38 C88 38, 92 28, 90 20 Z" fill="#92400e" />
+                  <g class="tail-anim dog-tail"><path d="M33 45 C23 42 15 33 12 21 C16 23 18 27 21 30 C19 25 20 21 22.5 18.5 C25 28 30 35 37 39.5 Z" fill="#d48f2f"/></g>
+                  <g class="limb-anim dog-b1"><path d="M33 52 L42 52 L41 88 L34 88 Z" fill="#c27b25"/><ellipse cx="37.5" cy="89.5" rx="5.2" ry="3" fill="#b06d1f"/></g>
+                  <g class="limb-anim dog-f1"><path d="M70 54 L78 54 L77.5 88 L70.5 88 Z" fill="#c27b25"/><ellipse cx="74" cy="89.5" rx="5.2" ry="3" fill="#b06d1f"/></g>
+                  <ellipse cx="57" cy="50" rx="28" ry="16" fill="#e0a043"/>
+                  <path d="M38 58 Q46 68 52 60 Q58 69 64 60 Q70 68 76 58 Z" fill="#e0a043"/>
+                  <ellipse cx="52" cy="44" rx="18" ry="9" fill="#ebb35a" opacity="0.7"/>
+                  <g class="limb-anim dog-b2"><path d="M40 50 Q50 52 50 62 L48.5 88 L41.5 88 Z" fill="#e0a043"/><ellipse cx="45" cy="89.5" rx="5.4" ry="3" fill="#c27b25"/></g>
+                  <g class="limb-anim dog-f2"><path d="M78 55 L86 55 L85.5 88 L78.5 88 Z" fill="#e0a043"/><ellipse cx="82" cy="89.5" rx="5.4" ry="3" fill="#c27b25"/></g>
+                  <path d="M74 48 L86 31 L97 36 L90 57 Q82 60 74 48 Z" fill="#e0a043"/>
+                  <path d="M80 50 Q86 56 82 62 Q88 60 90 54 Z" fill="#f0c068"/>
+                  <path d="M83.5 43 L94.5 47.5" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><circle cx="89" cy="47.5" r="1.9" fill="#facc15"/>
+                  <circle cx="94" cy="29" r="12" fill="#e0a043"/>
+                  <ellipse cx="105" cy="34" rx="9" ry="6.5" fill="#f0c068"/>
+                  <ellipse cx="112.6" cy="31.8" rx="3" ry="2.4" fill="#3b2314"/>
+                  <path d="M103.5 38.5 Q107.5 41 111 37.6" stroke="#7c4a1e" stroke-width="0.9" stroke-linecap="round"/>
+                  <circle cx="97" cy="25.5" r="2" fill="#1e1b18"/><circle cx="97.7" cy="24.8" r="0.7" fill="#fff"/>
+                  <path d="M93.5 21.5 Q96.5 20 99.5 21.2" stroke="#b06d1f" stroke-width="0.9" stroke-linecap="round"/>
+                  <g class="limb-anim dog-ear"><path d="M87 21 C81 23 79.5 34 83.5 42 C88 42.5 91 34 91.5 24 Z" fill="#c27b25"/></g>
                 </svg>
 
               </div>
