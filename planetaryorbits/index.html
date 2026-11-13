@@ -1421,8 +1421,8 @@
         else ctx.lineTo(pt.x, pt.y);
       }
       ctx.closePath();
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(203, 213, 225, 0.55)';
+      ctx.lineWidth = 2.5;
       ctx.setLineDash([4, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
@@ -1464,12 +1464,12 @@
       const pLeft = toScreen(-a, 0);
       ctx.moveTo(pLeft.x, pLeft.y);
       ctx.lineTo(pRight.x, pRight.y);
-      ctx.strokeStyle = 'rgba(167, 139, 250, 0.4)';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#c084fc'; // same purple as the second focus
+      ctx.lineWidth = 2;
       ctx.stroke();
 
       // Dot at the geometric center matching the major axis color
-      ctx.fillStyle = '#a78bfa';
+      ctx.fillStyle = '#c084fc';
       ctx.beginPath();
       ctx.arc(center.x, center.y, 2.5, 0, Math.PI * 2);
       ctx.fill();
