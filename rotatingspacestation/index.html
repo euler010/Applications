@@ -66,8 +66,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .vhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--line)}
 .vhead h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
 .vhead .seg{min-width:220px}
-#spin{padding:6px 14px}
-#spin[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.vbtns{display:flex;gap:6px}
+#spin,#dropbtn,#throwbtn{padding:6px 14px}
+#spin[aria-pressed=true],#dropbtn[aria-pressed=true],#throwbtn[aria-pressed=true]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+input:disabled,button:disabled{opacity:.45;cursor:not-allowed}
 .canvasbox{position:relative;aspect-ratio:20/17;width:100%;max-width:100%;background:var(--viewbg)}
 .canvasbox canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hud{position:absolute;left:10px;bottom:10px;font-family:var(--f-mono);font-size:12px;line-height:1.5;color:#dfe7f2;background:rgba(10,16,26,.62);padding:6px 9px;border-radius:4px;pointer-events:none;font-variant-numeric:tabular-nums}
@@ -122,7 +124,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
             <div class="seg" role="group" aria-label="Reference frame">
               <button id="fIn" aria-pressed="true">Outside observer</button>
               <button id="fRot" aria-pressed="false">Spinning with station</button></div>
-            <button id="spin" aria-pressed="false">Rotate</button></div>
+            <div class="vbtns"><button id="throwbtn" aria-pressed="true">Throw Ball</button><button id="dropbtn" aria-pressed="false">Drop Ball</button><button id="spin" aria-pressed="false">Rotate</button></div></div>
           <div class="canvasbox"><canvas id="c2"></canvas><label class="vecbox"><input type="checkbox" id="vecs"> Velocity vectors</label></div>
           <div class="legend">
             <span><i style="background:var(--thrower)"></i>Thrower</span>
@@ -162,8 +164,10 @@ function flight(alphaDeg){
   const phiA=-Math.PI/2-d/2, phiB=-Math.PI/2+d/2;
   const rA=[Math.cos(phiA),Math.sin(phiA)], tA=[-rA[1],rA[0]];
   const a=alphaDeg*Math.PI/180;
-  const p0=[rA[0]*(R-H_REL)+tA[0]*dir*FWD, rA[1]*(R-H_REL)+tA[1]*dir*FWD];
-  const vr=[tA[0]*dir*P.v*Math.cos(a)-rA[0]*P.v*Math.sin(a), tA[1]*dir*P.v*Math.cos(a)-rA[1]*P.v*Math.sin(a)];
+  // drop mode: ball held at shoulder height at the end of an arm stretched out spinward, released at rest (relative to the floor)
+  const p0=P.drop?[rA[0]*(R-DROP_H)+tA[0]*DROP_X, rA[1]*(R-DROP_H)+tA[1]*DROP_X]
+                 :[rA[0]*(R-H_REL)+tA[0]*dir*FWD, rA[1]*(R-H_REL)+tA[1]*dir*FWD];
+  const vr=P.drop?[0,0]:[tA[0]*dir*P.v*Math.cos(a)-rA[0]*P.v*Math.sin(a), tA[1]*dir*P.v*Math.cos(a)-rA[1]*P.v*Math.sin(a)];
   const u=[vr[0]-w*p0[1], vr[1]+w*p0[0]];               // add floor velocity ω×r
   const A=u[0]*u[0]+u[1]*u[1], B=p0[0]*u[0]+p0[1]*u[1], C=p0[0]*p0[0]+p0[1]*p0[1]-R*R;
   let T=A<1e-12?Infinity:(-B+Math.sqrt(B*B-A*C))/A;
@@ -173,9 +177,11 @@ function flight(alphaDeg){
   let ts=A<1e-12?0:Math.min(Math.max(-B/A,0),Tc);
   const pc=[p0[0]+u[0]*ts,p0[1]+u[1]*ts];
   const peak=R-Math.hypot(pc[0],pc[1]);
-  return {R,w,dir,phiA,phiB,rA,tA,p0,u,T,Tc,capped,qT,err,along:err*dir*R,peak,
+  const dropOff=wrap(Math.atan2(qT[1],qT[0])-Math.atan2(p0[1],p0[0]))*R; // landing vs. the spot directly below the release (+ = spinward)
+  return {R,w,dir,phiA,phiB,rA,tA,p0,u,T,Tc,capped,qT,err,along:err*dir*R,peak,dropOff,
     inertialSpeed:Math.sqrt(A)};
 }
+const DROP_H=0.745*1.8, DROP_X=0.455*1.8; // matches the outstretched hand of the drawn figure (1.8 m tall)
 const posI=(t)=>t<=S.Tc?[S.p0[0]+S.u[0]*t,S.p0[1]+S.u[1]*t]:rot(S.qT,S.w*t);
 const posR=(t)=>t<=S.Tc?rot([S.p0[0]+S.u[0]*t,S.p0[1]+S.u[1]*t],-S.w*t):S.qT;
 
@@ -221,7 +227,8 @@ function updateLabels(){
     ['Flight time',S.capped?'> 600 s':`${fmt(S.T,2)} s`],
     ['Peak height',`${fmt(S.peak,2)} m`],
     ['Speed in space',`${fmt(S.inertialSpeed)} m/s`],
-    ['Landing',land+(caught||S.capped?'':` (${side})`),caught?'good':'warn'],
+    P.drop?['Landing',`${fmt(Math.abs(S.dropOff)*100,1)} cm ${S.dropOff<0?'antispinward':'spinward'} of the spot directly below`]
+          :['Landing',land+(caught||S.capped?'':` (${side})`),caught?'good':'warn'],
   ];
   $('tele').innerHTML=items.map(([k,v,c])=>`<div><span>${k}</span><b class="${c||''}">${v}</b></div>`).join('');
 }
@@ -236,6 +243,11 @@ $('ghost').addEventListener('change',e=>P.ghost=e.target.checked);
 $('zoom').addEventListener('change',e=>P.zoom=e.target.checked);
 $('vecs').addEventListener('change',e=>P.vecs=e.target.checked);
 $('aim').addEventListener('click',autoAim);
+function setDrop(v){P.drop=v;$('dropbtn').setAttribute('aria-pressed',v);$('throwbtn').setAttribute('aria-pressed',!v);$('throw').textContent=v?'Drop':'Throw';
+  ['delta','v','alpha','aim','zoom'].forEach(id=>$(id).disabled=v);if(v)setFrame('rotating');$('aimmsg').textContent='';recompute();}
+const setSpeedIdx=i=>{$('speed').value=i;P.speed=SPEEDS[i];};
+$('dropbtn').addEventListener('click',()=>{setSpeedIdx(0);setDrop(true);});   // drop: 0.25x so the short fall is easy to follow
+$('throwbtn').addEventListener('click',()=>{setSpeedIdx(2);setDrop(false);}); // throw: 1x
 function setSpin(v){spinning=v;$('spin').textContent=v?'Stop rotating':'Rotate';$('spin').setAttribute('aria-pressed',v);}
 const fold=()=>{if(t>0){pre=(pre+S.w*t)%TAU;t=0;playing=false;}}; // keep the station where it is, ball back in hand
 $('throw').addEventListener('click',()=>{fold();playing=true;});
@@ -245,7 +257,7 @@ $('default').addEventListener('click',()=>{ // restore every control to its page
   ['ghost','zoom','vecs'].forEach(id=>{const el=$(id);el.checked=el.defaultChecked;});
   P.R=+$('R').value;P.rpm=+$('rpm').value;P.delta=+$('delta').value;P.v=+$('v').value;P.alpha=+$('alpha').value;
   P.speed=SPEEDS[$('speed').value];P.ghost=$('ghost').checked;P.zoom=$('zoom').checked;P.vecs=$('vecs').checked;
-  setFrame('inertial');t=0;pre=0;playing=false;setSpin(false);$('aimmsg').textContent='';recompute();});
+  setFrame('inertial');t=0;pre=0;playing=false;setSpin(false);$('aimmsg').textContent='';setDrop(false);});
 $('spin').addEventListener('click',()=>{if(spinning){setSpin(false);return;}fold();setSpin(true);});
 function setFrame(f){P.frame=f;$('fIn').setAttribute('aria-pressed',f==='inertial');$('fRot').setAttribute('aria-pressed',f==='rotating');}
 $('fIn').onclick=()=>setFrame('inertial');$('fRot').onclick=()=>setFrame('rotating');
@@ -262,10 +274,12 @@ function draw2D(){
   const path=inertial?pathI:pathR;
   // framing
   let sc,cx=0,cy=0;
-  if(P.zoom){
+  if(P.drop&&!inertial){ // close-up on the thrower (fixed, since this view turns with the station)
+    const a=S.phiA+rotA;sc=Math.max(Math.min(W,H)*0.42/1.8,34/1.8+0.01);cx=Math.cos(a)*(R-0.9);cy=Math.sin(a)*(R-0.9);
+  }else if(P.zoom||P.drop){ // in drop mode the outside view frames the whole fall instead
     const pts=path.map(Q);
     const add=(phi)=>{pts.push([Math.cos(phi)*R,Math.sin(phi)*R]);pts.push([Math.cos(phi)*(R-2),Math.sin(phi)*(R-2)]);};
-    add(S.phiA+RP);add(S.phiB+RP);if(inertial){add(S.phiA+RP+S.w*S.Tc);add(S.phiB+RP+S.w*S.Tc);}
+    add(S.phiA+RP);if(!P.drop)add(S.phiB+RP);if(inertial){add(S.phiA+RP+S.w*S.Tc);if(!P.drop)add(S.phiB+RP+S.w*S.Tc);}
     let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;pts.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);});
     const pad=3;sc=Math.min(W/(x1-x0+2*pad),H/(y1-y0+2*pad))*0.9;cx=(x0+x1)/2;cy=(y0+y1)/2;
   }else sc=(Math.min(W,H)/2-18)/R;
@@ -293,19 +307,28 @@ function draw2D(){
   for(let i=0;i<=n;i++){const p=Q(path[i]);i?g2.lineTo(X(p),Y(p)):g2.moveTo(X(p),Y(p));}
   g2.lineTo(X(cur),Y(cur));g2.stroke();
   // people
-  // stick figure: drawn in local units (feet at origin, -y toward the hub, height 1)
-  const person=(phi,c)=>{const a=phi+rotA,r=[Math.cos(a),Math.sin(a)],hp=Math.max(1.8*sc,34);
+  // pictogram person (solid silhouette): drawn in local units (feet at origin, -y toward the hub, height 1)
+  const person=(phi,c,reach)=>{const a=phi+rotA,r=[Math.cos(a),Math.sin(a)],hp=Math.max(1.8*sc,34);
     const foot=[r[0]*R,r[1]*R];
     g2.save();g2.translate(X(foot),Y(foot));g2.rotate(Math.atan2(-r[0],-r[1]));g2.scale(hp,hp);
-    g2.strokeStyle=c;g2.fillStyle=c;g2.lineWidth=Math.max(2.5,hp*0.035)/hp;g2.lineCap='round';g2.lineJoin='round';
-    g2.beginPath();
-    g2.moveTo(0,-0.72);g2.lineTo(0,-0.38);            // torso
-    g2.moveTo(-0.15,-0.02);g2.lineTo(0,-0.38);g2.lineTo(0.15,-0.02); // legs
-    g2.moveTo(-0.2,-0.42);g2.lineTo(0,-0.64);g2.lineTo(0.2,-0.42);   // arms
-    g2.stroke();
-    g2.beginPath();g2.arc(0,-0.85,0.14,0,TAU);g2.fill();
+    g2.strokeStyle=c;g2.fillStyle=c;g2.lineCap='round';
+    const cap=(x0,y0,x1,y1,w)=>{g2.lineWidth=w;g2.beginPath();g2.moveTo(x0,y0);g2.lineTo(x1,y1);g2.stroke();};
+    g2.beginPath();g2.arc(0,-0.915,0.085,0,TAU);g2.fill();g2.fillRect(-0.03,-0.86,0.06,0.09);          // head + neck
+    g2.beginPath();g2.roundRect(-0.115,-0.779,0.23,0.329,0.02);g2.fill();                             // torso
+    // arms + shoulders as one continuous stroke (hand -> shoulder -> shoulder -> hand), so the shoulders curve smoothly into the arms
+    const AS=Math.sin(15*Math.PI/180)*0.3, AC=Math.cos(15*Math.PI/180)*0.3;                             // arms angled 15 deg out
+    const rx=reach?0.425:0.125+AS, ry=reach?-0.745:-0.745+AC;                                          // reach: right arm held straight out holding the ball
+    g2.lineWidth=0.068;g2.lineJoin='round';g2.beginPath();g2.moveTo(-0.125-AS,-0.745+AC);g2.lineTo(-0.125,-0.745);g2.lineTo(0.125,-0.745);g2.lineTo(rx,ry);g2.stroke();
+    const lx=0.05+Math.max(0.024,1.2/hp)/2;                                                           // legs, with a thin gap (at least ~1px)
+    cap(-lx,-0.47,-lx,-0.035,0.1);cap(lx,-0.47,lx,-0.035,0.1);
     g2.restore();};
-  person(S.phiA,col.thr);person(S.phiB,col.cat);
+  person(S.phiA,col.thr,P.drop);person(S.phiB,col.cat);
+  if(P.drop){ // dashed plumb line: straight down (toward the floor) from the release point, fixed to the station
+    const pp=Q(rot(S.p0,rotA-RP)),m=Math.hypot(pp[0],pp[1]),fl=[pp[0]/m*R,pp[1]/m*R];
+    g2.setLineDash([5,4]);g2.strokeStyle=col.muted;g2.lineWidth=1.5;g2.beginPath();g2.moveTo(X(pp),Y(pp));g2.lineTo(X(fl),Y(fl));g2.stroke();g2.setLineDash([]);
+    const tx=-pp[1]/m, ty=-pp[0]/m; // screen-space tangent (spinward)
+    g2.fillStyle=col.muted;g2.font='12px system-ui,sans-serif';g2.textAlign='center';g2.textBaseline='middle';
+    g2.fillText('straight down',(X(pp)+X(fl))/2+tx*48,(Y(pp)+Y(fl))/2+ty*48);g2.textAlign='left';g2.textBaseline='alphabetic';}
   // acceleration arrows: inward centripetal accel (outside view) or outward felt gravity (spinning view)
   const acc=S.w*S.w*R, Lpx=Math.min(Math.max(acc/9.81*44,10),90);
   const arrow=(phi,c,label)=>{const a=phi+rotA,r=[Math.cos(a),Math.sin(a)],hb=Math.max(1.8*sc,34)/sc;
@@ -330,7 +353,7 @@ function draw2D(){
   const lbl=`${inertial?'a':'g'} = ${fmt(acc,2)} m/s²`;
   arrow(S.phiA,col.thr,lbl);
   // aim arrow before throw
-  if(t===0&&!P.vecs){const a=P.alpha*Math.PI/180,tv0=[-S.w*S.p0[1],S.w*S.p0[0]],th0=[S.u[0]-tv0[0],S.u[1]-tv0[1]],m0=v=>Math.hypot(v[0],v[1]),
+  if(t===0&&!P.vecs&&!P.drop){const a=P.alpha*Math.PI/180,tv0=[-S.w*S.p0[1],S.w*S.p0[0]],th0=[S.u[0]-tv0[0],S.u[1]-tv0[1]],m0=v=>Math.hypot(v[0],v[1]),
       kk=Math.min(4,130/Math.max(m0(tv0),m0(th0),m0(S.u),0.01)),L=m0(th0)*kk/sc; // same scale as the velocity-vector view
     let d=[S.tA[0]*S.dir*Math.cos(a)-S.rA[0]*Math.sin(a),S.tA[1]*S.dir*Math.cos(a)-S.rA[1]*Math.sin(a)];
     const e=Q([S.p0[0]+d[0]*L,S.p0[1]+d[1]*L]),p0r=Q(S.p0),vc=css('--vel'),sx=X(p0r),sy=Y(p0r),ex=X(e),ey=Y(e),ln=Math.hypot(ex-sx,ey-sy)||1,ux=(ex-sx)/ln,uy=(ey-sy)/ln;
@@ -393,12 +416,18 @@ function rebuild3D(){
   const hb=new THREE.Mesh(new THREE.CylinderGeometry(hub,hub,W,40),new THREE.MeshBasicMaterial({color:0x56677f}));hb.rotation.x=Math.PI/2;stationG.add(hb);
   // catcher
   catcher=new THREE.Group();const cm=new THREE.MeshBasicMaterial({color:0xe5322d,fog:false});
-  const limb=(p,q)=>{const A=new THREE.Vector3(...p),B=new THREE.Vector3(...q),m=new THREE.Mesh(new THREE.CylinderGeometry(LIMB_R,LIMB_R,A.distanceTo(B),10),cm);
+  const limb=(p,q,r=LIMB_R)=>{const A=new THREE.Vector3(...p),B=new THREE.Vector3(...q),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,A.distanceTo(B),12),cm);m.userData.r=r;
     m.position.copy(A).add(B).multiplyScalar(0.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),B.clone().sub(A).normalize());catcher.add(m);catcherLimbs.push(m);};
   catcherLimbs=[];
-  limb([0,1.42,0],[0,0.72,0]);limb([0,0.72,0],[0,0.02,-0.22]);limb([0,0.72,0],[0,0.02,0.22]);
-  limb([0,1.22,0],[0,0.8,-0.32]);limb([0,1.22,0],[0,0.8,0.32]);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(HEAD_R,16,12),cm);head.position.y=1.6;catcher.add(head);catcherHead=head;
+  // pictogram body, spread across the station axis (z) so the thrower sees it face-on
+  limb([0,0.06,-0.11],[0,0.86,-0.11],0.09);limb([0,0.06,0.11],[0,0.86,0.11],0.09);    // legs, slightly apart
+  { const as=0.54*Math.sin(15*Math.PI/180), ac=0.54*Math.cos(15*Math.PI/180);           // arms angled 15 deg out
+    limb([0,1.36,-0.225],[0,1.36-ac,-0.225-as],0.06);limb([0,1.36,0.225],[0,1.36-ac,0.225+as],0.06); }
+  limb([0,1.36,-0.225],[0,1.36,0.225],0.06);                                          // shoulder bar joining the arms
+  for(const z of[-0.225,0.225]){const j=new THREE.Mesh(new THREE.SphereGeometry(0.06,12,10),cm);j.position.set(0,1.36,z);catcher.add(j);} // rounded shoulders
+  limb([0,1.4,0],[0,1.6,0],0.055);                                                    // neck
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.58,0.42),cm);torso.position.y=1.13;catcher.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(HEAD_R,16,12),cm);head.position.y=1.65;catcher.add(head);catcherHead=head;
   const rB=new THREE.Vector3(Math.cos(S.phiB),Math.sin(S.phiB),0);
   catcher.position.copy(rB.clone().multiplyScalar(R*0.999));
   catcher.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),rB.clone().negate());
@@ -418,7 +447,7 @@ function draw3D(){
   camera.position.copy(eye);camera.up.set(-rA[0],-rA[1],0);camera.lookAt(bp);
   if(catcherLimbs){ // thicken (never lengthen) the catcher so it stays visible at a distance
     const mpp=2*Math.tan(camera.fov*Math.PI/360)*eye.distanceTo(catcher.position)/Math.max(H,1); // metres per screen pixel
-    const s=Math.max(1,MIN_LIMB_PX*mpp/LIMB_R);catcherLimbs.forEach(m=>m.scale.set(s,1,s));
+    catcherLimbs.forEach(m=>{const s=Math.max(1,MIN_LIMB_PX*mpp/m.userData.r);m.scale.set(s,1,s);});
     catcherHead.scale.setScalar(Math.max(1,MIN_HEAD_PX*mpp/HEAD_R));}
   const dist=eye.distanceTo(bp);ball.position.copy(bp);ball.scale.setScalar(Math.max(0.11,dist*0.007));
   const ta=trail.geometry.attributes.position,n=Math.floor(tc/S.Tc*NS);
@@ -436,7 +465,7 @@ let last=performance.now();
 function frame(now){
   const dt=Math.min((now-last)/1000,0.1);last=now;
   if(spinning&&!playing)pre=(pre+S.w*dt*P.speed)%TAU;
-  if(playing){t+=dt*P.speed;if(!spinning&&t>=S.Tc+1.2*Math.max(1,P.speed)){playing=false;}}
+  if(playing){t+=dt*P.speed;if(!spinning&&t>=S.Tc+(P.drop?0:1.2*Math.max(1,P.speed))){playing=false;if(P.drop)t=S.Tc;}}
   draw2D();draw3D();requestAnimationFrame(frame);
 }
 recompute();requestAnimationFrame(frame);
