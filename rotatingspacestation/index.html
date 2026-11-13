@@ -11,7 +11,7 @@
 /* Layout: instrument-panel console — control rack on the left, two square viewports side by side, telemetry strip beneath */
 :root{
   --bg:#e9edf2; --panel:#f7f9fb; --ink:#18212e; --muted:#5a6676; --line:#c9d1dc;
-  --accent:#2b5fd9; --thrower:#0ea5e9; --catcher:#e5322d; --ball:#e29a00; --vel:#15924a; --tanv:#7c3aed;
+  --accent:#2b5fd9; --thrower:#0ea5e9; --catcher:#e5322d; --ball:#ffb81c; --vel:#15924a; --tanv:#7c3aed;
   --hull:#1b2433; --ghost:rgba(24,33,46,.28); --viewbg:#fbfcfd;
   --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -19,11 +19,11 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0f141c; --panel:#161d28; --ink:#e3e8ef; --muted:#93a0b1; --line:#2a3443;
-  --accent:#7aa2ff; --thrower:#38bdf8; --catcher:#ff5b55; --ball:#ffc23d;
+  --accent:#7aa2ff; --thrower:#38bdf8; --catcher:#ff5b55; --ball:#ffb81c;
   --hull:#c9d3df; --ghost:rgba(227,232,239,.3); --viewbg:#121924; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f141c; --panel:#161d28; --ink:#e3e8ef; --muted:#93a0b1; --line:#2a3443;
-  --accent:#7aa2ff; --thrower:#38bdf8; --catcher:#ff5b55; --ball:#ffc23d;
+  --accent:#7aa2ff; --thrower:#38bdf8; --catcher:#ff5b55; --ball:#ffb81c;
   --hull:#c9d3df; --ghost:rgba(227,232,239,.3); --viewbg:#121924; color-scheme:dark}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--vel:#4ade80;--tanv:#b794ff}}
 :root[data-theme="dark"]{--vel:#4ade80;--tanv:#b794ff}
@@ -244,7 +244,7 @@ $('zoom').addEventListener('change',e=>P.zoom=e.target.checked);
 $('vecs').addEventListener('change',e=>P.vecs=e.target.checked);
 $('aim').addEventListener('click',autoAim);
 function setDrop(v){P.drop=v;$('dropbtn').setAttribute('aria-pressed',v);$('throwbtn').setAttribute('aria-pressed',!v);$('throw').textContent=v?'Drop':'Throw';
-  ['delta','v','alpha','aim','zoom'].forEach(id=>$(id).disabled=v);if(v)setFrame('rotating');$('aimmsg').textContent='';recompute();}
+  ['delta','v','alpha','aim','zoom'].forEach(id=>$(id).disabled=v);setFrame(v?'rotating':'inertial');$('aimmsg').textContent='';recompute();}
 const setSpeedIdx=i=>{$('speed').value=i;P.speed=SPEEDS[i];};
 $('dropbtn').addEventListener('click',()=>{setSpeedIdx(0);setDrop(true);});   // drop: 0.25x so the short fall is easy to follow
 $('throwbtn').addEventListener('click',()=>{setSpeedIdx(2);setDrop(false);}); // throw: 1x
@@ -376,7 +376,7 @@ function draw2D(){
       g2.beginPath();g2.moveTo(ex,ey);g2.lineTo(ex-ux*hl-uy*hl*0.5,ey-uy*hl+ux*hl*0.5);g2.lineTo(ex-ux*hl+uy*hl*0.5,ey-uy*hl-ux*hl*0.5);g2.closePath();g2.fill();};
     vec(thv,css('--vel'),2.5,'throw');vec(tv,css('--vel'),2.5,'ωr');vec(nv,css('--vel'),3.5,'net');
   }
-  g2.fillStyle=col.ball;g2.strokeStyle=col.hull;g2.lineWidth=1;g2.beginPath();g2.arc(X(bp),Y(bp),Math.max(0.11*sc,5),0,TAU);g2.fill();g2.stroke();
+  g2.fillStyle=col.ball;g2.beginPath();g2.arc(X(bp),Y(bp),Math.max(0.11*sc,5),0,TAU);g2.fill(); // same yellow as the 3D ball, no outline
 }
 
 /* ---------- 3D view (thrower's eye, rotating frame) ---------- */
