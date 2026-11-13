@@ -141,6 +141,31 @@
     .is-floating .tail-dog {
       animation: dogTailCurl 2.2s ease-in-out infinite;
     }
+    /* Woman rider: hoodie & ponytail. In zero-g her arms drift out to her sides,
+       her legs pedal slowly and her ponytail floats up. Each part eases into its
+       pose during lift-off, then loops from that pose while floating. */
+    .woman-tail { transform-origin: left top; animation: womanTailIdle 3s ease-in-out infinite; }
+    @keyframes womanTailIdle { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-4deg); } }
+    @keyframes womanArmLLift { from { transform: rotate(0deg); } to { transform: rotate(62deg); } }
+    @keyframes womanArmL { 0%, 100% { transform: rotate(62deg); } 50% { transform: rotate(84deg); } }
+    @keyframes womanArmRLift { from { transform: rotate(0deg); } to { transform: rotate(-66deg); } }
+    @keyframes womanArmR { 0%, 100% { transform: rotate(-66deg); } 50% { transform: rotate(-88deg); } }
+    @keyframes womanLegLLift { from { transform: rotate(0deg); } to { transform: rotate(9deg); } }
+    @keyframes womanLegL { 0%, 100% { transform: rotate(9deg); } 50% { transform: rotate(-7deg); } }
+    @keyframes womanLegRLift { from { transform: rotate(0deg); } to { transform: rotate(-7deg); } }
+    @keyframes womanLegR { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(9deg); } }
+    @keyframes womanTailLift { from { transform: rotate(0deg); } to { transform: rotate(-40deg); } }
+    @keyframes womanTail { 0%, 100% { transform: rotate(-40deg); } 50% { transform: rotate(-62deg); } }
+    .is-lifting .woman-arm-l { animation: womanArmLLift 1.4s ease-out forwards; }
+    .is-floating .woman-arm-l { animation: womanArmL 3.2s ease-in-out infinite; }
+    .is-lifting .woman-arm-r { animation: womanArmRLift 1.4s ease-out forwards; }
+    .is-floating .woman-arm-r { animation: womanArmR 3.6s ease-in-out infinite; }
+    .is-lifting .woman-leg-l { animation: womanLegLLift 1.4s ease-out forwards; }
+    .is-floating .woman-leg-l { animation: womanLegL 2.6s ease-in-out infinite; }
+    .is-lifting .woman-leg-r { animation: womanLegRLift 1.4s ease-out forwards; }
+    .is-floating .woman-leg-r { animation: womanLegR 2.6s ease-in-out infinite; }
+    .is-lifting .woman-tail { animation: womanTailLift 1.4s ease-out forwards; }
+    .is-floating .woman-tail { animation: womanTail 2.4s ease-in-out infinite; }
   </style>
   <style id="utilities">
     /* ===== Utility stylesheet (replaces the Tailwind CDN) =====
@@ -554,60 +579,54 @@
               <!-- Rider Wrapper (floats and flails limbs in zero-g) -->
               <div id="rider-wrapper" class="relative z-10 transition-transform duration-300 ease-out flex flex-col items-center">
                 
-                <!-- SVG: Woman (50 kg) -->
+                <!-- SVG: Woman (50 kg): hoodie & ponytail -->
                 <svg id="rider-woman" class="w-[92px] h-[132px] drop-shadow-md block -mb-0.5" viewBox="0 0 100 144" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- Flowing dark hair back -->
-                  <path d="M36 22 C30 36, 31 52, 38 60 C42 62, 39 48, 42 36 Z" fill="#262626" />
-                  <path d="M64 22 C70 36, 69 52, 62 60 C58 62, 61 48, 58 36 Z" fill="#262626" />
-                  
-                  <!-- Left Arm -->
-                  <g class="limb-anim limb-arm-left">
-                    <path d="M38 45 L29 72 L33.5 73.5 L41.5 48 Z" fill="#c27803" />
-                    <circle cx="30.5" cy="74" r="2.8" fill="#fed7aa" />
+                  <!-- Ponytail (floats up in zero-g) -->
+                  <g class="limb-anim woman-tail">
+                    <path d="M56 14 C68 12 75 26 70 46 C66 47 64 36 61 29 C59 24 57 20 54.5 18 Z" fill="#2b1a10" />
                   </g>
-                  
+
                   <!-- Left Leg -->
-                  <g class="limb-anim limb-leg-left">
-                    <path d="M41 84 L47.5 84 L46.5 138 L41 138 Z" fill="#1e293b" />
-                    <rect x="38" y="138" width="8.5" height="3" rx="1.5" fill="#f8fafc" />
-                    <path d="M37.5 141 Q43 139.5 46.5 141 L46.5 144 L37 144 Z" fill="#ffffff" />
-                    <rect x="36.5" y="143" width="10.5" height="1" fill="#cbd5e1" />
+                  <g class="limb-anim woman-leg-l">
+                    <path d="M41.5 83 L49 83 L48.5 135 L42 135 Z" fill="#34508a" />
+                    <path d="M38.5 135 L49.5 135 Q51 135 51 137.5 L51 142 L37 142 Q36 142 36 140 Q36 135 38.5 135 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.6" />
+                    <rect x="36" y="142" width="15" height="2" rx="1" fill="#ef4444" />
                   </g>
 
                   <!-- Right Leg -->
-                  <g class="limb-anim limb-leg-right">
-                    <path d="M52.5 84 L59 84 L59 138 L53.5 138 Z" fill="#1e293b" />
-                    <rect x="53.5" y="138" width="8.5" height="3" rx="1.5" fill="#f8fafc" />
-                    <path d="M53.5 141 Q57 139.5 62.5 141 L63 144 L53.5 144 Z" fill="#ffffff" />
-                    <rect x="53" y="143" width="10.5" height="1" fill="#cbd5e1" />
+                  <g class="limb-anim woman-leg-r">
+                    <path d="M51 83 L58.5 83 L58 135 L51.5 135 Z" fill="#34508a" />
+                    <path d="M61.5 135 L50.5 135 Q49 135 49 137.5 L49 142 L63 142 Q64 142 64 140 Q64 135 61.5 135 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.6" />
+                    <rect x="49" y="142" width="15" height="2" rx="1" fill="#ef4444" />
                   </g>
 
-                  <!-- Torso: Breton striped tee & Open Toffee Cardigan -->
-                  <path d="M39 41 C43 38, 57 38, 61 41 L63 76 C59 81, 55 84, 50 84 C45 84, 41 81, 37 76 Z" fill="#ffffff" />
-                  <line x1="43" y1="48" x2="57" y2="48" stroke="#1e3a8a" stroke-width="2" />
-                  <line x1="42" y1="56" x2="58" y2="56" stroke="#1e3a8a" stroke-width="2" />
-                  <line x1="42" y1="64" x2="58" y2="64" stroke="#1e3a8a" stroke-width="2" />
-                  <line x1="43" y1="72" x2="57" y2="72" stroke="#1e3a8a" stroke-width="2" />
-                  <path d="M38 42 L45 42 L44 80 L37 76 Z" fill="#d97706" />
-                  <path d="M62 42 L55 42 L56 80 L63 76 Z" fill="#d97706" />
-                  
-                  <rect x="40" y="81" width="20" height="3.5" rx="1" fill="#0f172a" />
-                  <rect x="48.5" y="81" width="3" height="3.5" rx="0.5" fill="#fde68a" />
+                  <!-- Hoodie -->
+                  <path d="M38 44 Q50 39 62 44 L63.5 84 Q50 87.5 36.5 84 Z" fill="#e8705a" />
+                  <path d="M42 66 L58 66 L60 76 L40 76 Z" fill="#d9604b" />
+                  <rect x="37" y="80" width="26" height="4.5" rx="2" fill="#c9503c" />
+                  <rect x="47.5" y="30" width="5" height="10" fill="#b5763a" />
+                  <path d="M41 42.5 Q50 50 59 42.5 Q50 38.5 41 42.5 Z" fill="#c9503c" />
+                  <path d="M47 46 L46.5 55 M53 46 L53.5 55" stroke="#ffffff" stroke-width="1" stroke-linecap="round" />
 
                   <!-- Head & Face -->
-                  <rect x="48" y="32" width="4" height="9" fill="#fed7aa" />
-                  <ellipse cx="50" cy="25" rx="7.8" ry="8.8" fill="#fed7aa" />
-                  <ellipse cx="47.5" cy="24.5" rx="0.9" ry="1.2" fill="#1e293b" />
-                  <ellipse cx="52.5" cy="24.5" rx="0.9" ry="1.2" fill="#1e293b" />
-                  <path d="M46 22.8 Q47.5 21.8 49 22.8" stroke="#262626" stroke-width="0.8" fill="none" />
-                  <path d="M51 22.8 Q52.5 21.8 54 22.8" stroke="#262626" stroke-width="0.8" fill="none" />
-                  <path d="M48.5 28 Q50 29.5 51.5 28" stroke="#e11d48" stroke-width="0.9" fill="none" stroke-linecap="round" />
-                  <path d="M42 21 C43 12, 57 12, 58 21 C62 16, 59 10, 50 10 C41 10, 38 16, 42 21 Z" fill="#262626" />
+                  <ellipse cx="50" cy="23" rx="8.5" ry="9.5" fill="#c68642" />
+                  <path d="M41.3 24 C40 12 46 9.5 50.5 9.5 C56 9.5 60.5 13 59 24 C57.5 18 54 15.5 50 15.5 C46 16 43 18.5 41.3 24 Z" fill="#2b1a10" />
+                  <circle cx="56.5" cy="14.5" r="1.6" fill="#facc15" />
+                  <ellipse cx="46.8" cy="24" rx="0.95" ry="1.25" fill="#1e1b18" />
+                  <ellipse cx="53.2" cy="24" rx="0.95" ry="1.25" fill="#1e1b18" />
+                  <path d="M45.3 21.6 Q46.8 20.8 48.2 21.5 M51.8 21.5 Q53.2 20.8 54.7 21.6" stroke="#2b1a10" stroke-width="0.8" stroke-linecap="round" />
+                  <circle cx="45" cy="27" r="1.6" fill="#f87171" opacity="0.35" />
+                  <circle cx="55" cy="27" r="1.6" fill="#f87171" opacity="0.35" />
+                  <path d="M47.6 28 Q50 30.2 52.4 28" stroke="#7c2d12" stroke-width="0.9" stroke-linecap="round" />
 
-                  <!-- Right Arm -->
-                  <g class="limb-anim limb-arm-right">
-                    <path d="M62 45 L71 72 L66.5 73.5 L58.5 48 Z" fill="#c27803" />
-                    <circle cx="69.5" cy="74" r="2.8" fill="#fed7aa" />
+                  <!-- Arms (drawn last so the sleeves sit over the hoodie) -->
+                  <g class="limb-anim woman-arm-l">
+                    <path d="M39 45 C34 50 31 60 30.5 73 L36 74 C36.5 63 38.5 55 42 50 Z" fill="#d9604b" />
+                    <circle cx="33.2" cy="76.5" r="3" fill="#c68642" />
+                  </g>
+                  <g class="limb-anim woman-arm-r">
+                    <path d="M61 45 C66 50 69 60 69.5 73 L64 74 C63.5 63 61.5 55 58 50 Z" fill="#d9604b" />
+                    <circle cx="66.8" cy="76.5" r="3" fill="#c68642" />
                   </g>
                 </svg>
 
