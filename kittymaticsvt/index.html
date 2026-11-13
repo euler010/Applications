@@ -186,7 +186,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
 (function(){
 const $=id=>document.getElementById(id);
 const TMAX=10,VMAX=5,LX=50,RX=950,FLOOR=150,K=0.363,MIN_DT=0.05,SNAP=0.5;
-let X0=0,XLO=-10,XHI=10,TICK=1,PPM=(RX-LX)/20;
+let XTLO=-2,XTHI=2,X0=0,XLO=-10,XHI=10,TICK=1,PPM=(RX-LX)/20;
 let pts=[],cum=[0],hist=[];
 let t=0,running=false,ended=false,simSpeed=1,tEnd=0,dirty=true;
 let mode='free',snap=true,hover=null,drag=null,stroke=null,flash='',flashT=0;
@@ -210,7 +210,7 @@ function turnTimes(){const out=[];let last=0,zt=null;
 
 /* ---------- number line ---------- */
 function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
-function computeRange(){let lo=Math.min(0,X0),hi=Math.max(0,X0);if(pts.length>1)for(let i=0;i<=600;i++){const x=pos(tEnd*i/600);if(x<lo)lo=x;if(x>hi)hi=x}
+function computeRange(){let lo=Math.min(0,X0),hi=Math.max(0,X0),cl=X0,ch=X0;if(pts.length>1)for(let i=0;i<=600;i++){const x=pos(tEnd*i/600);if(x<lo)lo=x;if(x>hi)hi=x;if(x<cl)cl=x;if(x>ch)ch=x}XTLO=cl-2;XTHI=ch+2;
   const pad=Math.max(1.5,(hi-lo)*0.07);lo-=pad;hi+=pad;if(hi-lo<20){const c=(lo+hi)/2;lo=c-10;hi=c+10}
   TICK=niceStep((hi-lo)/20);XLO=Math.floor(lo/TICK)*TICK;XHI=Math.ceil(hi/TICK)*TICK;PPM=(RX-LX)/(XHI-XLO)}
 const xToX=xm=>LX+(xm-XLO)*PPM;
@@ -358,7 +358,7 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
     c.fillText(mode==='line'?'Click to set her starting velocity at t = 0':'Press and drag to the right to sketch her velocity',(g.L+g.Rr)/2,g.T+(g.B-g.T)*0.22)}
 }
 function drawXT(col){if($('xfig').classList.contains('hide'))return;const g=geom(gx),c=cx;c.setTransform(g.dpr,0,0,g.dpr,0,0);c.clearRect(0,0,g.w,g.h);
-  const span=XHI-XLO,step=niceStep(span/4),py=frameAxes(c,g,col,XLO,XHI,step,0);
+  const span=XTHI-XTLO,step=niceStep(span/4),py=frameAxes(c,g,col,XTLO,XTHI,step,step<1?1:0);
   if(pts.length>1&&t>0){c.save();c.beginPath();c.rect(g.L,g.T-2,g.Rr-g.L,g.B-g.T+4);c.clip();c.strokeStyle=col.x;c.lineWidth=2.5;c.lineJoin='round';c.beginPath();const m=Math.max(2,Math.ceil(300*t/TMAX));for(let i=0;i<=m;i++){const tv=t*i/m;i?c.lineTo(tpx(g,tv),py(pos(tv))):c.moveTo(tpx(g,tv),py(pos(tv)))}c.stroke();c.restore()}
   c.fillStyle=col.x;c.beginPath();c.arc(tpx(g,t),py(pos(t)),4.5,0,Math.PI*2);c.fill()}
 function drawGraphs(){const col=colors();drawVT(col);drawXT(col);dirty=false}
