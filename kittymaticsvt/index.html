@@ -60,6 +60,7 @@ input[type=range]{width:100%;margin:0;accent-color:var(--x);height:22px}
 @media (prefers-reduced-motion:reduce){.check input,.check input::after{transition:none}}
 figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 8px;display:grid;gap:6px;min-width:0}
 figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 14px;font-weight:600;font-size:14px}
+figcaption .sp1{font-family:var(--body)}
 figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
 .legend{display:flex;gap:14px;font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
@@ -88,7 +89,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
   <div class="left">
   <figure class="vtfig">
     <figcaption>
-      <span><span class="sw" style="background:var(--v)"></span>Velocity vs. time <small>v (m/s)</small></span>
+      <span><span class="sw" style="background:var(--v)"></span>Velocity vs. time&nbsp;&nbsp;<small>v<span class="sp1"> </span>(m/s)</small></span>
       <span class="legend">
         <span><span class="sw" style="background:var(--pos)"></span>area above <b id="aPos">+0.00 m</b></span>
         <span><span class="sw" style="background:var(--neg)"></span>area below <b id="aNeg">−0.00 m</b></span>
@@ -135,7 +136,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
     </svg>
   </div>
   <figure id="xfig">
-    <figcaption><span><span class="sw" style="background:var(--x)"></span>Position vs. time <small>x (m)</small></span></figcaption>
+    <figcaption><span><span class="sw" style="background:var(--x)"></span>Position vs. time&nbsp;&nbsp;<small>x<span class="sp1"> </span>(m)</small></span></figcaption>
     <canvas id="gx" aria-label="Position versus time graph, traced as she moves"></canvas>
   </figure>
   </div>
