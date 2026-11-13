@@ -422,7 +422,8 @@ function rdp(a,eps,g){if(a.length<3)return a;const A=a[0],B=a[a.length-1],ax=tpx
   if(dm>eps){const l=rdp(a.slice(0,id+1),eps,g),r=rdp(a.slice(id),eps,g);return l.slice(0,-1).concat(r)}return [A,B]}
 
 gv.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;e.preventDefault();const p=evtPt(e),touch=e.pointerType!=='mouse';
-  const hi=hitPt(p,touch);
+  let hi=hitPt(p,touch);
+  if(mode==='free'&&hi===pts.length-1&&pts.length>1)hi=-1;
   if(hi>=0){pushHist();drag={i:hi,moved:false};gv.setPointerCapture(e.pointerId);gv.style.cursor='grabbing';dirty=true;return}
   if(mode==='line'){const c=candidate(p.t,p.v);
     if(!c.ok){say(c.why==='full'?'The graph already reaches t = 10 s. Drag a point to change it, or Undo.':'Time only moves forward: add the next point to the right of the last one.');return}
