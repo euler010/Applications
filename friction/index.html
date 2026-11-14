@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Static Friction vs. Kinetic Friction</title>
+  <!-- Self-contained utility stylesheet (replaces the Tailwind Play CDN).
+       Class names and values mirror Tailwind CSS v3, so the markup is unchanged. -->
+  <style id="utility-css">
+    /* ---------- Base / reset (Tailwind "preflight" equivalent) ---------- */
+    *, ::before, ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: #e5e7eb;
+      --tw-ring-shadow: 0 0 #0000;
+      --tw-shadow: 0 0 #0000;
+      --tw-shadow-color: initial;
+      --tw-ring-color: initial;
+    }
+    html {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      tab-size: 4;
+      font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { margin: 0; line-height: inherit; }
+    h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+    h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, pre { margin: 0; }
+    b, strong { font-weight: bolder; }
+    sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+    sub { bottom: -0.25em; }
+    sup { top: -0.5em; }
+    button, input, optgroup, select, textarea {
+      font-family: inherit; font-feature-settings: inherit; font-variation-settings: inherit;
+      font-size: 100%; font-weight: inherit; line-height: inherit; letter-spacing: inherit;
+      color: inherit; margin: 0; padding: 0;
+    }
+    button, select { text-transform: none; }
+    button, [type='button'], [type='reset'], [type='submit'] {
+      -webkit-appearance: button; background-color: transparent; background-image: none;
+    }
+    button, [role="button"] { cursor: pointer; }
+    :disabled { cursor: default; }
+    img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
+    [hidden] { display: none; }
+
+    /* ---------- Layout ---------- */
+    .block { display: block; }
+    .inline-block { display: inline-block; }
+    .flex { display: flex; }
+    .inline-flex { display: inline-flex; }
+    .grid { display: grid; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .sticky { position: sticky; }
+    .top-0 { top: 0; }
+    .top-3 { top: 0.75rem; }
+    .left-3 { left: 0.75rem; }
+    .z-50 { z-index: 50; }
+    .overflow-hidden { overflow: hidden; }
+    .pointer-events-none { pointer-events: none; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+
+    /* ---------- Flex & grid ---------- */
+    .flex-1 { flex: 1 1 0%; }
+    .flex-col { flex-direction: column; }
+    .flex-wrap { flex-wrap: wrap; }
+    .shrink-0 { flex-shrink: 0; }
+    .items-start { align-items: flex-start; }
+    .items-center { align-items: center; }
+    .items-baseline { align-items: baseline; }
+    .items-stretch { align-items: stretch; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-5 { gap: 1.25rem; }
+    .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+
+    /* ---------- Sizing ---------- */
+    .w-2 { width: 0.5rem; }
+    .w-3 { width: 0.75rem; }
+    .w-10 { width: 2.5rem; }
+    .w-full { width: 100%; }
+    .h-0\.5 { height: 0.125rem; }
+    .h-2 { height: 0.5rem; }
+    .h-3 { height: 0.75rem; }
+    .h-10 { height: 2.5rem; }
+    .h-full { height: 100%; }
+    .min-h-screen { min-height: 100vh; }
+    .min-h-\[190px\] { min-height: 190px; }
+    .min-h-\[220px\] { min-height: 220px; }
+    .max-w-7xl { max-width: 80rem; }
+    .aspect-\[16\/10\] { aspect-ratio: 16 / 10; }
+    .aspect-\[21\/7\] { aspect-ratio: 21 / 7; }
+
+    /* ---------- Spacing ---------- */
+    .p-2 { padding: 0.5rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .pt-0\.5 { padding-top: 0.125rem; }
+    .pt-1 { padding-top: 0.25rem; }
+    .mt-0\.5 { margin-top: 0.125rem; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-1\.5 { margin-bottom: 0.375rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-2\.5 { margin-bottom: 0.625rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .ml-\[1px\] { margin-left: 1px; }
+    .mr-1 { margin-right: 0.25rem; }
+
+    /* ---------- Typography ---------- */
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-extrabold { font-weight: 800; }
+    .uppercase { text-transform: uppercase; }
+    .leading-tight { line-height: 1.25; }
+    .leading-relaxed { line-height: 1.625; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .underline { text-decoration-line: underline; }
+    .decoration-dotted { text-decoration-style: dotted; }
+    .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    /* ---------- Text colours ---------- */
+    .text-white { color: #ffffff; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-600 { color: #475569; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-800 { color: #1e293b; }
+    .text-slate-900 { color: #0f172a; }
+    .text-amber-600 { color: #d97706; }
+    .text-amber-700 { color: #b45309; }
+    .text-amber-800 { color: #92400e; }
+    .text-amber-900 { color: #78350f; }
+    .text-amber-950 { color: #451a03; }
+    .text-blue-600 { color: #2563eb; }
+    .text-blue-700 { color: #1d4ed8; }
+    .text-blue-800 { color: #1e40af; }
+    .text-cyan-600 { color: #0891b2; }
+    .text-cyan-700 { color: #0e7490; }
+    .text-emerald-600 { color: #059669; }
+    .text-emerald-700 { color: #047857; }
+    .text-emerald-800 { color: #065f46; }
+    .text-emerald-900 { color: #064e3b; }
+    .text-emerald-950 { color: #022c22; }
+    .text-rose-600 { color: #e11d48; }
+    .text-rose-700 { color: #be123c; }
+    .text-purple-600 { color: #9333ea; }
+    .text-violet-600 { color: #7c3aed; }
+
+    /* ---------- Backgrounds ---------- */
+    .bg-white { background-color: #ffffff; }
+    .bg-white\/90 { background-color: rgb(255 255 255 / 0.9); }
+    .bg-white\/95 { background-color: rgb(255 255 255 / 0.95); }
+    .bg-slate-50 { background-color: #f8fafc; }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .bg-slate-200 { background-color: #e2e8f0; }
+    .bg-amber-50 { background-color: #fffbeb; }
+    .bg-amber-50\/60 { background-color: rgb(255 251 235 / 0.6); }
+    .bg-amber-50\/80 { background-color: rgb(255 251 235 / 0.8); }
+    .bg-amber-500 { background-color: #f59e0b; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-cyan-50 { background-color: #ecfeff; }
+    .bg-emerald-50 { background-color: #ecfdf5; }
+    .bg-emerald-50\/60 { background-color: rgb(236 253 245 / 0.6); }
+    .bg-emerald-50\/80 { background-color: rgb(236 253 245 / 0.8); }
+    .bg-emerald-500 { background-color: #10b981; }
+    .bg-rose-500 { background-color: #f43f5e; }
+
+    .bg-gradient-to-tr { background-image: linear-gradient(to top right, var(--tw-gradient-stops)); }
+    .from-blue-600 {
+      --tw-gradient-from: #2563eb;
+      --tw-gradient-to: rgb(37 99 235 / 0);
+      --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+    }
+    .to-cyan-500 { --tw-gradient-to: #06b6d4; }
+
+    /* ---------- Borders & radius ---------- */
+    .border { border-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-slate-200 { border-color: #e2e8f0; }
+    .border-amber-200 { border-color: #fde68a; }
+    .border-amber-200\/80 { border-color: rgb(253 230 138 / 0.8); }
+    .border-amber-200\/90 { border-color: rgb(253 230 138 / 0.9); }
+    .border-amber-600 { border-color: #d97706; }
+    .border-blue-200 { border-color: #bfdbfe; }
+    .border-cyan-200 { border-color: #a5f3fc; }
+    .border-emerald-200 { border-color: #a7f3d0; }
+    .border-emerald-200\/80 { border-color: rgb(167 243 208 / 0.8); }
+    .border-emerald-200\/90 { border-color: rgb(167 243 208 / 0.9); }
+    .border-emerald-600 { border-color: #059669; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* ---------- Shadows & rings (composable, like Tailwind) ---------- */
+    .shadow-sm, .shadow-md, .ring-2 {
+      box-shadow: var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .shadow-sm { --tw-shadow: 0 1px 2px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.05)); }
+    .shadow-md {
+      --tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)),
+                   0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    }
+    .shadow-blue-500\/20 { --tw-shadow-color: rgb(59 130 246 / 0.2); }
+    .shadow-blue-500\/30 { --tw-shadow-color: rgb(59 130 246 / 0.3); }
+    .ring-2 { --tw-ring-shadow: 0 0 0 2px var(--tw-ring-color, rgb(59 130 246 / 0.5)); }
+    .ring-blue-500 { --tw-ring-color: #3b82f6; }
+
+    /* ---------- Effects, cursors, transitions ---------- */
+    .opacity-0 { opacity: 0; }
+    .backdrop-blur-sm { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+    .cursor-pointer { cursor: pointer; }
+    .cursor-grab { cursor: grab; }
+    .transition {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter, backdrop-filter;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .transition-opacity {
+      transition-property: opacity;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .duration-300 { transition-duration: 300ms; }
+
+    @keyframes pulse { 50% { opacity: 0.5; } }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+      50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+    }
+    .animate-bounce { animation: bounce 1s infinite; }
+
+    /* ---------- State variants (after base rules so they win) ---------- */
+    .selection\:bg-blue-500 *::selection, .selection\:bg-blue-500::selection { background-color: #3b82f6; }
+    .selection\:text-white *::selection, .selection\:text-white::selection { color: #ffffff; }
+    .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
+    .hover\:bg-slate-200:hover { background-color: #e2e8f0; }
+    .hover\:bg-amber-100:hover { background-color: #fef3c7; }
+    .hover\:bg-blue-100:hover { background-color: #dbeafe; }
+    .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+    .hover\:text-slate-700:hover { color: #334155; }
+    .active\:scale-95:active { transform: scale(0.95); }
+    .active\:cursor-grabbing:active { cursor: grabbing; }
+
+    /* ---------- Responsive variants ---------- */
+    @media (min-width: 640px) {
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .md\:p-6 { padding: 1.5rem; }
+    }
+    @media (min-width: 1024px) {
+      .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+    }
+  </style>
+  <!-- Must run before Tone.js loads: suppresses Tone's "%c * Tone.js v14.8.49 *" console banner. -->
+  <script>window.TONE_SILENCE_LOGGING = true;</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #canvas-macro {
+      touch-action: none; /* let pointer drags pull the block instead of scrolling the page */
+    }
+    input[type=range] {
+      accent-color: #2563eb;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+
+  <!-- Main Navigation Header -->
+  <header class="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
+        <i class="fa-solid fa-arrows-left-right text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-extrabold text-slate-900 text-lg leading-tight flex items-center gap-2">
+          Static Friction vs. Kinetic Friction
+        </h1>
+      </div>
+    </div>
+
+    <!-- Quick simulation controls -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <button id="btn-sound" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 border border-slate-200 transition flex items-center gap-2 shadow-sm">
+        <i class="fa-solid fa-volume-xmark text-slate-500"></i>
+        <span>Sound: <span id="sound-status" class="text-rose-600 font-bold">OFF</span></span>
+      </button>
+      <button id="btn-autopull" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-500/30 transition flex items-center gap-2 active:scale-95">
+        <i class="fa-solid fa-play"></i>
+        <span id="autopull-text">Auto Ramp Pull</span>
+      </button>
+      <button id="btn-reset" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-xs font-semibold text-rose-600 border border-slate-200 transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-arrow-rotate-left"></i>
+        <span>Reset</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 flex flex-col gap-5">
+    
+    <!-- TOP ROW: Macroscopic Block side-by-side with Force vs Time Graph -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+      
+      <!-- Macroscopic Block View -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-slate-800">Macroscopic Block (Drag Block to Pull)</h2>
+            </div>
+            <span id="motion-state" class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-mono font-semibold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              Static Regime (Locked)
+            </span>
+          </div>
+
+          <!-- Canvas Container for Block -->
+          <div class="relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
+            <canvas id="canvas-macro" role="img" aria-label="Block on a table with applied force, friction, velocity and acceleration arrows. Drag to change the pull force." class="w-full h-full cursor-grab active:cursor-grabbing block"></canvas>
+            
+            <div id="drag-hint" class="pointer-events-none absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[11px] text-slate-600 flex items-center gap-2 transition-opacity duration-300">
+              <i class="fa-solid fa-hand-pointer text-blue-600 animate-bounce"></i>
+              <span>Click and pull block to the right</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry indicators strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 text-xs">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Applied Force</div>
+            <div id="metric-fapp" class="text-blue-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Friction</div>
+            <div id="metric-ffric" class="text-rose-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Max Static</div>
+            <div id="metric-fsmax" class="text-amber-600 font-mono font-bold text-base mt-0.5">78.5 N</div>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Kinetic</div>
+            <div id="metric-fk" class="text-emerald-600 font-mono font-bold text-base mt-0.5">58.9 N</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2D Force vs Time Graph -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-slate-800">Applied Force and Friction Force vs. Time</h2>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5 text-blue-700 font-medium">
+                <span class="w-3 h-0.5 bg-blue-600 inline-block rounded"></span>
+                <span class="inline-flex items-baseline">F<sub class="text-[10px] font-bold ml-[1px]">A</sub></span>
+              </span>
+              <span class="flex items-center gap-1.5 text-rose-700 font-medium">
+                <span class="w-3 h-0.5 bg-rose-500 inline-block rounded"></span>
+                <span class="inline-flex items-baseline">F<sub class="text-[10px] font-bold ml-[1px]">f</sub></span>
+              </span>
+              <button id="btn-clear-graph" class="hover:text-slate-700 text-slate-400 text-xs underline decoration-dotted font-mono">Clear</button>
+            </div>
+          </div>
+
+          <!-- Canvas Container for Graph -->
+          <div class="relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-white border border-slate-200 flex items-center justify-center">
+            <canvas id="canvas-graph" role="img" aria-label="Graph of applied force and friction force over time" class="w-full h-full block"></canvas>
+          </div>
+        </div>
+
+        <!-- Telemetry: Net Force, Mass, Acceleration -->
+        <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Net Force</div>
+            <div id="metric-fnet" class="text-blue-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Mass</div>
+            <div id="metric-mass" class="text-cyan-700 font-mono font-bold text-base mt-0.5">10.0 kg</div>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[11px]">Acceleration</div>
+            <div id="metric-accel" class="text-violet-600 font-mono font-bold text-base mt-0.5">0.00 m/s²</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MIDDLE ROW: Microscopic Zoom View (Interface Roughness / Asperities) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+      <!-- Canvas Container for Microscopic Interface -->
+      <div class="relative w-full aspect-[21/7] min-h-[190px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
+        <canvas id="canvas-micro" role="img" aria-label="Magnified view of the contact surfaces between block and table" class="w-full h-full block"></canvas>
+      </div>
+
+      <!-- Header & Magnification Badge -->
+      <div class="flex items-center justify-between mt-3 mb-2">
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-bold text-slate-800">Microscopic Zoom View (Interface Roughness and Asperities)</h2>
+        </div>
+        <div class="text-xs text-cyan-700 font-mono font-semibold flex items-center gap-1.5 bg-cyan-50 px-2.5 py-1 rounded-full border border-cyan-200">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>5000× MAGNIFICATION INTERFACE</span>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+        <div>
+          <strong class="text-slate-800"><i class="fa-solid fa-microscope text-cyan-600 mr-1"></i>Contact Junctions and Asperities:</strong>
+          Even smooth surfaces have jagged microscopic peaks called <em>asperities</em>. The colored circles mark real-time physical contact between the block and the table:
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+          <div class="flex items-start gap-2 bg-amber-50/80 p-2 rounded-lg border border-amber-200/90">
+            <span class="w-3 h-3 rounded-full bg-amber-500 border border-amber-600 mt-0.5 shrink-0 inline-block shadow-sm"></span>
+            <div>
+              <strong class="text-amber-900 font-semibold">Orange Circles (Static Regime):</strong>
+              <p class="text-[11px] text-slate-600 mt-0.5">
+                Deep interlocking contact junctions ("cold welds") pressed together by the normal force. Under pulling tension, they grip and resist motion until shearing at <span class="font-mono font-bold text-amber-950">f<sub>s,max</sub></span>.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-2 bg-emerald-50/80 p-2 rounded-lg border border-emerald-200/90">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-600 mt-0.5 shrink-0 inline-block shadow-sm"></span>
+            <div>
+              <strong class="text-emerald-900 font-semibold">Green Circles (Kinetic Regime):</strong>
+              <p class="text-[11px] text-slate-600 mt-0.5">
+                Fleeting, glancing contact points. As the block slides, it rides up onto asperity peaks with fewer simultaneous contact points, producing a lower constant resisting force (<span class="font-mono font-bold text-emerald-950">f<sub>k</sub></span>).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW: Controls and Physical Parameters -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      
+      <!-- Manual Force Control Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        <div>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
+            <span>Force Application</span>
+            <i class="fa-solid fa-hand-fist text-blue-600"></i>
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-semibold">
+                <label for="slider-fapp" class="text-slate-700">Pull Force (F<sub>applied</sub>)</label>
+                <span id="slider-fapp-val" class="font-mono text-blue-600">0.0 N</span>
+              </div>
+              <input id="slider-fapp" type="range" autocomplete="off" min="0" max="150" step="0.5" value="0" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-1">
+                <span>0 N</span>
+                <span id="label-breakaway-approx" class="text-amber-600 font-medium">Breakaway f<sub>s,max</sub>: ~78.5 N</span>
+                <span id="label-fapp-max">150 N</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-1">
+              <button id="btn-step-zero" class="py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-mono font-medium border border-slate-200 transition">0 N</button>
+              <button id="btn-step-thresh" class="py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-mono font-medium border border-amber-200 transition">Near Max</button>
+              <button id="btn-step-break" class="py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg text-xs font-mono font-medium border border-blue-200 transition">Breakaway</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Physical Parameters Sliders Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        <div>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center justify-between">
+            <span>Material and Mass Variables</span>
+            <i class="fa-solid fa-sliders text-cyan-600"></i>
+          </h3>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between mb-1 font-semibold">
+                <label for="slider-m" class="text-slate-700">Block Mass (m)</label>
+                <span id="slider-m-val" class="font-mono text-cyan-700">10.0 kg</span>
+              </div>
+              <input id="slider-m" type="range" autocomplete="off" min="2" max="20" step="0.5" value="10" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+              <div class="text-[10px] text-slate-500 font-mono">Normal Force N = m · g = <span id="val-norm-force" class="font-bold text-slate-700">98.1 N</span></div>
+            </div>
+
+            <div class="space-y-2">
+              <div>
+                <div class="flex justify-between mb-1 font-semibold">
+                  <label for="slider-mus" class="text-slate-700">Static Friction Coeff (μ<sub>s</sub>)</label>
+                  <span id="slider-mus-val" class="font-mono text-amber-700">0.80</span>
+                </div>
+                <input id="slider-mus" type="range" autocomplete="off" min="0.50" max="1.20" step="0.01" value="0.80" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-0.5">
+                  <span>0.50</span>
+                  <span>Default 0.80</span>
+                  <span>1.20</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1 font-semibold">
+                  <label for="slider-muk" class="text-slate-700">Kinetic Friction Coeff (μ<sub>k</sub>)</label>
+                  <span id="slider-muk-val" class="font-mono text-emerald-700">0.60</span>
+                </div>
+                <input id="slider-muk" type="range" autocomplete="off" min="0.20" max="0.76" step="0.01" value="0.60" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-400 font-mono mt-0.5">
+                  <span>0.20</span>
+                  <span id="label-muk-max" class="text-slate-500">Max ≤ 95% of μ<sub>s</sub> (0.76)</span>
+                  <span id="label-muk-slider-max">0.76</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Physics Reference Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+        <div>
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+            <span>Governing Laws</span>
+            <i class="fa-solid fa-square-root-variable text-purple-600"></i>
+          </h3>
+
+          <div class="space-y-2 text-xs">
+            <div class="bg-amber-50/60 p-2 rounded-xl border border-amber-200/80">
+              <span class="font-bold text-amber-800">1. Static Friction (f<sub>s</sub>):</span>
+              <p class="text-[11px] text-slate-600 mt-0.5">
+                Matches applied force exactly until threshold: <span class="font-mono font-bold text-amber-900">f<sub>s,max</sub> = μ<sub>s</sub> · N</span>
+              </p>
+            </div>
+            <div class="bg-emerald-50/60 p-2 rounded-xl border border-emerald-200/80">
+              <span class="font-bold text-emerald-800">2. Kinetic Friction (f<sub>k</sub>):</span>
+              <p class="text-[11px] text-slate-600 mt-0.5">
+                Nearly constant resisting force once moving: <span class="font-mono font-bold text-emerald-900">f<sub>k</sub> = μ<sub>k</sub> · N</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const GRAVITY = 9.81; // m/s^2
+
+    const state = {
+      mass: 10.0,
+      mu_s: 0.80,
+      mu_k: 0.60, // Default 0.60, constrained <= 0.95 * mu_s
+      appliedForce: 0.0,
+      frictionForce: 0.0,
+      blockV: 0.0,
+      blockA: 0.0,
+      isSliding: false,
+      groundScroll: 0.0,
+      microStrain: 0.0,
+      microRoughnessOffset: 0.0,
+      microLift: 0.0, // Smooth vertical displacement of top surface
+      isDraggingBlock: false,
+      dragStartX: 0,
+      dragStartForce: 0,
+      isAutoPulling: false,
+      autoPullRate: 8.5,
+      soundEnabled: false,
+      elapsedTime: 0,
+      history: []
+    };
+
+    function getNormalForce() {
+      return state.mass * GRAVITY;
+    }
+    function getMaxStaticFriction() {
+      return state.mu_s * getNormalForce();
+    }
+    function getKineticFriction() {
+      return state.mu_k * getNormalForce();
+    }
+    // Upper limit for the pull force, slider and graph. Always leaves headroom above
+    // the breakaway force (fsMax can reach 20 kg * 9.81 * 1.2 = 235 N). Multiples of 50.
+    function getForceMax() {
+      return Math.max(150, Math.ceil((getMaxStaticFriction() * 1.3) / 50) * 50);
+    }
+    // Auto ramp stops a little below the limit (140 of 150 N in the original).
+    function getAutoRampCap() {
+      return getForceMax() * (140 / 150);
+    }
+    // Largest μk allowed: 95% of μs, rounded DOWN so μk can never exceed it.
+    function getMaxAllowedMuk() {
+      return Math.floor(state.mu_s * 95 + 1e-9) / 100;
+    }
+
+    let synth = null;
+    let noiseSynth = null;
+    let isAudioInitialized = false;
+
+    let audioInitPromise = null;
+
+    // Start audio from a user gesture, and only build the synths once the
+    // AudioContext is actually running. Tone.start() resolves asynchronously;
+    // starting nodes (e.g. the AutoFilter LFO) before then triggers Tone's
+    // "The AudioContext is \"suspended\"" warning.
+    function initAudio() {
+      if (typeof Tone === 'undefined') return; // Tone.js failed to load: run silently
+      if (audioInitPromise) return audioInitPromise;
+
+      audioInitPromise = Tone.start()
+        .then(() => {
+          if (isAudioInitialized) return;
+          synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.04, decay: 0.1, sustain: 0.2, release: 0.2 }
+          }).toDestination();
+          synth.volume.value = -18;
+
+          const filter = new Tone.AutoFilter("4n").toDestination().start();
+          noiseSynth = new Tone.NoiseSynth({
+            noise: { type: "pink" },
+            envelope: { attack: 0.04, decay: 0.1, sustain: 0.2, release: 0.2 }
+          }).connect(filter);
+          noiseSynth.volume.value = -24;
+
+          isAudioInitialized = true;
+        })
+        .catch((e) => {
+          audioInitPromise = null; // allow a retry on the next user action
+          console.warn("Audio could not start:", e);
+        });
+      return audioInitPromise;
+    }
+
+    // True only when sound is on and the AudioContext is running, so no note is
+    // ever triggered on a suspended context (e.g. after the browser re-suspends it).
+    function audioReady() {
+      return state.soundEnabled && isAudioInitialized &&
+        typeof Tone !== 'undefined' && Tone.context.state === 'running';
+    }
+
+    function triggerStaticSnap() {
+      if (!audioReady() || !synth) return;
+      try {
+        synth.triggerAttackRelease(["C3", "G3"], "16n");
+      } catch (e) {}
+    }
+
+    let lastSlideSound = 0;
+    function playSlideSound() {
+      if (!audioReady() || !noiseSynth) return;
+      const now = performance.now();
+      if (now - lastSlideSound > 160) {
+        try {
+          noiseSynth.triggerAttackRelease("16n");
+          lastSlideSound = now;
+        } catch (e) {}
+      }
+    }
+
+    const elCanvasMacro = document.getElementById('canvas-macro');
+    const elCanvasMicro = document.getElementById('canvas-micro');
+    const elCanvasGraph = document.getElementById('canvas-graph');
+
+    const ctxMacro = elCanvasMacro.getContext('2d');
+    const ctxMicro = elCanvasMicro.getContext('2d');
+    const ctxGraph = elCanvasGraph.getContext('2d');
+
+    const sliderFapp = document.getElementById('slider-fapp');
+    const sliderFappVal = document.getElementById('slider-fapp-val');
+    const sliderMass = document.getElementById('slider-m');
+    const sliderMassVal = document.getElementById('slider-m-val');
+    const sliderMus = document.getElementById('slider-mus');
+    const sliderMusVal = document.getElementById('slider-mus-val');
+    const sliderMuk = document.getElementById('slider-muk');
+    const sliderMukVal = document.getElementById('slider-muk-val');
+    const labelMukMax = document.getElementById('label-muk-max');
+    const labelMukSliderMax = document.getElementById('label-muk-slider-max');
+    const labelBreakawayApprox = document.getElementById('label-breakaway-approx');
+
+    const metricFapp = document.getElementById('metric-fapp');
+    const metricFfric = document.getElementById('metric-ffric');
+    const metricFsmax = document.getElementById('metric-fsmax');
+    const metricFk = document.getElementById('metric-fk');
+    const metricNormal = document.getElementById('val-norm-force');
+    const motionBadge = document.getElementById('motion-state');
+    const metricFnet = document.getElementById('metric-fnet');
+    const metricMass = document.getElementById('metric-mass');
+    const metricAccel = document.getElementById('metric-accel');
+
+    const btnAutoPull = document.getElementById('btn-autopull');
+    const autoPullText = document.getElementById('autopull-text');
+    const btnReset = document.getElementById('btn-reset');
+    const btnSound = document.getElementById('btn-sound');
+    const soundStatus = document.getElementById('sound-status');
+    const btnClearGraph = document.getElementById('btn-clear-graph');
+    const dragHint = document.getElementById('drag-hint');
+
+    const labelFappMax = document.getElementById('label-fapp-max');
+
+    // Write innerHTML only when the content actually changes. Rewriting it every
+    // frame recreates child elements and restarts CSS animations (badge pulse).
+    function setHTMLIfChanged(el, html) {
+      if (el && el.dataset.html !== html) {
+        el.innerHTML = html;
+        el.dataset.html = html;
+      }
+    }
+    let lastBadgeSliding = null;
+
+    function stopAutoPull() {
+      state.isAutoPulling = false;
+      autoPullText.textContent = "Auto Ramp Pull";
+      btnAutoPull.classList.remove('ring-2', 'ring-blue-500');
+    }
+
+    function updateMetricsUI() {
+      const N = getNormalForce();
+      const fsMax = getMaxStaticFriction();
+      const fk = getKineticFriction();
+      const netForce = state.isSliding ? (state.appliedForce - state.frictionForce) : 0;
+      const maxAllowedMuk = getMaxAllowedMuk();
+      const forceMax = getForceMax();
+
+      if (+sliderFapp.max !== forceMax) sliderFapp.max = forceMax;
+      if (labelFappMax && labelFappMax.textContent !== `${forceMax} N`) {
+        labelFappMax.textContent = `${forceMax} N`;
+      }
+
+      metricNormal.textContent = `${N.toFixed(1)} N`;
+      metricFsmax.textContent = `${fsMax.toFixed(1)} N`;
+      metricFk.textContent = `${fk.toFixed(1)} N`;
+      metricFapp.textContent = `${state.appliedForce.toFixed(1)} N`;
+      metricFfric.textContent = `${state.frictionForce.toFixed(1)} N`;
+
+      if (metricFnet) metricFnet.textContent = `${netForce.toFixed(1)} N`;
+      if (metricMass) metricMass.textContent = `${state.mass.toFixed(1)} kg`;
+      if (metricAccel) metricAccel.textContent = `${state.blockA.toFixed(2)} m/s²`;
+
+      sliderFappVal.textContent = `${state.appliedForce.toFixed(1)} N`;
+      sliderFapp.value = state.appliedForce;
+      sliderMusVal.textContent = state.mu_s.toFixed(2);
+      sliderMukVal.textContent = state.mu_k.toFixed(2);
+      // Set max before value so a raised limit doesn't clamp the value.
+      sliderMuk.max = maxAllowedMuk;
+      sliderMuk.value = state.mu_k;
+
+      setHTMLIfChanged(labelMukMax, `Max ≤ 95% of μ<sub>s</sub> (${maxAllowedMuk.toFixed(2)})`);
+      if (labelMukSliderMax) {
+        labelMukSliderMax.textContent = maxAllowedMuk.toFixed(2);
+      }
+      setHTMLIfChanged(labelBreakawayApprox, `Breakaway f<sub>s,max</sub>: ~${fsMax.toFixed(1)} N`);
+
+      if (state.isSliding === lastBadgeSliding) return;
+      lastBadgeSliding = state.isSliding;
+      if (state.isSliding) {
+        motionBadge.className = "px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-mono font-semibold flex items-center gap-1.5";
+        motionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> KINETIC REGIME (Sliding)`;
+      } else {
+        motionBadge.className = "px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-mono font-semibold flex items-center gap-1.5";
+        motionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Static Regime (Locked)`;
+      }
+    }
+
+    function resizeCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      [elCanvasMacro, elCanvasMicro, elCanvasGraph].forEach(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        const pw = Math.max(1, Math.round(rect.width * dpr));
+        const ph = Math.max(1, Math.round(rect.height * dpr));
+        // Assigning width/height clears the canvas, so only do it on a real change.
+        if (canvas.width !== pw) canvas.width = pw;
+        if (canvas.height !== ph) canvas.height = ph;
+      });
+    }
+    window.addEventListener('resize', resizeCanvases);
+    // Also catch layout changes that don't resize the window (scrollbars, fonts loading, etc.).
+    if (typeof ResizeObserver !== 'undefined') {
+      const canvasObserver = new ResizeObserver(resizeCanvases);
+      [elCanvasMacro, elCanvasMicro, elCanvasGraph].forEach(c => canvasObserver.observe(c));
+    }
+
+    const microTerrainBlock = [];
+    const microTerrainFloor = [];
+    const NUM_ASPERITIES = 260;
+
+    function generateAsperities() {
+      microTerrainBlock.length = 0;
+      microTerrainFloor.length = 0;
+      for (let i = 0; i < NUM_ASPERITIES; i++) {
+        const noiseF = Math.sin(i * 0.22) * 19 + Math.cos(i * 0.65) * 9.5 + (Math.sin(i * 1.5) * 5.5);
+        const noiseB = Math.sin(i * 0.22 + 1.2) * 18 + Math.cos(i * 0.55) * 10 + (Math.cos(i * 1.3) * 5.5);
+        microTerrainFloor.push(noiseF);
+        microTerrainBlock.push(noiseB);
+      }
+    }
+    generateAsperities();
+
+    function updatePhysics(dt) {
+      const fsMax = getMaxStaticFriction();
+      const fk = getKineticFriction();
+      const F_app = state.appliedForce;
+
+      if (!state.isSliding) {
+        if (F_app <= fsMax) {
+          state.frictionForce = F_app;
+          state.blockV = 0;
+          state.blockA = 0;
+          const strainRatio = fsMax > 0 ? (F_app / fsMax) : 0;
+          state.microStrain = strainRatio * 18;
+        } else {
+          state.isSliding = true;
+          state.frictionForce = fk;
+          state.microStrain = 0;
+          triggerStaticSnap();
+        }
+      } else {
+        state.frictionForce = fk;
+        const F_net = F_app - fk;
+        state.blockA = (F_net / state.mass);
+        state.blockV += state.blockA * dt;
+
+        if (state.blockV <= 0 && F_app <= fsMax) {
+          state.blockV = 0;
+          state.blockA = 0;
+          state.isSliding = false;
+          state.frictionForce = F_app;
+        } else {
+          if (state.blockV > 0.1) {
+            playSlideSound();
+          }
+          const visualScrollSpeed = state.blockV * 40;
+          state.groundScroll += visualScrollSpeed * dt;
+          state.microRoughnessOffset += state.blockV * dt * 8;
+        }
+      }
+
+      const targetMicroLift = state.isSliding ? 11.5 : 0.0;
+      state.microLift += (targetMicroLift - state.microLift) * Math.min(1.0, dt * 9.0);
+
+      if (state.isAutoPulling) {
+        // Ramp rate scales with the force range so heavy blocks still break away in reasonable time.
+        const rampCap = getAutoRampCap();
+        state.appliedForce += state.autoPullRate * (getForceMax() / 150) * dt;
+        if (state.appliedForce > rampCap) {
+          state.appliedForce = rampCap;
+          stopAutoPull();
+        }
+      }
+
+      state.elapsedTime += dt;
+      state.history.push({
+        t: state.elapsedTime,
+        fApp: state.appliedForce,
+        fFric: state.frictionForce
+      });
+
+      const pruneCutoff = state.elapsedTime - 18;
+      while (state.history.length > 2 && state.history[1].t < pruneCutoff) {
+        state.history.shift();
+      }
+    }
+
+    function drawMacroView() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = elCanvasMacro.width / dpr;
+      const h = elCanvasMacro.height / dpr;
+
+      ctxMacro.save();
+      ctxMacro.scale(dpr, dpr);
+      ctxMacro.clearRect(0, 0, w, h);
+
+      ctxMacro.fillStyle = '#f8fafc';
+      ctxMacro.fillRect(0, 0, w, h);
+
+      const floorY = h * 0.72;
+
+      const floorGrad = ctxMacro.createLinearGradient(0, floorY, 0, h);
+      floorGrad.addColorStop(0, '#e2e8f0');
+      floorGrad.addColorStop(1, '#cbd5e1');
+      ctxMacro.fillStyle = floorGrad;
+      ctxMacro.fillRect(0, floorY, w, h - floorY);
+
+      ctxMacro.strokeStyle = '#64748b';
+      ctxMacro.lineWidth = 2;
+      ctxMacro.beginPath();
+      ctxMacro.moveTo(0, floorY);
+      ctxMacro.lineTo(w, floorY);
+      ctxMacro.stroke();
+
+      const hatchSpacing = 24;
+      const scrollOffset = state.groundScroll % hatchSpacing;
+
+      ctxMacro.strokeStyle = '#94a3b8';
+      ctxMacro.lineWidth = 1.2;
+      for (let x = -hatchSpacing; x < w + hatchSpacing * 2; x += hatchSpacing) {
+        const lineX = x - scrollOffset;
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(lineX, floorY);
+        ctxMacro.lineTo(lineX - 14, floorY + 20);
+        ctxMacro.stroke();
+      }
+
+      const blockW = 110;
+      const blockH = 62;
+      const blockX = Math.round((w - blockW) / 2);
+      const blockY = floorY - blockH;
+
+      ctxMacro.fillStyle = 'rgba(100, 116, 139, 0.25)';
+      ctxMacro.beginPath();
+      ctxMacro.ellipse(blockX + blockW / 2, floorY + 3, blockW * 0.5, 5, 0, 0, Math.PI * 2);
+      ctxMacro.fill();
+
+      const blockGrad = ctxMacro.createLinearGradient(blockX, blockY, blockX + blockW, blockY + blockH);
+      blockGrad.addColorStop(0, '#3b82f6');
+      blockGrad.addColorStop(1, '#1d4ed8');
+
+      ctxMacro.fillStyle = blockGrad;
+      ctxMacro.strokeStyle = '#1e40af';
+      ctxMacro.lineWidth = 1.5;
+      
+      ctxMacro.beginPath();
+      if (ctxMacro.roundRect) {
+        ctxMacro.roundRect(blockX, blockY, blockW, blockH, 8);
+      } else {
+        ctxMacro.rect(blockX, blockY, blockW, blockH);
+      }
+      ctxMacro.fill();
+      ctxMacro.stroke();
+
+      ctxMacro.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctxMacro.lineWidth = 1;
+      ctxMacro.beginPath();
+      ctxMacro.moveTo(blockX + 8, blockY + 1.5);
+      ctxMacro.lineTo(blockX + blockW - 8, blockY + 1.5);
+      ctxMacro.stroke();
+
+      ctxMacro.fillStyle = '#ffffff';
+      ctxMacro.font = 'bold 13px "JetBrains Mono", monospace';
+      ctxMacro.textAlign = 'center';
+      ctxMacro.textBaseline = 'middle';
+      ctxMacro.fillText(`m = ${state.mass.toFixed(1)} kg`, blockX + blockW / 2, blockY + blockH / 2);
+
+      const centerY = blockY + blockH / 2;
+
+      // Arrow length is proportional over the whole force range (the old fixed
+      // 1.5 px/N capped at 120 px saturated at 80 N, right at breakaway).
+      const maxArrowLen = Math.max(40, Math.min(160, blockX - 16));
+      const arrowScale = maxArrowLen / getForceMax();
+
+      if (state.appliedForce > 0.5) {
+        const arrowLen = Math.min(state.appliedForce * arrowScale, maxArrowLen);
+        const startX = blockX + blockW;
+        const endX = startX + arrowLen;
+
+        ctxMacro.strokeStyle = '#0284c7';
+        ctxMacro.lineWidth = 3;
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(startX, centerY);
+        ctxMacro.lineTo(endX, centerY);
+        ctxMacro.stroke();
+
+        ctxMacro.fillStyle = '#0284c7';
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(endX + 8, centerY);
+        ctxMacro.lineTo(endX - 7, centerY - 6);
+        ctxMacro.lineTo(endX - 7, centerY + 6);
+        ctxMacro.closePath();
+        ctxMacro.fill();
+
+        ctxMacro.fillStyle = '#0369a1';
+        ctxMacro.textAlign = 'left';
+        ctxMacro.textBaseline = 'middle';
+        const trail = ` = ${state.appliedForce.toFixed(1)} N`;
+        const labelX = startX + 6;
+        const labelY = centerY - 12;
+        drawCanvasSubscript(
+          ctxMacro,
+          'F', 'A', trail,
+          labelX, labelY,
+          'bold 12px "JetBrains Mono", monospace',
+          'bold 9px "JetBrains Mono", monospace'
+        );
+      }
+
+      if (state.frictionForce > 0.5) {
+        const arrowLen = Math.min(state.frictionForce * arrowScale, maxArrowLen);
+        const startX = blockX;
+        const endX = startX - arrowLen;
+
+        ctxMacro.strokeStyle = '#e11d48';
+        ctxMacro.lineWidth = 3;
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(startX, floorY - 2);
+        ctxMacro.lineTo(endX, floorY - 2);
+        ctxMacro.stroke();
+
+        ctxMacro.fillStyle = '#e11d48';
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(endX - 8, floorY - 2);
+        ctxMacro.lineTo(endX + 7, floorY - 8);
+        ctxMacro.lineTo(endX + 7, floorY + 4);
+        ctxMacro.closePath();
+        ctxMacro.fill();
+
+        ctxMacro.fillStyle = '#be123c';
+        ctxMacro.textBaseline = 'middle';
+        const sub = state.isSliding ? 'k' : 's';
+        const trail = ` = ${state.frictionForce.toFixed(1)} N`;
+
+        ctxMacro.font = 'bold 12px "JetBrains Mono", monospace';
+        const mainW = ctxMacro.measureText('f').width;
+        const trailW = ctxMacro.measureText(trail).width;
+        ctxMacro.font = 'bold 9px "JetBrains Mono", monospace';
+        const subW = ctxMacro.measureText(sub).width;
+        const totalW = mainW + subW + trailW;
+
+        const labelX = Math.max(8, Math.min(startX - totalW, endX));
+        const labelY = floorY - 14;
+
+        ctxMacro.textAlign = 'left';
+        drawCanvasSubscript(
+          ctxMacro,
+          'f', sub, trail,
+          labelX, labelY,
+          'bold 12px "JetBrains Mono", monospace',
+          'bold 9px "JetBrains Mono", monospace'
+        );
+      }
+
+      if (state.isSliding || state.blockV > 0.05) {
+        const blockCenterX = blockX + blockW / 2;
+
+        const vY = blockY - 40;
+        const vLen = Math.min(Math.max(state.blockV * 18, 16), 110);
+        const vEndX = blockCenterX + vLen;
+
+        ctxMacro.strokeStyle = '#059669';
+        ctxMacro.lineWidth = 2.5;
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(blockCenterX, vY);
+        ctxMacro.lineTo(vEndX, vY);
+        ctxMacro.stroke();
+
+        ctxMacro.fillStyle = '#059669';
+        ctxMacro.beginPath();
+        ctxMacro.moveTo(vEndX + 6, vY);
+        ctxMacro.lineTo(vEndX - 5, vY - 4);
+        ctxMacro.lineTo(vEndX - 5, vY + 4);
+        ctxMacro.closePath();
+        ctxMacro.fill();
+
+        ctxMacro.font = 'bold 12px "JetBrains Mono", monospace';
+        ctxMacro.textAlign = 'left';
+        ctxMacro.textBaseline = 'middle';
+        ctxMacro.fillText(`v = ${state.blockV.toFixed(2)} m/s`, vEndX + 8, vY);
+
+        const aY = blockY - 18;
+        const accelMag = Math.abs(state.blockA);
+        if (accelMag > 0.05) {
+          const aSign = state.blockA >= 0 ? 1 : -1;
+          const aLen = Math.min(accelMag * 14, 90) * aSign;
+          const aEndX = blockCenterX + aLen;
+
+          ctxMacro.strokeStyle = '#7c3aed';
+          ctxMacro.lineWidth = 2.5;
+          ctxMacro.beginPath();
+          ctxMacro.moveTo(blockCenterX, aY);
+          ctxMacro.lineTo(aEndX, aY);
+          ctxMacro.stroke();
+
+          ctxMacro.fillStyle = '#7c3aed';
+          ctxMacro.beginPath();
+          if (aSign >= 0) {
+            ctxMacro.moveTo(aEndX + 6, aY);
+            ctxMacro.lineTo(aEndX - 5, aY - 4);
+            ctxMacro.lineTo(aEndX - 5, aY + 4);
+          } else {
+            ctxMacro.moveTo(aEndX - 6, aY);
+            ctxMacro.lineTo(aEndX + 5, aY - 4);
+            ctxMacro.lineTo(aEndX + 5, aY + 4);
+          }
+          ctxMacro.closePath();
+          ctxMacro.fill();
+
+          ctxMacro.font = 'bold 12px "JetBrains Mono", monospace';
+          if (aSign >= 0) {
+            ctxMacro.textAlign = 'left';
+            ctxMacro.fillText(`a = ${state.blockA.toFixed(2)} m/s²`, aEndX + 8, aY);
+          } else {
+            ctxMacro.textAlign = 'right';
+            ctxMacro.fillText(`a = ${state.blockA.toFixed(2)} m/s²`, aEndX - 8, aY);
+          }
+        } else {
+          ctxMacro.fillStyle = '#6b21a8';
+          ctxMacro.font = 'bold 11px "JetBrains Mono", monospace';
+          ctxMacro.textAlign = 'left';
+          ctxMacro.textBaseline = 'middle';
+          ctxMacro.fillText(`a = 0.0 m/s² (Steady velocity)`, blockCenterX + 4, aY);
+        }
+      }
+
+      const zoomCenter = blockX + blockW * 0.45;
+      ctxMacro.save();
+      ctxMacro.strokeStyle = '#0891b2';
+      ctxMacro.lineWidth = 2;
+      ctxMacro.setLineDash([4, 4]);
+      ctxMacro.beginPath();
+      ctxMacro.arc(zoomCenter, floorY, 16, 0, Math.PI * 2);
+      ctxMacro.stroke();
+      ctxMacro.fillStyle = 'rgba(8, 145, 178, 0.1)';
+      ctxMacro.fill();
+      ctxMacro.restore();
+
+      ctxMacro.restore();
+    }
+
+    function drawMicroView() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = elCanvasMicro.width / dpr;
+      const h = elCanvasMicro.height / dpr;
+
+      ctxMicro.save();
+      ctxMicro.scale(dpr, dpr);
+      ctxMicro.clearRect(0, 0, w, h);
+
+      ctxMicro.fillStyle = '#f8fafc';
+      ctxMicro.fillRect(0, 0, w, h);
+
+      ctxMicro.strokeStyle = '#e2e8f0';
+      ctxMicro.lineWidth = 0.8;
+      for (let x = 0; x < w; x += 30) {
+        ctxMicro.beginPath();
+        ctxMicro.moveTo(x, 0);
+        ctxMicro.lineTo(x, h);
+        ctxMicro.stroke();
+      }
+      for (let y = 0; y < h; y += 30) {
+        ctxMicro.beginPath();
+        ctxMicro.moveTo(0, y);
+        ctxMicro.lineTo(w, y);
+        ctxMicro.stroke();
+      }
+
+      const midY = h * 0.52;
+      const verticalLift = state.microLift;
+      const topOffset = state.microRoughnessOffset + state.microStrain;
+
+      function sampleTerrain(arr, rawX) {
+        const u = Math.abs(rawX) * 0.12;
+        const i0 = Math.floor(u) % NUM_ASPERITIES;
+        const i1 = (i0 + 1) % NUM_ASPERITIES;
+        const frac = u - Math.floor(u);
+        return arr[i0] * (1 - frac) + arr[i1] * frac;
+      }
+
+      function getTopY(x) {
+        return (midY - 14 - verticalLift) + sampleTerrain(microTerrainBlock, x + topOffset);
+      }
+
+      function getBotY(x) {
+        return (midY + 12) + sampleTerrain(microTerrainFloor, x);
+      }
+
+      ctxMicro.fillStyle = '#dbeafe';
+      ctxMicro.strokeStyle = '#2563eb';
+      ctxMicro.lineWidth = 2.5;
+      ctxMicro.beginPath();
+      ctxMicro.moveTo(0, 0);
+      ctxMicro.lineTo(w, 0);
+
+      const stepX = 4;
+      for (let x = w + stepX; x >= -stepX; x -= stepX) {
+        ctxMicro.lineTo(x, getTopY(x));
+      }
+      ctxMicro.closePath();
+      ctxMicro.fill();
+      ctxMicro.stroke();
+
+      ctxMicro.font = 'bold 11px Inter, sans-serif';
+      ctxMicro.fillStyle = '#1d4ed8';
+      ctxMicro.textAlign = 'left';
+      ctxMicro.fillText('BLOCK ATOMIC SURFACE', 14, 20);
+
+      ctxMicro.fillStyle = '#e2e8f0';
+      ctxMicro.strokeStyle = '#475569';
+      ctxMicro.lineWidth = 2.5;
+      ctxMicro.beginPath();
+      ctxMicro.moveTo(0, h);
+      ctxMicro.lineTo(w, h);
+
+      for (let x = w + stepX; x >= -stepX; x -= stepX) {
+        ctxMicro.lineTo(x, getBotY(x));
+      }
+      ctxMicro.closePath();
+      ctxMicro.fill();
+      ctxMicro.stroke();
+
+      ctxMicro.font = 'bold 11px Inter, sans-serif';
+      ctxMicro.fillStyle = '#334155';
+      ctxMicro.textAlign = 'left';
+      ctxMicro.fillText('TABLE ATOMIC SURFACE', 14, h - 12);
+
+      const contacts = [];
+      const scanStep = 2.5;
+      let inContact = false;
+      let bestGap = Infinity;
+      let bestX = 0;
+      let bestY = 0;
+      const touchThreshold = state.isSliding ? 4.8 : 4.0;
+
+      for (let x = 12; x <= w - 12; x += scanStep) {
+        const yt = getTopY(x);
+        const yb = getBotY(x);
+        const gap = yb - yt;
+
+        if (gap <= touchThreshold) {
+          if (!inContact) {
+            inContact = true;
+            bestGap = gap;
+            bestX = x;
+            bestY = (yt + yb) / 2;
+          } else if (gap < bestGap) {
+            bestGap = gap;
+            bestX = x;
+            bestY = (yt + yb) / 2;
+          }
+        } else {
+          if (inContact) {
+            contacts.push({ x: bestX, y: bestY, gap: bestGap });
+            inContact = false;
+            bestGap = Infinity;
+          }
+        }
+      }
+      if (inContact) {
+        contacts.push({ x: bestX, y: bestY, gap: bestGap });
+      }
+
+      const numContacts = contacts.length;
+      if (!state.isSliding) {
+        const stressRatio = Math.min(1.0, state.appliedForce / (getMaxStaticFriction() || 1));
+
+        contacts.forEach(pt => {
+          ctxMicro.beginPath();
+          ctxMicro.arc(pt.x, pt.y, 8 + stressRatio * 3, 0, Math.PI * 2);
+          ctxMicro.fillStyle = `rgba(245, 158, 11, ${0.2 + stressRatio * 0.4})`;
+          ctxMicro.fill();
+
+          ctxMicro.beginPath();
+          ctxMicro.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+          ctxMicro.fillStyle = stressRatio > 0.8 ? '#ea580c' : '#f59e0b';
+          ctxMicro.fill();
+          ctxMicro.strokeStyle = '#b45309';
+          ctxMicro.lineWidth = 1.5;
+          ctxMicro.stroke();
+
+          if (state.appliedForce > 1.5) {
+            ctxMicro.strokeStyle = 'rgba(225, 29, 72, 0.85)';
+            ctxMicro.lineWidth = 1.8;
+            ctxMicro.beginPath();
+            ctxMicro.moveTo(pt.x, pt.y);
+            ctxMicro.lineTo(pt.x + state.microStrain * 0.7, pt.y - 4);
+            ctxMicro.stroke();
+          }
+        });
+
+        ctxMicro.font = 'bold 11px "JetBrains Mono", monospace';
+        ctxMicro.fillStyle = '#b45309';
+        ctxMicro.textAlign = 'right';
+        ctxMicro.fillText(`TOUCHING JUNCTIONS: ${numContacts}`, w - 14, 20);
+      } else {
+        contacts.forEach(pt => {
+          ctxMicro.beginPath();
+          ctxMicro.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
+          ctxMicro.fillStyle = 'rgba(16, 185, 129, 0.35)';
+          ctxMicro.fill();
+
+          ctxMicro.beginPath();
+          ctxMicro.arc(pt.x, pt.y, 3.8, 0, Math.PI * 2);
+          ctxMicro.fillStyle = '#10b981';
+          ctxMicro.fill();
+          ctxMicro.strokeStyle = '#047857';
+          ctxMicro.lineWidth = 1.2;
+          ctxMicro.stroke();
+        });
+
+        ctxMicro.font = 'bold 11px "JetBrains Mono", monospace';
+        ctxMicro.fillStyle = '#059669';
+        ctxMicro.textAlign = 'right';
+        ctxMicro.fillText(`TOUCHING POINTS: ${numContacts} (Glancing)`, w - 14, 20);
+      }
+
+      ctxMicro.restore();
+    }
+
+    function drawCanvasSubscript(ctx, mainText, subText, trailText, x, y, mainFont, subFont) {
+      ctx.font = mainFont;
+      const mainW = ctx.measureText(mainText).width;
+      ctx.fillText(mainText, x, y);
+
+      ctx.font = subFont;
+      const subW = ctx.measureText(subText).width;
+      ctx.fillText(subText, x + mainW, y + 3);
+
+      if (trailText) {
+        ctx.font = mainFont;
+        ctx.fillText(trailText, x + mainW + subW, y);
+      }
+    }
+
+    function drawGraphView() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = elCanvasGraph.width / dpr;
+      const h = elCanvasGraph.height / dpr;
+
+      ctxGraph.save();
+      ctxGraph.scale(dpr, dpr);
+      ctxGraph.clearRect(0, 0, w, h);
+
+      ctxGraph.fillStyle = '#ffffff';
+      ctxGraph.fillRect(0, 0, w, h);
+
+      const padL = 66; // room for 3-digit tick labels plus the rotated axis title
+      const padR = 20;
+      const padT = 20;
+      const padB = 34;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+
+      ctxGraph.strokeStyle = '#94a3b8';
+      ctxGraph.lineWidth = 1.5;
+      ctxGraph.beginPath();
+      ctxGraph.moveTo(padL, padT);
+      ctxGraph.lineTo(padL, h - padB);
+      ctxGraph.lineTo(w - padR, h - padB);
+      ctxGraph.stroke();
+
+      const maxForceY = getForceMax();
+      const forceTickStep = maxForceY / 5; // 30 N at the default 150 N scale
+      const timeWindow = 12;
+      const currentTime = state.elapsedTime;
+      const startTime = Math.max(0, currentTime - timeWindow);
+
+      ctxGraph.font = '12px "JetBrains Mono", monospace';
+      ctxGraph.fillStyle = '#64748b';
+      ctxGraph.textAlign = 'right';
+
+      for (let f = 0; f <= maxForceY + 1e-6; f += forceTickStep) {
+        const y = (h - padB) - (f / maxForceY) * plotH;
+        ctxGraph.strokeStyle = '#f1f5f9';
+        ctxGraph.lineWidth = 1;
+        ctxGraph.beginPath();
+        ctxGraph.moveTo(padL, y);
+        ctxGraph.lineTo(w - padR, y);
+        ctxGraph.stroke();
+
+        ctxGraph.fillText(`${f} N`, padL - 8, y + 4);
+      }
+
+      const fsMax = getMaxStaticFriction();
+      const fsMaxY = (h - padB) - (fsMax / maxForceY) * plotH;
+      if (fsMaxY >= padT) {
+        ctxGraph.strokeStyle = 'rgba(217, 119, 6, 0.5)';
+        ctxGraph.lineWidth = 1.2;
+        ctxGraph.setLineDash([4, 4]);
+        ctxGraph.beginPath();
+        ctxGraph.moveTo(padL, fsMaxY);
+        ctxGraph.lineTo(w - padR, fsMaxY);
+        ctxGraph.stroke();
+        ctxGraph.setLineDash([]);
+
+        ctxGraph.fillStyle = '#b45309';
+        ctxGraph.textAlign = 'left';
+        drawCanvasSubscript(
+          ctxGraph,
+          'f', 's,max', ` (${fsMax.toFixed(1)} N)`,
+          w - padR - 116, fsMaxY - 5,
+          'bold 12px "JetBrains Mono", monospace',
+          'bold 10px "JetBrains Mono", monospace'
+        );
+      }
+
+      const fk = getKineticFriction();
+      const fkY = (h - padB) - (fk / maxForceY) * plotH;
+      // If the two reference lines are close, put the f_k label under its line so they don't overlap.
+      const fkLabelY = (fkY - fsMaxY < 16) ? fkY + 13 : fkY - 5;
+      if (fkY >= padT) {
+        ctxGraph.strokeStyle = 'rgba(5, 150, 105, 0.45)';
+        ctxGraph.lineWidth = 1.2;
+        ctxGraph.setLineDash([3, 3]);
+        ctxGraph.beginPath();
+        ctxGraph.moveTo(padL, fkY);
+        ctxGraph.lineTo(w - padR, fkY);
+        ctxGraph.stroke();
+        ctxGraph.setLineDash([]);
+
+        ctxGraph.fillStyle = '#059669';
+        ctxGraph.textAlign = 'left';
+        drawCanvasSubscript(
+          ctxGraph,
+          'f', 'k', ` (${fk.toFixed(1)} N)`,
+          w - padR - 84, fkLabelY,
+          'bold 12px "JetBrains Mono", monospace',
+          'bold 10px "JetBrains Mono", monospace'
+        );
+      }
+
+      ctxGraph.font = '12px "JetBrains Mono", monospace';
+      ctxGraph.textAlign = 'center';
+      
+      const tickStep = 2;
+      const minTick = Math.floor(startTime / tickStep) * tickStep;
+      const maxTick = Math.ceil((startTime + timeWindow) / tickStep) * tickStep;
+      const fadeDist = 16;
+
+      for (let sec = minTick; sec <= maxTick; sec += tickStep) {
+        if (sec < 0) continue;
+        const x = padL + ((sec - startTime) / timeWindow) * plotW;
+        if (x < padL - 10 || x > w - padR + 10) continue;
+
+        let alpha = 1.0;
+        if (x < padL + fadeDist) {
+          alpha = Math.max(0, Math.min(1, (x - padL) / fadeDist));
+        } else if (x > w - padR - fadeDist) {
+          alpha = Math.max(0, Math.min(1, (w - padR - x) / fadeDist));
+        }
+
+        if (alpha <= 0.01) continue;
+
+        ctxGraph.save();
+        ctxGraph.globalAlpha = alpha;
+
+        if (x >= padL && x <= w - padR) {
+          ctxGraph.strokeStyle = '#cbd5e1';
+          ctxGraph.lineWidth = 1;
+          ctxGraph.beginPath();
+          ctxGraph.moveTo(x, h - padB);
+          ctxGraph.lineTo(x, h - padB + 4);
+          ctxGraph.stroke();
+        }
+
+        ctxGraph.fillStyle = '#64748b';
+        ctxGraph.fillText(`${sec}s`, x, h - padB + 16);
+        ctxGraph.restore();
+      }
+
+      ctxGraph.fillStyle = '#334155';
+      ctxGraph.font = 'bold 13px Inter, sans-serif';
+      ctxGraph.textAlign = 'center';
+      ctxGraph.fillText('Time (s)', padL + plotW / 2, h - 5);
+
+      ctxGraph.save();
+      ctxGraph.translate(14, padT + plotH / 2);
+      ctxGraph.rotate(-Math.PI / 2);
+      ctxGraph.fillText('Force (N)', 0, 0);
+      ctxGraph.restore();
+
+      const history = state.history;
+      if (history.length > 1) {
+        let startIdx = 0;
+        for (let i = 0; i < history.length; i++) {
+          if (history[i].t >= startTime) {
+            startIdx = Math.max(0, i - 1);
+            break;
+          }
+        }
+
+        ctxGraph.save();
+        ctxGraph.beginPath();
+        ctxGraph.rect(padL, padT - 4, plotW + 4, plotH + 8);
+        ctxGraph.clip();
+
+        ctxGraph.beginPath();
+        ctxGraph.strokeStyle = '#2563eb';
+        ctxGraph.lineWidth = 2.2;
+        let started = false;
+
+        for (let i = startIdx; i < history.length; i++) {
+          const pt = history[i];
+          const x = padL + ((pt.t - startTime) / timeWindow) * plotW;
+          const y = (h - padB) - (Math.min(maxForceY, pt.fApp) / maxForceY) * plotH;
+          if (!started) {
+            ctxGraph.moveTo(x, y);
+            started = true;
+          } else {
+            ctxGraph.lineTo(x, y);
+          }
+        }
+        ctxGraph.stroke();
+
+        ctxGraph.beginPath();
+        ctxGraph.strokeStyle = '#e11d48';
+        ctxGraph.lineWidth = 2;
+        started = false;
+
+        for (let i = startIdx; i < history.length; i++) {
+          const pt = history[i];
+          const x = padL + ((pt.t - startTime) / timeWindow) * plotW;
+          const y = (h - padB) - (Math.min(maxForceY, pt.fFric) / maxForceY) * plotH;
+          if (!started) {
+            ctxGraph.moveTo(x, y);
+            started = true;
+          } else {
+            ctxGraph.lineTo(x, y);
+          }
+        }
+        ctxGraph.stroke();
+
+        ctxGraph.restore();
+
+        const lastPt = history[history.length - 1];
+        const lastX = padL + ((lastPt.t - startTime) / timeWindow) * plotW;
+        const lastAppY = (h - padB) - (Math.min(maxForceY, lastPt.fApp) / maxForceY) * plotH;
+        const lastFricY = (h - padB) - (Math.min(maxForceY, lastPt.fFric) / maxForceY) * plotH;
+
+        ctxGraph.fillStyle = '#2563eb';
+        ctxGraph.beginPath();
+        ctxGraph.arc(lastX, lastAppY, 4, 0, Math.PI * 2);
+        ctxGraph.fill();
+
+        ctxGraph.fillStyle = '#e11d48';
+        ctxGraph.beginPath();
+        ctxGraph.arc(lastX, lastFricY, 4, 0, Math.PI * 2);
+        ctxGraph.fill();
+      }
+
+      ctxGraph.restore();
+    }
+
+    function setAppliedForce(f) {
+      state.appliedForce = Math.max(0, Math.min(getForceMax(), f));
+      sliderFapp.max = getForceMax();
+      sliderFapp.value = state.appliedForce;
+      sliderFappVal.textContent = `${state.appliedForce.toFixed(1)} N`;
+    }
+
+    sliderFapp.addEventListener('input', (e) => {
+      initAudio();
+      stopAutoPull();
+      dragHint.classList.add('opacity-0');
+      setAppliedForce(parseFloat(e.target.value));
+    });
+
+    sliderMass.addEventListener('input', (e) => {
+      state.mass = parseFloat(e.target.value);
+      sliderMassVal.textContent = `${state.mass.toFixed(1)} kg`;
+      setAppliedForce(state.appliedForce); // re-clamp if the force range shrank
+      updateMetricsUI();
+    });
+
+    sliderMus.addEventListener('input', (e) => {
+      state.mu_s = parseFloat(e.target.value);
+      const maxAllowedMuk = getMaxAllowedMuk();
+      if (state.mu_k > maxAllowedMuk) {
+        state.mu_k = maxAllowedMuk;
+      }
+      setAppliedForce(state.appliedForce);
+      updateMetricsUI();
+    });
+
+    sliderMuk.addEventListener('input', (e) => {
+      const maxAllowedMuk = getMaxAllowedMuk();
+      let val = parseFloat(e.target.value);
+      if (val > maxAllowedMuk) {
+        val = maxAllowedMuk;
+      }
+      state.mu_k = val;
+      updateMetricsUI();
+    });
+
+    // Block dragging via Pointer Events: one code path for mouse, touch and pen.
+    // Pointer capture keeps the drag alive outside the canvas and guarantees an end
+    // event (pointerup / pointercancel), so drags can't get stuck.
+    let activePointerId = null;
+
+    function onDragStart(clientX) {
+      initAudio();
+      state.isDraggingBlock = true;
+      state.dragStartX = clientX;
+      state.dragStartForce = state.appliedForce;
+      stopAutoPull();
+      dragHint.classList.add('opacity-0');
+    }
+
+    function onDragMove(clientX) {
+      if (!state.isDraggingBlock) return;
+      const deltaX = clientX - state.dragStartX;
+      const newForce = state.dragStartForce + deltaX * 0.55;
+      setAppliedForce(newForce);
+    }
+
+    function onDragEnd() {
+      state.isDraggingBlock = false;
+      activePointerId = null;
+    }
+
+    elCanvasMacro.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return; // left button only
+      if (activePointerId !== null) return;                    // ignore extra fingers
+      activePointerId = e.pointerId;
+      try { elCanvasMacro.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+      onDragStart(e.clientX);
+    });
+    elCanvasMacro.addEventListener('pointermove', (e) => {
+      if (e.pointerId === activePointerId) onDragMove(e.clientX);
+    });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => {
+      elCanvasMacro.addEventListener(type, (e) => {
+        if (e.pointerId === activePointerId) onDragEnd();
+      });
+    });
+    window.addEventListener('blur', onDragEnd);
+
+    document.getElementById('btn-step-zero').addEventListener('click', () => {
+      initAudio();
+      stopAutoPull();
+      setAppliedForce(0);
+    });
+    document.getElementById('btn-step-thresh').addEventListener('click', () => {
+      initAudio();
+      stopAutoPull();
+      const fsMax = getMaxStaticFriction();
+      setAppliedForce(Math.max(0, fsMax - 2.5));
+    });
+    document.getElementById('btn-step-break').addEventListener('click', () => {
+      initAudio();
+      stopAutoPull();
+      const fsMax = getMaxStaticFriction();
+      setAppliedForce(fsMax + 15);
+    });
+
+    btnAutoPull.addEventListener('click', () => {
+      initAudio();
+      if (state.isAutoPulling) {
+        stopAutoPull();
+      } else {
+        state.isAutoPulling = true;
+        setAppliedForce(0);
+        autoPullText.textContent = "Stop Ramp";
+        btnAutoPull.classList.add('ring-2', 'ring-blue-500');
+      }
+    });
+
+    btnReset.addEventListener('click', () => {
+      initAudio();
+      stopAutoPull();
+      setAppliedForce(0);
+      state.frictionForce = 0;
+      state.blockV = 0;
+      state.blockA = 0;
+      state.isSliding = false;
+      state.groundScroll = 0;
+      state.microStrain = 0;
+      state.microRoughnessOffset = 0;
+      state.microLift = 0;
+      state.history = [{ t: 0, fApp: 0, fFric: 0 }];
+      state.elapsedTime = 0;
+      dragHint.classList.remove('opacity-0');
+    });
+
+    btnClearGraph.addEventListener('click', () => {
+      state.history = [{ t: state.elapsedTime, fApp: state.appliedForce, fFric: state.frictionForce }];
+    });
+
+    btnSound.addEventListener('click', () => {
+      initAudio();
+      state.soundEnabled = !state.soundEnabled;
+      const soundIcon = btnSound.querySelector('i');
+      if (state.soundEnabled) {
+        soundStatus.textContent = "ON";
+        soundStatus.className = "text-emerald-600 font-bold";
+        if (soundIcon) soundIcon.className = "fa-solid fa-volume-high text-blue-600";
+      } else {
+        soundStatus.textContent = "OFF";
+        soundStatus.className = "text-rose-600 font-bold";
+        if (soundIcon) soundIcon.className = "fa-solid fa-volume-xmark text-slate-500";
+      }
+    });
+
+    let lastTime = performance.now();
+
+    function mainLoop(timestamp) {
+      // Clamp to [0, 50 ms]: the first rAF timestamp can be slightly earlier than lastTime.
+      const dt = Math.max(0, Math.min((timestamp - lastTime) / 1000, 0.05));
+      lastTime = timestamp;
+
+      updatePhysics(dt);
+      drawMacroView();
+      drawMicroView();
+      drawGraphView();
+      updateMetricsUI();
+
+      requestAnimationFrame(mainLoop);
+    }
+
+    window.onload = function() {
+      // Firefox restores slider positions on reload; push the real state back into
+      // every control so the UI and the physics agree.
+      sliderMass.value = state.mass;
+      sliderMassVal.textContent = `${state.mass.toFixed(1)} kg`;
+      sliderMus.value = state.mu_s;
+      setAppliedForce(state.appliedForce);
+      resizeCanvases();
+      updateMetricsUI();
+      requestAnimationFrame(mainLoop);
+    };
+  </script>
+</body>
+</html>
