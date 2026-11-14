@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radio Waves and Cellular Transmission</title>
+  <style>
+    /* ==========================================================================
+       Utility stylesheet — hand-written replacement for the Tailwind CDN.
+       Covers every utility class used in the markup and set from the script.
+       Values match Tailwind v3 (the version cdn.tailwindcss.com serves).
+       ========================================================================== */
+
+    /* ---- Base reset (equivalent of Tailwind Preflight, trimmed to what this page uses) ---- */
+    *, ::before, ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: #e5e7eb;
+      --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-ring-shadow: 0 0 #0000;
+      --tw-shadow: 0 0 #0000;
+      --tw-shadow-colored: 0 0 #0000;
+      --tw-ring-color: rgb(59 130 246 / 0.5);
+    }
+    html {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      tab-size: 4;
+      font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { margin: 0; line-height: inherit; }
+    h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+    h1, h2, h3, h4, h5, h6, p, ul { margin: 0; }
+    ul { list-style: none; padding: 0; }
+    b, strong { font-weight: bolder; }
+    button, input {
+      font-family: inherit;
+      font-feature-settings: inherit;
+      font-variation-settings: inherit;
+      font-size: 100%;
+      font-weight: inherit;
+      line-height: inherit;
+      letter-spacing: inherit;
+      color: inherit;
+      margin: 0;
+      padding: 0;
+    }
+    button { text-transform: none; -webkit-appearance: button; background-color: transparent; background-image: none; cursor: pointer; }
+    canvas { display: block; vertical-align: middle; }
+
+    /* ---- Layout & position ---- */
+    .pointer-events-none { pointer-events: none; }
+    .pointer-events-auto { pointer-events: auto; }
+    .fixed { position: fixed; }
+    .absolute { position: absolute; }
+    .relative { position: relative; }
+    .sticky { position: sticky; }
+    .inset-0 { inset: 0; }
+    .top-0 { top: 0; }
+    .top-2\.5 { top: 0.625rem; }
+    .right-2\.5 { right: 0.625rem; }
+    .bottom-2 { bottom: 0.5rem; }
+    .left-4 { left: 1rem; }
+    .z-10 { z-index: 10; }
+    .z-50 { z-index: 50; }
+
+    /* ---- Margin ---- */
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .mb-0\.5 { margin-bottom: 0.125rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-1\.5 { margin-bottom: 0.375rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .ml-1 { margin-left: 0.25rem; }
+    .mt-0\.5 { margin-top: 0.125rem; }
+    .mt-1\.5 { margin-top: 0.375rem; }
+    .mt-2 { margin-top: 0.5rem; }
+
+    /* ---- Display (hidden last so it wins over flex/grid/block) ---- */
+    .block { display: block; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .hidden { display: none; }
+
+    /* ---- Sizing ---- */
+    .h-1 { height: 0.25rem; }
+    .h-1\.5 { height: 0.375rem; }
+    .h-3 { height: 0.75rem; }
+    .h-10 { height: 2.5rem; }
+    .h-16 { height: 4rem; }
+    .h-\[310px\] { height: 310px; }
+    .h-full { height: 100%; }
+    .max-h-\[70vh\] { max-height: 70vh; }
+    .min-h-screen { min-height: 100vh; }
+    .w-1\.5 { width: 0.375rem; }
+    .w-4 { width: 1rem; }
+    .w-10 { width: 2.5rem; }
+    .w-16 { width: 4rem; }
+    .w-20 { width: 5rem; }
+    .w-44 { width: 11rem; }
+    .w-60 { width: 15rem; }
+    .w-full { width: 100%; }
+    .max-w-lg { max-width: 32rem; }
+    .max-w-7xl { max-width: 80rem; }
+
+    /* ---- Flex & grid ---- */
+    .flex-1 { flex: 1 1 0%; }
+    .flex-col { flex-direction: column; }
+    .flex-wrap { flex-wrap: wrap; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .items-start { align-items: flex-start; }
+    .items-center { align-items: center; }
+    .justify-end { justify-content: flex-end; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; margin-bottom: 0; }
+
+    /* ---- Overflow & text overflow ---- */
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+    .overflow-x-hidden { overflow-x: hidden; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ---- Borders & radius ---- */
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-3xl { border-radius: 1.5rem; }
+    .rounded-full { border-radius: 9999px; }
+    .border { border-width: 1px; }
+    .border-4 { border-width: 4px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-slate-100 { border-color: #f1f5f9; }
+    .border-slate-200 { border-color: #e2e8f0; }
+    .border-slate-300 { border-color: #cbd5e1; }
+    .border-cyan-200 { border-color: #a5f3fc; }
+    .border-cyan-300 { border-color: #67e8f9; }
+    .border-cyan-500 { border-color: #06b6d4; }
+
+    /* ---- Backgrounds ---- */
+    .bg-white { background-color: #ffffff; }
+    .bg-white\/95 { background-color: rgb(255 255 255 / 0.95); }
+    .bg-slate-50 { background-color: #f8fafc; }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .bg-slate-400 { background-color: #94a3b8; }
+    .bg-slate-800 { background-color: #1e293b; }
+    .bg-slate-900\/40 { background-color: rgb(15 23 42 / 0.4); }
+    .bg-cyan-50 { background-color: #ecfeff; }
+    .bg-cyan-100 { background-color: #cffafe; }
+    .bg-cyan-400 { background-color: #22d3ee; }
+    .bg-cyan-600 { background-color: #0891b2; }
+    .bg-emerald-600 { background-color: #059669; }
+    .bg-rose-600 { background-color: #e11d48; }
+
+    /* ---- Padding ---- */
+    .p-1 { padding: 0.25rem; }
+    .p-1\.5 { padding: 0.375rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-3\.5 { padding: 0.875rem; }
+    .p-4 { padding: 1rem; }
+    .p-6 { padding: 1.5rem; }
+    .px-0\.5 { padding-left: 0.125rem; padding-right: 0.125rem; }
+    .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+    .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .pb-0\.5 { padding-bottom: 0.125rem; }
+    .pb-1 { padding-bottom: 0.25rem; }
+    .pb-2 { padding-bottom: 0.5rem; }
+    .pb-3 { padding-bottom: 0.75rem; }
+    .pt-6 { padding-top: 1.5rem; }
+
+    /* ---- Typography ---- */
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-\[8\.5px\] { font-size: 8.5px; }
+    .text-\[9px\] { font-size: 9px; }
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; }
+    .leading-tight { line-height: 1.25; }
+    .leading-relaxed { line-height: 1.625; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .tracking-widest { letter-spacing: 0.1em; }
+    .list-inside { list-style-position: inside; }
+    .list-disc { list-style-type: disc; }
+
+    /* ---- Text colors ---- */
+    .text-white { color: #ffffff; }
+    .text-slate-300 { color: #cbd5e1; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-600 { color: #475569; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-800 { color: #1e293b; }
+    .text-slate-900 { color: #0f172a; }
+    .text-cyan-600 { color: #0891b2; }
+    .text-cyan-700 { color: #0e7490; }
+    .text-cyan-800 { color: #155e75; }
+    .text-emerald-500 { color: #10b981; }
+    .text-emerald-600 { color: #059669; }
+    .text-emerald-700 { color: #047857; }
+    .text-amber-500 { color: #f59e0b; }
+    .text-amber-700 { color: #b45309; }
+    .text-rose-400 { color: #fb7185; }
+    .text-indigo-700 { color: #4338ca; }
+    .text-purple-700 { color: #7e22ce; }
+
+    /* ---- Form accent colors ---- */
+    .accent-cyan-600 { accent-color: #0891b2; }
+    .accent-amber-600 { accent-color: #d97706; }
+    .accent-indigo-600 { accent-color: #4f46e5; }
+
+    /* ---- Shadows & rings (composed like Tailwind so shadow + ring can stack) ---- */
+    .shadow-sm {
+      --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .shadow-md {
+      --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .shadow-2xl {
+      --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+      --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .shadow-inner {
+      --tw-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+      --tw-shadow-colored: inset 0 2px 4px 0 var(--tw-shadow-color);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .shadow-cyan-600\/20 { --tw-shadow-color: rgb(8 145 178 / 0.2); --tw-shadow: var(--tw-shadow-colored); }
+    .ring-1 {
+      --tw-ring-shadow: 0 0 0 1px var(--tw-ring-color);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .ring-slate-200 { --tw-ring-color: #e2e8f0; }
+
+    /* ---- Filters ---- */
+    .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+
+    /* ---- Transitions ---- */
+    .transition {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .duration-150 { transition-duration: 150ms; }
+
+    /* ---- Interaction ---- */
+    .cursor-default { cursor: default; }
+    .cursor-pointer { cursor: pointer; }
+
+    /* ---- Hover states ---- */
+    .hover\:bg-slate-50:hover { background-color: #f8fafc; }
+    .hover\:bg-slate-200:hover { background-color: #e2e8f0; }
+    .hover\:bg-cyan-500:hover { background-color: #06b6d4; }
+    .hover\:bg-emerald-500:hover { background-color: #10b981; }
+    .hover\:bg-rose-500:hover { background-color: #f43f5e; }
+    .hover\:text-slate-700:hover { color: #334155; }
+    .hover\:text-slate-900:hover { color: #0f172a; }
+
+    /* ---- Responsive (md = 768px and up) ---- */
+    @media (min-width: 768px) {
+      .md\:col-span-4 { grid-column: span 4 / span 4; }
+      .md\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .md\:h-\[340px\] { height: 340px; }
+      .md\:pt-10 { padding-top: 2.5rem; }
+    }
+
+    /* Classes the original referenced but that Tailwind v3 never defined (now working) */
+    .shadow-xs {
+      --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    }
+    .backdrop-blur-xs { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+    @keyframes fade-in-kf { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .animate-in.fade-in { animation: fade-in-kf 150ms ease-out both; }
+
+    /* Small screens: move the view/display panel above the canvas so it never covers the phone */
+    @media (max-width: 639px) {
+      #simViewport { height: auto; }
+      #simPanel { position: static; width: auto; flex-direction: row; padding: 0.5rem 0.5rem 0; }
+      #simPanel > div { flex: 1 1 0%; min-width: 0; }
+      #simStage { flex: none; height: 280px; }
+    }
+
+    /* CSS-drawn status icons (replace the old icon font) */
+    .signal-bars { display: inline-flex; align-items: flex-end; gap: 1px; height: 10px; }
+    .signal-bars i { display: block; width: 2px; border-radius: 1px; background: currentColor; opacity: 0.25; }
+    .signal-bars i:nth-child(1) { height: 3px; }
+    .signal-bars i:nth-child(2) { height: 5px; }
+    .signal-bars i:nth-child(3) { height: 7px; }
+    .signal-bars i:nth-child(4) { height: 10px; }
+    .signal-bars[data-level="1"] i:nth-child(-n+1),
+    .signal-bars[data-level="2"] i:nth-child(-n+2),
+    .signal-bars[data-level="3"] i:nth-child(-n+3),
+    .signal-bars[data-level="4"] i:nth-child(-n+4) { opacity: 1; }
+    .battery { position: relative; display: inline-block; width: 16px; height: 8px; border: 1px solid #475569; border-radius: 2px; padding: 1px; margin-left: 0.25rem; }
+    .battery::before { content: ""; display: block; width: 75%; height: 100%; background: #475569; border-radius: 1px; }
+    .battery::after { content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 2px; background: #475569; border-radius: 0 1px 1px 0; }
+
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Clean scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    /* Slider styling */
+    .custom-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #e2e8f0;
+      outline: none;
+    }
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #0284c7;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(2, 132, 199, 0.4);
+      transition: transform 0.1s;
+    }
+    .custom-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+    <div class="flex items-center gap-3">
+      <div>
+        <h1 class="font-bold text-lg text-slate-900 leading-tight tracking-tight flex items-center gap-2">
+          Radio Waves and Cellular Transmission
+          <span class="text-xs font-mono uppercase bg-cyan-50 text-cyan-700 border border-cyan-200 px-2 py-0.5 rounded-full">Interactive Simulation</span>
+        </h1>
+        <p class="text-xs text-slate-500">Dipole radiation, electromagnetic wave propagation (E ⟂ B), and smartphone signal reception</p>
+      </div>
+    </div>
+
+    <!-- Quick action controls -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Master Transmitter Power Button -->
+      <button id="btnTxPower" class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 transition shadow-sm">
+        <span id="txPowerText">Transmitter: OFF</span>
+      </button>
+
+      <button id="btnPlayPause" class="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300">
+        <span id="playText">Pause</span>
+      </button>
+      <button id="btnReset" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300">
+        Reset
+      </button>
+      <button id="btnSound" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300" title="Toggle audio representation">
+        <span id="audioText">Audio Tone: Off</span>
+      </button>
+      <button id="btnHelp" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition border border-slate-300" title="Simulation Guide">
+        Help
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace (Unified Full-Width Hierarchy) -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 flex flex-col gap-3 bg-white">
+    
+    <!-- Top Animation: Radio Waves Propagation Canvas Viewport -->
+    <section class="w-full">
+      <div id="simViewport" class="relative bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[310px] md:h-[340px] flex flex-col">
+        <!-- Vertically Stacked Controls on the Right Side -->
+        <div id="simPanel" class="absolute top-2.5 right-2.5 z-10 flex flex-col gap-2 pointer-events-auto w-44">
+          <!-- View Modes (Stacked Vertically) -->
+          <div class="bg-white/95 backdrop-blur-md rounded-xl p-1.5 border border-slate-200 shadow-sm flex flex-col gap-1 text-[11px]">
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-0.5">View Mode</div>
+            <button id="viewRadial" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2">
+              <span class="truncate">Spreading Waves</span>
+            </button>
+            <button id="viewTransverse" class="w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-2">
+              <span class="truncate">Transverse (E ⟂ B)</span>
+            </button>
+            <button id="viewVectors" class="w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-2">
+              <span class="truncate">Vector Grid</span>
+            </button>
+          </div>
+
+          <!-- Component Checkboxes (Stacked Vertically) -->
+          <div class="bg-white/95 backdrop-blur-md rounded-xl p-2 border border-slate-200 shadow-sm flex flex-col gap-1.5 text-[11px]">
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-0.5 pb-0.5">Display Elements</div>
+            <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 px-1 py-0.5 rounded transition">
+              <input type="checkbox" id="chkEField" checked class="accent-cyan-600 rounded">
+              <span class="text-cyan-700 font-medium">E-Field (Electric)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 px-1 py-0.5 rounded transition">
+              <input type="checkbox" id="chkBField" checked class="accent-amber-600 rounded">
+              <span class="text-amber-700 font-medium">B-Field (Magnetic)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 px-1 py-0.5 rounded transition">
+              <input type="checkbox" id="chkFieldLines" checked class="accent-indigo-600 rounded">
+              <span class="text-indigo-700 font-medium">Wave Envelope</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Main Simulation Canvas -->
+        <div id="simStage" class="w-full flex-1 relative bg-white overflow-hidden">
+          <canvas id="simCanvas" class="w-full h-full block cursor-default"></canvas>
+          
+          <!-- Hint for manual draggable mode -->
+          <div id="manualHint" class="hidden absolute bottom-2 left-4 bg-cyan-50 border border-cyan-300 text-cyan-800 text-[11px] px-2.5 py-1 rounded-lg shadow-xs pointer-events-none flex items-center gap-1.5">
+            <span>Drag the blue electron on the cell tower up and down!</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Second Animation (Smartphone Receiver) and Transmitter Controls directly below -->
+    <section class="w-full grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+      
+      <!-- Second Animation: Interactive Smartphone Receiver Display Unit (md:col-span-4) -->
+      <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col items-center">
+        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between w-full">
+          <span>Smartphone Receiver</span>
+          <span class="text-[10px] font-mono text-cyan-700 px-1.5 py-0.5 bg-cyan-50 rounded border border-cyan-200">5G / LTE Demodulator</span>
+        </div>
+
+        <!-- Phone chassis (Compact modern design) -->
+        <div class="w-60 h-[310px] bg-slate-100 rounded-3xl border-4 border-slate-300 shadow-md p-2.5 flex flex-col relative overflow-hidden ring-1 ring-slate-200">
+          <!-- Dynamic Island / Speaker notch -->
+          <div class="w-20 h-3 bg-slate-800 rounded-full mx-auto mb-1.5 flex items-center justify-end px-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          </div>
+
+          <!-- Smartphone Screen Display (The Second Animation) -->
+          <div class="flex-1 bg-white rounded-2xl p-2.5 flex flex-col justify-between border border-slate-200 text-xs overflow-hidden relative shadow-inner">
+            <!-- Screen Top Status Bar -->
+            <div class="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-100 pb-1">
+              <span class="font-mono">12:42</span>
+              <div class="flex items-center gap-1.5">
+                <span id="phoneBars" class="signal-bars text-slate-300" data-level="0" aria-label="Signal strength"><i></i><i></i><i></i><i></i></span>
+                <span class="font-bold text-cyan-700">5G</span>
+                <span class="battery" aria-hidden="true"></span>
+              </div>
+            </div>
+
+            <!-- Main App Content (Second Animation Demodulator Canvas) -->
+            <div class="flex-1 py-1 flex flex-col justify-center">
+              <div class="text-center mb-1">
+                <span class="text-[9px] uppercase font-mono tracking-widest text-slate-500">Demodulated Signal (V(t))</span>
+                <h4 id="phoneDecodedTitle" class="text-xs font-bold text-slate-800">Transmitter Idle</h4>
+              </div>
+
+              <!-- Animated Voice/Data waveform canvas (Second Animation) -->
+              <div class="h-16 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-center px-1 overflow-hidden relative">
+                <canvas id="phoneCanvas" class="w-full h-full block"></canvas>
+                <div id="noSignalOverlay" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-slate-500 text-[10px]">
+                  <span class="font-medium text-slate-600">No Carrier Signal</span>
+                  <span id="noSignalReason" class="text-[9px] text-slate-400">Transmitter is turned off</span>
+                </div>
+              </div>
+
+              <!-- Live Bitstream / Data Packet Decoding -->
+              <div class="mt-2 bg-slate-50 rounded p-1.5 border border-slate-200 font-mono text-[9px]">
+                <div class="text-slate-500 flex justify-between">
+                  <span>PACKET DECODE:</span>
+                  <span id="phonePacketLoss" class="text-slate-400">BER: --</span>
+                </div>
+                <div id="phoneBitstream" class="text-cyan-700 font-bold tracking-wider truncate">
+                  00000000 00000000 00000000
+                </div>
+                <div class="text-slate-500 mt-0.5 text-[8.5px] truncate" id="phonePayload">
+                  Payload: Waiting for radio waves...
+                </div>
+              </div>
+            </div>
+
+            <!-- Receiver Antenna Internal Indicator -->
+            <div class="bg-cyan-50 rounded-lg p-1 border border-cyan-200 flex items-center justify-between text-[9px] text-cyan-800">
+              <span>Internal Antenna (λ/4):</span>
+              <span id="antennaOscStatus" class="font-mono text-slate-500 font-semibold">Idle</span>
+            </div>
+          </div>
+
+          <!-- Bottom Home Indicator -->
+          <div class="w-16 h-1 bg-slate-400 rounded-full mx-auto mt-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Transmitter Controls Panel (md:col-span-4) -->
+      <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col gap-2.5">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+            Transmitter Controls
+          </h3>
+        </div>
+
+        <!-- Source Oscillation Mode -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs text-slate-700 font-medium">Modulation / Drive Mode:</label>
+          <div class="grid grid-cols-2 gap-1.5 text-xs">
+            <button id="modeSine" class="py-1 px-2 rounded-lg bg-cyan-600 text-white font-medium border border-cyan-500 transition text-center flex items-center justify-center gap-1 shadow-xs">
+              Sine Wave
+            </button>
+            <button id="modeData" class="py-1 px-2 rounded-lg bg-slate-100 text-slate-700 font-medium border border-slate-300 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1">
+              Voice / Data
+            </button>
+            <button id="modeManual" class="py-1 px-2 rounded-lg bg-slate-100 text-slate-700 font-medium border border-slate-300 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1">
+              Manual Wiggle
+            </button>
+            <button id="modePulse" class="py-1 px-2 rounded-lg bg-slate-100 text-slate-700 font-medium border border-slate-300 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1">
+              Single Pulse
+            </button>
+          </div>
+        </div>
+
+        <!-- Frequency Slider -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-700">Carrier Frequency (f):</span>
+            <span id="lblFreq" class="font-mono text-cyan-700 font-bold">1.00 Hz</span>
+          </div>
+          <input type="range" id="slFreq" min="0.2" max="3.0" step="0.05" value="1.0" class="custom-slider w-full">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0.2 Hz</span>
+            <span>Wavelength λ ∝ 1/f</span>
+            <span>3.0 Hz</span>
+          </div>
+        </div>
+
+        <!-- Amplitude / Power Slider -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-700">Transmitter Power / Amplitude (E₀):</span>
+            <span id="lblAmp" class="font-mono text-cyan-700 font-bold">80 %</span>
+          </div>
+          <input type="range" id="slAmp" min="0" max="100" step="1" value="80" class="custom-slider w-full">
+        </div>
+
+        <!-- Distance Slider -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-700">Tower-to-Phone Distance (r):</span>
+            <span id="lblDist" class="font-mono text-emerald-700 font-bold">1200 m</span>
+          </div>
+          <input type="range" id="slDist" min="400" max="2200" step="50" value="1200" class="custom-slider w-full">
+          <div class="text-[10px] text-slate-500">
+            Far-field attenuation: Signal decreases as 1/r
+          </div>
+        </div>
+
+        <!-- Simulation Speed -->
+        <div class="flex flex-col gap-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-700">Simulation Speed:</span>
+            <span id="lblSpeed" class="font-mono text-purple-700 font-bold">1.0x Real-Sim</span>
+          </div>
+          <input type="range" id="slSpeed" min="0.1" max="2.0" step="0.1" value="1.0" class="custom-slider w-full">
+        </div>
+      </div>
+
+      <!-- Educational Physics Guide (md:col-span-4) -->
+      <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 text-xs text-slate-600 flex flex-col gap-2 shadow-sm">
+        <h4 class="font-bold text-slate-800 flex items-center gap-1.5 border-b border-slate-200 pb-2">
+          How Cellular Radio Waves Work
+        </h4>
+        <p class="leading-relaxed">
+          1. <strong class="text-slate-800">Accelerating Charge:</strong> High-frequency alternating electric voltage forces conduction electrons to accelerate up and down the broadcast antenna (acceleration a ≠ 0).
+        </p>
+        <p class="leading-relaxed">
+          2. <strong class="text-slate-800">Omnidirectional Waves:</strong> The oscillating electric field creates a coupled magnetic field (E ⟂ B), radiating outward across space in all directions at the speed of light c (≈ 3.0 × 10⁸ m/s).
+        </p>
+        <p class="leading-relaxed">
+          3. <strong class="text-slate-800">Reception & Information:</strong> When the wavefronts arrive at the smartphone's internal antenna, the electric field exerts force (F = q · E), setting up an oscillating electric current that the smartphone demodulates into digital packets and clear audio!
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Help / Guide Modal -->
+  <div id="helpModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-start justify-center p-4 pt-6 md:pt-10 overflow-y-auto">
+    <div class="bg-white border border-slate-200 max-w-lg w-full rounded-2xl p-6 shadow-2xl flex flex-col gap-4 text-sm text-slate-700 animate-in fade-in duration-150">
+      <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+        <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2">
+          Radio Waves Simulation Guide
+        </h3>
+        <button id="btnCloseHelp" class="text-slate-400 hover:text-slate-700 text-lg px-1" aria-label="Close guide">&times;</button>
+      </div>
+      <div class="flex flex-col gap-3 text-xs leading-relaxed text-slate-600 max-h-[70vh] overflow-y-auto">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <strong class="text-cyan-800 text-sm">Interactive Features:</strong>
+          <ul class="list-disc list-inside mt-1.5 space-y-1.5 text-slate-600">
+            <li><strong class="text-slate-800">Transmitter Power:</strong> Toggle the transmitter ON or OFF to observe how fields originate and stop.</li>
+            <li><strong class="text-slate-800">Spreading Wavefronts:</strong> Observe the waves radiating across the entire space in all directions away from the broadcast mast.</li>
+            <li><strong class="text-slate-800">Manual Wiggle:</strong> Switch to Manual Wiggle mode, grab the conduction electron on the mast, and move it up and down to create custom electromagnetic wave pulses.</li>
+            <li><strong class="text-slate-800">Voice / Data:</strong> Modulate the carrier wave with digital packet data and observe how the phone demodulator decodes the stream.</li>
+            <li><strong class="text-slate-800">Distance & Delay:</strong> Move the distance slider to observe transmission delay (Δt = r / c) and signal attenuation (1/r).</li>
+          </ul>
+        </div>
+      </div>
+      <button id="btnGotIt" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-medium transition text-xs shadow-sm">
+        Close Guide
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Radio Waves and Cellular Transmission Simulation
+     * Physics Engine: Omnidirectional dipole radiation, transverse E & B field vectors,
+     * retarded potentials, induced antenna EMF, and smartphone data demodulation.
+     */
+    const STATE = {
+      running: true,
+      time: 0,
+      dt: 0.016,
+      speed: 1.0,
+      
+      // Transmitter State
+      txPowered: false, // Defaulted to OFF
+      mode: 'sine', // 'sine', 'data', 'manual', 'pulse'
+      frequency: 1.0, // Hz
+      amplitude: 0.8, // 0 to 1
+      chargePos: 0, // -1 to +1 (dipole electron position)
+      chargeVel: 0,
+      manualDragging: false,
+      pulseTriggered: false,
+      pulseTime: 0,
+      pulseFreq: 1.0, // frequency locked in when the pulse fires
+      phase: 0, // accumulated carrier phase (keeps the wave continuous when f changes)
+      
+      // Geometry & Dimensions
+      waveSpeed: 240, // pixels per second
+      towerX: 130, // Tower horizontal anchor
+      dipoleY: 100, // Antenna vertical anchor (moved to the top!)
+      phoneX: 720, // Phone horizontal anchor
+      phoneY: 140, // Phone vertical anchor
+      nominalDistance: 1200, // meters
+      
+      // Visualizer settings
+      viewMode: 'radial', // 'radial' (spreading in all directions), 'transverse', 'vectors'
+      showE: true,
+      showB: true,
+      showEnvelope: true,
+      
+      // Retarded history buffer
+      history: [],
+      maxHistoryTime: 7.0, // seconds
+      
+      // Receiver state
+      rxChargePos: 0,
+      rxChargeVel: 0,
+      rxEMF: 0,
+      rxEnvelope: 0, // decaying peak of the received field (signal present / absent)
+      rxPowerDbm: -115,
+      bitstreamTimer: 0,
+      
+      // Audio
+      audioEnabled: false,
+      audioCtx: null,
+      carrierOsc: null,
+      gainNode: null
+    };
+
+    // Canvas elements & contexts
+    const simCanvas = document.getElementById('simCanvas');
+    const simCtx = simCanvas.getContext('2d');
+    const phoneCanvas = document.getElementById('phoneCanvas');
+    const phoneCtx = phoneCanvas.getContext('2d');
+
+    // Electron travel on the tower dipole, in px per unit of chargePos.
+    // One constant for drawing, the drag ring, hit-testing and drag mapping.
+    const ELECTRON_TRAVEL = 16;
+
+    // Retarded-time lookup. STATE.history is newest-first (t descending), so binary search
+    // keeps this O(log n) even when slow sim speeds make the buffer very long.
+    function sampleHistory(targetTime) {
+      const hist = STATE.history;
+      const n = hist.length;
+      if (n < 2 || targetTime > hist[0].t || targetTime < hist[n - 1].t) return 0;
+      let lo = 0, hi = n - 1; // invariant: hist[lo].t >= targetTime >= hist[hi].t
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (hist[mid].t >= targetTime) lo = mid; else hi = mid;
+      }
+      const h1 = hist[lo], h2 = hist[hi];
+      const span = h1.t - h2.t;
+      if (span <= 0) return h1.y;
+      const alpha = (targetTime - h2.t) / span;
+      return h2.y + alpha * (h1.y - h2.y);
+    }
+
+    // Scope wave history buffer for phone screen
+    const phoneWaveHistory = new Array(100).fill(0);
+
+    // Audio synthesizer helper
+    function initAudio() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        STATE.audioCtx = new AudioContext();
+        
+        STATE.gainNode = STATE.audioCtx.createGain();
+        STATE.gainNode.gain.value = 0.0;
+        
+        STATE.carrierOsc = STATE.audioCtx.createOscillator();
+        STATE.carrierOsc.type = 'sine';
+        STATE.carrierOsc.frequency.value = 220;
+        
+        STATE.carrierOsc.connect(STATE.gainNode);
+        STATE.gainNode.connect(STATE.audioCtx.destination);
+        STATE.carrierOsc.start();
+      } catch (err) {
+        console.warn("Web Audio not available", err);
+      }
+    }
+
+    function muteAudio() {
+      if (STATE.audioCtx && STATE.gainNode) {
+        STATE.gainNode.gain.setTargetAtTime(0, STATE.audioCtx.currentTime, 0.02);
+      }
+    }
+
+    function updateAudio() {
+      if (!STATE.audioCtx || !STATE.audioEnabled) return;
+      if (!STATE.running) { muteAudio(); return; }
+      if (!STATE.txPowered) {
+        STATE.gainNode.gain.setTargetAtTime(0, STATE.audioCtx.currentTime, 0.05);
+        return;
+      }
+      
+      const targetGain = Math.abs(STATE.rxEMF) * 0.08 * (STATE.amplitude);
+      STATE.gainNode.gain.setTargetAtTime(targetGain, STATE.audioCtx.currentTime, 0.05);
+      
+      const targetFreq = 180 + STATE.frequency * 140;
+      STATE.carrierOsc.frequency.setTargetAtTime(targetFreq, STATE.audioCtx.currentTime, 0.05);
+    }
+
+    function resizeCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Main Canvas
+      const rect = simCanvas.getBoundingClientRect();
+      simCanvas.width = Math.round(rect.width * dpr);
+      simCanvas.height = Math.round(rect.height * dpr);
+      simCtx.resetTransform();
+      simCtx.scale(dpr, dpr);
+      
+      // Phone Canvas
+      const phoneRect = phoneCanvas.getBoundingClientRect();
+      phoneCanvas.width = Math.round(phoneRect.width * dpr);
+      phoneCanvas.height = Math.round(phoneRect.height * dpr);
+      phoneCtx.resetTransform();
+      phoneCtx.scale(dpr, dpr);
+
+      // 3D Perspective Layout:
+      // Tower is in the background (higher up), Phone is in the foreground (lower down)
+      // This creates a 20° - 26° descending line of transmission
+      STATE.towerX = Math.max(90, Math.round(rect.width * 0.13));
+      STATE.dipoleY = Math.round(rect.height * 0.22); // High in background
+      STATE.phoneY = Math.round(rect.height * 0.72);  // Low in foreground
+
+      updatePhoneXFromDistance();
+    }
+
+    function updatePhoneXFromDistance() {
+      const rect = simCanvas.getBoundingClientRect();
+      // Keep clear of the tower, and reserve right clearance for the stacked controls panel
+      // when there is room. On narrow screens shrink the gaps instead of letting the range
+      // invert (which made the phone move left as distance increased).
+      const minX = STATE.towerX + Math.min(200, Math.max(60, rect.width * 0.2));
+      let maxX = rect.width - 200;
+      if (maxX < minX + 80) maxX = Math.max(minX + 1, rect.width - 30);
+      const fraction = (STATE.nominalDistance - 400) / (2200 - 400);
+      STATE.phoneX = minX + fraction * (maxX - minX);
+    }
+
+    window.addEventListener('resize', resizeCanvases);
+
+    function updatePhysics(dt) {
+      if (!STATE.running) return;
+      if (!(dt > 0)) return; // identical rAF timestamps would otherwise divide by zero
+
+      const effectiveDt = dt * STATE.speed;
+      STATE.time += effectiveDt;
+      const prevChargePos = STATE.chargePos;
+      const prevChargeVel = STATE.chargeVel;
+
+      // Accumulate phase instead of using omega * time, so changing the frequency
+      // slider no longer makes the charge (and every wavefront) jump.
+      STATE.phase = (STATE.phase + 2 * Math.PI * STATE.frequency * effectiveDt) % (2 * Math.PI * 1000);
+
+      // 1. Calculate Transmitter Dipole Charge
+      let currentY = 0;
+      let currentVel = 0;
+      let currentAcc = 0;
+      const omega = 2 * Math.PI * STATE.frequency;
+      const amp = STATE.txPowered ? STATE.amplitude : 0.0;
+
+      if (!STATE.txPowered) {
+        currentY = 0;
+        currentVel = 0;
+        currentAcc = 0;
+      } else if (STATE.mode === 'sine') {
+        currentY = amp * Math.sin(STATE.phase);
+        currentVel = amp * omega * Math.cos(STATE.phase);
+        currentAcc = -omega * omega * currentY;
+      } else if (STATE.mode === 'data') {
+        const audioMod = 0.3 * Math.sin(STATE.phase * 0.25) + 0.15 * Math.sin(STATE.phase * 0.6);
+        const bitMod = (Math.floor(STATE.time * 2.5) % 2 === 0) ? 1.0 : 0.4;
+        currentY = amp * bitMod * (1 + audioMod) * 0.75 * Math.sin(STATE.phase);
+        currentVel = (currentY - prevChargePos) / effectiveDt;
+        currentAcc = (currentVel - prevChargeVel) / effectiveDt;
+      } else if (STATE.mode === 'pulse') {
+        if (STATE.pulseTriggered) {
+          const tPulse = STATE.time - STATE.pulseTime;
+          const pOmega = 2 * Math.PI * STATE.pulseFreq;
+          const sigma = 0.2 / STATE.pulseFreq;
+          const dtPulse = tPulse - 0.4;
+          const gaussian = Math.exp(-Math.pow(dtPulse, 2) / (2 * sigma * sigma));
+          currentY = amp * gaussian * Math.sin(pOmega * 3 * dtPulse);
+          currentVel = (currentY - prevChargePos) / effectiveDt;
+          currentAcc = (currentVel - prevChargeVel) / effectiveDt;
+          if (tPulse > 1.8 || tPulse < 0) {
+            STATE.pulseTriggered = false;
+            currentY = 0;
+          }
+        } else {
+          currentY = 0;
+          currentVel = 0;
+          currentAcc = 0;
+        }
+      } else if (STATE.mode === 'manual') {
+        currentY = STATE.chargePos;
+        currentVel = STATE.chargeVel;
+        currentAcc = 0;
+      }
+
+      if (STATE.mode !== 'manual') {
+        STATE.chargePos = currentY;
+        STATE.chargeVel = currentVel;
+      }
+
+      // Record radiation history for retarded potentials: [t, y, v, a]
+      STATE.history.unshift({
+        t: STATE.time,
+        y: STATE.chargePos,
+        v: STATE.chargeVel,
+        a: currentAcc
+      });
+
+      while (STATE.history.length > 0 && (STATE.time - STATE.history[STATE.history.length - 1].t) > STATE.maxHistoryTime) {
+        STATE.history.pop();
+      }
+
+      // 2. Field at Receiver Smartphone
+      const dx = STATE.phoneX - STATE.towerX;
+      const dy = STATE.phoneY - STATE.dipoleY;
+      const distPx = Math.hypot(dx, dy);
+      const travelTime = distPx / STATE.waveSpeed;
+      const retardedTime = STATE.time - travelTime;
+
+      const receivedCharge = sampleHistory(retardedTime);
+
+      // Geometric attenuation (1/r)
+      const distanceFactor = 320 / Math.max(100, distPx);
+      const inducedE = receivedCharge * distanceFactor;
+      
+      // Dynamic response of phone electron: driven, damped harmonic oscillator
+      // (semi-implicit Euler, tracks velocity so the electron has real inertia)
+      const k = 18.0;
+      const gamma = 4.0;
+      const drivingForce = inducedE * 40.0;
+
+      const rxAcc = drivingForce - gamma * STATE.rxChargeVel - k * STATE.rxChargePos;
+      STATE.rxChargeVel += rxAcc * effectiveDt;
+      STATE.rxChargePos += STATE.rxChargeVel * effectiveDt;
+      if (Math.abs(STATE.rxChargePos) > 1) {
+        STATE.rxChargePos = Math.sign(STATE.rxChargePos);
+        STATE.rxChargeVel = 0;
+      }
+      
+      STATE.rxEMF = inducedE;
+      
+      // Signal presence uses a decaying peak of the received field, so the phone no longer
+      // drops to "no signal" every time the sine wave crosses zero.
+      STATE.rxEnvelope = Math.max(Math.abs(inducedE), STATE.rxEnvelope * Math.exp(-effectiveDt / 0.6));
+
+      // Power in dBm. Field amplitude -> power is 20·log10; path loss spans the whole
+      // 400–2200 m slider so every signal tier (strong / good / weak / lost) is reachable.
+      if (!STATE.txPowered || STATE.rxEnvelope < 0.002) {
+        STATE.rxPowerDbm = -115;
+      } else {
+        STATE.rxPowerDbm = Math.round(-45 - 60 * Math.log10(STATE.nominalDistance / 400) + 20 * Math.log10(Math.max(0.01, STATE.amplitude)));
+      }
+
+      // Live demodulation packet mock
+      STATE.bitstreamTimer += effectiveDt;
+      if (STATE.bitstreamTimer > 0.4) {
+        STATE.bitstreamTimer = 0;
+        updateBitstreamMock();
+      }
+
+      phoneWaveHistory.push(inducedE + (STATE.txPowered ? (Math.random() - 0.5) * 0.04 * (STATE.nominalDistance / 800) : 0));
+      phoneWaveHistory.shift();
+
+      updateAudio();
+    }
+
+    function updateBitstreamMock() {
+      const isTransmitting = STATE.txPowered && STATE.amplitude > 0.05 && STATE.rxPowerDbm > -100;
+      
+      const barsEl = document.getElementById('phoneBars');
+      if (!isTransmitting) {
+        document.getElementById('noSignalOverlay').classList.remove('hidden');
+        let reason = 'Transmitter is turned off';
+        if (STATE.txPowered) {
+          if (STATE.amplitude <= 0.05) reason = 'Transmitter power too low';
+          else if (STATE.mode === 'pulse' || STATE.mode === 'manual') reason = 'No wave reaching the phone';
+          else if (STATE.rxEnvelope >= 0.002) reason = 'Signal too weak at this distance';
+          else reason = 'Waiting for the wave to arrive';
+        }
+        document.getElementById('noSignalReason').textContent = reason;
+        barsEl.className = 'signal-bars text-slate-300';
+        barsEl.dataset.level = '0';
+        document.getElementById('phonePacketLoss').textContent = 'BER: --';
+        document.getElementById('phonePacketLoss').className = 'text-slate-400';
+        document.getElementById('phoneDecodedTitle').textContent = STATE.txPowered ? 'Searching for Carrier...' : 'Transmitter Powered Off';
+        document.getElementById('phoneBitstream').textContent = '00000000 00000000 00000000';
+        document.getElementById('phonePayload').textContent = STATE.txPowered ? 'Waiting for wave arrival...' : 'Turn on transmitter to send RF data';
+        document.getElementById('antennaOscStatus').textContent = 'Idle';
+        document.getElementById('antennaOscStatus').className = 'font-mono text-slate-400 font-semibold';
+        return;
+      }
+
+      document.getElementById('noSignalOverlay').classList.add('hidden');
+      
+      let level = 4, color = 'text-emerald-600', ber = '0.00%', berClass = 'text-emerald-700 font-bold';
+      if (STATE.rxPowerDbm < -85) {
+        level = 2; color = 'text-amber-500'; ber = '2.40%'; berClass = 'text-amber-700 font-bold';
+      } else if (STATE.rxPowerDbm < -75) {
+        level = 3; color = 'text-emerald-500'; ber = '0.10%';
+      }
+      barsEl.className = 'signal-bars ' + color;
+      barsEl.dataset.level = String(level);
+      document.getElementById('phonePacketLoss').textContent = `BER: ${ber}`;
+      document.getElementById('phonePacketLoss').className = berClass;
+      
+      const randByte = () => Math.floor(Math.random() * 256).toString(2).padStart(8, '0');
+      document.getElementById('phoneBitstream').textContent = `${randByte()} ${randByte()} ${randByte()}`;
+      
+      if (STATE.mode === 'data') {
+        document.getElementById('phoneDecodedTitle').textContent = '5G Audio & Data Stream';
+        document.getElementById('phonePayload').textContent = 'Decoded Voice: "Cellular Voice Stream Active"';
+      } else if (STATE.mode === 'pulse') {
+        document.getElementById('phoneDecodedTitle').textContent = 'Single Pulse Received';
+        document.getElementById('phonePayload').textContent = `Transient burst at ${STATE.pulseFreq.toFixed(2)} Hz`;
+      } else if (STATE.mode === 'manual') {
+        document.getElementById('phoneDecodedTitle').textContent = 'Manual Wiggle Signal';
+        document.getElementById('phonePayload').textContent = 'Hand-driven waveform';
+      } else {
+        document.getElementById('phoneDecodedTitle').textContent = 'Continuous Carrier (CW)';
+        document.getElementById('phonePayload').textContent = `Carrier Wave: ${STATE.frequency.toFixed(2)} Hz`;
+      }
+
+      document.getElementById('antennaOscStatus').textContent = 'Resonating (Induced EMF)';
+      document.getElementById('antennaOscStatus').className = 'font-mono text-emerald-600 font-bold';
+    }
+
+    function drawSimulation() {
+      const rect = simCanvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      // Ensure 3D depth positioning (tower higher in background, phone lower in foreground)
+      STATE.dipoleY = Math.round(h * 0.22);
+      STATE.phoneY = Math.round(h * 0.72);
+
+      // Pure white background
+      simCtx.fillStyle = '#ffffff';
+      simCtx.fillRect(0, 0, w, h);
+
+      // Perspective floor horizons
+      const groundBackY = Math.round(h * 0.44); // Horizon for background tower
+      const groundForeY = Math.round(h * 0.92); // Horizon for foreground phone
+
+      // Subtle light grid in sky
+      simCtx.strokeStyle = 'rgba(241, 245, 249, 0.8)';
+      simCtx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = 0; x < w; x += gridSize) {
+        simCtx.beginPath();
+        simCtx.moveTo(x, 0);
+        simCtx.lineTo(x, h);
+        simCtx.stroke();
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        simCtx.beginPath();
+        simCtx.moveTo(0, y);
+        simCtx.lineTo(w, y);
+        simCtx.stroke();
+      }
+
+      // Perspective ground plane gradient
+      const gradGround = simCtx.createLinearGradient(0, groundBackY, 0, h);
+      gradGround.addColorStop(0, 'rgba(248, 250, 252, 0.5)');
+      gradGround.addColorStop(1, 'rgba(241, 245, 249, 0.85)');
+      simCtx.fillStyle = gradGround;
+      simCtx.fillRect(0, groundBackY, w, h - groundBackY);
+
+      // Perspective ground dividing line
+      simCtx.strokeStyle = '#e2e8f0';
+      simCtx.lineWidth = 1.2;
+      simCtx.beginPath();
+      simCtx.moveTo(0, groundBackY);
+      simCtx.lineTo(w, groundBackY);
+      simCtx.stroke();
+
+      // Perspective terrain guide lines converging to distance
+      simCtx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
+      simCtx.setLineDash([3, 4]);
+      for (let offset = -200; offset < w + 200; offset += 90) {
+        simCtx.beginPath();
+        simCtx.moveTo(offset, groundBackY);
+        simCtx.lineTo(offset * 1.3 - 80, h);
+        simCtx.stroke();
+      }
+      simCtx.setLineDash([]);
+
+      // Render electromagnetic wave based on selected mode
+      if (STATE.viewMode === 'radial') {
+        drawOmnidirectionalWavefronts(w, h);
+      } else if (STATE.viewMode === 'transverse') {
+        drawTransverseWave();
+      } else if (STATE.viewMode === 'vectors') {
+        drawVectorField(w, h);
+      }
+
+      // Draw Transmitter Cell Tower in the background
+      drawTransmitterTower(STATE.towerX, STATE.dipoleY, groundBackY);
+
+      // Draw Smartphone Receiver in the foreground
+      drawReceiverPhone(STATE.phoneX, STATE.phoneY, groundForeY);
+
+      // Interactive manual drag indicator
+      if (STATE.mode === 'manual' && STATE.txPowered) {
+        drawManualDragTarget(STATE.towerX, STATE.dipoleY);
+      }
+    }
+
+    function drawOmnidirectionalWavefronts(w, h) {
+      const srcX = STATE.towerX;
+      const srcY = STATE.dipoleY;
+      const maxRadius = Math.hypot(w, h);
+
+      simCtx.save();
+
+      // Draw propagating waves spreading in all directions
+      if (STATE.history.length > 2) {
+        for (let r = 18; r < maxRadius; r += 14) {
+          const tau = r / STATE.waveSpeed;
+          const targetTime = STATE.time - tau;
+
+          const val = sampleHistory(targetTime);
+
+          if (Math.abs(val) > 0.02) {
+            const atten = Math.max(0.1, 1 - r / (maxRadius * 0.9));
+            const intensity = Math.abs(val) * atten;
+
+            // Dipole radiation profile
+            simCtx.beginPath();
+            simCtx.lineWidth = Math.min(3.5, 1.2 + intensity * 2.5);
+            simCtx.strokeStyle = val > 0 
+              ? `rgba(2, 132, 199, ${Math.min(0.85, intensity * 0.9)})` 
+              : `rgba(217, 119, 6, ${Math.min(0.85, intensity * 0.9)})`;
+            
+            simCtx.arc(srcX, srcY, r, 0, Math.PI * 2);
+            simCtx.stroke();
+          }
+        }
+      }
+
+      // Overlay directional rays spreading outward in 360 degrees
+      simCtx.strokeStyle = 'rgba(203, 213, 225, 0.4)';
+      simCtx.lineWidth = 1;
+      simCtx.setLineDash([2, 4]);
+      for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+        simCtx.beginPath();
+        simCtx.moveTo(srcX, srcY);
+        simCtx.lineTo(srcX + Math.cos(angle) * (w * 0.85), srcY + Math.sin(angle) * (w * 0.85));
+        simCtx.stroke();
+      }
+      simCtx.setLineDash([]);
+
+      simCtx.fillStyle = '#0284c7';
+      simCtx.font = 'bold 10px "JetBrains Mono", ui-monospace, monospace';
+      simCtx.textAlign = 'left';
+      simCtx.fillText('Omnidirectional Radiation (Spreading in all directions at speed c)', srcX + 28, srcY + 16);
+
+      simCtx.restore();
+    }
+
+    function drawTransverseWave() {
+      const startX = STATE.towerX + 20;
+      const startY = STATE.dipoleY;
+      const endX = STATE.phoneX - 22;
+      const endY = STATE.phoneY - 6;
+
+      if (endX <= startX) return;
+
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const length = Math.hypot(dx, dy);
+
+      // Unit vector along propagation (k)
+      const kx = dx / length;
+      const ky = dy / length;
+
+      // Lateral perspective vector for Magnetic Field (B-field)
+      // Slanted across the ground plane for distinct 3D visual relief
+      const bx = 0.82;
+      const by = -0.38;
+
+      const maxE_Amp = 45;
+      const maxB_Amp = 39;
+      const numSamples = Math.floor(length / 4);
+      if (numSamples < 2) return;
+
+      simCtx.save();
+
+      // 1. Direct line of transmission (Poynting axis)
+      simCtx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+      simCtx.lineWidth = 1.5;
+      simCtx.setLineDash([4, 3]);
+      simCtx.beginPath();
+      simCtx.moveTo(startX, startY);
+      simCtx.lineTo(endX, endY);
+      simCtx.stroke();
+      simCtx.setLineDash([]);
+
+      // Propagation arrow
+      drawMiniArrow(endX - kx * 12, endY - ky * 12, endX + kx * 8, endY + ky * 8, '#0284c7');
+
+      // Sample wave values along the line
+      const points = [];
+      for (let i = 0; i <= numSamples; i++) {
+        const s = i / numSamples;
+        const x = startX + s * dx;
+        const y = startY + s * dy;
+        const dist = s * length;
+        const tau = dist / STATE.waveSpeed;
+        const targetTime = STATE.time - tau;
+
+        const val = sampleHistory(targetTime);
+
+        const atten = Math.max(0.4, 1 - (dist / (length + 200)) * 0.45);
+        const eVal = val * maxE_Amp * atten;
+        const bVal = val * maxB_Amp * atten;
+
+        // E-field oscillates strictly vertically (0 degrees to vertical, straight up and down)
+        points.push({
+          x, y,
+          ex: x,
+          ey: y - eVal,
+          bx: x + bx * bVal,
+          by: y + by * bVal,
+          val
+        });
+      }
+
+      // 2. Magnetic Field (B) - Rendered in rich Amber/Orange with perspective ribbons
+      if (STATE.showB) {
+        // Translucent fill ribbon for B-field
+        if (STATE.showEnvelope) {
+          simCtx.fillStyle = 'rgba(217, 119, 6, 0.12)';
+          simCtx.beginPath();
+          simCtx.moveTo(points[0].x, points[0].y);
+          for (let i = 0; i < points.length; i++) {
+            simCtx.lineTo(points[i].bx, points[i].by);
+          }
+          simCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+          simCtx.closePath();
+          simCtx.fill();
+        }
+
+        // Vector arrows for B-field
+        for (let i = 0; i < points.length; i += 3) {
+          const pt = points[i];
+          if (Math.abs(pt.val) > 0.08) {
+            simCtx.strokeStyle = 'rgba(217, 119, 6, 0.55)';
+            simCtx.lineWidth = 1.3;
+            simCtx.beginPath();
+            simCtx.moveTo(pt.x, pt.y);
+            simCtx.lineTo(pt.bx, pt.by);
+            simCtx.stroke();
+            drawMiniArrow(pt.x, pt.y, pt.bx, pt.by, 'rgba(217, 119, 6, 0.95)');
+          }
+        }
+
+        // Smooth B-field envelope line
+        if (STATE.showEnvelope) {
+          simCtx.strokeStyle = '#d97706';
+          simCtx.lineWidth = 2.0;
+          simCtx.beginPath();
+          for (let i = 0; i < points.length; i++) {
+            if (i === 0) simCtx.moveTo(points[i].bx, points[i].by);
+            else simCtx.lineTo(points[i].bx, points[i].by);
+          }
+          simCtx.stroke();
+        }
+      }
+
+      // 3. Electric Field (E) - Rendered in Cyan/Sky Blue
+      if (STATE.showE) {
+        // Translucent fill ribbon for E-field
+        if (STATE.showEnvelope) {
+          simCtx.fillStyle = 'rgba(2, 132, 199, 0.10)';
+          simCtx.beginPath();
+          simCtx.moveTo(points[0].x, points[0].y);
+          for (let i = 0; i < points.length; i++) {
+            simCtx.lineTo(points[i].ex, points[i].ey);
+          }
+          simCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+          simCtx.closePath();
+          simCtx.fill();
+        }
+
+        // Vector arrows for E-field
+        for (let i = 0; i < points.length; i += 3) {
+          const pt = points[i];
+          if (Math.abs(pt.val) > 0.08) {
+            simCtx.strokeStyle = 'rgba(2, 132, 199, 0.7)';
+            simCtx.lineWidth = 1.5;
+            simCtx.beginPath();
+            simCtx.moveTo(pt.x, pt.y);
+            simCtx.lineTo(pt.ex, pt.ey);
+            simCtx.stroke();
+            drawMiniArrow(pt.x, pt.y, pt.ex, pt.ey, '#0284c7');
+          }
+        }
+
+        // Smooth E-field envelope line
+        if (STATE.showEnvelope) {
+          simCtx.strokeStyle = '#0284c7';
+          simCtx.lineWidth = 2.2;
+          simCtx.beginPath();
+          for (let i = 0; i < points.length; i++) {
+            if (i === 0) simCtx.moveTo(points[i].ex, points[i].ey);
+            else simCtx.lineTo(points[i].ex, points[i].ey);
+          }
+          simCtx.stroke();
+        }
+      }
+
+      // Labels positioned clearly above the waves to prevent any overlap
+      simCtx.font = 'bold 10px "JetBrains Mono", ui-monospace, monospace';
+      simCtx.textAlign = 'left';
+      simCtx.textBaseline = 'middle';
+      const labelY = startY - 48;
+      let curX = startX + 45;
+
+      if (STATE.showE) {
+        simCtx.fillStyle = '#0284c7';
+        simCtx.beginPath();
+        simCtx.arc(curX + 4, labelY, 3.5, 0, Math.PI * 2);
+        simCtx.fill();
+        simCtx.fillText('Electric Field (E)', curX + 12, labelY);
+        curX += 140;
+      }
+      if (STATE.showB) {
+        simCtx.fillStyle = '#d97706';
+        simCtx.beginPath();
+        simCtx.arc(curX + 4, labelY, 3.5, 0, Math.PI * 2);
+        simCtx.fill();
+        simCtx.fillText('Magnetic Field (B ⟂ E)', curX + 12, labelY);
+      }
+
+      simCtx.restore();
+    }
+
+    function drawVectorField(w, h) {
+      const step = 50;
+      const srcX = STATE.towerX;
+      const srcY = STATE.dipoleY;
+
+      simCtx.save();
+      for (let x = srcX + 25; x < w - 40; x += step) {
+        for (let y = 30; y < h * 0.88; y += step) {
+          const dx = x - srcX;
+          const dy = y - srcY;
+          const dist = Math.hypot(dx, dy);
+          const tau = dist / STATE.waveSpeed;
+          const targetTime = STATE.time - tau;
+
+          const val = sampleHistory(targetTime);
+
+          const theta = Math.atan2(dy, dx);
+          const mag = val * 22 * Math.cos(theta) * Math.max(0.15, 1 - dist / (w * 0.9));
+
+          if (Math.abs(mag) > 1.5) {
+            const vy = y - mag;
+            simCtx.strokeStyle = 'rgba(2, 132, 199, 0.8)';
+            simCtx.lineWidth = 1.5;
+            simCtx.beginPath();
+            simCtx.moveTo(x, y);
+            simCtx.lineTo(x, vy);
+            simCtx.stroke();
+            drawMiniArrow(x, y, x, vy, '#0284c7');
+          }
+        }
+      }
+      simCtx.restore();
+    }
+
+    function drawMiniArrow(fromX, fromY, toX, toY, color) {
+      const headLen = 6;
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const angle = Math.atan2(dy, dx);
+      simCtx.save();
+      simCtx.fillStyle = color;
+      simCtx.beginPath();
+      simCtx.moveTo(toX, toY);
+      simCtx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+      simCtx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+      simCtx.closePath();
+      simCtx.fill();
+      simCtx.restore();
+    }
+
+    function drawTransmitterTower(txX, dipoleY, groundY) {
+      simCtx.save();
+
+      // Shadow on perspective background ground
+      simCtx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+      simCtx.beginPath();
+      simCtx.ellipse(txX, groundY, 22, 6, 0, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.strokeStyle = '#475569';
+      simCtx.lineWidth = 1.4;
+      const towerBaseW = 34;
+      const mastTopY = dipoleY - 24;
+
+      // Legs extending down to background ground
+      simCtx.beginPath();
+      simCtx.moveTo(txX - towerBaseW / 2, groundY);
+      simCtx.lineTo(txX - 3.5, mastTopY);
+      simCtx.lineTo(txX + 3.5, mastTopY);
+      simCtx.lineTo(txX + towerBaseW / 2, groundY);
+      simCtx.stroke();
+
+      // Cross trusses
+      const trussSteps = 5;
+      for (let i = 0; i < trussSteps; i++) {
+        const yA = groundY - (i / trussSteps) * (groundY - mastTopY);
+        const yB = groundY - ((i + 1) / trussSteps) * (groundY - mastTopY);
+        const wA = towerBaseW * (1 - (i / trussSteps) * 0.75);
+        const wB = towerBaseW * (1 - ((i + 1) / trussSteps) * 0.75);
+        
+        simCtx.beginPath();
+        simCtx.moveTo(txX - wA / 2, yA);
+        simCtx.lineTo(txX + wB / 2, yB);
+        simCtx.moveTo(txX + wA / 2, yA);
+        simCtx.lineTo(txX - wB / 2, yB);
+        simCtx.stroke();
+      }
+
+      // Antenna dipole rod
+      const rodTop = dipoleY - 22;
+      const rodBottom = dipoleY + 22;
+
+      simCtx.strokeStyle = '#334155';
+      simCtx.lineWidth = 3.5;
+      simCtx.beginPath();
+      simCtx.moveTo(txX, rodTop);
+      simCtx.lineTo(txX, rodBottom);
+      simCtx.stroke();
+
+      // Feedpoint gap
+      simCtx.strokeStyle = '#ffffff';
+      simCtx.lineWidth = 4.5;
+      simCtx.beginPath();
+      simCtx.moveTo(txX, dipoleY - 2.5);
+      simCtx.lineTo(txX, dipoleY + 2.5);
+      simCtx.stroke();
+
+      // Dipole charge signs (+ and -)
+      // The electron carries negative charge: when it moves up (chargePos > 0) the top end
+      // becomes negative and the bottom end positive.
+      const isPositiveTop = STATE.chargePos < 0;
+      simCtx.font = 'bold 9px "Inter", sans-serif';
+      simCtx.textAlign = 'center';
+      simCtx.textBaseline = 'middle';
+
+      simCtx.fillStyle = (STATE.txPowered && isPositiveTop) ? '#ef4444' : (STATE.txPowered ? '#0284c7' : '#94a3b8');
+      simCtx.beginPath();
+      simCtx.arc(txX, rodTop - 5.5, 5, 0, Math.PI * 2);
+      simCtx.fill();
+      simCtx.fillStyle = '#ffffff';
+      simCtx.fillText(STATE.txPowered ? (isPositiveTop ? '+' : '−') : '·', txX, rodTop - 5.5);
+
+      simCtx.fillStyle = (STATE.txPowered && !isPositiveTop) ? '#ef4444' : (STATE.txPowered ? '#0284c7' : '#94a3b8');
+      simCtx.beginPath();
+      simCtx.arc(txX, rodBottom + 5.5, 5, 0, Math.PI * 2);
+      simCtx.fill();
+      simCtx.fillStyle = '#ffffff';
+      simCtx.fillText(STATE.txPowered ? (isPositiveTop ? '−' : '+') : '·', txX, rodBottom + 5.5);
+
+      // Conduction electron on dipole rod
+      const electronY = dipoleY - (STATE.txPowered ? STATE.chargePos * ELECTRON_TRAVEL : 0);
+
+      simCtx.fillStyle = STATE.txPowered ? '#0284c7' : '#94a3b8';
+      simCtx.beginPath();
+      simCtx.arc(txX, electronY, 6, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.fillStyle = '#ffffff';
+      simCtx.beginPath();
+      simCtx.arc(txX, electronY, 2.2, 0, Math.PI * 2);
+      simCtx.fill();
+
+      simCtx.fillStyle = '#0f172a';
+      simCtx.font = 'bold 9px "Inter", sans-serif';
+      simCtx.fillText('e⁻', txX + 13, electronY);
+
+      simCtx.fillStyle = '#334155';
+      simCtx.font = 'bold 10px "Inter", sans-serif';
+      simCtx.fillText('Tower TX', txX, rodTop - 22);
+
+      simCtx.restore();
+    }
+
+    function drawReceiverPhone(rxX, rxY, groundY) {
+      simCtx.save();
+
+      // Shadow on perspective foreground ground
+      simCtx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+      simCtx.beginPath();
+      simCtx.ellipse(rxX, groundY, 20, 6, 0, 0, Math.PI * 2);
+      simCtx.fill();
+
+      // Scaled receiver smartphone in foreground
+      const phoneW = 34;
+      const phoneH = 64;
+      const phoneTop = rxY - phoneH / 2;
+
+      // Stand down to foreground ground line
+      simCtx.strokeStyle = '#475569';
+      simCtx.lineWidth = 2.5;
+      simCtx.beginPath();
+      simCtx.moveTo(rxX, phoneTop + phoneH);
+      simCtx.lineTo(rxX, groundY);
+      simCtx.moveTo(rxX - 14, groundY);
+      simCtx.lineTo(rxX + 14, groundY);
+      simCtx.stroke();
+
+      // Clean phone chassis
+      simCtx.fillStyle = '#ffffff';
+      simCtx.strokeStyle = '#0284c7';
+      simCtx.lineWidth = 1.8;
+      roundRect(simCtx, rxX - phoneW / 2, phoneTop, phoneW, phoneH, 7);
+      simCtx.fill();
+      simCtx.stroke();
+
+      // Phone screen
+      simCtx.fillStyle = '#0f172a';
+      roundRect(simCtx, rxX - phoneW / 2 + 2, phoneTop + 3, phoneW - 4, phoneH - 6, 5);
+      simCtx.fill();
+
+      // Internal receiver antenna rod
+      const antX = rxX - phoneW / 2 + 5.5;
+      const antTop = phoneTop + 7;
+      const antBottom = phoneTop + phoneH - 8;
+
+      simCtx.strokeStyle = '#64748b';
+      simCtx.lineWidth = 2;
+      simCtx.beginPath();
+      simCtx.moveTo(antX, antTop);
+      simCtx.lineTo(antX, antBottom);
+      simCtx.stroke();
+
+      // Induced electron in antenna rod responds directly to local field
+      const rxElectronY = (antTop + antBottom) / 2 - (STATE.rxChargePos * 16);
+      const isRxActive = Math.abs(STATE.rxEMF) > 0.02 || Math.abs(STATE.rxChargePos) > 0.02;
+      simCtx.fillStyle = isRxActive ? '#10b981' : '#94a3b8';
+      simCtx.beginPath();
+      simCtx.arc(antX, rxElectronY, 4, 0, Math.PI * 2);
+      simCtx.fill();
+
+      // Signal wave icon inside mini screen reflects local field activity
+      if (isRxActive) {
+        simCtx.strokeStyle = '#38bdf8';
+        simCtx.lineWidth = 1.2;
+        simCtx.beginPath();
+        for (let s = -6; s <= 6; s += 2) {
+          const sy = rxY + Math.sin(s * 0.5 + STATE.time * 6) * 3.5 * Math.min(1, Math.abs(STATE.rxEMF) * 3);
+          if (s === -6) simCtx.moveTo(rxX + 5 + s, sy);
+          else simCtx.lineTo(rxX + 5 + s, sy);
+        }
+        simCtx.stroke();
+      }
+
+      simCtx.restore();
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function drawManualDragTarget(txX, dipoleY) {
+      const electronY = dipoleY - STATE.chargePos * ELECTRON_TRAVEL;
+      simCtx.save();
+      simCtx.strokeStyle = 'rgba(2, 132, 199, 0.8)';
+      simCtx.lineWidth = 1.5;
+      simCtx.setLineDash([3, 3]);
+      simCtx.beginPath();
+      simCtx.arc(txX, electronY, 14, 0, Math.PI * 2);
+      simCtx.stroke();
+      simCtx.restore();
+    }
+
+    function drawPhoneScreen() {
+      const phoneRect = phoneCanvas.getBoundingClientRect();
+      const w = phoneRect.width;
+      const h = phoneRect.height;
+      const centerY = h / 2;
+
+      phoneCtx.clearRect(0, 0, w, h);
+      phoneCtx.fillStyle = '#f8fafc';
+      phoneCtx.fillRect(0, 0, w, h);
+
+      // Check if there is still any active wave energy passing through the phone buffer
+      const hasActiveWaveInHistory = phoneWaveHistory.some(val => Math.abs(val) > 0.006);
+
+      if (!hasActiveWaveInHistory) {
+        phoneCtx.strokeStyle = '#e2e8f0';
+        phoneCtx.lineWidth = 1;
+        phoneCtx.beginPath();
+        phoneCtx.moveTo(0, centerY);
+        phoneCtx.lineTo(w, centerY);
+        phoneCtx.stroke();
+        return;
+      }
+
+      phoneCtx.fillStyle = 'rgba(2, 132, 199, 0.15)';
+      const step = w / phoneWaveHistory.length;
+      for (let i = 0; i < phoneWaveHistory.length; i += 2) {
+        const val = Math.abs(phoneWaveHistory[i]);
+        const barH = Math.min(h, val * h * 1.5);
+        phoneCtx.fillRect(i * step, centerY - barH / 2, step * 1.5, barH);
+      }
+
+      phoneCtx.strokeStyle = '#0284c7';
+      phoneCtx.lineWidth = 1.5;
+      phoneCtx.beginPath();
+      for (let i = 0; i < phoneWaveHistory.length; i++) {
+        const y = centerY - phoneWaveHistory[i] * (h * 0.4);
+        if (i === 0) phoneCtx.moveTo(i * step, y);
+        else phoneCtx.lineTo(i * step, y);
+      }
+      phoneCtx.stroke();
+    }
+
+    function updateHUD() {
+      // Telemetry HUD overlay removed per request
+    }
+
+    function setupInteractions() {
+      // Transmitter Power Toggle (Master button)
+      const btnTxPower = document.getElementById('btnTxPower');
+
+      function toggleTransmitterPower() {
+        STATE.txPowered = !STATE.txPowered;
+        if (STATE.txPowered) {
+          btnTxPower.className = 'px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-2 transition shadow-sm';
+          document.getElementById('txPowerText').textContent = 'Transmitter: ON';
+        } else {
+          btnTxPower.className = 'px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-2 transition shadow-sm';
+          document.getElementById('txPowerText').textContent = 'Transmitter: OFF';
+          STATE.chargePos = 0;
+          // Note: STATE.rxChargePos is NOT abruptly zeroed out here.
+          // It naturally continues oscillating and damps out as the wave in flight finishes passing the phone.
+        }
+      }
+
+      btnTxPower.addEventListener('click', toggleTransmitterPower);
+
+      // Play / Pause
+      const btnPlayPause = document.getElementById('btnPlayPause');
+      btnPlayPause.addEventListener('click', () => {
+        STATE.running = !STATE.running;
+        document.getElementById('playText').textContent = STATE.running ? 'Pause' : 'Resume';
+        if (!STATE.running) muteAudio();
+      });
+
+      // Reset
+      document.getElementById('btnReset').addEventListener('click', () => {
+        STATE.time = 0;
+        STATE.history = [];
+        phoneWaveHistory.fill(0);
+        STATE.chargePos = 0;
+        STATE.chargeVel = 0;
+        STATE.phase = 0;
+        STATE.rxChargePos = 0;
+        STATE.rxChargeVel = 0;
+        STATE.rxEMF = 0;
+        STATE.rxEnvelope = 0;
+        STATE.rxPowerDbm = -115;
+        STATE.bitstreamTimer = 0;
+        STATE.pulseTriggered = false; // a pending pulse would otherwise fire much later
+        updateBitstreamMock();
+      });
+
+      // Audio Toggle
+      document.getElementById('btnSound').addEventListener('click', () => {
+        if (!STATE.audioCtx) initAudio();
+        STATE.audioEnabled = !STATE.audioEnabled;
+        const label = document.getElementById('audioText');
+        if (STATE.audioEnabled) {
+          label.textContent = 'Audio Tone: On';
+          label.className = 'text-cyan-700';
+          if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
+            STATE.audioCtx.resume();
+          }
+        } else {
+          label.textContent = 'Audio Tone: Off';
+          label.className = '';
+          if (STATE.gainNode) STATE.gainNode.gain.setValueAtTime(0, STATE.audioCtx.currentTime);
+        }
+      });
+
+      // Drive Mode switch
+      const modeButtons = {
+        sine: document.getElementById('modeSine'),
+        data: document.getElementById('modeData'),
+        manual: document.getElementById('modeManual'),
+        pulse: document.getElementById('modePulse')
+      };
+
+      function setMode(modeKey) {
+        STATE.mode = modeKey;
+        Object.keys(modeButtons).forEach(k => {
+          if (k === modeKey) {
+            modeButtons[k].className = 'py-1 px-2 rounded-lg bg-cyan-600 text-white font-medium border border-cyan-500 transition text-center flex items-center justify-center gap-1 shadow-xs';
+          } else {
+            modeButtons[k].className = 'py-1 px-2 rounded-lg bg-slate-100 text-slate-700 font-medium border border-slate-300 hover:bg-slate-200 transition text-center flex items-center justify-center gap-1';
+          }
+        });
+
+        const hint = document.getElementById('manualHint');
+        if (modeKey === 'manual') {
+          hint.classList.remove('hidden');
+        } else {
+          hint.classList.add('hidden');
+        }
+
+        if (modeKey === 'pulse') {
+          STATE.pulseTriggered = true;
+          STATE.pulseTime = STATE.time;
+          STATE.pulseFreq = STATE.frequency;
+          if (!STATE.txPowered) toggleTransmitterPower();
+        }
+      }
+
+      modeButtons.sine.addEventListener('click', () => setMode('sine'));
+      modeButtons.data.addEventListener('click', () => setMode('data'));
+      modeButtons.manual.addEventListener('click', () => setMode('manual'));
+      modeButtons.pulse.addEventListener('click', () => setMode('pulse'));
+
+      // Sliders
+      document.getElementById('slFreq').addEventListener('input', (e) => {
+        STATE.frequency = parseFloat(e.target.value);
+        document.getElementById('lblFreq').textContent = `${STATE.frequency.toFixed(2)} Hz`;
+      });
+
+      document.getElementById('slAmp').addEventListener('input', (e) => {
+        STATE.amplitude = parseFloat(e.target.value) / 100;
+        document.getElementById('lblAmp').textContent = `${e.target.value} %`;
+      });
+
+      document.getElementById('slDist').addEventListener('input', (e) => {
+        STATE.nominalDistance = parseInt(e.target.value);
+        document.getElementById('lblDist').textContent = `${STATE.nominalDistance} m`;
+        updatePhoneXFromDistance();
+      });
+
+      document.getElementById('slSpeed').addEventListener('input', (e) => {
+        STATE.speed = parseFloat(e.target.value);
+        document.getElementById('lblSpeed').textContent = `${STATE.speed.toFixed(1)}x Real-Sim`;
+      });
+
+      // View modes
+      const vRad = document.getElementById('viewRadial');
+      const vTrans = document.getElementById('viewTransverse');
+      const vVec = document.getElementById('viewVectors');
+
+      function setView(view) {
+        STATE.viewMode = view;
+        [vRad, vTrans, vVec].forEach(b => {
+          b.className = 'w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-2';
+        });
+        if (view === 'radial') vRad.className = 'w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2';
+        if (view === 'transverse') vTrans.className = 'w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2';
+        if (view === 'vectors') vVec.className = 'w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2';
+      }
+
+      vRad.addEventListener('click', () => setView('radial'));
+      vTrans.addEventListener('click', () => setView('transverse'));
+      vVec.addEventListener('click', () => setView('vectors'));
+
+      // Checkboxes
+      document.getElementById('chkEField').addEventListener('change', (e) => STATE.showE = e.target.checked);
+      document.getElementById('chkBField').addEventListener('change', (e) => STATE.showB = e.target.checked);
+      document.getElementById('chkFieldLines').addEventListener('change', (e) => STATE.showEnvelope = e.target.checked);
+
+      // Manual drag on dipole charge
+      let isDragging = false;
+
+      function getCanvasMousePos(e) {
+        const rect = simCanvas.getBoundingClientRect();
+        const point = (e.touches && e.touches.length) ? e.touches[0] : e;
+        const clientX = point.clientX;
+        const clientY = point.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function handlePointerDown(e) {
+        const pos = getCanvasMousePos(e);
+        const electronY = STATE.dipoleY - STATE.chargePos * ELECTRON_TRAVEL;
+        const dist = Math.hypot(pos.x - STATE.towerX, pos.y - electronY);
+        if (dist < 26) {
+          isDragging = true;
+          if (!STATE.txPowered) toggleTransmitterPower();
+          setMode('manual');
+          e.preventDefault();
+        }
+      }
+
+      function handlePointerMove(e) {
+        if (!isDragging) return;
+        const pos = getCanvasMousePos(e);
+        const newDisplacement = (STATE.dipoleY - pos.y) / ELECTRON_TRAVEL;
+        const clampedY = Math.max(-1.0, Math.min(1.0, newDisplacement));
+        STATE.chargeVel = (clampedY - STATE.chargePos) / 0.016;
+        STATE.chargePos = clampedY;
+        e.preventDefault();
+      }
+
+      function handlePointerUp() {
+        isDragging = false;
+      }
+
+      simCanvas.addEventListener('mousedown', handlePointerDown);
+      window.addEventListener('mousemove', handlePointerMove);
+      window.addEventListener('mouseup', handlePointerUp);
+
+      simCanvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+      window.addEventListener('touchmove', handlePointerMove, { passive: false });
+      window.addEventListener('touchend', handlePointerUp);
+      window.addEventListener('touchcancel', handlePointerUp);
+      window.addEventListener('blur', handlePointerUp);
+
+      // Help Modal
+      const helpModal = document.getElementById('helpModal');
+      document.getElementById('btnHelp').addEventListener('click', () => helpModal.classList.remove('hidden'));
+      document.getElementById('btnCloseHelp').addEventListener('click', () => helpModal.classList.add('hidden'));
+      document.getElementById('btnGotIt').addEventListener('click', () => helpModal.classList.add('hidden'));
+      // Close on backdrop click or Escape
+      helpModal.addEventListener('click', (e) => { if (e.target === helpModal) helpModal.classList.add('hidden'); });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !helpModal.classList.contains('hidden')) helpModal.classList.add('hidden');
+      });
+    }
+
+    let lastTime = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      if (dt > 0) updatePhysics(dt);
+      drawSimulation();
+      drawPhoneScreen();
+      updateHUD();
+    }
+
+    window.onload = function() {
+      resizeCanvases();
+      setupInteractions();
+      updateBitstreamMock();
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>
