@@ -1049,22 +1049,6 @@
       knuckle.castShadow = true;
       topArmMesh.add(knuckle);
 
-      // Dashed plumb line hanging straight down from the pivot: the vertical reference for the cone angle
-      const plumbGeo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(armLength, 0, 0),
-        new THREE.Vector3(armLength, -state.poleHeight, 0)
-      ]);
-      const plumbMat = new THREE.LineDashedMaterial({
-        color: 0x94a3b8,
-        dashSize: 0.15,
-        gapSize: 0.1,
-        transparent: true,
-        opacity: 0.5
-      });
-      const plumbLine = new THREE.Line(plumbGeo, plumbMat);
-      plumbLine.computeLineDistances();
-      topArmMesh.add(plumbLine);
-
       poleMesh.add(topArmMesh);
       scene.add(poleMesh);
     }
