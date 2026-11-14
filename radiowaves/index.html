@@ -934,8 +934,10 @@
 
     // Received signal -> loudness: strong signal (about -70 dBm or better) is full volume,
     // fading to a quiet 25% near -100 dBm where the signal drops out.
+    // Uses the link strength (set before sentences are delivered), not the phone's displayed
+    // signal, which still reads "no signal" at the moment the very first sentence arrives.
     function speechVolume() {
-      return Math.max(0.25, Math.min(1, (STATE.rxPowerDbm + 110) / 40));
+      return Math.max(0.25, Math.min(1, (STATE.linkDbm + 110) / 40));
     }
 
     function speakSentence(index) {
