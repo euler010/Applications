@@ -65,7 +65,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
 .legend{display:flex;gap:14px;font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 .legend b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
-#gv{display:block;width:100%;height:300px;touch-action:none;cursor:crosshair}
+#gv{display:block;width:100%;height:300px;touch-action:none;cursor:default}
 #gx{display:block;width:100%;height:170px}
 .stage{background:#ffffff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .stage svg{display:block;width:100%;height:auto}
@@ -439,7 +439,7 @@ gv.addEventListener('pointermove',e=>{const p=evtPt(e);
     pts[i]={t:tt,v};drag.moved=true;changed();return}
   if(stroke){const l=pts[pts.length-1],tt=Math.min(TMAX,p.t);if(tt>=l.t+0.04){pts.push({t:tt,v:clamp(p.v,-VMAX,VMAX)});changed()}return}
   const onPt=hitPt(p,e.pointerType!=='mouse');hover={t:p.t,v:p.v,onPt:onPt>=0?onPt:null};
-  if(onPt>=0)gv.style.cursor='grab';else if(mode==='line'){gv.style.cursor=candidate(p.t,p.v).ok?'crosshair':'not-allowed'}else gv.style.cursor='crosshair';
+  gv.style.cursor=onPt>=0?'grab':'default';
   dirty=true});
 function endPointer(){if(drag){if(!drag.moved)hist.pop();drag=null;gv.style.cursor='grab';setButtons();dirty=true}
   if(stroke){const g=geom(gv),head=pts.slice(0,stroke.from),tail=pts.slice(stroke.from);
