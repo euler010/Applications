@@ -389,9 +389,8 @@
       <div>
         <h1 class="font-bold text-lg text-slate-900 leading-tight tracking-tight flex items-center gap-2">
           Radio Waves and Cellular Transmission
-          <span class="text-xs font-mono uppercase bg-cyan-50 text-cyan-700 border border-cyan-200 px-2 py-0.5 rounded-full">Interactive Simulation</span>
+          <span class="text-xs font-mono bg-cyan-50 text-cyan-700 border border-cyan-200 px-2 py-0.5 rounded-full">Interactive Simulation</span>
         </h1>
-        <p class="text-xs text-slate-500">Dipole radiation, electromagnetic wave propagation (E ⟂ B), and smartphone signal reception</p>
       </div>
     </div>
 
@@ -427,12 +426,12 @@
         <div id="simPanel" class="absolute top-2.5 right-2.5 z-10 flex flex-col gap-2 pointer-events-auto w-44">
           <!-- View Modes (Stacked Vertically) -->
           <div class="bg-white/95 backdrop-blur-md rounded-xl p-1.5 border border-slate-200 shadow-sm flex flex-col gap-1 text-[11px]">
-            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-0.5">View Mode</div>
-            <button id="viewRadial" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2">
-              <span class="truncate">Spreading Waves</span>
-            </button>
-            <button id="viewTransverse" class="w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-2">
+            <div class="text-[9px] font-bold text-slate-400 px-1 pb-0.5">View Mode</div>
+            <button id="viewTransverse" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2">
               <span class="truncate">Transverse (E ⟂ B)</span>
+            </button>
+            <button id="viewRadial" class="w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-2">
+              <span class="truncate">Spreading Waves</span>
             </button>
             <button id="viewVectors" class="w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-2">
               <span class="truncate">Vector Grid</span>
@@ -441,7 +440,7 @@
 
           <!-- Component Checkboxes (Stacked Vertically) -->
           <div class="bg-white/95 backdrop-blur-md rounded-xl p-2 border border-slate-200 shadow-sm flex flex-col gap-1.5 text-[11px]">
-            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider px-0.5 pb-0.5">Display Elements</div>
+            <div class="text-[9px] font-bold text-slate-400 px-0.5 pb-0.5">Display Elements</div>
             <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 px-1 py-0.5 rounded transition">
               <input type="checkbox" id="chkEField" checked class="accent-cyan-600 rounded">
               <span class="text-cyan-700 font-medium">E-Field (Electric)</span>
@@ -474,7 +473,7 @@
       
       <!-- Second Animation: Interactive Smartphone Receiver Display Unit (md:col-span-4) -->
       <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col items-center">
-        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between w-full">
+        <div class="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between w-full">
           <span>Smartphone Receiver</span>
           <span class="text-[10px] font-mono text-cyan-700 px-1.5 py-0.5 bg-cyan-50 rounded border border-cyan-200">5G / LTE Demodulator</span>
         </div>
@@ -501,7 +500,7 @@
             <!-- Main App Content (Second Animation Demodulator Canvas) -->
             <div class="flex-1 py-1 flex flex-col justify-center">
               <div class="text-center mb-1">
-                <span class="text-[9px] uppercase font-mono tracking-widest text-slate-500">Demodulated Signal (V(t))</span>
+                <span class="text-[9px] font-mono text-slate-500">Demodulated Signal (V(t))</span>
                 <h4 id="phoneDecodedTitle" class="text-xs font-bold text-slate-800">Transmitter Idle</h4>
               </div>
 
@@ -517,7 +516,7 @@
               <!-- Live Bitstream / Data Packet Decoding -->
               <div class="mt-2 bg-slate-50 rounded p-1.5 border border-slate-200 font-mono text-[9px]">
                 <div class="text-slate-500 flex justify-between">
-                  <span>PACKET DECODE:</span>
+                  <span>Packet Decode:</span>
                   <span id="phonePacketLoss" class="text-slate-400">BER: --</span>
                 </div>
                 <div id="phoneBitstream" class="text-cyan-700 font-bold tracking-wider truncate">
@@ -544,7 +543,7 @@
       <!-- Transmitter Controls Panel (md:col-span-4) -->
       <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col gap-2.5">
         <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
             Transmitter Controls
           </h3>
         </div>
@@ -692,7 +691,7 @@
       nominalDistance: 1200, // meters
       
       // Visualizer settings
-      viewMode: 'radial', // 'radial' (spreading in all directions), 'transverse', 'vectors'
+      viewMode: 'transverse', // 'transverse' (default), 'radial' (spreading in all directions), 'vectors'
       showE: true,
       showB: true,
       showEnvelope: true,
