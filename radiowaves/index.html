@@ -915,7 +915,7 @@
       const playable = STATE.running && !document.hidden && target !== null && rate >= 0.25 && rate <= 4;
       if (!playable) { if (!a.paused) a.pause(); return; }
       // Too weak to decode: the sound drops out but the recording keeps moving, like a bad call.
-      a.muted = STATE.amplitude <= 0.05 || STATE.linkDbm <= -100;
+      a.muted = !STATE.audioEnabled || STATE.amplitude <= 0.05 || STATE.linkDbm <= -100;
       a.volume = speechVolume();
       if (Math.abs(a.playbackRate - rate) > 1e-3) a.playbackRate = rate;
       if (a.paused) {
@@ -936,9 +936,12 @@
 
     // Tower side of Voice / Data: returns the loudness (0..1) to transmit now.
     function voiceProgramStep(t, effectiveDt) {
-      if (!VOICE.active && !VOICE.source) {
-        if (REC.status === 'loading') return 0; // hold the carrier flat until the recording is decoded
-        VOICE.source = REC.status === 'ready' ? 'recording' : 'speech';
+      if (!VOICE.active) {
+        if (!VOICE.source) {
+          if (REC.status === 'loading') return 0; // hold the carrier flat until the recording is decoded
+          VOICE.source = REC.status === 'ready' ? 'recording' : 'speech';
+        }
+        // Start the recording from the top (also when coming back while an earlier one is still arriving).
         if (VOICE.source === 'recording') { VOICE.active = true; VOICE.prog = -RECORDING_LEAD_IN; }
       }
       if (VOICE.source === 'recording') {
@@ -974,6 +977,7 @@
       active: false,       // tower is transmitting the voice program
       source: null,        // 'recording' (the MP3) or 'speech' (browser voice fallback)
       prog: NaN,           // recording program clock at the tower (s); negative during the lead-in
+      lastSentAt: NaN,     // sim time the tower last transmitted part of the recording
       segment: 'idle',     // 'lead' (silence before speaking) | 'sentence' | 'gap'
       segStart: 0,         // sim time the current segment started
       segDur: 0,           // sim duration of the current segment
@@ -1215,7 +1219,7 @@
       if (SPEECH.voice) { u.voice = SPEECH.voice; u.lang = SPEECH.voice.lang; } else { u.lang = 'en-US'; }
       u.rate = 1.0;
       u.pitch = 1.0;
-      u.volume = speechVolume();
+      u.volume = STATE.audioEnabled ? speechVolume() : 0;
       const queuedBehindOther = window.speechSynthesis.speaking || SPEECH.live.size > 0;
       const calledAt = performance.now();
       let startedAt = 0;
@@ -1298,6 +1302,7 @@
       VOICE.waitStart = 0;
       VOICE.source = null;
       VOICE.prog = NaN;
+      VOICE.lastSentAt = NaN;
       SPEECH.current = '';
       stopSpeech();
       stopRecording();
@@ -1320,6 +1325,14 @@
     // Called every animation frame (also while paused).
     function updateSpeech() {
       const voiceSelected = STATE.txPowered && STATE.mode === 'data';
+      if (!voiceSelected && STATE.txPowered && VOICE.source === 'recording' &&
+          VOICE.lastSentAt >= (STATE.retardedTime - 0.05)) {
+        // Another mode was chosen, but the last of the voice wave is still on its way:
+        // keep playing it until it has all reached the phone. Pause still pauses it.
+        VOICE.active = false; // the tower has stopped sending the voice
+        updateRecordingPlayback();
+        return;
+      }
       if (!voiceSelected) {
         if (VOICE.active || VOICE.source || VOICE.markers.length || SPEECH.live.size || VOICE.arrived) resetVoice();
         return;
@@ -1371,10 +1384,28 @@
       }
     }
 
+    // The Audio button is the app's sound switch: it controls the tone and the voice.
+    // Must be called from a click (browsers only start audio after a user gesture).
+    function setAudioEnabled(on) {
+      if (on && !STATE.audioCtx) initAudio();
+      STATE.audioEnabled = on;
+      const label = document.getElementById('audioText');
+      if (on) {
+        label.textContent = 'Audio Tone: On';
+        label.className = 'text-cyan-700';
+        if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') STATE.audioCtx.resume();
+      } else {
+        label.textContent = 'Audio Tone: Off';
+        label.className = '';
+        if (STATE.gainNode) STATE.gainNode.gain.setValueAtTime(0, STATE.audioCtx.currentTime);
+      }
+    }
+
     function updateAudio() {
       if (!STATE.audioCtx || !STATE.audioEnabled) return;
       if (!STATE.running) { muteAudio(); return; }
-      if (STATE.mode === 'data') { muteAudio(); return; } // the spoken voice replaces the tone
+      // The spoken voice replaces the tone, including the last of it still arriving after a mode change.
+      if (STATE.mode === 'data' || (REC.audio && !REC.audio.paused)) { muteAudio(); return; }
       if (!STATE.txPowered) {
         STATE.gainNode.gain.setTargetAtTime(0, STATE.audioCtx.currentTime, 0.05);
         return;
@@ -1505,6 +1536,7 @@
         // Position in the recorded voice carried by this moment of the wave (NaN when none).
         p: (STATE.txPowered && STATE.mode === 'data' && VOICE.source === 'recording') ? VOICE.prog : NaN
       });
+      if (Number.isFinite(STATE.history[0].p)) VOICE.lastSentAt = STATE.time;
 
       while (STATE.history.length > 0 && (STATE.time - STATE.history[STATE.history.length - 1].t) > STATE.maxHistoryTime) {
         STATE.history.pop();
@@ -1527,7 +1559,8 @@
 
       // Voice / Data: start saying each sentence as its wave reaches the phone
       // (slightly early to cover the speech engine's start-up delay).
-      if (STATE.txPowered && STATE.mode === 'data') {
+      STATE.retardedTime = retardedTime;
+      if (STATE.txPowered && (STATE.mode === 'data' || VOICE.source === 'recording')) {
         if (VOICE.source === 'recording') {
           // The part of the recording reaching the phone now.
           const progRx = sampleHistory(retardedTime, 'p');
@@ -2279,6 +2312,7 @@
       btnTxPower.addEventListener('click', () => {
         toggleTransmitterPower();
         if (STATE.txPowered && STATE.mode === 'data') {
+          if (!STATE.audioEnabled) setAudioEnabled(true); // the voice is about to play
           unlockRecording();
           if (REC.status !== 'ready') warmUpSpeech();
         }
@@ -2312,22 +2346,7 @@
       });
 
       // Audio Toggle
-      document.getElementById('btnSound').addEventListener('click', () => {
-        if (!STATE.audioCtx) initAudio();
-        STATE.audioEnabled = !STATE.audioEnabled;
-        const label = document.getElementById('audioText');
-        if (STATE.audioEnabled) {
-          label.textContent = 'Audio Tone: On';
-          label.className = 'text-cyan-700';
-          if (STATE.audioCtx && STATE.audioCtx.state === 'suspended') {
-            STATE.audioCtx.resume();
-          }
-        } else {
-          label.textContent = 'Audio Tone: Off';
-          label.className = '';
-          if (STATE.gainNode) STATE.gainNode.gain.setValueAtTime(0, STATE.audioCtx.currentTime);
-        }
-      });
+      document.getElementById('btnSound').addEventListener('click', () => setAudioEnabled(!STATE.audioEnabled));
 
       // Drive Mode switch
       const modeButtons = {
@@ -2364,6 +2383,7 @@
 
       modeButtons.sine.addEventListener('click', () => setMode('sine'));
       modeButtons.data.addEventListener('click', () => {
+        if (STATE.txPowered && !STATE.audioEnabled) setAudioEnabled(true); // the voice is about to play
         unlockRecording();
         if (REC.status !== 'ready') warmUpSpeech();
         setMode('data');
