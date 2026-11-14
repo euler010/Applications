@@ -778,8 +778,9 @@
       plan: null,          // envelope plan of the sentence being transmitted
       markers: [],         // sentences in flight: { t: sim time sent, index }
       arrived: false,      // the first sentence has reached the phone
-      charsPerSec: 14.5,   // learned speaking speed of the browser voice (real time)
-      cpsSamples: 0,
+      timeScale: 1.0,      // learned: real speech length ÷ modelled length
+      scaleSamples: 0,
+      learnedPlans: {},    // sentence index -> timeline measured from the voice's word events
       audio: null,         // what the phone is doing with the latest sentence:
                            // { index, state: 'queued'|'playing'|'ended'|'dropped', startSim, endSim }
       waitStart: 0,
@@ -793,31 +794,96 @@
       return h / 997;
     }
 
-    // Turn a sentence into a timeline of words (with syllable counts) and comma pauses.
+    // Syllable estimate for English words (good enough for timing speech).
+    function countSyllables(word) {
+      let w = word.toLowerCase().replace(/[^a-z]/g, '');
+      if (!w) return 1;
+      if (w.length <= 3) return 1;
+      // Silent endings: -es (but not after s, x, z, ch, sh, soft c/g: "changes"), -ed (but not after t/d), final -e.
+      w = w.replace(/(?:[^laeiouysxzcgh]es|[^tdaeiouy]ed|[^laeiouy]e)$/, m => m[0]);
+      let n = (w.match(/[aeiouy]+/g) || []).length;
+      if (/[^aeiou](io|ia|eo)$/.test(w)) n++;  // ra-di-o, me-di-a, vi-de-o
+      return Math.max(1, n);
+    }
+
+    // Timing model, in real seconds at speech rate 1.0. Speech time follows syllables;
+    // commas get a fixed pause. The whole model is then stretched by VOICE.timeScale,
+    // which is learned from how long the browser's voice actually takes.
+    const WORD_BASE = 0.06, PER_SYLLABLE = 0.15, PER_LETTER = 0.012;
+    const COMMA_PAUSE = 0.3, CLAUSE_PAUSE = 0.38, LEADING_SILENCE = 0.1;
+
+    // A sentence plan is a list of timed items: { kind: 'word'|'pause', t0, t1, syl, amp } plus total length.
     function buildSentencePlan(text) {
       const items = [];
-      let total = 0;
-      for (const raw of text.split(/\s+/)) {
+      let t = LEADING_SILENCE;
+      const re = /\S+/g;
+      let m;
+      while ((m = re.exec(text))) {
+        const raw = m[0];
         const clean = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
         if (!clean) continue;
-        let syl = (clean.match(/[aeiouy]+/g) || []).length;
-        if (syl > 1 && /e$/.test(clean) && !/le$/.test(clean)) syl--; // silent final e
-        syl = Math.max(1, syl);
-        const weight = clean.length + 1.5;
-        items.push({ kind: 'word', w0: total, w1: total + weight, syl, amp: 0.7 + 0.3 * wordHash(clean) });
-        total += weight;
-        if (/[,;:]$/.test(raw)) { items.push({ kind: 'pause', w0: total, w1: total + 4 }); total += 4; }
+        const syl = countSyllables(clean);
+        const dur = WORD_BASE + PER_SYLLABLE * syl + PER_LETTER * clean.length;
+        items.push({ kind: 'word', t0: t, t1: t + dur, syl, amp: 0.7 + 0.3 * wordHash(clean), charIndex: m.index, len: raw.length });
+        t += dur;
+        if (/,$/.test(raw)) { items.push({ kind: 'pause', t0: t, t1: t + COMMA_PAUSE }); t += COMMA_PAUSE; }
+        else if (/[;:]$/.test(raw)) { items.push({ kind: 'pause', t0: t, t1: t + CLAUSE_PAUSE }); t += CLAUSE_PAUSE; }
       }
-      return { items, total };
+      return { items, total: t, learned: false };
+    }
+
+    // Rebuild a sentence's timeline from the word-start times the voice actually reported
+    // (speech "boundary" events, offered by Edge, Safari and some other voices).
+    function buildLearnedPlan(text, marks, duration) {
+      const model = buildSentencePlan(text);
+      const words = model.items.filter(it => it.kind === 'word');
+      const starts = words.map(w => {
+        const hit = marks.find(([ci]) => ci >= w.charIndex && ci < w.charIndex + w.len);
+        return hit ? hit[1] : null;
+      });
+      const known = starts.filter(x => x !== null).length;
+      if (known < Math.max(2, 0.8 * words.length)) return null; // not enough timing data
+      // Fill any gaps by interpolating between known word starts.
+      for (let i = 0; i < starts.length; i++) {
+        if (starts[i] !== null) continue;
+        let j = i + 1; while (j < starts.length && starts[j] === null) j++;
+        const prev = i > 0 ? starts[i - 1] : 0;
+        const next = j < starts.length ? starts[j] : duration;
+        for (let k = i; k < j; k++) starts[k] = prev + (next - prev) * (k - i + 1) / (j - i + 1);
+        i = j - 1;
+      }
+      const items = [];
+      const scale = VOICE.timeScale;
+      for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        const t0 = starts[i];
+        const nextStart = i + 1 < words.length ? starts[i + 1] : duration;
+        const modelDur = (w.t1 - w.t0) * scale;
+        // The word fills the time up to the next word, unless there's a pause there (e.g. a comma).
+        const t1 = Math.max(t0 + 0.05, Math.min(nextStart, t0 + modelDur * 1.25));
+        items.push({ kind: 'word', t0, t1, syl: w.syl, amp: w.amp });
+        if (nextStart > t1 + 0.02) items.push({ kind: 'pause', t0: t1, t1: nextStart });
+      }
+      return { items, total: duration, learned: true };
+    }
+
+    // Plan used for transmitting a sentence: the measured timeline if we have one, else the model.
+    function planForSentence(index) {
+      return VOICE.learnedPlans[index] || buildSentencePlan(VOICE_SENTENCES[index]);
+    }
+
+    // Expected real-time length of a sentence when the browser voice says it.
+    function planRealDuration(plan) {
+      return plan.learned ? plan.total : plan.total * VOICE.timeScale;
     }
 
     // Loudness envelope (0..1) of a sentence at fraction `frac` of the way through it.
     function planEnvelope(plan, frac) {
       const x = frac * plan.total;
       for (const it of plan.items) {
-        if (x < it.w1) {
-          if (it.kind === 'pause' || x < it.w0) return 0;
-          const u = (x - it.w0) / (it.w1 - it.w0);
+        if (x < it.t1) {
+          if (it.kind === 'pause' || x < it.t0) return 0;
+          const u = (x - it.t0) / (it.t1 - it.t0);
           return it.amp * Math.sqrt(Math.sin(Math.PI * u)) * (0.4 + 0.6 * Math.abs(Math.sin(Math.PI * it.syl * u)));
         }
       }
@@ -838,12 +904,12 @@
       const a = VOICE.audio;
       if (!a || a.index !== sent || a.state === 'dropped') return true;       // lost or not spoken
       if (a.state === 'queued') return false;                                  // waiting for the voice to start
-      if (a.state === 'playing' && !VOICE.cpsSamples) return false;            // speed not measured yet: wait for the end
+      if (a.state === 'playing' && !VOICE.scaleSamples) return false;          // speed not measured yet: wait for the end
       if (a.state === 'ended') return t >= a.endSim + gapSim - travel;
       // Playing: send the next sentence so it arrives just as this one should finish,
       // but if the voice runs past its expected length, wait until it actually ends.
       // 5% slack: arriving a touch late (a slightly longer pause) beats the audio falling behind the wave.
-      const expectedEnd = a.startSim + 1.05 * (VOICE_SENTENCES[sent].length / VOICE.charsPerSec) * STATE.speed;
+      const expectedEnd = a.startSim + 1.05 * planRealDuration(planForSentence(sent)) * STATE.speed;
       return t >= expectedEnd + gapSim - travel && t < expectedEnd;
     }
 
@@ -871,11 +937,10 @@
             break;
           }
           VOICE.waitStart = 0;
-          const text = VOICE_SENTENCES[VOICE.index];
           VOICE.segment = 'sentence';
-          VOICE.plan = buildSentencePlan(text);
+          VOICE.plan = planForSentence(VOICE.index);
           // Sim time runs `speed` times real time, so a sentence lasting D real seconds spans D*speed sim seconds.
-          VOICE.segDur = Math.max(0.3, text.length / VOICE.charsPerSec) * speed;
+          VOICE.segDur = Math.max(0.3, planRealDuration(VOICE.plan)) * speed;
           VOICE.markers.push({ t: VOICE.segStart, index: VOICE.index });
         }
       }
@@ -953,6 +1018,11 @@
       let startedAt = 0;
       VOICE.audio = { index, state: 'queued', startSim: 0, endSim: 0 };
       const audio = VOICE.audio;
+      const marks = []; // [charIndex, seconds since the voice started]
+      u.onboundary = (e) => {
+        if (!startedAt || (e.name && e.name !== 'word')) return;
+        marks.push([e.charIndex, (performance.now() - startedAt) / 1000]);
+      };
       u.onstart = () => {
         audio.state = 'playing';
         audio.startSim = STATE.time;
@@ -974,11 +1044,17 @@
         if (ev && ev.type === 'end' && startedAt && !u._wasPaused) {
           const dur = (performance.now() - startedAt) / 1000;
           if (dur > 0.4) {
-            const cps = text.length / dur;
-            // First real measurement replaces the guess; later ones are blended in.
-            const blended = VOICE.cpsSamples ? 0.5 * VOICE.charsPerSec + 0.5 * cps : cps;
-            VOICE.charsPerSec = Math.max(8, Math.min(25, blended));
-            VOICE.cpsSamples++;
+            // Overall speed: first real measurement replaces the guess; later ones are blended in.
+            const ratio = dur / buildSentencePlan(text).total;
+            const blended = VOICE.scaleSamples ? 0.5 * VOICE.timeScale + 0.5 * ratio : ratio;
+            VOICE.timeScale = Math.max(0.5, Math.min(2.5, blended));
+            VOICE.scaleSamples++;
+            // Exact rhythm: if the voice reported when each word started, reuse that timeline
+            // the next time this sentence is transmitted.
+            if (marks.length) {
+              const learned = buildLearnedPlan(text, marks, dur);
+              if (learned) VOICE.learnedPlans[index] = learned;
+            }
           }
         }
       };
