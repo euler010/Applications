@@ -649,7 +649,7 @@
             <li><strong class="text-slate-800">Transmitter Power:</strong> Toggle the transmitter ON or OFF to observe how fields originate and stop.</li>
             <li><strong class="text-slate-800">Spreading Wavefronts:</strong> Observe the waves radiating across the entire space in all directions away from the broadcast mast.</li>
             <li><strong class="text-slate-800">Manual Wiggle:</strong> Switch to Manual Wiggle mode, grab the conduction electron on the mast, and move it up and down to create custom electromagnetic wave pulses.</li>
-            <li><strong class="text-slate-800">Voice / Data:</strong> Modulate the carrier wave with digital packet data and observe how the phone demodulator decodes the stream. Once the wave reaches the phone, it reads aloud a short explanation of digital data transmission; the volume follows the signal strength.</li>
+            <li><strong class="text-slate-800">Voice / Data:</strong> Modulate the carrier wave with digital packet data and observe how the phone demodulator decodes the stream. The tower transmits a spoken explanation of digital data transmission: watch each word leave the tower as a burst, and hear the phone say it as the burst arrives. The volume follows the signal strength.</li>
             <li><strong class="text-slate-800">Distance & Delay:</strong> Move the distance slider to observe transmission delay (Δt = r / c) and signal attenuation (1/r).</li>
           </ul>
         </div>
@@ -684,6 +684,8 @@
       pulseTime: 0,
       pulseFreq: 1.0, // frequency locked in when the pulse fires
       phase: 0, // accumulated carrier phase (keeps the wave continuous when f changes)
+      voicePhase: 0, // phase of the voice waveform in Voice / Data mode
+      linkDbm: -115, // received power the link would give at this distance and power
       
       // Geometry & Dimensions
       waveSpeed: 240, // pixels per second
@@ -747,11 +749,15 @@
     }
 
     // ---------------------------------------------------------------------------
-    // Voice playback for Voice / Data mode.
-    // The phone "decodes" this paragraph and reads it aloud with the browser's
-    // built-in speech voice. Reading starts when the wave reaches the phone,
-    // volume follows the received signal strength, it pauses with the
-    // simulation and stops when the signal is lost.
+    // Voice / Data mode: the tower transmits a spoken paragraph.
+    //
+    // The tower sends each sentence as a speech-shaped burst (flat in silences,
+    // one bump per word and syllable, pauses at commas). Each sentence carries a
+    // marker; when that marker reaches the phone (after the travel delay), the
+    // phone starts saying the sentence with the browser's speech voice. So the
+    // burst you see arriving at the phone lines up with the sound you hear.
+    // Sentence timing starts as an estimate from the text and is then calibrated
+    // from how fast the browser's voice actually speaks.
     // ---------------------------------------------------------------------------
     const VOICE_SCRIPT =
       "Digital data transmission turns information into a long string of ones and zeros, called bits. " +
@@ -763,15 +769,124 @@
       "Finally, the phone turns the bits back into sound, text, or pictures, all in a tiny fraction of a second.";
     const VOICE_SENTENCES = VOICE_SCRIPT.match(/[^.!?]+[.!?]+/g).map(t => t.trim());
 
+    const VOICE = {
+      active: false,       // tower is transmitting the voice program
+      segment: 'idle',     // 'lead' (silence before speaking) | 'sentence' | 'gap'
+      segStart: 0,         // sim time the current segment started
+      segDur: 0,           // sim duration of the current segment
+      index: 0,            // sentence being / about to be transmitted
+      plan: null,          // envelope plan of the sentence being transmitted
+      markers: [],         // sentences in flight: { t: sim time sent, index }
+      arrived: false,      // the first sentence has reached the phone
+      charsPerSec: 14.5,   // learned speaking speed of the browser voice (real time)
+      cpsSamples: 0,
+      audio: null,         // what the phone is doing with the latest sentence:
+                           // { index, state: 'queued'|'playing'|'ended'|'dropped', startSim, endSim }
+      waitStart: 0,
+      startLatency: 0.15   // learned delay between speak() and the first sound (s)
+    };
+
+    function wordHash(w) {
+      let h = 7;
+      for (let i = 0; i < w.length; i++) h = (h * 31 + w.charCodeAt(i)) % 997;
+      return h / 997;
+    }
+
+    // Turn a sentence into a timeline of words (with syllable counts) and comma pauses.
+    function buildSentencePlan(text) {
+      const items = [];
+      let total = 0;
+      for (const raw of text.split(/\s+/)) {
+        const clean = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!clean) continue;
+        let syl = (clean.match(/[aeiouy]+/g) || []).length;
+        if (syl > 1 && /e$/.test(clean) && !/le$/.test(clean)) syl--; // silent final e
+        syl = Math.max(1, syl);
+        const weight = clean.length + 1.5;
+        items.push({ kind: 'word', w0: total, w1: total + weight, syl, amp: 0.7 + 0.3 * wordHash(clean) });
+        total += weight;
+        if (/[,;:]$/.test(raw)) { items.push({ kind: 'pause', w0: total, w1: total + 4 }); total += 4; }
+      }
+      return { items, total };
+    }
+
+    // Loudness envelope (0..1) of a sentence at fraction `frac` of the way through it.
+    function planEnvelope(plan, frac) {
+      const x = frac * plan.total;
+      for (const it of plan.items) {
+        if (x < it.w1) {
+          if (it.kind === 'pause' || x < it.w0) return 0;
+          const u = (x - it.w0) / (it.w1 - it.w0);
+          return it.amp * Math.sqrt(Math.sin(Math.PI * u)) * (0.4 + 0.6 * Math.abs(Math.sin(Math.PI * it.syl * u)));
+        }
+      }
+      return 0;
+    }
+
+    // Keep the tower at most about one sentence ahead of what the phone is saying.
+    // Times are in simulation seconds, so pausing the simulation doesn't upset the timing.
+    function readyForNextSentence(t) {
+      if (!SPEECH.supported) return true;                     // no audio to keep in step with
+      if (!VOICE.waitStart) VOICE.waitStart = t;
+      if (t - VOICE.waitStart > 20 * STATE.speed) return true; // safety: never wait forever
+      const N = VOICE_SENTENCES.length;
+      const sent = (VOICE.index - 1 + N) % N;                 // sentence just transmitted
+      const gapSim = 0.35 * STATE.speed;
+      const travel = STATE.travelTime || 0;
+      if (VOICE.markers.some(m => m.index === sent)) return false;            // still flying to the phone
+      const a = VOICE.audio;
+      if (!a || a.index !== sent || a.state === 'dropped') return true;       // lost or not spoken
+      if (a.state === 'queued') return false;                                  // waiting for the voice to start
+      if (a.state === 'playing' && !VOICE.cpsSamples) return false;            // speed not measured yet: wait for the end
+      if (a.state === 'ended') return t >= a.endSim + gapSim - travel;
+      // Playing: send the next sentence so it arrives just as this one should finish,
+      // but if the voice runs past its expected length, wait until it actually ends.
+      // 5% slack: arriving a touch late (a slightly longer pause) beats the audio falling behind the wave.
+      const expectedEnd = a.startSim + 1.05 * (VOICE_SENTENCES[sent].length / VOICE.charsPerSec) * STATE.speed;
+      return t >= expectedEnd + gapSim - travel && t < expectedEnd;
+    }
+
+    // Called by the physics step at the tower: returns the voice loudness to transmit now.
+    function voiceTransmitterStep(t) {
+      const speed = Math.max(0.05, STATE.speed);
+      if (!VOICE.active) {
+        VOICE.active = true;
+        VOICE.segment = 'lead';
+        VOICE.segStart = t;
+        VOICE.segDur = 0.8 * speed; // a moment of flat carrier before the first word
+      }
+      while (t >= VOICE.segStart + VOICE.segDur) {
+        VOICE.segStart += VOICE.segDur;
+        if (VOICE.segment === 'sentence') {
+          const wasLast = VOICE.index === VOICE_SENTENCES.length - 1;
+          VOICE.segment = 'gap';
+          VOICE.segDur = (wasLast ? 2.2 : 0.35) * speed;
+          VOICE.index = (VOICE.index + 1) % VOICE_SENTENCES.length;
+        } else {
+          if (VOICE.segment === 'gap' && !readyForNextSentence(t)) {
+            // Hold the carrier flat a little longer so the next sentence doesn't arrive
+            // while the phone is still saying the previous one.
+            VOICE.segDur = (t - VOICE.segStart) + 1e-6;
+            break;
+          }
+          VOICE.waitStart = 0;
+          const text = VOICE_SENTENCES[VOICE.index];
+          VOICE.segment = 'sentence';
+          VOICE.plan = buildSentencePlan(text);
+          // Sim time runs `speed` times real time, so a sentence lasting D real seconds spans D*speed sim seconds.
+          VOICE.segDur = Math.max(0.3, text.length / VOICE.charsPerSec) * speed;
+          VOICE.markers.push({ t: VOICE.segStart, index: VOICE.index });
+        }
+      }
+      return VOICE.segment === 'sentence' ? planEnvelope(VOICE.plan, (t - VOICE.segStart) / VOICE.segDur) : 0;
+    }
+
     const SPEECH = {
       supported: ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined'),
-      active: false,     // reading is in progress (speaking, paused, or between sentences)
+      live: new Set(),   // utterances queued or speaking (cleared when we cancel)
       paused: false,
-      index: 0,          // sentence to read next
-      utterance: null,
-      gapTimer: null,
       voice: null,
-      current: ''        // sentence currently being read (shown on the phone)
+      current: ''        // sentence the phone is currently decoding (shown on its screen)
     };
 
     // Pick the most natural-sounding English female voice the browser offers.
@@ -819,69 +934,103 @@
       return Math.max(0.25, Math.min(1, (STATE.rxPowerDbm + 110) / 40));
     }
 
-    function speakNextSentence() {
-      if (!SPEECH.active) return;
-      const text = VOICE_SENTENCES[SPEECH.index];
+    function speakSentence(index) {
+      if (!SPEECH.supported) return;
+      const text = VOICE_SENTENCES[index];
       const u = new SpeechSynthesisUtterance(text);
       if (SPEECH.voice) { u.voice = SPEECH.voice; u.lang = SPEECH.voice.lang; } else { u.lang = 'en-US'; }
       u.rate = 1.0;
       u.pitch = 1.0;
       u.volume = speechVolume();
-      const finished = () => {
-        if (SPEECH.utterance !== u) return; // ignore utterances we cancelled on purpose
-        SPEECH.utterance = null;
-        SPEECH.index = (SPEECH.index + 1) % VOICE_SENTENCES.length;
-        const gap = SPEECH.index === 0 ? 2000 : 150; // short breath between sentences, longer before repeating
-        SPEECH.gapTimer = setTimeout(() => {
-          SPEECH.gapTimer = null;
-          if (SPEECH.active && !SPEECH.paused) speakNextSentence();
-        }, gap);
+      const queuedBehindOther = window.speechSynthesis.speaking || SPEECH.live.size > 0;
+      const calledAt = performance.now();
+      let startedAt = 0;
+      VOICE.audio = { index, state: 'queued', startSim: 0, endSim: 0 };
+      const audio = VOICE.audio;
+      u.onstart = () => {
+        audio.state = 'playing';
+        audio.startSim = STATE.time;
+        startedAt = performance.now();
+        const latency = (startedAt - calledAt) / 1000;
+        if (!queuedBehindOther && latency < 2) VOICE.startLatency = 0.7 * VOICE.startLatency + 0.3 * latency;
+      };
+      const finished = (ev) => {
+        if (!SPEECH.live.has(u)) return; // cancelled on purpose
+        SPEECH.live.delete(u);
+        audio.state = 'ended';
+        audio.endSim = STATE.time;
+        // Learn how fast this voice really speaks, so the next bursts match the audio better.
+        if (ev && ev.type === 'end' && startedAt && !u._wasPaused) {
+          const dur = (performance.now() - startedAt) / 1000;
+          if (dur > 0.4) {
+            const cps = text.length / dur;
+            // First real measurement replaces the guess; later ones are blended in.
+            const blended = VOICE.cpsSamples ? 0.5 * VOICE.charsPerSec + 0.5 * cps : cps;
+            VOICE.charsPerSec = Math.max(8, Math.min(25, blended));
+            VOICE.cpsSamples++;
+          }
+        }
       };
       u.onend = finished;
       u.onerror = finished;
-      SPEECH.utterance = u;
-      SPEECH.current = text;
+      SPEECH.live.add(u);
       window.speechSynthesis.speak(u);
     }
 
-    function stopSpeech(restartFromBeginning) {
-      if (!SPEECH.supported) return;
-      SPEECH.active = false;
+    function stopSpeech() {
+      if (VOICE.audio && VOICE.audio.state !== 'ended') VOICE.audio.state = 'dropped';
+      SPEECH.live.clear();
       SPEECH.paused = false;
-      clearTimeout(SPEECH.gapTimer);
-      SPEECH.gapTimer = null;
-      SPEECH.utterance = null;
-      window.speechSynthesis.cancel();
-      if (restartFromBeginning) { SPEECH.index = 0; SPEECH.current = ''; }
+      if (SPEECH.supported) window.speechSynthesis.cancel();
     }
 
-    // Called every animation frame.
-    function updateSpeech() {
-      if (!SPEECH.supported) return;
-      const voiceSelected = STATE.txPowered && STATE.mode === 'data';
-      const signalPresent = STATE.amplitude > 0.05 && STATE.rxPowerDbm > -100;
+    // Start the voice program over (transmitter off, mode change, reset).
+    function resetVoice() {
+      VOICE.active = false;
+      VOICE.segment = 'idle';
+      VOICE.index = 0;
+      VOICE.plan = null;
+      VOICE.markers = [];
+      VOICE.arrived = false;
+      VOICE.waitStart = 0;
+      SPEECH.current = '';
+      stopSpeech();
+      VOICE.audio = null;
+    }
 
-      if (!voiceSelected) {             // transmitter off or another mode: stop, start over next time
-        if (SPEECH.active || SPEECH.index !== 0) stopSpeech(true);
+    // Physics step at the phone: a sentence marker has just reached the antenna.
+    function onSentenceArrives(marker) {
+      VOICE.arrived = true;
+      if (STATE.amplitude <= 0.05 || STATE.linkDbm <= -100) {
+        // Too weak to decode: this sentence is lost, like a dropped call.
+        stopSpeech();
+        SPEECH.current = '';
         return;
       }
-      if (!signalPresent || document.hidden) { // signal lost / tab hidden: stop, resume this sentence later
-        if (SPEECH.active) stopSpeech(false);
+      SPEECH.current = VOICE_SENTENCES[marker.index];
+      speakSentence(marker.index);
+    }
+
+    // Called every animation frame (also while paused).
+    function updateSpeech() {
+      const voiceSelected = STATE.txPowered && STATE.mode === 'data';
+      if (!voiceSelected) {
+        if (VOICE.active || VOICE.markers.length || SPEECH.live.size || VOICE.arrived) resetVoice();
         return;
       }
-      if (!STATE.running) {             // simulation paused
-        if (SPEECH.active && !SPEECH.paused) { SPEECH.paused = true; window.speechSynthesis.pause(); }
-        return;
-      }
-      if (SPEECH.paused) {
+      if (!SPEECH.supported) return;
+      if (document.hidden) { if (SPEECH.live.size) stopSpeech(); return; }
+      // Signal lost mid-sentence: the audio cuts out.
+      if (SPEECH.live.size && (STATE.amplitude <= 0.05 || STATE.linkDbm <= -100)) { stopSpeech(); return; }
+      if (!STATE.running) {
+        if (SPEECH.live.size && !SPEECH.paused) {
+          SPEECH.paused = true;
+          SPEECH.live.forEach(u => { u._wasPaused = true; });
+          window.speechSynthesis.pause();
+        }
+      } else if (SPEECH.paused) {
         SPEECH.paused = false;
         window.speechSynthesis.resume();
-        if (!SPEECH.utterance && !SPEECH.gapTimer) speakNextSentence();
-        return;
-      }
-      if (!SPEECH.active) {
-        SPEECH.active = true;
-        speakNextSentence();
       }
     }
 
@@ -918,7 +1067,7 @@
     function updateAudio() {
       if (!STATE.audioCtx || !STATE.audioEnabled) return;
       if (!STATE.running) { muteAudio(); return; }
-      if (STATE.mode === 'data' && SPEECH.active) { muteAudio(); return; } // voice replaces the tone
+      if (STATE.mode === 'data') { muteAudio(); return; } // the spoken voice replaces the tone
       if (!STATE.txPowered) {
         STATE.gainNode.gain.setTargetAtTime(0, STATE.audioCtx.currentTime, 0.05);
         return;
@@ -1001,9 +1150,13 @@
         currentVel = amp * omega * Math.cos(STATE.phase);
         currentAcc = -omega * omega * currentY;
       } else if (STATE.mode === 'data') {
-        const audioMod = 0.3 * Math.sin(STATE.phase * 0.25) + 0.15 * Math.sin(STATE.phase * 0.6);
-        const bitMod = (Math.floor(STATE.time * 2.5) % 2 === 0) ? 1.0 : 0.4;
-        currentY = amp * bitMod * (1 + audioMod) * 0.75 * Math.sin(STATE.phase);
+        // Voice-shaped signal: loudness follows the words being spoken, flat in silences.
+        // The oscillation runs a little faster than the carrier slider so each word shows as a burst.
+        const env = voiceTransmitterStep(STATE.time);
+        STATE.voicePhase = (STATE.voicePhase + 2 * Math.PI * (3 + STATE.frequency) * effectiveDt) % (2 * Math.PI * 1000);
+        const vp = STATE.voicePhase;
+        const raw = env * (0.7 * Math.sin(vp) + 0.3 * Math.sin(1.5 * vp + 0.6));
+        currentY = amp * Math.tanh(1.8 * raw) / Math.tanh(1.8); // louder, soft-limited so peaks stay within range
         currentVel = (currentY - prevChargePos) / effectiveDt;
         currentAcc = (currentVel - prevChargeVel) / effectiveDt;
       } else if (STATE.mode === 'pulse') {
@@ -1054,8 +1207,23 @@
       const distPx = Math.hypot(dx, dy);
       const travelTime = distPx / STATE.waveSpeed;
       const retardedTime = STATE.time - travelTime;
+      STATE.travelTime = travelTime;
 
       const receivedCharge = sampleHistory(retardedTime);
+
+      // Received power the link supports at this distance and transmitter power.
+      // Field amplitude -> power is 20·log10; path loss spans the whole 400–2200 m slider
+      // so every signal tier (strong / good / weak / lost) is reachable.
+      STATE.linkDbm = Math.round(-45 - 60 * Math.log10(STATE.nominalDistance / 400) + 20 * Math.log10(Math.max(0.01, STATE.amplitude)));
+
+      // Voice / Data: start saying each sentence as its wave reaches the phone
+      // (slightly early to cover the speech engine's start-up delay).
+      if (STATE.txPowered && STATE.mode === 'data') {
+        const lead = VOICE.startLatency * STATE.speed;
+        while (VOICE.markers.length && retardedTime + lead >= VOICE.markers[0].t) {
+          onSentenceArrives(VOICE.markers.shift());
+        }
+      }
 
       // Geometric attenuation (1/r)
       const distanceFactor = 320 / Math.max(100, distPx);
@@ -1081,13 +1249,11 @@
       // drops to "no signal" every time the sine wave crosses zero.
       STATE.rxEnvelope = Math.max(Math.abs(inducedE), STATE.rxEnvelope * Math.exp(-effectiveDt / 0.6));
 
-      // Power in dBm. Field amplitude -> power is 20·log10; path loss spans the whole
-      // 400–2200 m slider so every signal tier (strong / good / weak / lost) is reachable.
-      if (!STATE.txPowered || STATE.rxEnvelope < 0.002) {
-        STATE.rxPowerDbm = -115;
-      } else {
-        STATE.rxPowerDbm = Math.round(-45 - 60 * Math.log10(STATE.nominalDistance / 400) + 20 * Math.log10(Math.max(0.01, STATE.amplitude)));
-      }
+      // Signal present? In Voice / Data the carrier stays up through pauses between words,
+      // so once the first sentence has arrived the phone keeps its connection.
+      const signalPresent = STATE.txPowered &&
+        (STATE.mode === 'data' ? VOICE.arrived : STATE.rxEnvelope >= 0.002);
+      STATE.rxPowerDbm = signalPresent ? STATE.linkDbm : -115;
 
       // Live demodulation packet mock
       STATE.bitstreamTimer += effectiveDt;
@@ -1096,7 +1262,7 @@
         updateBitstreamMock();
       }
 
-      phoneWaveHistory.push(inducedE + (STATE.txPowered ? (Math.random() - 0.5) * 0.04 * (STATE.nominalDistance / 800) : 0));
+      phoneWaveHistory.push(inducedE + (STATE.rxPowerDbm > -115 ? (Math.random() - 0.5) * 0.04 * (STATE.nominalDistance / 800) : 0));
       phoneWaveHistory.shift();
 
       updateAudio();
@@ -1147,7 +1313,7 @@
       if (STATE.mode === 'data') {
         document.getElementById('phoneDecodedTitle').textContent = '5G Audio & Data Stream';
         const payloadEl = document.getElementById('phonePayload');
-        const spoken = (SPEECH.supported && SPEECH.active && SPEECH.current) ? SPEECH.current : 'Cellular Voice Stream Active';
+        const spoken = SPEECH.current || 'Cellular Voice Stream Active';
         payloadEl.textContent = `Decoded Voice: "${spoken}"`;
         payloadEl.title = spoken;
       } else if (STATE.mode === 'pulse') {
@@ -1817,7 +1983,7 @@
         STATE.rxPowerDbm = -115;
         STATE.bitstreamTimer = 0;
         STATE.pulseTriggered = false; // a pending pulse would otherwise fire much later
-        stopSpeech(true);
+        resetVoice();
         updateBitstreamMock();
       });
 
