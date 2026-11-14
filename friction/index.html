@@ -272,6 +272,29 @@
     .text-plus-1pt .leading-relaxed { line-height: 1.625; }
     .text-plus-1pt p .font-mono { white-space: nowrap; } /* keep formulas like "f_s,max = μs · N" on one line */
 
+    /* ---------- Top-right view switch ("Graphs") ---------- */
+    .view-hidden { display: none !important; }
+    .view-switch {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.125rem 0.25rem 0.125rem 0.625rem; border-radius: 9999px;
+      font-size: 0.75rem; line-height: 1rem; font-weight: 600;
+      border: 1px solid #e2e8f0; background-color: #f1f5f9; color: #64748b;
+      transition: background-color 150ms, border-color 150ms, color 150ms;
+    }
+    .view-switch-track {
+      position: relative; width: 1.75rem; height: 1rem; border-radius: 9999px;
+      background-color: #cbd5e1; transition: background-color 150ms;
+    }
+    .view-switch-knob {
+      position: absolute; top: 0.125rem; left: 0.125rem; width: 0.75rem; height: 0.75rem;
+      border-radius: 9999px; background-color: #ffffff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+      transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .view-switch.is-on { background-color: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+    .view-switch.is-on .view-switch-track { background-color: #10b981; }
+    .view-switch.is-on .view-switch-knob { transform: translateX(0.75rem); }
+    .view-switch:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+
     /* ---------- State variants (after base rules so they win) ---------- */
     .selection\:bg-blue-500 *::selection, .selection\:bg-blue-500::selection { background-color: #3b82f6; }
     .selection\:text-white *::selection, .selection\:text-white::selection { color: #ffffff; }
@@ -403,9 +426,10 @@
         <div>
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
-              <h2 class="text-sm font-bold text-slate-800">Applied Force and Friction Force vs. Time</h2>
+              <h2 id="right-panel-title" class="text-sm font-bold text-slate-800">Applied Force and Friction Force vs. Time</h2>
             </div>
             <div class="flex items-center gap-3 text-xs">
+              <div id="graph-legend" class="flex items-center gap-3">
               <span class="flex items-center gap-1.5 text-blue-700 font-medium">
                 <span class="w-3 h-0.5 bg-blue-600 inline-block rounded"></span>
                 <span class="inline-flex items-baseline">F<sub class="text-[10px] font-bold ml-[1px]">A</sub></span>
@@ -415,12 +439,21 @@
                 <span class="inline-flex items-baseline">F<sub class="text-[10px] font-bold ml-[1px]">f</sub></span>
               </span>
               <button id="btn-clear-graph" class="hover:text-slate-700 text-slate-400 text-xs underline decoration-dotted font-mono">Clear</button>
+              </div>
+              <!-- View switch: on (green) = force graph, off (grey) = atomic-scale animation -->
+              <button id="btn-view-toggle" type="button" role="switch" aria-checked="true"
+                      aria-label="Graphs: show the force vs. time graph instead of the atomic surface animation"
+                      class="view-switch is-on">
+                <span>Graphs</span>
+                <span class="view-switch-track" aria-hidden="true"><span class="view-switch-knob"></span></span>
+              </button>
             </div>
           </div>
 
           <!-- Canvas Container for Graph -->
           <div class="relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-white border border-slate-200 flex items-center justify-center">
             <canvas id="canvas-graph" role="img" aria-label="Graph of applied force and friction force over time" class="w-full h-full block"></canvas>
+            <canvas id="canvas-micro" role="img" aria-label="Magnified view of the contact surfaces between block and table" class="view-hidden absolute top-0 left-0 w-full h-full block"></canvas>
           </div>
         </div>
 
@@ -445,13 +478,8 @@
 
     <!-- MIDDLE ROW: Microscopic Zoom View (Interface Roughness / Asperities) -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-plus-1pt">
-      <!-- Canvas Container for Microscopic Interface -->
-      <div class="relative w-full aspect-[21/7] min-h-[190px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
-        <canvas id="canvas-micro" role="img" aria-label="Magnified view of the contact surfaces between block and table" class="w-full h-full block"></canvas>
-      </div>
-
-      <!-- Header & Magnification Badge -->
-      <div class="flex items-center justify-between mt-3 mb-2">
+      <!-- Header & Magnification Badge (the animation itself now lives in the top-right panel) -->
+      <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
           <h2 class="text-sm font-bold text-slate-800">Microscopic Zoom View (Interface Roughness and Asperities)</h2>
         </div>
@@ -760,6 +788,25 @@
       }
     }
     let lastBadgeSliding = null;
+
+    // Top-right panel view: true = force vs. time graph, false = atomic-scale animation.
+    let showGraphs = true;
+    const btnViewToggle = document.getElementById('btn-view-toggle');
+    const rightPanelTitle = document.getElementById('right-panel-title');
+    const graphLegend = document.getElementById('graph-legend');
+
+    function setRightPanelView(graphs) {
+      showGraphs = graphs;
+      btnViewToggle.classList.toggle('is-on', graphs);
+      btnViewToggle.setAttribute('aria-checked', String(graphs));
+      elCanvasGraph.classList.toggle('view-hidden', !graphs);
+      elCanvasMicro.classList.toggle('view-hidden', graphs);
+      graphLegend.classList.toggle('view-hidden', !graphs);
+      rightPanelTitle.textContent = graphs
+        ? 'Applied Force and Friction Force vs. Time'
+        : 'Atomic Surface Contact (5000× Magnification)';
+      resizeCanvases(); // the newly shown canvas had zero size while hidden
+    }
 
     function stopAutoPull() {
       state.isAutoPulling = false;
@@ -1715,6 +1762,8 @@
       dragHint.classList.remove('opacity-0');
     });
 
+    btnViewToggle.addEventListener('click', () => setRightPanelView(!showGraphs));
+
     btnClearGraph.addEventListener('click', () => {
       state.history = [{ t: state.elapsedTime, fApp: state.appliedForce, fFric: state.frictionForce }];
     });
@@ -1740,8 +1789,8 @@
 
       updatePhysics(dt);
       drawMacroView();
-      drawMicroView();
-      drawGraphView();
+      // Only the visible view in the top-right panel is drawn.
+      if (showGraphs) drawGraphView(); else drawMicroView();
       updateMetricsUI();
 
       requestAnimationFrame(mainLoop);
