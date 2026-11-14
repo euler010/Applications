@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inclined Plane Physics Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* High-contrast custom hand cursor with dark outline */
+    .custom-grab {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' stroke='%230f172a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M10 11V4a1.5 1.5 0 0 1 3 0v7m0-3a1.5 1.5 0 0 1 3 0v4m0-2.5a1.5 1.5 0 0 1 3 0v5.5c0 4-3 6.5-7 6.5s-6-3-6-6v-4a1.5 1.5 0 0 1 3 0v3'/%3E%3C/svg%3E") 12 12, grab !important;
+    }
+    .custom-grabbing {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' stroke='%230f172a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M9 11V7a1.5 1.5 0 0 1 3 0v4m0-2a1.5 1.5 0 0 1 3 0v2m0-1a1.5 1.5 0 0 1 3 0v3c0 4-3 6.5-7 6.5s-6-3-6-6v-2a1.5 1.5 0 0 1 3 0v2'/%3E%3C/svg%3E") 12 12, grabbing !important;
+    }
+    /* Mathematical subscript styling */
+    sub {
+      font-size: 0.72em;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+      bottom: -0.22em;
+      margin-left: 0.04em;
+    }
+    input[type=range] {
+      accent-color: #2563eb;
+    }
+  </style>
+  <!-- Replacement for the Tailwind CDN: hand-written equivalents of every utility class the app uses.
+       Placed at the end of <head>, where the CDN injected its styles, so the cascade is unchanged. -->
+  <style id="app-styles">
+    /* ---------- Base reset (equivalent of Tailwind preflight) ---------- */
+    *, ::before, ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: #e5e7eb;
+    }
+    html {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      -moz-tab-size: 4;
+      tab-size: 4;
+      font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { margin: 0; line-height: inherit; }
+    h1, h2 { font-size: inherit; font-weight: inherit; margin: 0; }
+    button, input {
+      font-family: inherit;
+      font-feature-settings: inherit;
+      font-variation-settings: inherit;
+      font-size: 100%;
+      font-weight: inherit;
+      line-height: inherit;
+      letter-spacing: inherit;
+      color: inherit;
+      margin: 0;
+      padding: 0;
+    }
+    button { text-transform: none; -webkit-appearance: button; background-color: transparent; background-image: none; cursor: pointer; }
+    ::-webkit-inner-spin-button, ::-webkit-outer-spin-button { height: auto; }
+    svg, canvas { display: block; vertical-align: middle; }
+    [hidden] { display: none; }
+
+    /* ---------- Layout & position ---------- */
+    .pointer-events-none { pointer-events: none; }
+    .pointer-events-auto { pointer-events: auto; }
+    .absolute { position: absolute; }
+    .relative { position: relative; }
+    .sticky { position: sticky; }
+    .top-0 { top: 0; }
+    .top-3 { top: 0.75rem; }
+    .left-3 { left: 0.75rem; }
+    .right-3 { right: 0.75rem; }
+    .z-20 { z-index: 20; }
+    .z-30 { z-index: 30; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .ml-1 { margin-left: 0.25rem; }
+    .block { display: block; }
+    .flex { display: flex; }
+    .inline-flex { display: inline-flex; }
+    .grid { display: grid; }
+    .hidden { display: none; }
+    .aspect-\[2\/1\] { aspect-ratio: 2 / 1; }
+
+    /* ---------- Sizing ---------- */
+    .h-2 { height: 0.5rem; }
+    .h-2\.5 { height: 0.625rem; }
+    .h-3\.5 { height: 0.875rem; }
+    .h-4 { height: 1rem; }
+    .h-6 { height: 1.5rem; }
+    .h-14 { height: 3.5rem; }
+    .h-full { height: 100%; }
+    .max-h-\[490px\] { max-height: 490px; }
+    .min-h-\[310px\] { min-height: 310px; }
+    .min-h-\[44px\] { min-height: 44px; }
+    .min-h-screen { min-height: 100vh; }
+    .w-2\.5 { width: 0.625rem; }
+    .w-3\.5 { width: 0.875rem; }
+    .w-4 { width: 1rem; }
+    .w-6 { width: 1.5rem; }
+    .w-12 { width: 3rem; }
+    .w-14 { width: 3.5rem; }
+    .w-24 { width: 6rem; }
+    .w-full { width: 100%; }
+    .min-w-0 { min-width: 0; }
+    .max-w-\[1600px\] { max-width: 1600px; }
+
+    /* ---------- Flex & grid ---------- */
+    .flex-1 { flex: 1 1 0%; }
+    .shrink-0 { flex-shrink: 0; }
+    .cursor-pointer { cursor: pointer; }
+    .select-none { -webkit-user-select: none; user-select: none; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .flex-col { flex-direction: column; }
+    .items-start { align-items: flex-start; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-\[20px\] { gap: 20px; }
+    .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; margin-right: 0; }
+    .space-x-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.625rem; margin-right: 0; }
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; margin-bottom: 0; }
+    .overflow-hidden { overflow: hidden; }
+    .whitespace-nowrap { white-space: nowrap; }
+
+    /* ---------- Borders & radius ---------- */
+    .rounded { border-radius: 0.25rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+    .border { border-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-transparent { border-color: transparent; }
+    .border-slate-100 { border-color: #f1f5f9; }
+    .border-slate-200 { border-color: #e2e8f0; }
+    .border-slate-300 { border-color: #cbd5e1; }
+    .border-amber-200\/80 { border-color: rgb(253 230 138 / 0.8); }
+    .border-emerald-200 { border-color: #a7f3d0; }
+    .border-blue-500 { border-color: #3b82f6; }
+
+    /* ---------- Backgrounds ---------- */
+    .bg-white { background-color: #ffffff; }
+    .bg-slate-50 { background-color: #f8fafc; }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .bg-slate-200 { background-color: #e2e8f0; }
+    .bg-amber-50 { background-color: #fffbeb; }
+    .bg-amber-500 { background-color: #f59e0b; }
+    .bg-amber-600 { background-color: #d97706; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-emerald-50 { background-color: #ecfdf5; }
+    .bg-emerald-600 { background-color: #059669; }
+    .bg-rose-400 { background-color: #fb7185; }
+    .bg-rose-600 { background-color: #e11d48; }
+    .bg-purple-600 { background-color: #9333ea; }
+
+    /* ---------- SVG ---------- */
+    .fill-current { fill: currentColor; }
+    .fill-none { fill: none; }
+    .stroke-current { stroke: currentColor; }
+    .stroke-2 { stroke-width: 2; }
+
+    /* ---------- Spacing ---------- */
+    .p-2 { padding: 0.5rem; }
+    .p-4 { padding: 1rem; }
+    .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-\[20px\] { padding-left: 20px; padding-right: 20px; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .pb-8 { padding-bottom: 2rem; }
+    .pt-1 { padding-top: 0.25rem; }
+    .pt-\[20px\] { padding-top: 20px; }
+
+    /* ---------- Typography ---------- */
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; }
+    .leading-tight { line-height: 1.25; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .text-white { color: #ffffff; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-800 { color: #1e293b; }
+    .text-slate-900 { color: #0f172a; }
+    .text-amber-500 { color: #f59e0b; }
+    .text-amber-700 { color: #b45309; }
+    .text-blue-600 { color: #2563eb; }
+    .text-blue-700 { color: #1d4ed8; }
+    .text-emerald-600 { color: #059669; }
+    .text-emerald-700 { color: #047857; }
+    .text-rose-500 { color: #f43f5e; }
+    .text-rose-600 { color: #e11d48; }
+    .text-purple-600 { color: #9333ea; }
+    .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    input.accent-purple-600 { accent-color: #9333ea; }
+    input[type=checkbox] { accent-color: currentColor; }
+    input[type=checkbox]:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    input[type=range]:disabled, button:disabled { cursor: default; }
+    .shadow-xs { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .shadow-2xs { box-shadow: 0 1px 0 0 rgb(0 0 0 / 0.05); }
+    .opacity-40 { opacity: 0.4; }
+
+    /* ---------- Transitions ---------- */
+    .transition {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .transition-opacity {
+      transition-property: opacity;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .duration-200 { transition-duration: 200ms; }
+
+    /* ---------- State variants (hover, then focus, then active) ---------- */
+    .hover\:border-slate-200:hover { border-color: #e2e8f0; }
+    .hover\:bg-slate-50:hover { background-color: #f8fafc; }
+    .hover\:bg-slate-200:hover { background-color: #e2e8f0; }
+    .hover\:bg-amber-700:hover { background-color: #b45309; }
+    .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+    .hover\:text-blue-800:hover { color: #1e40af; }
+    .focus\:outline-blue-500:focus { outline-color: #3b82f6; }
+    .active\:bg-slate-300:active { background-color: #cbd5e1; }
+    .active\:bg-blue-800:active { background-color: #1e40af; }
+
+    /* ---------- Responsive ---------- */
+    /* Phones: taller canvas so the ramp, centre-of-mass diagram and buttons don't overlap */
+    @media (max-width: 639px) {
+      #canvasContainer { min-height: 400px; }
+    }
+    @media (min-width: 640px) {
+      .sm\:inline { display: inline; }
+      .sm\:hidden { display: none; }
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sm\:flex-row { flex-direction: row; }
+      .sm\:items-center { align-items: center; }
+      .sm\:text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    }
+    @media (min-width: 1024px) {
+      .lg\:w-\[380px\] { width: 380px; }
+      .lg\:flex-1 { flex: 1 1 0%; }
+      .lg\:flex-row { flex-direction: row; }
+    }
+    @media (min-width: 1280px) {
+      .xl\:w-\[420px\] { width: 420px; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-[1600px] mx-auto px-[20px] h-14 flex items-center justify-between">
+      <h1 class="font-bold text-lg sm:text-xl text-slate-900 tracking-tight">
+        Inclined Plane Simulator
+      </h1>
+    </div>
+  </header>
+
+  <main class="max-w-[1600px] mx-auto px-[20px] pt-[20px] pb-8">
+    <div id="splitLayout" class="flex flex-col lg:flex-row gap-[20px] items-start">
+      
+      <!-- Left Column: Simulation Canvas & Controls -->
+      <div id="leftCol" class="w-full lg:flex-1 flex flex-col gap-4 min-w-0">
+        
+        <!-- Canvas Card (Fixed size with matching rounded corners) -->
+        <div id="canvasCard" class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col relative group">
+          <!-- Top-Left Status Badges -->
+          <div class="absolute top-3 left-3 flex items-center gap-2 z-20 pointer-events-none">
+            <span id="badgeStatus" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 shadow-xs pointer-events-auto">
+              Paused
+            </span>
+            <span id="badgeRegime" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 pointer-events-auto">
+              <span class="hidden sm:inline">Friction Regime:</span><span class="sm:hidden">Friction:</span> <span id="txtRegime" class="font-semibold ml-1 text-emerald-700">Static</span>
+            </span>
+          </div>
+
+          <!-- Play, Reset & Default Buttons stacked vertically top-right of workspace -->
+          <div class="absolute top-3 right-3 flex flex-col gap-1.5 z-20 w-24">
+            <button id="btnPlayPause" class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-xs shadow-xs transition cursor-pointer">
+              <svg id="iconPlay" class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="iconPause" class="w-3.5 h-3.5 fill-current hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <svg id="iconReplay" class="w-3.5 h-3.5 fill-none stroke-current stroke-2 hidden" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span id="lblPlayPause">Play</span>
+            </button>
+            <button id="btnReset" class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs border border-slate-300 shadow-xs transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Reset</span>
+            </button>
+            <button id="btnDefault" class="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs border border-slate-300 shadow-xs transition cursor-pointer" title="Reset all settings to default values">
+              <svg class="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+              </svg>
+              <span>Default</span>
+            </button>
+          </div>
+
+          <!-- Simulation Canvas Container: 10 pixels taller -->
+          <div id="canvasContainer" class="relative w-full aspect-[2/1] min-h-[310px] max-h-[490px] bg-white rounded-2xl overflow-hidden">
+            <canvas id="simCanvas" class="w-full h-full block custom-grab"></canvas>
+          </div>
+        </div>
+
+        <!-- Controls Card Below Workspace: Tension, Vector Values, Mass & Gravity -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 space-y-4">
+          <!-- Tension Force & Vector Values Row -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <!-- Tension Checkbox -->
+            <div class="flex items-center space-x-2 shrink-0">
+              <input type="checkbox" id="chkEnableTension" class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer">
+              <label for="chkEnableTension" class="font-semibold text-xs text-slate-800 cursor-pointer select-none">
+                Tension Force (F<sub>T</sub>)
+              </label>
+            </div>
+
+            <!-- Tension Slider Container with + and - fine adjustment buttons -->
+            <div id="tensionSliderContainer" class="flex-1 opacity-40 pointer-events-none transition-opacity duration-200 flex items-center gap-2">
+              <span id="lblTensionMin" class="font-mono text-[11px] text-slate-400 shrink-0 w-12 text-right">-49.0 N</span>
+              <button id="btnTensionMinus" type="button" disabled class="w-6 h-6 flex items-center justify-center rounded-md bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs border border-slate-300 shadow-2xs transition select-none cursor-pointer shrink-0" title="Decrease tension by 0.1 N">−</button>
+              <input type="range" id="sliderTension" min="-49" max="49" step="0.1" value="-20" disabled class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer accent-purple-600">
+              <button id="btnTensionPlus" type="button" disabled class="w-6 h-6 flex items-center justify-center rounded-md bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs border border-slate-300 shadow-2xs transition select-none cursor-pointer shrink-0" title="Increase tension by 0.1 N">+</button>
+              <span id="lblTensionMax" class="font-mono text-[11px] text-slate-400 shrink-0 w-12 text-left">+49.0 N</span>
+            </div>
+
+            <!-- Vector Values Checkbox -->
+            <div class="flex items-center space-x-2 shrink-0">
+              <input type="checkbox" id="chkShowVectorValues" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer">
+              <label for="chkShowVectorValues" class="font-semibold text-xs text-slate-800 cursor-pointer select-none whitespace-nowrap">
+                Vector Values
+              </label>
+            </div>
+          </div>
+
+          <!-- Mass and Gravity Sliders (Below Tension Slider) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Mass Slider -->
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-700">Mass (m)</span>
+                <span id="txtMassVal" class="font-mono font-bold text-slate-900">5.0 kg</span>
+              </div>
+              <input type="range" id="sliderMass" min="0.5" max="20" step="0.5" value="5.0" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Gravity Slider -->
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-700">Gravity (g)</span>
+                <span id="txtGravVal" class="font-mono font-bold text-slate-900">9.8 m/s²</span>
+              </div>
+              <input type="range" id="sliderGrav" min="1.0" max="25" step="0.1" value="9.8" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Vectors, Incline Angle & Surface Friction -->
+      <div id="rightCol" class="w-full lg:w-[380px] xl:w-[420px] flex flex-col gap-[20px] shrink-0">
+        
+        <!-- Vectors Panel -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+              <span>Vectors</span>
+            </h2>
+            <button id="btnToggleAllVectors" class="text-xs text-blue-600 hover:text-blue-800 font-semibold cursor-pointer">
+              Toggle All
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 text-xs">
+            <!-- Net Force (defaulted unchecked at top) -->
+            <label class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition">
+              <div class="flex items-center space-x-2.5">
+                <input type="checkbox" id="chkNetForce" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-slate-300 cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+                <span class="font-medium text-slate-800">Net Force (ΣF)</span>
+              </div>
+            </label>
+
+            <!-- Gravity -->
+            <label class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition">
+              <div class="flex items-center space-x-2.5">
+                <input type="checkbox" id="chkGravity" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300 cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0"></span>
+                <span class="font-medium text-slate-800">Gravity (F<sub>g</sub>)</span>
+              </div>
+            </label>
+
+            <!-- Gravity Components -->
+            <label class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition">
+              <div class="flex items-center space-x-2.5">
+                <input type="checkbox" id="chkGravityComponents" class="w-4 h-4 rounded text-rose-500 focus:ring-rose-400 border-slate-300 cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-400 shrink-0"></span>
+                <span class="font-medium text-slate-800">Gravity Components (F<sub>gx</sub> and F<sub>gy</sub>)</span>
+              </div>
+            </label>
+
+            <!-- Normal Force -->
+            <label class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition">
+              <div class="flex items-center space-x-2.5">
+                <input type="checkbox" id="chkNormal" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0"></span>
+                <span class="font-medium text-slate-800">Normal Force (F<sub>N</sub>)</span>
+              </div>
+            </label>
+
+            <!-- Friction Force -->
+            <label class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition">
+              <div class="flex items-center space-x-2.5">
+                <input type="checkbox" id="chkFriction" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0"></span>
+                <span class="font-medium text-slate-800">Friction Force (F<sub>s</sub> or F<sub>k</sub>)</span>
+              </div>
+            </label>
+
+            <!-- Tension Vector (dynamic) -->
+            <label id="lblChkTensionVector" class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition hidden">
+              <div class="flex items-center space-x-2.5">
+                <input type="checkbox" id="chkTensionVector" checked class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-600 shrink-0"></span>
+                <span class="font-medium text-slate-800">Tension Force (F<sub>T</sub>)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Incline Parameters & Surface Presets Panel -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 flex flex-col gap-4">
+          <!-- Incline Angle Slider -->
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-900">Incline Angle (θ)</span>
+              <div class="flex items-center gap-1">
+                <input type="number" id="numAngle" min="0" max="90" step="0.5" value="30" class="w-14 px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold text-xs text-right text-slate-900 focus:outline-blue-500">
+                <span class="text-slate-500 text-xs">deg</span>
+              </div>
+            </div>
+            <input type="range" id="sliderAngle" min="0" max="90" step="0.5" value="30" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+          </div>
+
+          <!-- Surface Presets (Clean 3-column uniform grid) -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Surface Presets</label>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <!-- Top Row: Frictionless, Rubber on Concrete, Wood on Wood -->
+              <button class="preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-blue-500 bg-blue-50 text-blue-700 font-semibold text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none" data-s="0.00" data-k="0.00">
+                Frictionless
+              </button>
+              <button class="preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none" data-s="0.90" data-k="0.80">
+                Rubber on Concrete
+              </button>
+              <button class="preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none" data-s="0.40" data-k="0.30">
+                Wood on Wood
+              </button>
+              <!-- Bottom Row: Ice on Ice, Metal on Wood, High Grip -->
+              <button class="preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none" data-s="0.10" data-k="0.05">
+                Ice on Ice
+              </button>
+              <button class="preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none" data-s="0.50" data-k="0.35">
+                Metal on Wood
+              </button>
+              <button class="preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none" data-s="1.00" data-k="0.85">
+                High Grip
+              </button>
+            </div>
+          </div>
+
+          <!-- Static & Kinetic Friction Sliders -->
+          <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-100">
+            <!-- Static Friction -->
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-700">Static (μ<sub>s</sub>)</span>
+                <span id="txtMuS" class="font-mono font-bold text-slate-900">0.00</span>
+              </div>
+              <input type="range" id="sliderMuS" min="0.00" max="1.20" step="0.01" value="0.00" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Kinetic Friction -->
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-slate-700">Kinetic (μ<sub>k</sub>)</span>
+                <span id="txtMuK" class="font-mono font-bold text-slate-900">0.00</span>
+              </div>
+              <input type="range" id="sliderMuK" min="0.00" max="1.20" step="0.01" value="0.00" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Fallback for browsers without CanvasRenderingContext2D.roundRect (pre-2023)
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        r = Math.max(0, Math.min(typeof r === 'number' ? r : 0, Math.abs(w) / 2, Math.abs(h) / 2));
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+      };
+    }
+
+    // --- State Variables ---
+    const state = {
+      // Physical parameters
+      angleDeg: 30.0,
+      mass: 5.0, // kg
+      gravity: 9.8, // m/s^2
+      muS: 0.00, // static friction coeff defaulted to frictionless
+      muK: 0.00, // kinetic friction coeff defaulted to frictionless
+
+      // Tension force
+      enableTension: false,
+      tension: -20.0, // Newtons (negative = up ramp, positive = down ramp)
+      showTensionVector: true,
+
+      // Motion state
+      isPlaying: false,
+      hasPlayed: false, // true once a run has started (paused mid-run => Resume)
+      runEnded: false,  // true when the block reached the end of the ramp (=> Replay)
+      startDist: 1.5,
+      blockDistAlongIncline: 1.5, // meters from top apex down the incline
+      velocity: 0.0, // m/s (positive = down the incline, negative = up the incline)
+      acceleration: 0.0, // m/s^2
+      simTime: 0.0, // s
+      isSliding: false,
+
+      // Ramp geometry in physical units
+      rampLength: 6.0, // meters
+      blockWidth: 0.8, // meters
+      blockHeight: 0.45, // meters
+
+      // Visual toggles
+      showGravity: false,
+      showGravityComponents: false,
+      showNormal: false,
+      showFriction: false,
+      showNetForce: false, // Net Force on point mass defaulted to unchecked
+      showVectorValues: false, // displays numerical magnitudes with vector labels
+      vectorScaleMultiplier: 1.0,
+
+      // Interaction
+      isDragging: false,
+      dragOffset: 0
+    };
+
+    // --- DOM Elements ---
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const lblPlayPause = document.getElementById('lblPlayPause');
+    const iconPlay = document.getElementById('iconPlay');
+    const iconPause = document.getElementById('iconPause');
+    const iconReplay = document.getElementById('iconReplay');
+    const btnReset = document.getElementById('btnReset');
+    const btnDefault = document.getElementById('btnDefault');
+
+    const badgeStatus = document.getElementById('badgeStatus');
+    const txtRegime = document.getElementById('txtRegime');
+
+    const chkEnableTension = document.getElementById('chkEnableTension');
+    const tensionSliderContainer = document.getElementById('tensionSliderContainer');
+    const sliderTension = document.getElementById('sliderTension');
+    const btnTensionMinus = document.getElementById('btnTensionMinus');
+    const btnTensionPlus = document.getElementById('btnTensionPlus');
+    const lblTensionMin = document.getElementById('lblTensionMin');
+    const lblTensionMax = document.getElementById('lblTensionMax');
+    const chkShowVectorValues = document.getElementById('chkShowVectorValues');
+
+    const sliderMass = document.getElementById('sliderMass');
+    const txtMassVal = document.getElementById('txtMassVal');
+    const sliderGrav = document.getElementById('sliderGrav');
+    const txtGravVal = document.getElementById('txtGravVal');
+
+    const btnToggleAllVectors = document.getElementById('btnToggleAllVectors');
+    const chkGravity = document.getElementById('chkGravity');
+    const chkGravityComponents = document.getElementById('chkGravityComponents');
+    const chkNormal = document.getElementById('chkNormal');
+    const chkFriction = document.getElementById('chkFriction');
+    const lblChkTensionVector = document.getElementById('lblChkTensionVector');
+    const chkTensionVector = document.getElementById('chkTensionVector');
+    const chkNetForce = document.getElementById('chkNetForce');
+
+    const sliderAngle = document.getElementById('sliderAngle');
+    const numAngle = document.getElementById('numAngle');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+    const sliderMuS = document.getElementById('sliderMuS');
+    const txtMuS = document.getElementById('txtMuS');
+    const sliderMuK = document.getElementById('sliderMuK');
+    const txtMuK = document.getElementById('txtMuK');
+
+    // Travel limits along the ramp: the block's centre stays half a block-width from each end
+    function getTravelLimits() {
+      const minDist = state.blockWidth / 2;
+      return { minDist, maxDist: state.rampLength - minDist };
+    }
+
+    // Pixels per newton: 2.25 px/N normally, scaled down when forces are large so arrows stay on the canvas
+    function getForceScale(forces) {
+      const budgetPx = Math.max(60, logicalHeight * 0.23);
+      const scale = Math.min(2.25, budgetPx / Math.max(forces.Fg, 1e-6));
+      return scale * state.vectorScaleMultiplier;
+    }
+
+    // Helper: format force values cleanly (e.g., 49 N instead of 49.0 N, or 24.5 N)
+    function formatForceVal(val) {
+      const rounded1 = Math.round(val * 10) / 10;
+      if (Math.abs(rounded1 - Math.round(rounded1)) < 1e-4) {
+        return Math.round(rounded1).toString();
+      }
+      return rounded1.toFixed(1);
+    }
+
+    // --- Physics Model ---
+    function calculateForces() {
+      const thetaRad = (state.angleDeg * Math.PI) / 180;
+      const m = state.mass;
+      const g = state.gravity;
+
+      const Fg = m * g;
+      const Fg_perp = Fg * Math.cos(thetaRad);
+      const Fg_parallel = Fg * Math.sin(thetaRad); // downhill (+ direction)
+      const Fn = Math.max(0, Fg_perp);
+
+      const Ft = state.enableTension ? state.tension : 0; // - = uphill, + = downhill
+      const F_drive = Fg_parallel + Ft; // driving force along the ramp (+ downhill, - uphill)
+
+      const maxFs = state.muS * Fn;
+      const Fk = state.muK * Fn;
+
+      let friction = 0;
+      let frictionType = 'Static';
+      let netParallelForce = 0;
+      let accel = 0;
+
+      const VELOCITY_THRESHOLD = 0.001;
+
+      if (!state.isSliding && Math.abs(state.velocity) < VELOCITY_THRESHOLD) {
+        // Block is currently at rest
+        if (Math.abs(F_drive) <= maxFs + 1e-5) {
+          friction = -F_drive; // static friction cancels driving force exactly
+          frictionType = 'Static';
+          netParallelForce = 0;
+          accel = 0;
+        } else {
+          frictionType = 'Kinetic';
+          const direction = Math.sign(F_drive);
+          friction = -direction * Fk;
+          netParallelForce = F_drive + friction;
+          accel = netParallelForce / m;
+        }
+      } else {
+        // Block is moving
+        frictionType = 'Kinetic';
+        const motionDir = Math.abs(state.velocity) >= VELOCITY_THRESHOLD ? Math.sign(state.velocity) : Math.sign(F_drive);
+        friction = -motionDir * Fk;
+        netParallelForce = F_drive + friction;
+        accel = netParallelForce / m;
+      }
+
+      return {
+        Fg,
+        Fg_perp,
+        Fg_parallel,
+        Fn,
+        Ft,
+        friction,
+        frictionType,
+        maxFs,
+        Fk,
+        netParallelForce,
+        accel
+      };
+    }
+
+    // Dynamic calibration of tension limits between -mg and +mg
+    function updateTensionBounds() {
+      const maxT = Math.round(state.mass * state.gravity * 10) / 10;
+      sliderTension.min = -maxT;
+      sliderTension.max = maxT;
+      lblTensionMin.textContent = `-${maxT.toFixed(1)} N`;
+      lblTensionMax.textContent = `+${maxT.toFixed(1)} N`;
+
+      let curT = state.tension !== undefined ? state.tension : parseFloat(sliderTension.value);
+      if (isNaN(curT)) curT = -20.0;
+      if (curT < -maxT) curT = -maxT;
+      if (curT > maxT) curT = maxT;
+      sliderTension.value = curT;
+      state.tension = Math.round(curT * 10) / 10;
+    }
+
+    function drawArrow(fromX, fromY, toX, toY, color, width = 2.5, dashed = false) {
+      const headLength = 10;
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const angle = Math.atan2(dy, dx);
+      const length = Math.hypot(dx, dy);
+
+      if (length < 2) return;
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (dashed) {
+        ctx.setLineDash([4, 4]);
+      } else {
+        ctx.setLineDash([]);
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      // Arrow Head
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawVectorLabel(labelText, x, y, color = '#1e293b', align = 'center') {
+      ctx.save();
+      ctx.font = '600 12px Inter, sans-serif';
+
+      // Parse subscript tags for precise inline measuring
+      const cleanParts = [];
+      const tagRegex = /<sub>(.*?)<\/sub>/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = tagRegex.exec(labelText)) !== null) {
+        if (match.index > lastIndex) {
+          cleanParts.push({ text: labelText.substring(lastIndex, match.index), isSub: false });
+        }
+        cleanParts.push({ text: match[1], isSub: true });
+        lastIndex = tagRegex.lastIndex;
+      }
+      if (lastIndex < labelText.length) {
+        cleanParts.push({ text: labelText.substring(lastIndex), isSub: false });
+      }
+
+      let totalWidth = 0;
+      cleanParts.forEach(p => {
+        ctx.font = p.isSub ? '600 9px Inter, sans-serif' : '600 12px Inter, sans-serif';
+        totalWidth += ctx.measureText(p.text).width;
+      });
+
+      const padX = 5;
+      const padY = 3;
+      const boxW = Math.round(totalWidth + padX * 2);
+      const boxH = 20;
+
+      let drawX = Math.round(x);
+      if (align === 'center') drawX = Math.round(x - boxW / 2);
+      else if (align === 'right') drawX = Math.round(x - boxW);
+
+      const drawY = Math.round(y - boxH / 2);
+
+      // Clean rounded badge background
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.strokeStyle = 'rgba(226, 232, 240, 0.9)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(drawX + 0.5, drawY + 0.5, boxW, boxH, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      // Render text fragments with crisp integer baseline alignment
+      let curX = drawX + padX;
+      cleanParts.forEach(p => {
+        ctx.font = p.isSub ? '600 9.5px Inter, sans-serif' : '600 12px Inter, sans-serif';
+        ctx.fillStyle = color;
+        const subOffset = p.isSub ? 3 : 0;
+        ctx.fillText(p.text, Math.round(curX), Math.round(drawY + 14 + subOffset));
+        curX += ctx.measureText(p.text).width;
+      });
+
+      ctx.restore();
+    }
+
+    // Draw the point mass, acceleration, and net force ΣF in the left workspace
+    function drawPointMassAndNetForce(forces, thetaRad, height) {
+      // Positioned with margin approximately equal to Play button width (~75px) from left
+      const compact = logicalWidth < 560;
+      const dotX = compact ? 75 : 115;
+      const dotY = compact ? 112 : Math.round(height / 2);
+
+      // Current accel value
+      const currentAccel = state.isPlaying ? state.acceleration : forces.accel;
+
+      ctx.save();
+      // Acceleration value above Center of Mass, displayed only when Net Force is checked
+      if (state.showNetForce) {
+        ctx.font = '600 12px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#0f172a';
+        ctx.textAlign = 'center';
+        ctx.fillText(`a = ${currentAccel.toFixed(2)} m/s²`, dotX, dotY - 52);
+      }
+
+      // Center of mass text label
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'center';
+      ctx.fillText('Center of Mass', dotX, dotY - 14);
+
+      // Center of mass indicator dot
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+
+      // Net Force vector originating from the point mass
+      if (state.showNetForce) {
+        const baseForceScale = getForceScale(forces);
+        const downRampUx = Math.cos(thetaRad);
+        const downRampUy = Math.sin(thetaRad);
+
+        if (Math.abs(forces.netParallelForce) > 0.05) {
+          const fnetMag = Math.abs(forces.netParallelForce) * baseForceScale;
+          const sign = forces.netParallelForce > 0 ? 1 : -1;
+          const fnetEndX = dotX + downRampUx * fnetMag * sign;
+          const fnetEndY = dotY + downRampUy * fnetMag * sign;
+
+          drawArrow(dotX, dotY, fnetEndX, fnetEndY, '#d97706', 2.8);
+          const fnetVal = Math.abs(forces.netParallelForce);
+          const labelText = state.showVectorValues ? `ΣF = ${formatForceVal(fnetVal)} N` : 'ΣF';
+          if (sign > 0) {
+            drawVectorLabel(labelText, fnetEndX + downRampUx * 12, fnetEndY + downRampUy * 12, '#b45309', 'left');
+          } else {
+            drawVectorLabel(labelText, fnetEndX - downRampUx * 12, fnetEndY - downRampUy * 12, '#b45309', 'right');
+          }
+        } else {
+          const zeroLabel = state.showVectorValues ? 'ΣF = 0 N' : 'ΣF = 0';
+          drawVectorLabel(zeroLabel, dotX + 18, dotY, '#b45309', 'left');
+        }
+      }
+    }
+
+    // Draw all active forces acting on the block on the incline
+    function drawForcesAndComponents(cmX, cmY, forces, thetaRad) {
+      const baseForceScale = getForceScale(forces);
+
+      // Coordinate axes vectors relative to incline
+      const downRampUx = Math.cos(thetaRad);
+      const downRampUy = Math.sin(thetaRad);
+      const upRampUx = -downRampUx;
+      const upRampUy = -downRampUy;
+
+      const normUx = Math.sin(thetaRad);
+      const normUy = -Math.cos(thetaRad);
+      const intoRampUx = -normUx;
+      const intoRampUy = -normUy;
+
+      const gravUx = 0;
+      const gravUy = 1;
+
+      // Track parallel vectors to avoid overlap
+      const uphillList = [];
+      const downhillList = [];
+
+      if (state.showGravity && state.showGravityComponents && state.angleDeg > 1 && state.angleDeg <= 89.9) {
+        downhillList.push('Fgx');
+      }
+
+      if (state.enableTension && state.showTensionVector && Math.abs(forces.Ft) > 0.05) {
+        if (forces.Ft < 0) uphillList.push('Tension');
+        else downhillList.push('Tension');
+      }
+
+      if (state.showFriction && Math.abs(forces.friction) > 0.05) {
+        if (forces.friction < 0) uphillList.push('Friction');
+        else downhillList.push('Friction');
+      }
+
+      // Parallel offset helper: Friction acts at CM (offset=0), Tension stays above it
+      function getParallelOffset(name, list) {
+        if (list.length <= 1) return { x: 0, y: 0 };
+        let offset = 0;
+        if (name === 'Friction') {
+          offset = 0; // Friction acts directly at the center of mass
+        } else if (name === 'Tension') {
+          offset = 18; // Tension stays cleanly above friction into the outward normal
+        } else if (name === 'Fgx') {
+          offset = 14;
+        }
+        return { x: normUx * offset, y: normUy * offset };
+      }
+
+      // 1. GRAVITY VECTOR (Fg = mg)
+      if (state.showGravity) {
+        const fgLen = forces.Fg * baseForceScale;
+        const fgEndX = cmX + gravUx * fgLen;
+        const fgEndY = cmY + gravUy * fgLen;
+
+        drawArrow(cmX, cmY, fgEndX, fgEndY, '#e11d48', 2.8);
+
+        const fgLabelText = state.showVectorValues ? `F<sub>g</sub> = ${formatForceVal(forces.Fg)} N` : 'F<sub>g</sub>';
+
+        // Measure text width to guarantee adequate clearance from the vertical arrow
+        ctx.save();
+        ctx.font = '600 12px Inter, sans-serif';
+        const cleanMeasureText = fgLabelText.replace(/<\/?sub>/g, '');
+        const labelW = ctx.measureText(cleanMeasureText).width + 10;
+        ctx.restore();
+        const halfW = labelW / 2;
+
+        // Smoothly and swiftly move the label from right to left as the angle increases (0° to 25°)
+        // dipping below the arrow tip so it never collides with or covers the vector
+        const transProgress = Math.max(0, Math.min(1, state.angleDeg / 25));
+        const smoothT = transProgress * transProgress * (3 - 2 * transProgress); // smoothstep
+
+        const rightCenterX = fgEndX + halfW + 10;
+        const leftCenterX = fgEndX - halfW - 10;
+        const fgLabelX = rightCenterX * (1 - smoothT) + leftCenterX * smoothT;
+        // Arc path dipping below the arrow tip during transition to avoid obscuring the vector
+        const dipY = Math.sin(smoothT * Math.PI) * 20;
+        const fgLabelY = (fgEndY - 4) + dipY;
+
+        drawVectorLabel(fgLabelText, fgLabelX, fgLabelY, '#be123c', 'center');
+
+        // Parallel & Perpendicular Components of Gravity
+        if (state.showGravityComponents && state.angleDeg > 1 && state.angleDeg <= 89.9) {
+          const fParaLen = forces.Fg_parallel * baseForceScale;
+          const fPerpLen = forces.Fg_perp * baseForceScale;
+
+          const perpEndX = cmX + intoRampUx * fPerpLen;
+          const perpEndY = cmY + intoRampUy * fPerpLen;
+
+          const fgxOffset = getParallelOffset('Fgx', downhillList);
+          const paraStartX = cmX + fgxOffset.x;
+          const paraStartY = cmY + fgxOffset.y;
+          const paraEndX = paraStartX + downRampUx * fParaLen;
+          const paraEndY = paraStartY + downRampUy * fParaLen;
+
+          // Draw Perpendicular Component F_gy
+          drawArrow(cmX, cmY, perpEndX, perpEndY, '#f43f5e', 2.0, true);
+          const gyLabelX = perpEndX - 12;
+          const gyLabelY = perpEndY;
+          const gyLabelText = state.showVectorValues ? `F<sub>gy</sub> = ${formatForceVal(forces.Fg_perp)} N` : 'F<sub>gy</sub>';
+          drawVectorLabel(gyLabelText, gyLabelX, gyLabelY, '#e11d48', 'right');
+
+          // Draw Parallel Component F_gx (smoothly positioned without abrupt jumps)
+          drawArrow(paraStartX, paraStartY, paraEndX, paraEndY, '#fb7185', 2.0, true);
+          const gxLabelX = paraEndX + downRampUx * 12 + normUx * 14;
+          const gxLabelY = paraEndY + downRampUy * 12 + normUy * 14;
+          const gxLabelText = state.showVectorValues ? `F<sub>gx</sub> = ${formatForceVal(forces.Fg_parallel)} N` : 'F<sub>gx</sub>';
+          drawVectorLabel(gxLabelText, gxLabelX, gxLabelY, '#e11d48', 'left');
+
+          // Component projection dashed lines
+          ctx.save();
+          ctx.strokeStyle = '#fda4af';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(perpEndX, perpEndY);
+          ctx.lineTo(fgEndX, fgEndY);
+          ctx.moveTo(paraEndX, paraEndY);
+          ctx.lineTo(fgEndX, fgEndY);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // 2. NORMAL FORCE VECTOR (Fn)
+      if (state.showNormal && forces.Fn > 0.05) {
+        const fnLen = forces.Fn * baseForceScale;
+        const fnEndX = cmX + normUx * fnLen;
+        const fnEndY = cmY + normUy * fnLen;
+
+        drawArrow(cmX, cmY, fnEndX, fnEndY, '#2563eb', 2.8);
+        const fnLabelX = fnEndX + normUx * 14;
+        const fnLabelY = fnEndY + normUy * 14;
+        const fnLabelText = state.showVectorValues ? `F<sub>N</sub> = ${formatForceVal(forces.Fn)} N` : 'F<sub>N</sub>';
+        drawVectorLabel(fnLabelText, fnLabelX, fnLabelY, '#1d4ed8', 'left');
+      }
+
+      // 3. FRICTION FORCE VECTOR (Fs or Fk)
+      if (state.showFriction && Math.abs(forces.friction) > 0.05) {
+        const ffMag = Math.abs(forces.friction) * baseForceScale;
+        const isUphill = forces.friction < 0;
+        const dirUx = isUphill ? upRampUx : downRampUx;
+        const dirUy = isUphill ? upRampUy : downRampUy;
+
+        const fList = isUphill ? uphillList : downhillList;
+        const fOffset = getParallelOffset('Friction', fList);
+        const ffStartX = cmX + fOffset.x;
+        const ffStartY = cmY + fOffset.y;
+        const ffEndX = ffStartX + dirUx * ffMag;
+        const ffEndY = ffStartY + dirUy * ffMag;
+
+        const frictionTypePrefix = forces.frictionType === 'Kinetic' ? 'F<sub>k</sub>' : 'F<sub>s</sub>';
+        const fLabelText = state.showVectorValues ? `${frictionTypePrefix} = ${formatForceVal(Math.abs(forces.friction))} N` : frictionTypePrefix;
+        drawArrow(ffStartX, ffStartY, ffEndX, ffEndY, '#059669', 2.8);
+
+        // Position friction label comfortably past the arrowhead
+        if (isUphill) {
+          const ffLabelX = ffEndX + upRampUx * 23;
+          const ffLabelY = ffEndY + upRampUy * 23;
+          drawVectorLabel(fLabelText, ffLabelX, ffLabelY, '#047857', 'right');
+        } else {
+          const ffLabelX = ffEndX + downRampUx * 23;
+          const ffLabelY = ffEndY + downRampUy * 23;
+          drawVectorLabel(fLabelText, ffLabelX, ffLabelY, '#047857', 'left');
+        }
+      }
+
+      // 4. TENSION FORCE VECTOR (Ft)
+      if (state.enableTension && state.showTensionVector && Math.abs(forces.Ft) > 0.05) {
+        const ftMag = Math.abs(forces.Ft) * baseForceScale;
+        const isUphill = forces.Ft < 0;
+        const tUx = isUphill ? upRampUx : downRampUx;
+        const tUy = isUphill ? upRampUy : downRampUy;
+
+        const tList = isUphill ? uphillList : downhillList;
+        const tOffset = getParallelOffset('Tension', tList);
+        const ftStartX = cmX + tOffset.x;
+        const ftStartY = cmY + tOffset.y;
+        const ftEndX = ftStartX + tUx * ftMag;
+        const ftEndY = ftStartY + tUy * ftMag;
+
+        drawArrow(ftStartX, ftStartY, ftEndX, ftEndY, '#9333ea', 2.8);
+
+        const ftMagN = Math.abs(forces.Ft);
+        const ftLabelText = state.showVectorValues ? `F<sub>T</sub> = ${formatForceVal(ftMagN)} N` : 'F<sub>T</sub>';
+
+        if (isUphill) {
+          const ftLabelX = ftEndX + tUx * 14 + normUx * 12;
+          const ftLabelY = ftEndY + tUy * 14 + normUy * 12;
+          drawVectorLabel(ftLabelText, ftLabelX, ftLabelY, '#7e22ce', 'right');
+        } else {
+          const ftLabelX = ftEndX + tUx * 14 + normUx * 12;
+          const ftLabelY = ftEndY + tUy * 14 + normUy * 12;
+          drawVectorLabel(ftLabelText, ftLabelX, ftLabelY, '#7e22ce', 'left');
+        }
+      }
+    }
+
+    let blockScreenCoords = { x: 0, y: 0, w: 0, h: 0, theta: 0 };
+    let currentInclineGeometry = { apexX: 0, apexY: 0, L_px: 280, groundX: 0, groundY: 0 };
+    let logicalWidth = 600;
+    let logicalHeight = 350;
+
+    function draw() {
+      const width = logicalWidth;
+      const height = logicalHeight;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Background subtle gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+      bgGrad.addColorStop(0, '#f8fafc');
+      bgGrad.addColorStop(1, '#ffffff');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Incline geometry: Fixed Right Point (groundX, groundY) moved 5px higher (height - 109)
+      const thetaRad = (state.angleDeg * Math.PI) / 180;
+      const groundY = height - 109;
+      // Proportional incline length
+      const compact = width < 560;
+      const L_px = compact
+        ? Math.min(width * 0.57, height - 85, 275.8, width - 150)
+        : Math.min(width * 0.57, height - 85, 275.8);
+      // Anchored right toe point; on narrow canvases keep it left of the Play/Reset/Default buttons
+      const groundX = compact
+        ? Math.round(Math.min((width + L_px) / 2, width - 130))
+        : Math.round((width + L_px) / 2);
+
+      const apexX = groundX - L_px * Math.cos(thetaRad);
+      const apexY = groundY - L_px * Math.sin(thetaRad);
+      const baseX = apexX;
+      const baseY = groundY;
+
+      currentInclineGeometry = { apexX, apexY, L_px, groundX, groundY };
+
+      // Draw Ground Line with Hatching
+      ctx.save();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(30, groundY);
+      ctx.lineTo(width - 30, groundY);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      for (let hx = 35; hx < width - 30; hx += 16) {
+        ctx.beginPath();
+        ctx.moveTo(hx, groundY);
+        ctx.lineTo(hx - 8, groundY + 10);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Draw Inclined Wedge
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(groundX, groundY);
+      ctx.lineTo(apexX, apexY);
+      ctx.lineTo(baseX, baseY);
+      ctx.closePath();
+
+      const wedgeGrad = ctx.createLinearGradient(apexX, apexY, groundX, groundY);
+      wedgeGrad.addColorStop(0, '#e2e8f0');
+      wedgeGrad.addColorStop(1, '#f1f5f9');
+      ctx.fillStyle = wedgeGrad;
+      ctx.fill();
+
+      // Ramp vertical back & base edges
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(apexX, apexY);
+      ctx.lineTo(baseX, baseY);
+      ctx.lineTo(groundX, groundY);
+      ctx.stroke();
+
+      // Blue Incline Hypotenuse
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(apexX, apexY);
+      ctx.lineTo(groundX, groundY);
+      ctx.stroke();
+      ctx.restore();
+
+      // Block positioning along the ramp
+      const normUx = Math.sin(thetaRad);
+      const normUy = -Math.cos(thetaRad);
+      const pxPerMeter = L_px / state.rampLength;
+
+      const blockDistPx = state.blockDistAlongIncline * pxPerMeter;
+      const contactX = apexX + Math.cos(thetaRad) * blockDistPx;
+      const contactY = apexY + Math.sin(thetaRad) * blockDistPx;
+
+      const bW = state.blockWidth * pxPerMeter;
+      const bH = state.blockHeight * pxPerMeter;
+
+      const cmX = contactX + normUx * (bH / 2);
+      const cmY = contactY + normUy * (bH / 2);
+
+      blockScreenCoords = { x: cmX, y: cmY, w: bW, h: bH, theta: thetaRad };
+
+      // Draw Block
+      ctx.save();
+      ctx.translate(cmX, cmY);
+      ctx.rotate(thetaRad);
+
+      ctx.fillStyle = '#f1f5f9';
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.roundRect(-bW / 2, -bH / 2, bW, bH, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Block red center of mass dot
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Calculate forces for rendering
+      const forces = calculateForces();
+
+      // Draw forces on the block
+      drawForcesAndComponents(cmX, cmY, forces, thetaRad);
+
+      // Draw point mass and net force in upper-left
+      drawPointMassAndNetForce(forces, thetaRad, height);
+    }
+
+    let lastTime = 0;
+
+    function simLoop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+      lastTime = timestamp;
+
+      if (state.isPlaying && !state.isDragging) {
+        const forces = calculateForces();
+        state.acceleration = forces.accel;
+        state.velocity += state.acceleration * dt;
+        state.blockDistAlongIncline += state.velocity * dt;
+        state.simTime += dt;
+
+        // Incline boundary handling
+        const { minDist, maxDist } = getTravelLimits();
+
+        if (state.blockDistAlongIncline > maxDist || state.blockDistAlongIncline < minDist) {
+          state.blockDistAlongIncline = Math.max(minDist, Math.min(maxDist, state.blockDistAlongIncline));
+          state.velocity = 0;
+          state.acceleration = 0;
+          state.isPlaying = false;
+          state.hasPlayed = true;
+          state.runEnded = true;
+          updatePlayPauseButton();
+        }
+
+        const VEL_THRESHOLD = 0.01;
+        state.isSliding = Math.abs(state.velocity) > VEL_THRESHOLD;
+      }
+
+      updateTelemetry();
+      draw();
+      requestAnimationFrame(simLoop);
+    }
+
+    let lastTelemetryKey = '';
+    function updateTelemetry() {
+      const forces = calculateForces();
+      const frictionless = state.muS === 0 && state.muK === 0;
+      const regime = frictionless ? 'None' : forces.frictionType;
+      const key = `${state.isPlaying}|${regime}`;
+      if (key === lastTelemetryKey) return;
+      lastTelemetryKey = key;
+
+      badgeStatus.textContent = state.isPlaying ? 'Running' : 'Paused';
+      if (state.isPlaying) {
+        badgeStatus.className = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs pointer-events-auto';
+      } else {
+        badgeStatus.className = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 shadow-xs pointer-events-auto';
+      }
+
+      txtRegime.textContent = regime;
+      txtRegime.className = regime === 'None' ? 'font-semibold ml-1 text-slate-500'
+        : regime === 'Static' ? 'font-semibold ml-1 text-emerald-700' : 'font-semibold ml-1 text-amber-700';
+    }
+
+    function updatePlayPauseButton() {
+      if (state.isPlaying) {
+        lblPlayPause.textContent = 'Pause';
+        iconPlay.classList.add('hidden');
+        if (iconReplay) iconReplay.classList.add('hidden');
+        iconPause.classList.remove('hidden');
+        btnPlayPause.classList.replace('bg-blue-600', 'bg-amber-600');
+        btnPlayPause.classList.replace('hover:bg-blue-700', 'hover:bg-amber-700');
+      } else if (state.runEnded) {
+        lblPlayPause.textContent = 'Replay';
+        iconPlay.classList.add('hidden');
+        iconPause.classList.add('hidden');
+        if (iconReplay) iconReplay.classList.remove('hidden');
+        btnPlayPause.classList.replace('bg-amber-600', 'bg-blue-600');
+        btnPlayPause.classList.replace('hover:bg-amber-700', 'hover:bg-blue-700');
+      } else {
+        lblPlayPause.textContent = state.hasPlayed ? 'Resume' : 'Play';
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        if (iconReplay) iconReplay.classList.add('hidden');
+        btnPlayPause.classList.replace('bg-amber-600', 'bg-blue-600');
+        btnPlayPause.classList.replace('hover:bg-amber-700', 'hover:bg-blue-700');
+      }
+    }
+
+    btnPlayPause.addEventListener('click', () => {
+      if (state.isPlaying) {
+        // Pause: keep position and velocity so the run can be resumed
+        state.isPlaying = false;
+        state.hasPlayed = true;
+        updatePlayPauseButton();
+      } else {
+        const { minDist, maxDist } = getTravelLimits();
+        const atEnd = state.blockDistAlongIncline >= maxDist - 0.05 || state.blockDistAlongIncline <= minDist + 0.05;
+        if (state.runEnded || (atEnd && state.hasPlayed)) {
+          // Reset block to starting position before playing again
+          state.blockDistAlongIncline = (state.startDist > minDist + 0.1 && state.startDist < maxDist - 0.1) ? state.startDist : 1.5;
+          state.velocity = 0;
+          state.acceleration = 0;
+          state.simTime = 0;
+          state.isSliding = false;
+        }
+        state.runEnded = false;
+        state.hasPlayed = true;
+        state.isPlaying = true;
+        updatePlayPauseButton();
+      }
+    });
+
+    btnReset.addEventListener('click', () => {
+      state.isPlaying = false;
+      state.hasPlayed = false;
+      state.runEnded = false;
+      state.blockDistAlongIncline = 1.5;
+      state.startDist = 1.5;
+      state.velocity = 0;
+      state.acceleration = 0;
+      state.simTime = 0;
+      state.isSliding = false;
+      updatePlayPauseButton();
+      draw();
+    });
+
+    btnDefault.addEventListener('click', () => {
+      // 1. Reset simulation motion state
+      state.isPlaying = false;
+      state.hasPlayed = false;
+      state.runEnded = false;
+      state.blockDistAlongIncline = 1.5;
+      state.startDist = 1.5;
+      state.velocity = 0;
+      state.acceleration = 0;
+      state.simTime = 0;
+      state.isSliding = false;
+
+      // 2. Physical defaults
+      state.angleDeg = 30.0;
+      sliderAngle.value = 30;
+      numAngle.value = 30;
+
+      state.mass = 5.0;
+      sliderMass.value = 5.0;
+      txtMassVal.textContent = '5.0 kg';
+
+      state.gravity = 9.8;
+      sliderGrav.value = 9.8;
+      txtGravVal.textContent = '9.8 m/s²';
+
+      // 3. Friction defaults (Frictionless)
+      state.muS = 0.00;
+      state.muK = 0.00;
+      sliderMuS.value = 0.00;
+      sliderMuK.value = 0.00;
+      txtMuS.textContent = '0.00';
+      txtMuK.textContent = '0.00';
+
+      presetButtons.forEach(b => {
+        b.className = 'preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none';
+      });
+      if (presetButtons[0]) {
+        presetButtons[0].className = 'preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-blue-500 bg-blue-50 text-blue-700 font-semibold text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none';
+      }
+
+      // 4. Tension defaults
+      state.enableTension = false;
+      chkEnableTension.checked = false;
+      tensionSliderContainer.classList.add('opacity-40', 'pointer-events-none');
+      lblChkTensionVector.classList.add('hidden');
+      setTensionControlsEnabled(false);
+      state.tension = -20.0;
+      updateTensionBounds();
+
+      // 5. Vectors defaults (all unchecked by default)
+      state.showGravity = false;
+      state.showGravityComponents = false;
+      state.showNormal = false;
+      state.showFriction = false;
+      state.showNetForce = false;
+      state.showTensionVector = true;
+      state.showVectorValues = false;
+
+      chkGravity.checked = false;
+      chkGravityComponents.checked = false;
+      chkNormal.checked = false;
+      chkFriction.checked = false;
+      chkNetForce.checked = false;
+      chkTensionVector.checked = true;
+      chkShowVectorValues.checked = false;
+
+      updatePlayPauseButton();
+      draw();
+    });
+
+    // Incline Angle Slider & Input
+    function setAngle(deg) {
+      let clamped = Math.max(0, Math.min(90, deg));
+      state.angleDeg = clamped;
+      sliderAngle.value = clamped;
+      numAngle.value = Number.isInteger(clamped) ? clamped : clamped.toFixed(1);
+      draw();
+    }
+
+    sliderAngle.addEventListener('input', (e) => setAngle(parseFloat(e.target.value)));
+    numAngle.addEventListener('change', (e) => setAngle(parseFloat(e.target.value) || 0));
+
+    // Tension controls
+    function setTensionControlsEnabled(on) {
+      sliderTension.disabled = !on;
+      btnTensionMinus.disabled = !on;
+      btnTensionPlus.disabled = !on;
+    }
+
+    chkEnableTension.addEventListener('change', (e) => {
+      state.enableTension = e.target.checked;
+      setTensionControlsEnabled(state.enableTension);
+      if (state.enableTension) {
+        tensionSliderContainer.classList.remove('opacity-40', 'pointer-events-none');
+        lblChkTensionVector.classList.remove('hidden');
+      } else {
+        tensionSliderContainer.classList.add('opacity-40', 'pointer-events-none');
+        lblChkTensionVector.classList.add('hidden');
+      }
+      draw();
+    });
+
+    function setTension(val) {
+      const maxT = Math.round(state.mass * state.gravity * 10) / 10;
+      let clamped = Math.max(-maxT, Math.min(maxT, Math.round(val * 10) / 10));
+      state.tension = clamped;
+      sliderTension.value = clamped;
+      draw();
+    }
+
+    sliderTension.addEventListener('input', (e) => setTension(parseFloat(e.target.value)));
+
+    btnTensionMinus.addEventListener('click', () => {
+      setTension(state.tension - 0.1);
+    });
+
+    btnTensionPlus.addEventListener('click', () => {
+      setTension(state.tension + 0.1);
+    });
+
+    chkShowVectorValues.addEventListener('change', (e) => {
+      state.showVectorValues = e.target.checked;
+      draw();
+    });
+
+    // Mass & Gravity
+    sliderMass.addEventListener('input', (e) => {
+      state.mass = parseFloat(e.target.value);
+      txtMassVal.textContent = `${state.mass.toFixed(1)} kg`;
+      updateTensionBounds();
+      draw();
+    });
+
+    sliderGrav.addEventListener('input', (e) => {
+      state.gravity = parseFloat(e.target.value);
+      txtGravVal.textContent = `${state.gravity.toFixed(1)} m/s²`;
+      updateTensionBounds();
+      draw();
+    });
+
+    // Friction Presets
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        presetButtons.forEach(b => {
+          b.className = 'preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none';
+        });
+        btn.className = 'preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-blue-500 bg-blue-50 text-blue-700 font-semibold text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none';
+
+        const s = parseFloat(btn.dataset.s);
+        const k = parseFloat(btn.dataset.k);
+        state.muS = s;
+        state.muK = k;
+        sliderMuS.value = s;
+        sliderMuK.value = k;
+        txtMuS.textContent = s.toFixed(2);
+        txtMuK.textContent = k.toFixed(2);
+        draw();
+      });
+    });
+
+    // Friction Sliders
+    sliderMuS.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state.muS = val;
+      txtMuS.textContent = val.toFixed(2);
+      if (state.muK > val) {
+        state.muK = val;
+        sliderMuK.value = val;
+        txtMuK.textContent = val.toFixed(2);
+      }
+      clearPresetHighlight();
+      draw();
+    });
+
+    sliderMuK.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      state.muK = val;
+      txtMuK.textContent = val.toFixed(2);
+      if (state.muS < val) {
+        state.muS = val;
+        sliderMuS.value = val;
+        txtMuS.textContent = val.toFixed(2);
+      }
+      clearPresetHighlight();
+      draw();
+    });
+
+    function clearPresetHighlight() {
+      presetButtons.forEach(b => {
+        b.className = 'preset-btn min-h-[44px] px-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs leading-tight flex items-center justify-center text-center transition cursor-pointer select-none';
+      });
+    }
+
+    // Vector Checkboxes
+    chkGravity.addEventListener('change', (e) => {
+      state.showGravity = e.target.checked;
+      if (!e.target.checked && state.showGravityComponents) {
+        state.showGravityComponents = false;
+        chkGravityComponents.checked = false;
+      }
+      draw();
+    });
+
+    chkGravityComponents.addEventListener('change', (e) => {
+      state.showGravityComponents = e.target.checked;
+      if (e.target.checked && !state.showGravity) {
+        state.showGravity = true;
+        chkGravity.checked = true;
+      }
+      draw();
+    });
+
+    chkNormal.addEventListener('change', (e) => {
+      state.showNormal = e.target.checked;
+      draw();
+    });
+
+    chkFriction.addEventListener('change', (e) => {
+      state.showFriction = e.target.checked;
+      draw();
+    });
+
+    chkTensionVector.addEventListener('change', (e) => {
+      state.showTensionVector = e.target.checked;
+      draw();
+    });
+
+    chkNetForce.addEventListener('change', (e) => {
+      state.showNetForce = e.target.checked;
+      draw();
+    });
+
+    btnToggleAllVectors.addEventListener('click', () => {
+      const allChecked = chkGravity.checked && chkGravityComponents.checked && chkNormal.checked && chkFriction.checked && chkNetForce.checked && (!state.enableTension || chkTensionVector.checked);
+      const nextVal = !allChecked;
+
+      chkGravity.checked = nextVal;
+      chkGravityComponents.checked = nextVal;
+      chkNormal.checked = nextVal;
+      chkFriction.checked = nextVal;
+      chkNetForce.checked = nextVal;
+      chkTensionVector.checked = nextVal;
+
+      state.showGravity = nextVal;
+      state.showGravityComponents = nextVal;
+      state.showNormal = nextVal;
+      state.showFriction = nextVal;
+      state.showNetForce = nextVal;
+      state.showTensionVector = nextVal;
+
+      draw();
+    });
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function isPointInBlock(px, py) {
+      const { x, y, w, h, theta } = blockScreenCoords;
+      const dx = px - x;
+      const dy = py - y;
+      const rotX = dx * Math.cos(-theta) - dy * Math.sin(-theta);
+      const rotY = dx * Math.sin(-theta) + dy * Math.cos(-theta);
+      return Math.abs(rotX) <= w / 2 + 10 && Math.abs(rotY) <= h / 2 + 10;
+    }
+
+    function startDrag(e) {
+      const coords = getCanvasCoordinates(e);
+      if (isPointInBlock(coords.x, coords.y)) {
+        state.isDragging = true;
+        state.isPlaying = false;
+        state.hasPlayed = false;
+        state.runEnded = false;
+        state.velocity = 0;
+        state.acceleration = 0;
+        updatePlayPauseButton();
+        canvas.classList.replace('custom-grab', 'custom-grabbing');
+        if (e.cancelable) e.preventDefault();
+      }
+    }
+
+    function onDrag(e) {
+      if (!state.isDragging) return;
+      const coords = getCanvasCoordinates(e);
+      const thetaRad = (state.angleDeg * Math.PI) / 180;
+      const { apexX, apexY, L_px } = currentInclineGeometry;
+
+      const dx = coords.x - apexX;
+      const dy = coords.y - apexY;
+      const projPx = dx * Math.cos(thetaRad) + dy * Math.sin(thetaRad);
+
+      const pxPerMeter = L_px / state.rampLength;
+      let newDist = projPx / pxPerMeter;
+
+      const { minDist, maxDist } = getTravelLimits();
+      state.blockDistAlongIncline = Math.max(minDist, Math.min(maxDist, newDist));
+
+      draw();
+      if (e.cancelable) e.preventDefault();
+    }
+
+    function stopDrag() {
+      if (state.isDragging) {
+        state.isDragging = false;
+        state.startDist = state.blockDistAlongIncline;
+        canvas.classList.replace('custom-grabbing', 'custom-grab');
+      }
+    }
+
+    canvas.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', onDrag);
+    window.addEventListener('mouseup', stopDrag);
+
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    window.addEventListener('touchmove', onDrag, { passive: false });
+    window.addEventListener('touchend', stopDrag);
+    window.addEventListener('touchcancel', stopDrag);
+    window.addEventListener('blur', stopDrag);
+
+    // Canvas resize handler
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+
+      // Use at least 2x DPR to ensure razor-sharp rendering on standard and high-DPI displays
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
+      logicalWidth = rect.width;
+      logicalHeight = rect.height;
+
+      // Set physical buffer size
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+
+      // Scale drawing context to match device pixel density
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      draw();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Auto-adjust canvas whenever the container resizes
+    if (window.ResizeObserver && canvasContainer) {
+      const resizeObserver = new ResizeObserver(() => {
+        resizeCanvas();
+      });
+      resizeObserver.observe(canvasContainer);
+    }
+
+    // Initial setup
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      updateTensionBounds();
+      if (document.fonts) {
+        document.fonts.ready.then(() => {
+          draw();
+        });
+      }
+      requestAnimationFrame(simLoop);
+    });
+  </script>
+</body>
+</html>
