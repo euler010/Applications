@@ -387,7 +387,7 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
   // time cursor
   if(n>1&&(t>0||running)){const X=px(t);c.strokeStyle=col.ink;c.globalAlpha=.5;c.lineWidth=1;seg(c,X,g.T,X,g.B);c.globalAlpha=1;c.fillStyle=col.v;c.beginPath();c.arc(X,py(vel(t)),5,0,Math.PI*2);c.fill()}
   // empty hint
-  if(!n){c.fillStyle=col.muted;c.font='500 14px "Public Sans", system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';
+  if(!n){c.fillStyle=col.muted;c.font='500 16.1px "Public Sans", system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';
     c.fillText(mode==='line'?'Click to set her starting velocity at t = 0':'Press and drag to the right to sketch her velocity',(g.L+g.Rr)/2,g.T+(g.B-g.T)*0.22)}
 }
 function drawXT(col){if($('xfig').classList.contains('hide'))return;const g=geom(gx),c=cx;c.setTransform(g.dpr,0,0,g.dpr,0,0);c.clearRect(0,0,g.w,g.h);
