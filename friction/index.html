@@ -129,7 +129,7 @@
     .mr-1 { margin-right: 0.25rem; }
 
     /* ---------- Typography ---------- */
-    .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .font-mono { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; } /* page-wide Inter; tabular digits keep live values steady */
     .text-\[10px\] { font-size: 10px; }
     .text-\[11px\] { font-size: 11px; }
     .text-xs { font-size: 0.75rem; line-height: 1rem; }
@@ -302,7 +302,7 @@
   <script>window.TONE_SILENCE_LOGGING = true;</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body {
       font-family: 'Inter', sans-serif;
       user-select: none;
@@ -982,7 +982,7 @@
       ctxMacro.stroke();
 
       ctxMacro.fillStyle = '#ffffff';
-      ctxMacro.font = 'bold 13px "JetBrains Mono", monospace';
+      ctxMacro.font = 'bold 13px Inter, sans-serif';
       ctxMacro.textAlign = 'center';
       ctxMacro.textBaseline = 'middle';
       ctxMacro.fillText(`m = ${state.mass.toFixed(1)} kg`, blockX + blockW / 2, blockY + blockH / 2);
@@ -1024,8 +1024,8 @@
           ctxMacro,
           'F', 'A', trail,
           labelX, labelY,
-          'bold 12px "JetBrains Mono", monospace',
-          'bold 9px "JetBrains Mono", monospace'
+          'bold 12px Inter, sans-serif',
+          'bold 9px Inter, sans-serif'
         );
       }
 
@@ -1054,10 +1054,10 @@
         const sub = state.isSliding ? 'k' : 's';
         const trail = ` = ${state.frictionForce.toFixed(1)} N`;
 
-        ctxMacro.font = 'bold 12px "JetBrains Mono", monospace';
+        ctxMacro.font = 'bold 12px Inter, sans-serif';
         const mainW = ctxMacro.measureText('f').width;
         const trailW = ctxMacro.measureText(trail).width;
-        ctxMacro.font = 'bold 9px "JetBrains Mono", monospace';
+        ctxMacro.font = 'bold 9px Inter, sans-serif';
         const subW = ctxMacro.measureText(sub).width;
         const totalW = mainW + subW + trailW;
 
@@ -1069,8 +1069,8 @@
           ctxMacro,
           'f', sub, trail,
           labelX, labelY,
-          'bold 12px "JetBrains Mono", monospace',
-          'bold 9px "JetBrains Mono", monospace'
+          'bold 12px Inter, sans-serif',
+          'bold 9px Inter, sans-serif'
         );
       }
 
@@ -1096,7 +1096,7 @@
         ctxMacro.closePath();
         ctxMacro.fill();
 
-        ctxMacro.font = 'bold 12px "JetBrains Mono", monospace';
+        ctxMacro.font = 'bold 12px Inter, sans-serif';
         ctxMacro.textAlign = 'left';
         ctxMacro.textBaseline = 'middle';
         ctxMacro.fillText(`v = ${state.blockV.toFixed(2)} m/s`, vEndX + 8, vY);
@@ -1129,7 +1129,7 @@
           ctxMacro.closePath();
           ctxMacro.fill();
 
-          ctxMacro.font = 'bold 12px "JetBrains Mono", monospace';
+          ctxMacro.font = 'bold 12px Inter, sans-serif';
           if (aSign >= 0) {
             ctxMacro.textAlign = 'left';
             ctxMacro.fillText(`a = ${state.blockA.toFixed(2)} m/s²`, aEndX + 8, aY);
@@ -1139,7 +1139,7 @@
           }
         } else {
           ctxMacro.fillStyle = '#6b21a8';
-          ctxMacro.font = 'bold 11px "JetBrains Mono", monospace';
+          ctxMacro.font = 'bold 11px Inter, sans-serif';
           ctxMacro.textAlign = 'left';
           ctxMacro.textBaseline = 'middle';
           ctxMacro.fillText(`a = 0.0 m/s² (Steady velocity)`, blockCenterX + 4, aY);
@@ -1311,7 +1311,7 @@
           }
         });
 
-        ctxMicro.font = 'bold 11px "JetBrains Mono", monospace';
+        ctxMicro.font = 'bold 11px Inter, sans-serif';
         ctxMicro.fillStyle = '#b45309';
         ctxMicro.textAlign = 'right';
         ctxMicro.fillText(`Touching Junctions: ${numContacts}`, w - 14, 20);
@@ -1331,7 +1331,7 @@
           ctxMicro.stroke();
         });
 
-        ctxMicro.font = 'bold 11px "JetBrains Mono", monospace';
+        ctxMicro.font = 'bold 11px Inter, sans-serif';
         ctxMicro.fillStyle = '#059669';
         ctxMicro.textAlign = 'right';
         ctxMicro.fillText(`Touching Points: ${numContacts} (Glancing)`, w - 14, 20);
@@ -1388,8 +1388,8 @@
       const currentTime = state.elapsedTime;
       const startTime = Math.max(0, currentTime - timeWindow);
 
-      ctxGraph.font = '12px "JetBrains Mono", monospace';
-      ctxGraph.fillStyle = '#64748b';
+      ctxGraph.font = '12px Inter, sans-serif';
+      ctxGraph.fillStyle = '#334155'; // axis numbers: darker for legibility
       ctxGraph.textAlign = 'right';
 
       for (let f = 0; f <= maxForceY + 1e-6; f += forceTickStep) {
@@ -1422,8 +1422,8 @@
           ctxGraph,
           'f', 's,max', ` (${fsMax.toFixed(1)} N)`,
           w - padR - 116, fsMaxY - 5,
-          'bold 12px "JetBrains Mono", monospace',
-          'bold 10px "JetBrains Mono", monospace'
+          'bold 12px Inter, sans-serif',
+          'bold 10px Inter, sans-serif'
         );
       }
 
@@ -1447,12 +1447,12 @@
           ctxGraph,
           'f', 'k', ` (${fk.toFixed(1)} N)`,
           w - padR - 84, fkLabelY,
-          'bold 12px "JetBrains Mono", monospace',
-          'bold 10px "JetBrains Mono", monospace'
+          'bold 12px Inter, sans-serif',
+          'bold 10px Inter, sans-serif'
         );
       }
 
-      ctxGraph.font = '12px "JetBrains Mono", monospace';
+      ctxGraph.font = '12px Inter, sans-serif';
       ctxGraph.textAlign = 'center';
       
       const tickStep = 2;
@@ -1486,7 +1486,7 @@
           ctxGraph.stroke();
         }
 
-        ctxGraph.fillStyle = '#64748b';
+        ctxGraph.fillStyle = '#334155';
         ctxGraph.fillText(`${sec}s`, x, h - padB + 16);
         ctxGraph.restore();
       }
