@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion Simulation</title>
+    <!-- Self-contained stylesheet (replaces the Tailwind CDN; no network needed) -->
+    <style>
+        /* ---------- Base reset (equivalent of Tailwind preflight) ---------- */
+        *, ::before, ::after { box-sizing: border-box; border: 0 solid #e5e7eb; }
+        html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4;
+               font-family: ui-sans-serif, system-ui, sans-serif; }
+        body { margin: 0; line-height: inherit; }
+        h1, h2, h3 { font-size: inherit; font-weight: inherit; margin: 0; }
+        button, input { font-family: inherit; font-size: 100%; font-weight: inherit;
+                        line-height: inherit; color: inherit; margin: 0; padding: 0; }
+        button { text-transform: none; -webkit-appearance: button; background-color: transparent;
+                 background-image: none; cursor: pointer; }
+        svg, canvas { display: block; vertical-align: middle; }
+
+        /* ---------- Original page styles (unchanged) ---------- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+        canvas {
+            background: #ffffff;
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            /* no inner border/shadow: the surrounding card provides the single frame */
+        }
+        input[type=range] { accent-color: #2563eb; }
+
+        /* ---------- Layout ---------- */
+        .page { min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+                justify-content: flex-start; padding: 0.5rem; background-color: #fff; }
+        .page-header { width: 100%; max-width: 64rem; margin-bottom: 0.5rem; text-align: center; }
+        .page-title { font-size: 1.125rem; line-height: 1.75rem; font-weight: 700;
+                      letter-spacing: -0.025em; color: #1e293b; }
+        .layout { width: 100%; max-width: 64rem; display: grid;
+                  grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 0.75rem; align-items: start; }
+        .sim-col { display: flex; flex-direction: column; gap: 0.625rem; }
+        .card { background-color: #fff; border: 1px solid #e2e8f0; border-radius: 0.75rem;
+                box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .canvas-wrap { position: relative; width: 100%; overflow: hidden; padding: 0.375rem;
+                       display: flex; align-items: center; justify-content: center; }
+        #simCanvas { width: 100%; min-width: 0; }
+        .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+                    gap: 0.5rem; padding: 0.75rem; }
+        .panel { display: flex; flex-direction: column; gap: 0.875rem; padding: 1rem; }
+
+        @media (min-width: 768px) {
+            .page { padding: 1rem; }
+            .page-title { font-size: 1.25rem; line-height: 1.75rem; }
+            .layout { gap: 1rem; }
+            .controls { gap: 0.75rem; }
+        }
+        @media (min-width: 1024px) {
+            /* Panel = former 5/12 width minus 100px; simulation column takes the extra 100px */
+            .layout { grid-template-columns: minmax(0, 1fr) calc((100% - 11rem) * 5 / 12 + 4rem - 100px); }
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn { padding: 0.5rem 1rem; font-weight: 600; border-radius: 0.5rem; display: flex;
+               align-items: center; gap: 0.375rem; cursor: pointer; font-size: 0.875rem;
+               line-height: 1.25rem; transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn:active { transform: scale(0.95); }
+        .btn svg { width: 1rem; height: 1rem; }
+        .btn-primary { background-color: #2563eb; color: #fff;
+                       box-shadow: 0 1px 2px 0 rgb(37 99 235 / 0.2); }
+        .btn-primary:hover { background-color: #3b82f6; }
+        .btn-secondary { background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+        .btn-secondary.is-active { background-color: #eff6ff; border-color: #60a5fa; color: #1d4ed8; }
+        .btn-secondary:hover { background-color: #e2e8f0; }
+
+        /* ---------- Control panel ---------- */
+        .panel-title { font-size: 1rem; line-height: 1.5rem; font-weight: 700; color: #0f172a;
+                       margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .panel-title svg { width: 1rem; height: 1rem; color: #2563eb; }
+        .slider-group { margin-bottom: 0.75rem; }
+        .slider-head { display: flex; justify-content: space-between; font-size: 0.875rem;
+                       line-height: 1.25rem; margin-bottom: 0.25rem; }
+        .slider-head label { color: #334155; font-weight: 500; }
+        .slider-value { font-weight: 700; color: #2563eb; }
+        .slider { width: 100%; height: 0.5rem; background-color: #e2e8f0; border-radius: 0.5rem;
+                  -webkit-appearance: none; appearance: none; cursor: pointer; }
+
+        .toggles { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; }
+        .toggles > * + * { margin-top: 0.375rem; margin-bottom: 0; }
+        .section-label { color: #64748b; font-weight: 600; text-transform: uppercase;
+                         letter-spacing: 0.05em; font-size: 0.75rem; line-height: 1rem; margin-bottom: 0.25rem; }
+        .toggle { display: flex; align-items: center; justify-content: space-between; padding: 0.375rem;
+                  background-color: #f8fafc; border-radius: 0.5rem; cursor: pointer; border: 1px solid #e2e8f0;
+                  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+                  transition-duration: 150ms; }
+        .toggle:hover { background-color: #f1f5f9; }
+        .toggle-text { font-size: 0.75rem; line-height: 1rem; font-weight: 600; color: #334155;
+                       display: flex; align-items: center; gap: 0.5rem; }
+        .toggle input { width: 1rem; height: 1rem; border-radius: 0.25rem; cursor: pointer; }
+        .toggle-accent { background-color: rgb(238 242 255 / 0.7); border-color: #c7d2fe;
+                         box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+                         transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); }
+        .toggle-accent:hover { background-color: #eef2ff; }
+        .toggle-accent .toggle-text { font-weight: 700; color: #312e81; }
+
+        .dot { width: 0.625rem; height: 0.625rem; border-radius: 9999px; }
+        .c-blue { background-color: #2563eb; }
+        .c-emerald { background-color: #059669; }
+        .c-amber { background-color: #d97706; }
+        .c-purple { background-color: #9333ea; }
+        .c-teal { background-color: #0d9488; }
+
+        /* ---------- Legend ---------- */
+        .legend { margin-top: 0.75rem; padding-top: 0.625rem; border-top: 1px solid #e2e8f0;
+                  font-size: calc(0.75rem + 1pt); line-height: 1rem; }
+        /* Two columns when they fit; otherwise one item per row (never breaks an entry mid-text) */
+        .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.6rem, 1fr)); gap: 0.25rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+        .legend-item .sym { font-weight: 600; font-size: calc(0.875rem + 1pt); line-height: 1.25rem; }
+        .swatch { width: 0.625rem; height: 0.25rem; border-radius: 0.25rem; }
+        .swatch-thick { height: 0.375rem; }
+        .t-emerald { color: #047857; }
+        .t-amber { color: #b45309; }
+        .t-blue { color: #1d4ed8; }
+        .t-purple { color: #7e22ce; }
+
+        /* ---------- Telemetry ---------- */
+        .telemetry { background-color: #f8fafc; border-radius: 0.75rem; padding: 0.75rem; border: 1px solid #e2e8f0; }
+        .telemetry h3 { margin-bottom: 0.5rem; }
+        .tele-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem;
+                     font-size: 0.875rem; line-height: 1.25rem; }
+        .tele-label { color: #64748b; display: block; font-size: 0.75rem; line-height: 1rem; }
+        .tele-value { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+                      font-weight: 600; color: #1e293b; }
+        .telemetry .section-label { font-weight: 700; }
+    </style>
+</head>
+<body class="page">
+    <header class="page-header">
+        <h1 class="page-title">
+            Projectile Motion Vector Analysis
+        </h1>
+    </header>
+
+    <main class="layout">
+
+        <!-- Simulation Display Column (Scaled to fit Smart Boards without scrolling) -->
+        <div class="sim-col">
+            <!-- Playback Controls -->
+            <div class="card controls">
+                <button id="btnSlowMo" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span id="slowMoText">Slow Motion: Off</span>
+                </button>
+                <button id="btnReset" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                    Reset
+                </button>
+                <button id="btnReplay" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    Replay
+                </button>
+                <button id="btnLaunch" class="btn btn-primary">
+                    <svg id="launchIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    <span id="launchText">Launch</span>
+                </button>
+            </div>
+
+            <div class="card canvas-wrap">
+                <canvas id="simCanvas"></canvas>
+            </div>
+
+        </div>
+
+        <!-- Control Panel & Telemetry Column -->
+        <div class="card panel">
+
+            <div>
+                <h2 class="panel-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Simulation Parameters
+                </h2>
+
+                <!-- Launch Angle Slider -->
+                <div class="slider-group">
+                    <div class="slider-head">
+                        <label for="angleRange">Launch Angle:</label>
+                        <span id="angleVal" class="slider-value">50°</span>
+                    </div>
+                    <input type="range" id="angleRange" min="-85" max="85" value="50" step="1" class="slider">
+                </div>
+
+                <!-- Initial Speed Slider -->
+                <div class="slider-group">
+                    <div class="slider-head">
+                        <label for="speedRange">Initial Speed (v₀):</label>
+                        <span id="speedVal" class="slider-value">25 m/s</span>
+                    </div>
+                    <input type="range" id="speedRange" min="10" max="35" value="25" step="1" class="slider">
+                </div>
+
+                <!-- Initial Height Slider -->
+                <div class="slider-group">
+                    <div class="slider-head">
+                        <label for="heightRange">Initial Height (y₀):</label>
+                        <span id="heightVal" class="slider-value">15.0 m</span>
+                    </div>
+                    <input type="range" id="heightRange" min="0" max="35" value="15" step="0.5" class="slider">
+                </div>
+
+                <!-- Toggles for Vectors and Acceleration -->
+                <div class="toggles">
+                    <div class="section-label" style="text-transform: none;">Display Options:</div>
+
+                    <!-- Toggle Resultant Velocity Vector -->
+                    <label class="toggle">
+                        <span class="toggle-text"><span class="dot c-blue"></span>Velocity Vector</span>
+                        <input type="checkbox" id="toggleVelocityVector" checked>
+                    </label>
+
+                    <!-- Toggle Horizontal Velocity Component -->
+                    <label class="toggle">
+                        <span class="toggle-text"><span class="dot c-emerald"></span>Horizontal Velocity Component</span>
+                        <input type="checkbox" id="toggleHorizontalVelocity" checked>
+                    </label>
+
+                    <!-- Toggle Vertical Velocity Component -->
+                    <label class="toggle">
+                        <span class="toggle-text"><span class="dot c-amber"></span>Vertical Velocity Component</span>
+                        <input type="checkbox" id="toggleVerticalVelocity" checked>
+                    </label>
+
+                    <!-- Prominent Acceleration Toggle -->
+                    <label class="toggle toggle-accent">
+                        <span class="toggle-text"><span class="dot c-purple"></span>Acceleration Vector (g)</span>
+                        <input type="checkbox" id="toggleAccel">
+                    </label>
+
+                    <!-- Vertical Lines Toggle -->
+                    <label class="toggle">
+                        <span class="toggle-text"><span class="dot c-teal"></span>Vertical Lines</span>
+                        <input type="checkbox" id="toggleVerticalLines">
+                    </label>
+
+                    <!-- Horizontal Lines Toggle -->
+                    <label class="toggle">
+                        <span class="toggle-text"><span class="dot c-amber"></span>Horizontal Lines</span>
+                        <input type="checkbox" id="toggleHorizontalLines">
+                    </label>
+                </div>
+
+                <!-- Vector Legend -->
+                <div class="legend">
+                    <div class="legend-item t-emerald"><span class="swatch c-emerald"></span> <span class="sym">vₓ</span>: Horiz. Velocity</div>
+                    <div class="legend-item t-amber"><span class="swatch c-amber"></span> <span class="sym">vᵧ</span>: Vert. Velocity</div>
+                    <div class="legend-item t-blue"><span class="swatch swatch-thick c-blue"></span> <span class="sym">v</span>: Total Velocity</div>
+                    <div class="legend-item t-purple"><span class="swatch swatch-thick c-purple"></span> <span class="sym">a</span>: Acceleration (g)</div>
+                </div>
+            </div>
+
+            <!-- Live Telemetry -->
+            <div class="telemetry">
+                <h3 class="section-label">Live Telemetry</h3>
+                <div class="tele-grid">
+                    <div>
+                        <span class="tele-label">Time (t)</span>
+                        <span id="teleTime" class="tele-value">0.00 s</span>
+                    </div>
+                    <div>
+                        <span class="tele-label">Distance (x)</span>
+                        <span id="teleDist" class="tele-value">0.00 m</span>
+                    </div>
+                    <div>
+                        <span class="tele-label">Height (y)</span>
+                        <span id="teleHeight" class="tele-value">0.00 m</span>
+                    </div>
+                    <div>
+                        <span class="tele-label">Speed (v)</span>
+                        <span id="teleSpeed" class="tele-value">25.0 m/s</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Logical canvas dimensions
+        const logicalWidth = 600;
+        const logicalHeight = 380; // 330 + 50 of extra room below the ground for downward vectors
+
+        // Size the canvas to fill its column (scale is set by width only, so extra height
+        // adds space without resizing the drawing), and stay sharp on High-DPI screens
+        function setupHiDPI() {
+            const dpr = window.devicePixelRatio || 1;
+            const cssWidth = canvas.clientWidth || logicalWidth;
+            const viewScale = cssWidth / logicalWidth;
+            const cssHeight = logicalHeight * viewScale;
+            const border = canvas.offsetHeight - canvas.clientHeight;
+            canvas.style.height = `${cssHeight + border}px`;
+            canvas.width = Math.round(cssWidth * dpr);
+            canvas.height = Math.round(cssHeight * dpr);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr * viewScale, dpr * viewScale);
+        }
+
+        // UI Element References
+        const angleRange = document.getElementById('angleRange');
+        const angleVal = document.getElementById('angleVal');
+        const speedRange = document.getElementById('speedRange');
+        const speedVal = document.getElementById('speedVal');
+        const heightRange = document.getElementById('heightRange');
+        const heightVal = document.getElementById('heightVal');
+        const toggleVelocityVector = document.getElementById('toggleVelocityVector');
+        const toggleHorizontalVelocity = document.getElementById('toggleHorizontalVelocity');
+        const toggleVerticalVelocity = document.getElementById('toggleVerticalVelocity');
+        const toggleAccel = document.getElementById('toggleAccel');
+        const toggleVerticalLines = document.getElementById('toggleVerticalLines');
+        const toggleHorizontalLines = document.getElementById('toggleHorizontalLines');
+
+        const btnLaunch = document.getElementById('btnLaunch');
+        const launchText = document.getElementById('launchText');
+        const launchIcon = document.getElementById('launchIcon');
+        const btnReplay = document.getElementById('btnReplay');
+        const btnSlowMo = document.getElementById('btnSlowMo');
+        const slowMoText = document.getElementById('slowMoText');
+        const btnReset = document.getElementById('btnReset');
+
+        const teleTime = document.getElementById('teleTime');
+        const teleDist = document.getElementById('teleDist');
+        const teleHeight = document.getElementById('teleHeight');
+        const teleSpeed = document.getElementById('teleSpeed');
+
+        // Physics & Simulation State
+        const g = 9.81; // Gravity (m/s^2)
+        let angleDeg = parseFloat(angleRange.value);
+        let v0 = parseFloat(speedRange.value);
+        let y0 = parseFloat(heightRange.value); // 15.0 meters default
+        
+        let t = 0;              // Elapsed time
+        let isRunning = false;  // Simulation running flag
+        let isPaused = false;   // Pause flag
+        let isSlowMo = false;   // Slow motion flag
+
+        // Scale factor: scaled to 60% of original (11 * 0.6 = 6.6 pixels per meter)
+        const scale = 6.6; 
+        const originX = 45;    // Launcher offset from left (ball centered on the platform)
+        const axisX = 42;      // Height axis position (unchanged)
+        const originY = 285;   // Ground line from top
+
+        // Calculate synchronized fixed time interval so ascending and descending horizontal lines match
+        function getFixedTimeUnit() {
+            const rad = angleDeg * Math.PI / 180;
+            const initialVy = v0 * Math.sin(rad);
+            if (initialVy > 0.1) {
+                const tPeak = initialVy / g;
+                // Divide apex time into N equal intervals (~0.4s to 0.6s step size)
+                const nSteps = Math.max(1, Math.round(tPeak / 0.5));
+                return tPeak / nSteps;
+            }
+            return 0.5; // Default step for level or downward trajectories
+        }
+
+        // Coordinate transformation: converts physics meters (x right, y up) to canvas pixels
+        function toCanvasCoords(xMeters, yMeters) {
+            return {
+                x: originX + (xMeters * scale),
+                y: originY - (yMeters * scale)
+            };
+        }
+
+        // Helper to draw arrow vectors with proper heads and formatted subscripts (keeping exact font sizes)
+        function drawArrow(ctx, fromX, fromY, toX, toY, color, label, lineWidth = 2) {
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.hypot(dx, dy);
+            if (length < 2) return;
+
+            const angle = Math.atan2(dy, dx);
+            const headLength = 8;
+
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = lineWidth;
+
+            // Draw line stem
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+
+            // Draw arrowhead
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.lineTo(toX, toY);
+            ctx.fill();
+        }
+
+        // ---------- Vector label layout ----------
+        // Draw a label ('v', 'a', or 'v' + subscript) with its baseline origin at (x, y)
+        function drawVectorLabel(ctx, label, color, x, y) {
+            ctx.fillStyle = color;
+            if (label.startsWith('v') && label.length > 1) {
+                ctx.font = 'bold 17.33px Inter, sans-serif'; // 16px + 1pt
+                ctx.fillText('v', x, y);
+                const baseWidth = ctx.measureText('v').width;
+                ctx.font = 'bold 12.33px Inter, sans-serif'; // 11px + 1pt
+                ctx.fillText(label.slice(1), x + baseWidth - 1.5, y + 3);
+            } else {
+                ctx.font = 'bold 17.33px Inter, sans-serif';
+                ctx.fillText(label, x, y);
+            }
+        }
+
+        // Ink bounding box of a label relative to its baseline origin
+        function measureVectorLabel(ctx, label) {
+            const boxOf = (text, font, ox, oy) => {
+                ctx.font = font;
+                const m = ctx.measureText(text);
+                return { l: ox - m.actualBoundingBoxLeft, r: ox + m.actualBoundingBoxRight,
+                         t: oy - m.actualBoundingBoxAscent, b: oy + m.actualBoundingBoxDescent, w: m.width };
+            };
+            if (label.startsWith('v') && label.length > 1) {
+                const main = boxOf('v', 'bold 17.33px Inter, sans-serif', 0, 0);
+                const sub = boxOf(label.slice(1), 'bold 12.33px Inter, sans-serif', main.w - 1.5, 3);
+                return { l: Math.min(main.l, sub.l), r: Math.max(main.r, sub.r),
+                         t: Math.min(main.t, sub.t), b: Math.max(main.b, sub.b) };
+            }
+            return boxOf(label, 'bold 17.33px Inter, sans-serif', 0, 0);
+        }
+
+        // Does the axis-aligned rectangle r intersect segment (x1,y1)-(x2,y2)? (Liang-Barsky clip)
+        function rectHitsSegment(r, x1, y1, x2, y2) {
+            let t0 = 0, t1 = 1;
+            const dx = x2 - x1, dy = y2 - y1;
+            const p = [-dx, dx, -dy, dy];
+            const q = [x1 - r.l, r.r - x1, y1 - r.t, r.b - y1];
+            for (let i = 0; i < 4; i++) {
+                if (p[i] === 0) {
+                    if (q[i] < 0) return false;
+                } else {
+                    const tt = q[i] / p[i];
+                    if (p[i] < 0) { if (tt > t1) return false; if (tt > t0) t0 = tt; }
+                    else { if (tt < t0) return false; if (tt < t1) t1 = tt; }
+                }
+            }
+            return true;
+        }
+
+        function rectsOverlap(a, b) {
+            return a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+        }
+
+        function expandRect(r, pad) {
+            return { l: r.l - pad, t: r.t - pad, r: r.r + pad, b: r.b + pad };
+        }
+
+        // Per-label memory so labels move smoothly between frames
+        let labelState = {};
+        let lastLabelTime = null;
+        function clearLabelState() { labelState = {}; lastLabelTime = null; }
+
+        // Place each arrow's label near its tip without touching any arrow, the ball,
+        // the launch-angle arc/text, other labels, the axes, or the canvas edge.
+        // Positions are kept relative to the ball and eased over time, so labels
+        // glide instead of jumping when the best spot changes.
+        function layoutVectorLabels(ctx, arrows, obstacles, ballPos) {
+            const placed = [];
+            const distances = [5, 8, 12, 17, 23, 30, 38];
+            const step = Math.PI / 8;
+            const angleOffsets = [0];
+            for (let k = 1; k <= 8; k++) angleOffsets.push(k, -k);
+
+            const now = performance.now();
+            const dtReal = lastLabelTime === null ? Infinity : (now - lastLabelTime) / 1000;
+            lastLabelTime = now;
+            const snap = t === 0 || dtReal > 0.3;
+            const ease = 1 - Math.exp(-dtReal / 0.07);
+
+            const collides = (rect) => {
+                if (rect.l < 2 || rect.t < 2 || rect.r > logicalWidth - 2 || rect.b > logicalHeight - 2) return true;
+                for (const sgm of obstacles.segments) {
+                    if (rectHitsSegment(expandRect(rect, sgm.pad), sgm.x1, sgm.y1, sgm.x2, sgm.y2)) return true;
+                }
+                for (const box of obstacles.boxes) {
+                    if (rectsOverlap(expandRect(rect, 2), box)) return true;
+                }
+                for (const box of placed) {
+                    if (rectsOverlap(expandRect(rect, 2), box)) return true;
+                }
+                return false;
+            };
+
+            const seen = new Set();
+            for (const arrow of arrows) {
+                seen.add(arrow.label);
+                const box = measureVectorLabel(ctx, arrow.label);
+                const w = box.r - box.l, h = box.b - box.t;
+                const len = Math.hypot(arrow.toX - arrow.fromX, arrow.toY - arrow.fromY);
+                const dirAngle = Math.atan2(arrow.toY - arrow.fromY, arrow.toX - arrow.fromX);
+                const anchors = [1, 0.75, 0.5, 0.3].map(f => ({
+                    x: arrow.fromX + (arrow.toX - arrow.fromX) * f,
+                    y: arrow.fromY + (arrow.toY - arrow.fromY) * f
+                }));
+                const candidate = (ai, d, k) => {
+                    const a = dirAngle + k * step;
+                    const ux = Math.cos(a), uy = Math.sin(a);
+                    const reach = d + (Math.abs(ux) * w + Math.abs(uy) * h) / 2;
+                    const cx = anchors[ai].x + ux * reach, cy = anchors[ai].y + uy * reach;
+                    return { l: cx - w / 2, t: cy - h / 2, r: cx + w / 2, b: cy + h / 2 };
+                };
+                const st = labelState[arrow.label];
+
+                // Score every open spot: a preference cost (tip first, close, along the arrow)
+                // plus, once the label exists, how far it would have to move. Labels therefore
+                // stay put or slide to the nearest open spot instead of hopping around.
+                const prevX = st ? ballPos.x + st.ox : null;
+                const prevY = st ? ballPos.y + st.oy : null;
+                let best = null, choice = null, bestScore = Infinity;
+                const consider = (rect, pref, ch) => {
+                    if (collides(rect)) return;
+                    let score = pref;
+                    if (st && !snap) {
+                        score += 0.25 * Math.hypot((rect.l + rect.r) / 2 - prevX, (rect.t + rect.b) / 2 - prevY);
+                    }
+                    if (score < bestScore) { bestScore = score; best = rect; choice = ch; }
+                };
+                // Vertical-velocity label: placed by a continuous rule (no searching), so it never
+                // jumps. It sits beside the arrow tip on the left; near the height axis, where
+                // there's no room on the left, it swings smoothly around the tip to sit past it.
+                if (arrow.label === 'vy') {
+                    const vyPx = arrow.fromY - arrow.toY;           // + when pointing up
+                    const leftLimit = axisX + 2;                    // keep clear of the height-axis numbers
+                    const room = (arrow.toX - 11 - w) - leftLimit;  // space left over beside the tip
+                    const sLin = Math.max(0, Math.min(1, room / 60));
+                    const sm = sLin * sLin * (3 - 2 * sLin);        // smoothstep
+                    // "Past the tip" direction turns continuously through the left side as
+                    // v_y passes zero (up: -90°, zero: -180°, down: -270° = +90°)
+                    const f = Math.max(-1, Math.min(1, vyPx / 10));
+                    const base = -Math.PI / 2 - (Math.PI / 2) * (1 - f);
+                    const side = -Math.PI;                          // left of the tip
+                    const th = base + (side - base) * sm;
+                    const cx = arrow.toX + Math.cos(th) * (11 + w / 2);
+                    const cy = arrow.toY + Math.sin(th) * (6 + h / 2);
+                    const rule = { l: cx - w / 2, t: cy - h / 2, r: cx + w / 2, b: cy + h / 2 };
+                    // Use the smooth path whenever it's clear of vectors, the ball, the angle
+                    // measure, the platform and other labels; otherwise search like the others.
+                    const blocked =
+                        obstacles.segments.some(sg => rectHitsSegment(expandRect(rule, sg.pad), sg.x1, sg.y1, sg.x2, sg.y2)) ||
+                        obstacles.boxes.some(bx => !bx.axis && rectsOverlap(expandRect(rule, 2), bx)) ||
+                        placed.some(bx => rectsOverlap(expandRect(rule, 2), bx));
+                    if (!blocked) { best = rule; choice = 'side'; }
+                }
+                for (let ai = 0; ai < anchors.length && choice !== 'side'; ai++) {
+                    for (const d of distances) {
+                        for (const k of angleOffsets) {
+                            consider(candidate(ai, d, k), 6 + ai * 20 + d * 0.5 + Math.abs(k) * 4, { ai, d, k });
+                        }
+                    }
+                }
+                if (!best) best = candidate(0, 5, 0); // fallback: straight past the tip
+                placed.push(best);
+
+                // Move the label smoothly: short moves glide (eased); long moves cross-fade
+                // (fade out, reposition while invisible, fade back in) so a label never
+                // sweeps across other labels or vectors.
+                const tx = (best.l + best.r) / 2 - ballPos.x;
+                const ty = (best.t + best.b) / 2 - ballPos.y;
+                const dist = st ? Math.hypot(tx - st.ox, ty - st.oy) : 0;
+                if (!st || snap) {
+                    labelState[arrow.label] = { ox: tx, oy: ty, vis: 1, choice };
+                } else if (choice === 'side' && st.choice === 'side' && st.vis >= 1 && dist <= 14) {
+                    // v_y on its smooth path: its target is already continuous, so follow it exactly
+                    st.ox = tx; st.oy = ty;
+                } else {
+                    const fadeStep = Math.min(1, dtReal / 0.12);
+                    if (dist > 14) {
+                        st.vis = Math.max(0, st.vis - fadeStep);
+                        if (st.vis === 0) { st.ox = tx; st.oy = ty; st.choice = choice; }
+                    } else {
+                        st.ox += (tx - st.ox) * ease;
+                        st.oy += (ty - st.oy) * ease;
+                        st.vis = Math.min(1, st.vis + fadeStep);
+                        st.choice = choice;
+                    }
+                }
+                const cur = labelState[arrow.label];
+                const cx = ballPos.x + cur.ox, cy = ballPos.y + cur.oy;
+
+                // Also fade a label out smoothly as its vector shrinks to zero (e.g. v_y at the apex)
+                ctx.save();
+                ctx.globalAlpha = cur.vis * Math.max(0, Math.min(1, (len - 1) / 5));
+                drawVectorLabel(ctx, arrow.label, arrow.color, cx - w / 2 - box.l, cy - h / 2 - box.t);
+                ctx.restore();
+            }
+            for (const key of Object.keys(labelState)) {
+                if (!seen.has(key)) delete labelState[key];
+            }
+        }
+
+        // Calculate theoretical maximum flight time for current params
+        function getMaxTime() {
+            const rad = angleDeg * Math.PI / 180;
+            const vY = v0 * Math.sin(rad);
+            const discriminant = (vY * vY) - (4 * (-0.5 * g) * y0);
+            if (discriminant < 0) return 0;
+            return (-vY - Math.sqrt(discriminant)) / (-g);
+        }
+
+        function updateLaunchButtonState() {
+            if (!isRunning) {
+                launchText.textContent = 'Launch';
+                launchIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+            } else if (isPaused) {
+                launchText.textContent = 'Resume';
+                launchIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+            } else {
+                launchText.textContent = 'Pause';
+                launchIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+            }
+        }
+
+        function resetSimulation() {
+            clearLabelState();
+            isRunning = false;
+            isPaused = false;
+            t = 0;
+            updateTelemetry(0, 0, y0, v0 * Math.sin(angleDeg * Math.PI / 180));
+            updateLaunchButtonState();
+            drawScene();
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+            // Draw background grid lines and ground
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+
+            // Ground line (2px; everything else on the axes stays 1px)
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(30, originY);
+            ctx.lineTo(logicalWidth - 20, originY);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+
+            // Ground ticks (every 10 meters, fonts unchanged)
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12.33px Inter, sans-serif'; // 11px + 1pt
+            for (let m = 0; m <= 80; m += 10) {
+                const pt = toCanvasCoords(m, 0);
+                if (pt.x < logicalWidth - 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(pt.x, originY);
+                    ctx.lineTo(pt.x, originY + 5);
+                    ctx.stroke();
+                    ctx.textAlign = 'center';
+                    ctx.fillText(m + 'm', pt.x, originY + 19);
+                    ctx.textAlign = 'left';
+                }
+            }
+
+            // Height ticks (every 5 meters, fonts unchanged)
+            for (let m = 5; m <= 40; m += 5) {
+                const pt = toCanvasCoords(0, m);
+                if (pt.y >= 8) {
+                    ctx.beginPath();
+                    ctx.moveTo(axisX - 5, pt.y);
+                    ctx.lineTo(axisX, pt.y);
+                    ctx.stroke();
+                    ctx.textAlign = 'right';
+                    ctx.fillText(m + 'm', axisX - 8, pt.y + 4);
+                    ctx.textAlign = 'left';
+                    
+                    // Light dashed grid line
+                    ctx.save();
+                    ctx.setLineDash([2, 5]);
+                    ctx.strokeStyle = '#f1f5f9';
+                    ctx.beginPath();
+                    ctx.moveTo(axisX, pt.y);
+                    ctx.lineTo(logicalWidth - 20, pt.y);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            // Draw launcher pedestal if initial height > 0
+            if (y0 > 0) {
+                const topPedestal = toCanvasCoords(0, y0);
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillRect(originX - 6, topPedestal.y, 12, originY - topPedestal.y);
+            }
+
+            // Draw trajectory trail: computed from the equations of motion (not sampled
+            // frames), so it always runs exactly from the launch point to the ball.
+            if (t > 0) {
+                const trRad = angleDeg * Math.PI / 180;
+                const trVx = v0 * Math.cos(trRad);
+                const trVy = v0 * Math.sin(trRad);
+                const posAt = (tt) => toCanvasCoords(trVx * tt, Math.max(0, y0 + trVy * tt - 0.5 * g * tt * tt));
+                ctx.save();
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                const startPt = posAt(0);
+                ctx.moveTo(startPt.x, startPt.y);
+                const trailStep = 0.02; // seconds between path points
+                for (let tt = trailStep; tt < t; tt += trailStep) {
+                    const p = posAt(tt);
+                    ctx.lineTo(p.x, p.y);
+                }
+                const endPt = posAt(t);
+                ctx.lineTo(endPt.x, endPt.y);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Current kinematics calculations
+            const rad = angleDeg * Math.PI / 180;
+            const vX = v0 * Math.cos(rad);
+            const initialVy = v0 * Math.sin(rad);
+            const vY_current = initialVy - (g * t);
+            
+            const currentX = vX * t;
+            const currentY = Math.max(0, y0 + (initialVy * t) - (0.5 * g * t * t));
+
+            // Render periodic Vertical and Horizontal reference lines
+            const showVertical = toggleVerticalLines.checked;
+            const showHorizontal = toggleHorizontalLines.checked;
+
+            if ((showVertical || showHorizontal) && t > 0) {
+                const dtUnit = getFixedTimeUnit();
+                const totalSteps = Math.floor(t / dtUnit);
+
+                for (let k = 1; k <= totalSteps; k++) {
+                    const tk = k * dtUnit;
+                    const xk = vX * tk;
+                    const yk = Math.max(0, y0 + (initialVy * tk) - (0.5 * g * tk * tk));
+                    const pt = toCanvasCoords(xk, yk);
+
+                    // Draw Vertical Line (demonstrating constant horizontal velocity)
+                    if (showVertical) {
+                        ctx.save();
+                        ctx.strokeStyle = '#0d9488'; // Teal
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(pt.x, originY);
+                        ctx.lineTo(pt.x, 15);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // Draw Horizontal Line (perfectly coinciding on ascent & descent)
+                    if (showHorizontal) {
+                        ctx.save();
+                        ctx.strokeStyle = '#d97706'; // Amber
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(axisX, pt.y);
+                        ctx.lineTo(logicalWidth - 20, pt.y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // Draw stroboscopic intersection position marker
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, 3, 0, 2 * Math.PI);
+                    ctx.fillStyle = showVertical && showHorizontal ? '#4f46e5' : (showVertical ? '#0d9488' : '#d97706');
+                    ctx.fill();
+                }
+            }
+
+            const ballPos = toCanvasCoords(currentX, currentY);
+
+            // Draw launch angle arc guide if at start
+            if (t === 0) {
+                const launchPt = toCanvasCoords(0, y0);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                const isAnticlockwise = rad >= 0;
+                ctx.arc(launchPt.x, launchPt.y, 24, 0, -rad, isAnticlockwise);
+                ctx.stroke();
+                ctx.fillStyle = '#475569';
+                ctx.font = '12px Inter, sans-serif';
+                const textOffsetY = rad >= 0 ? launchPt.y - 12 : launchPt.y + 18;
+                ctx.fillText(angleDeg + '°', launchPt.x + 28, textOffsetY);
+            }
+
+            // Vector scales scaled to 60% of original
+            const vectorScale = 2.1; // 3.5 * 0.6
+            const accelScale = 5.4;  // 9.0 * 0.6
+
+            // Collect the vectors that are switched on (drawn in the original order)
+            const arrows = [];
+            if (toggleHorizontalVelocity.checked) {
+                arrows.push({ fromX: ballPos.x, fromY: ballPos.y, toX: ballPos.x + (vX * vectorScale), toY: ballPos.y,
+                              color: '#059669', label: 'vx', lineWidth: 2 });
+            }
+            if (toggleVerticalVelocity.checked) {
+                arrows.push({ fromX: ballPos.x, fromY: ballPos.y, toX: ballPos.x, toY: ballPos.y - (vY_current * vectorScale),
+                              color: '#d97706', label: 'vy', lineWidth: 2 });
+            }
+            if (toggleVelocityVector.checked) {
+                arrows.push({ fromX: ballPos.x, fromY: ballPos.y, toX: ballPos.x + (vX * vectorScale), toY: ballPos.y - (vY_current * vectorScale),
+                              color: '#2563eb', label: 'v', lineWidth: 2.8 });
+            }
+            if (toggleAccel.checked) {
+                arrows.push({ fromX: ballPos.x, fromY: ballPos.y, toX: ballPos.x, toY: ballPos.y + (g * accelScale),
+                              color: '#9333ea', label: 'a', lineWidth: 2.5 });
+            }
+            const visibleArrows = arrows.filter(a => Math.hypot(a.toX - a.fromX, a.toY - a.fromY) >= 2);
+
+            for (const a of visibleArrows) {
+                drawArrow(ctx, a.fromX, a.fromY, a.toX, a.toY, a.color, null, a.lineWidth);
+            }
+
+            // Obstacles the labels must avoid
+            const obstacles = { segments: [], boxes: [] };
+            for (const a of visibleArrows) {
+                const pad = a.lineWidth / 2 + 2;
+                obstacles.segments.push({ x1: a.fromX, y1: a.fromY, x2: a.toX, y2: a.toY, pad });
+                const ang = Math.atan2(a.toY - a.fromY, a.toX - a.fromX);
+                for (const side of [-1, 1]) {
+                    obstacles.segments.push({ x1: a.toX, y1: a.toY,
+                        x2: a.toX - 8 * Math.cos(ang + side * Math.PI / 6),
+                        y2: a.toY - 8 * Math.sin(ang + side * Math.PI / 6), pad });
+                }
+            }
+            obstacles.boxes.push({ l: ballPos.x - 8, t: ballPos.y - 8, r: ballPos.x + 8, b: ballPos.y + 8 });
+            // Keep labels off the axis numbers and the launch pedestal
+            obstacles.boxes.push({ l: 0, t: 0, r: axisX - 3, b: logicalHeight, axis: true });               // height tick labels
+            obstacles.boxes.push({ l: 0, t: originY + 6, r: logicalWidth, b: originY + 22, axis: true });     // distance tick labels
+            if (y0 > 0) {
+                const topPedestal = toCanvasCoords(0, y0);
+                obstacles.boxes.push({ l: originX - 6, t: topPedestal.y, r: originX + 6, b: originY });
+            }
+            if (t === 0) {
+                // Launch-angle arc (sampled) and its degree text
+                const launchPt = toCanvasCoords(0, y0);
+                const n = Math.max(2, Math.ceil(Math.abs(angleDeg) / 10));
+                for (let i = 0; i < n; i++) {
+                    const a1 = -rad * i / n, a2 = -rad * (i + 1) / n;
+                    obstacles.segments.push({ x1: launchPt.x + 24 * Math.cos(a1), y1: launchPt.y + 24 * Math.sin(a1),
+                                              x2: launchPt.x + 24 * Math.cos(a2), y2: launchPt.y + 24 * Math.sin(a2), pad: 2 });
+                }
+                ctx.font = '12px Inter, sans-serif';
+                const m = ctx.measureText(angleDeg + '°');
+                const tx = launchPt.x + 28, ty = rad >= 0 ? launchPt.y - 12 : launchPt.y + 18;
+                obstacles.boxes.push({ l: tx - m.actualBoundingBoxLeft, r: tx + m.actualBoundingBoxRight,
+                                       t: ty - m.actualBoundingBoxAscent, b: ty + m.actualBoundingBoxDescent });
+            }
+
+            layoutVectorLabels(ctx, arrows, obstacles, ballPos);
+
+            // Draw the Projectile Ball
+            ctx.beginPath();
+            ctx.arc(ballPos.x, ballPos.y, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#3b82f6';
+            ctx.shadowColor = 'rgba(59, 130, 246, 0.3)';
+            ctx.shadowBlur = 6;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        function updateTelemetry(time, x, y, currentVy) {
+            teleTime.textContent = time.toFixed(2) + ' s';
+            teleDist.textContent = x.toFixed(2) + ' m';
+            teleHeight.textContent = y.toFixed(2) + ' m';
+            
+            const rad = angleDeg * Math.PI / 180;
+            const vX = v0 * Math.cos(rad);
+            const totalSpeed = Math.hypot(vX, currentVy);
+            teleSpeed.textContent = totalSpeed.toFixed(1) + ' m/s';
+        }
+
+        let lastTimestamp = null;
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const dt = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            if (isRunning && !isPaused) {
+                const timeFactor = isSlowMo ? 0.25 : 1.0;
+                t += dt * timeFactor;
+
+                const rad = angleDeg * Math.PI / 180;
+                const vX = v0 * Math.cos(rad);
+                const initialVy = v0 * Math.sin(rad);
+                const vY_current = initialVy - (g * t);
+                const currentX = vX * t;
+                const currentY = y0 + (initialVy * t) - (0.5 * g * t * t);
+
+                updateTelemetry(t, currentX, Math.max(0, currentY), vY_current);
+
+                if (currentY <= 0 && t > 0.05) {
+                    t = getMaxTime();
+                    const finalX = vX * t;
+                    updateTelemetry(t, finalX, 0, initialVy - (g * t));
+                    isRunning = false;
+                    updateLaunchButtonState();
+                }
+            }
+
+            drawScene();
+            requestAnimationFrame(animate);
+        }
+
+        // Event Listeners for UI controls
+        angleRange.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            angleVal.textContent = angleDeg + '°';
+            if (!isRunning) {
+                resetSimulation();
+            }
+        });
+
+        speedRange.addEventListener('input', (e) => {
+            v0 = parseFloat(e.target.value);
+            speedVal.textContent = v0 + ' m/s';
+            if (!isRunning) {
+                resetSimulation();
+            }
+        });
+
+        heightRange.addEventListener('input', (e) => {
+            y0 = parseFloat(e.target.value);
+            heightVal.textContent = y0.toFixed(1) + ' m';
+            if (!isRunning) {
+                resetSimulation();
+            }
+        });
+
+        toggleVelocityVector.addEventListener('change', () => {
+            drawScene();
+        });
+
+        toggleHorizontalVelocity.addEventListener('change', () => {
+            drawScene();
+        });
+
+        toggleVerticalVelocity.addEventListener('change', () => {
+            drawScene();
+        });
+
+        toggleAccel.addEventListener('change', () => {
+            drawScene();
+        });
+
+        toggleVerticalLines.addEventListener('change', () => {
+            drawScene();
+        });
+
+        toggleHorizontalLines.addEventListener('change', () => {
+            drawScene();
+        });
+
+        btnLaunch.addEventListener('click', () => {
+            if (!isRunning) {
+                resetSimulation();
+                isRunning = true;
+                isPaused = false;
+            } else {
+                isPaused = !isPaused;
+            }
+            updateLaunchButtonState();
+        });
+
+        btnReplay.addEventListener('click', () => {
+            resetSimulation();
+            isRunning = true;
+            isPaused = false;
+            updateLaunchButtonState();
+        });
+
+        btnSlowMo.addEventListener('click', () => {
+            isSlowMo = !isSlowMo;
+            slowMoText.textContent = isSlowMo ? 'Slow Motion: On' : 'Slow Motion: Off';
+            btnSlowMo.classList.toggle('is-active', isSlowMo);
+        });
+
+        btnReset.addEventListener('click', () => {
+            resetSimulation();
+        });
+
+        // Initialize display on load and adapt to display changes
+        window.onload = () => {
+            setupHiDPI();
+            resetSimulation();
+            requestAnimationFrame(animate);
+        };
+
+        window.addEventListener('resize', () => {
+            setupHiDPI();
+            drawScene();
+        });
+
+        // Re-fit whenever the canvas column changes width.
+        // The resize is deferred to the next frame so changing the canvas height
+        // never happens inside the observer callback (avoids the "ResizeObserver loop" error).
+        let lastCanvasWidth = 0;
+        let fitPending = false;
+        new ResizeObserver(() => {
+            if (fitPending) return;
+            fitPending = true;
+            requestAnimationFrame(() => {
+                fitPending = false;
+                if (canvas.clientWidth === lastCanvasWidth) return;
+                lastCanvasWidth = canvas.clientWidth;
+                setupHiDPI();
+                drawScene();
+            });
+        }).observe(canvas.parentElement);
+    </script>
+</body>
+</html>
