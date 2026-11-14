@@ -272,28 +272,8 @@
     .text-plus-1pt .leading-relaxed { line-height: 1.625; }
     .text-plus-1pt p .font-mono { white-space: nowrap; } /* keep formulas like "f_s,max = μs · N" on one line */
 
-    /* ---------- Top-right view switch ("Graphs") ---------- */
+    /* ---------- Top-right panel view toggle ---------- */
     .view-hidden { display: none !important; }
-    .view-switch {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.125rem 0.25rem 0.125rem 0.625rem; border-radius: 9999px;
-      font-size: 0.75rem; line-height: 1rem; font-weight: 600;
-      border: 1px solid #e2e8f0; background-color: #f1f5f9; color: #64748b;
-      transition: background-color 150ms, border-color 150ms, color 150ms;
-    }
-    .view-switch-track {
-      position: relative; width: 1.75rem; height: 1rem; border-radius: 9999px;
-      background-color: #cbd5e1; transition: background-color 150ms;
-    }
-    .view-switch-knob {
-      position: absolute; top: 0.125rem; left: 0.125rem; width: 0.75rem; height: 0.75rem;
-      border-radius: 9999px; background-color: #ffffff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
-      transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .view-switch.is-on { background-color: #ecfdf5; border-color: #a7f3d0; color: #047857; }
-    .view-switch.is-on .view-switch-track { background-color: #10b981; }
-    .view-switch.is-on .view-switch-knob { transform: translateX(0.75rem); }
-    .view-switch:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
 
     /* ---------- State variants (after base rules so they win) ---------- */
     .selection\:bg-blue-500 *::selection, .selection\:bg-blue-500::selection { background-color: #3b82f6; }
@@ -301,6 +281,7 @@
     .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
     .hover\:bg-slate-200:hover { background-color: #e2e8f0; }
     .hover\:bg-amber-100:hover { background-color: #fef3c7; }
+    .hover\:bg-blue-50:hover { background-color: #eff6ff; }
     .hover\:bg-blue-100:hover { background-color: #dbeafe; }
     .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
     .hover\:text-slate-700:hover { color: #334155; }
@@ -440,13 +421,6 @@
               </span>
               <button id="btn-clear-graph" class="hover:text-slate-700 text-slate-400 text-xs underline decoration-dotted font-mono">Clear</button>
               </div>
-              <!-- View switch: on (green) = force graph, off (grey) = atomic-scale animation -->
-              <button id="btn-view-toggle" type="button" role="switch" aria-checked="true"
-                      aria-label="Graphs: show the force vs. time graph instead of the atomic surface animation"
-                      class="view-switch is-on">
-                <span>Graphs</span>
-                <span class="view-switch-track" aria-hidden="true"><span class="view-switch-knob"></span></span>
-              </button>
             </div>
           </div>
 
@@ -454,6 +428,9 @@
           <div class="relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-white border border-slate-200 flex items-center justify-center">
             <canvas id="canvas-graph" role="img" aria-label="Graph of applied force and friction force over time" class="w-full h-full block"></canvas>
             <canvas id="canvas-micro" role="img" aria-label="Magnified view of the contact surfaces between block and table" class="view-hidden absolute top-0 left-0 w-full h-full block"></canvas>
+            <button id="btn-view-toggle" type="button"
+                    class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[11px] font-semibold text-blue-700 hover:bg-blue-50 transition"
+                    aria-label="Show the atomic scale animation">Atomic Scale</button>
           </div>
         </div>
 
@@ -797,8 +774,11 @@
 
     function setRightPanelView(graphs) {
       showGraphs = graphs;
-      btnViewToggle.classList.toggle('is-on', graphs);
-      btnViewToggle.setAttribute('aria-checked', String(graphs));
+      // The box names the view it switches TO.
+      btnViewToggle.textContent = graphs ? 'Atomic Scale' : 'Force vs. Time';
+      btnViewToggle.setAttribute('aria-label', graphs
+        ? 'Show the atomic scale animation'
+        : 'Show the force vs. time graph');
       elCanvasGraph.classList.toggle('view-hidden', !graphs);
       elCanvasMicro.classList.toggle('view-hidden', graphs);
       graphLegend.classList.toggle('view-hidden', !graphs);
@@ -1282,7 +1262,7 @@
       ctxMicro.font = 'bold 11px Inter, sans-serif';
       ctxMicro.fillStyle = '#1d4ed8';
       ctxMicro.textAlign = 'left';
-      ctxMicro.fillText('Block Atomic Surface', 14, 20);
+      ctxMicro.fillText('Block Atomic Surface', 14, 62); // below the view box
 
       ctxMicro.fillStyle = '#e2e8f0';
       ctxMicro.strokeStyle = '#475569';
@@ -1425,7 +1405,7 @@
 
       const padL = 66; // room for 3-digit tick labels plus the rotated axis title
       const padR = 20;
-      const padT = 20;
+      const padT = 52; // leaves room for the view box in the top-left corner
       const padB = 34;
       const plotW = w - padL - padR;
       const plotH = h - padT - padB;
