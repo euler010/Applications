@@ -296,6 +296,9 @@
     @media (min-width: 1024px) {
       .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+      /* Top row: left panel 50px narrower, right panel 50px wider than an even split.
+         Each half of an even split is (100% - 1.25rem gap) / 2. */
+      .top-row-split { grid-template-columns: calc((100% - 1.25rem) / 2 - 50px) minmax(0, 1fr); }
     }
   </style>
   <!-- Must run before Tone.js loads: suppresses Tone's "%c * Tone.js v14.8.49 *" console banner. -->
@@ -345,7 +348,7 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-3 md:p-6 flex flex-col gap-5">
     
     <!-- TOP ROW: Macroscopic Block side-by-side with Force vs Time Graph -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+    <div class="grid grid-cols-1 lg:grid-cols-2 top-row-split gap-5 items-stretch">
       
       <!-- Macroscopic Block View -->
       <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
