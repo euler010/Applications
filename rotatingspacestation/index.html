@@ -6,7 +6,7 @@
 <title>Rotating Space Station</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap">
 <style>
 /* Layout: instrument-panel console — control rack on the left, two square viewports side by side, telemetry strip beneath */
 :root{
@@ -15,7 +15,7 @@
   --hull:#1b2433; --ghost:rgba(24,33,46,.28); --viewbg:#fbfcfd;
   --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --f-mono:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif; /* numbers too: everything but the title uses Source Sans 3 */
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0f141c; --panel:#161d28; --ink:#e3e8ef; --muted:#93a0b1; --line:#2a3443;
@@ -41,7 +41,7 @@ header p{margin:0;color:var(--muted);max-width:62ch}
 @media (max-width:1000px){.main{grid-template-columns:minmax(0,1fr)}}
 aside{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:12px}
 .group{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:12px}
-.group h2{font-family:var(--f-display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.group h2{font-family:var(--f-body);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .ctl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center}
 .ctl label{font-size:14px}
 .ctl output{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--accent)}
@@ -64,7 +64,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 @media (max-width:760px){.views{grid-template-columns:minmax(0,1fr)}}
 .view{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .vhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--line)}
-.vhead h3{font-family:var(--f-display);font-weight:600;font-size:17px;margin:0}
+.vhead h3{font-family:var(--f-body);font-weight:600;font-size:17px;margin:0}
 .vbtns{display:flex;gap:6px}
 #spin,#dropbtn,#throwbtn{padding:6px 14px}
 /* Rotate is an on/off switch: grey track when off, green when on */
@@ -85,7 +85,7 @@ input:disabled,button:disabled{opacity:.45;cursor:not-allowed}
 .tele{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
 @media (min-width:1300px){.tele{grid-template-columns:repeat(5,minmax(0,1fr)) minmax(0,3fr)}} /* first five at 75% of an equal share; Landing takes the rest */
 .tele div{background:var(--panel);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
-.tele span{font-size:13.5px;letter-spacing:.01em;color:var(--muted);font-family:var(--f-display);font-weight:600}
+.tele span{font-size:13.5px;letter-spacing:.01em;color:var(--muted);font-family:var(--f-body);font-weight:600}
 .tele b{font-family:var(--f-mono);font-weight:500;font-size:16px;font-variant-numeric:tabular-nums}
 .tele b.good{color:#1f9d55}.tele b.warn{color:var(--catcher)}
 .note{color:var(--muted);font-size:14px;margin:0}
@@ -334,7 +334,7 @@ function draw2D(){
     const pp=Q(rot(S.p0,rotA-RP)),m=Math.hypot(pp[0],pp[1]),fl=[pp[0]/m*R,pp[1]/m*R];
     g2.setLineDash([5,4]);g2.strokeStyle=col.muted;g2.lineWidth=1.5;g2.beginPath();g2.moveTo(X(pp),Y(pp));g2.lineTo(X(fl),Y(fl));g2.stroke();g2.setLineDash([]);
     const tx=-pp[1]/m, ty=-pp[0]/m; // screen-space tangent (spinward)
-    g2.fillStyle=col.muted;g2.font='12px system-ui,sans-serif';g2.textAlign='center';g2.textBaseline='middle';
+    g2.fillStyle=col.muted;g2.font='13px "Source Sans 3",system-ui,sans-serif';g2.textAlign='center';g2.textBaseline='middle';
     g2.fillText('straight down',(X(pp)+X(fl))/2+tx*48,(Y(pp)+Y(fl))/2+ty*48);g2.textAlign='left';g2.textBaseline='alphabetic';}
   // acceleration arrows: inward centripetal accel (outside view) or outward felt gravity (spinning view)
   const acc=S.w*S.w*R, Lpx=Math.min(Math.max(acc/9.81*44,10),90);
@@ -343,7 +343,7 @@ function draw2D(){
     const s=inertial?-1:1, dx=r[0]*s*Lpx, dy=-r[1]*s*Lpx, ex=sx+dx, ey=sy+dy, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
     g2.strokeStyle=c;g2.fillStyle=c;g2.lineWidth=2;g2.beginPath();g2.moveTo(sx,sy);g2.lineTo(ex,ey);g2.stroke();
     g2.beginPath();g2.moveTo(ex,ey);g2.lineTo(ex-ux*8-uy*4.5,ey-uy*8+ux*4.5);g2.lineTo(ex-ux*8+uy*4.5,ey-uy*8-ux*4.5);g2.closePath();g2.fill();
-    if(label){g2.font='500 12px "JetBrains Mono",ui-monospace,monospace';g2.fillStyle=col.hull;
+    if(label){g2.font='600 13px "Source Sans 3",system-ui,sans-serif';g2.fillStyle=col.hull;
       // label centred just beyond the arrow tip; the offset varies smoothly with direction so it never jumps
       // label sits beside the arrow (offset perpendicular to it), slid away from the person so it never overlaps either
       const tw=g2.measureText(label).width,hh=8;
@@ -377,7 +377,7 @@ function draw2D(){
     // parallelogram guides
     g2.setLineDash([3,4]);g2.strokeStyle=col.ghost;g2.lineWidth=1;const a1=tip(tv),a2=tip(thv),a3=tip(nv);
     g2.beginPath();g2.moveTo(...a1);g2.lineTo(...a3);g2.moveTo(...a2);g2.lineTo(...a3);g2.stroke();g2.setLineDash([]);
-    g2.font='500 12px "JetBrains Mono",ui-monospace,monospace';
+    g2.font='600 13px "Source Sans 3",system-ui,sans-serif';
     const vec=(v,c,w,label)=>{const L=mag(v)*k;if(L<1)return;const [ex,ey]=tip(v),ux=(ex-sx)/L,uy=(ey-sy)/L,hl=Math.min(10,L*0.4);
       g2.strokeStyle=c;g2.fillStyle=c;g2.lineWidth=w;g2.lineCap='round';g2.beginPath();g2.moveTo(sx,sy);g2.lineTo(ex-ux*hl*0.6,ey-uy*hl*0.6);g2.stroke();
       g2.beginPath();g2.moveTo(ex,ey);g2.lineTo(ex-ux*hl-uy*hl*0.5,ey-uy*hl+ux*hl*0.5);g2.lineTo(ex-ux*hl+uy*hl*0.5,ey-uy*hl-ux*hl*0.5);g2.closePath();g2.fill();};
