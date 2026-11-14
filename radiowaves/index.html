@@ -1404,8 +1404,9 @@
     function updateAudio() {
       if (!STATE.audioCtx || !STATE.audioEnabled) return;
       if (!STATE.running) { muteAudio(); return; }
-      // The spoken voice replaces the tone, including the last of it still arriving after a mode change.
-      if (STATE.mode === 'data' || (REC.audio && !REC.audio.paused)) { muteAudio(); return; }
+      // The tone plays for whatever sine / pulse / wiggle signal is reaching the phone, even after
+      // another mode was chosen at the tower; it goes quiet while voice is arriving or playing.
+      if (STATE.rxIsVoice || (REC.audio && !REC.audio.paused) || SPEECH.live.size) { muteAudio(); return; }
       if (!STATE.txPowered) {
         STATE.gainNode.gain.setTargetAtTime(0, STATE.audioCtx.currentTime, 0.05);
         return;
@@ -1537,7 +1538,9 @@
         v: STATE.chargeVel,
         a: currentAcc,
         // Position in the recorded voice carried by this moment of the wave (NaN when none).
-        p: (STATE.txPowered && STATE.mode === 'data' && VOICE.source === 'recording') ? VOICE.prog : NaN
+        p: (STATE.txPowered && STATE.mode === 'data' && VOICE.source === 'recording') ? VOICE.prog : NaN,
+        // 1 when this moment of the wave carries the voice, 0 for sine / pulse / wiggle.
+        d: STATE.mode === 'data' ? 1 : 0
       });
       if (Number.isFinite(STATE.history[0].p)) VOICE.lastSentAt = STATE.time;
 
@@ -1598,6 +1601,8 @@
       }
       
       STATE.rxEMF = inducedE;
+      // Is the wave reaching the phone right now voice, or tone-type signal (sine, pulse, wiggle)?
+      STATE.rxIsVoice = sampleHistory(retardedTime, 'd') >= 0.5;
 
       // Height of the wave reaching the phone: the peak over the last full cycle.
       // For a steady sine wave this is constant, so the tone holds a steady volume
