@@ -247,7 +247,7 @@
     .h-5 { height: 1.25rem; }
     .h-8 { height: 2rem; }
     .h-full { height: 100%; }
-    .h-screen { height: 100vh; }
+    .h-screen { height: 100vh; height: 100dvh; }
     .max-h-\[calc\(100vh-100px\)\] { max-height: calc(100vh - 100px); }
 
     /* ===== Flex & Grid ===== */
@@ -454,7 +454,7 @@
     }
     .peer:checked ~ .peer-checked\:bg-blue-600 { background-color: #2563eb; }
     .peer:checked ~ .peer-checked\:bg-amber-500 { background-color: #f59e0b; }
-    .peer:checked ~ .peer-checked\:after\:translate-x-full::after { content: var(--tw-content); transform: translateX(100%); }
+    .peer:checked ~ .peer-checked\:after\:translate-x-4::after { content: var(--tw-content); transform: translateX(1rem); }
     .peer:checked ~ .peer-checked\:after\:border-white::after { content: var(--tw-content); border-color: #ffffff; }
     .peer:focus ~ .peer-focus\:outline-none { outline: none; }
 
@@ -542,27 +542,27 @@
       </div>
 
       <!-- Free Body Diagram (FBD) Legend -->
-      <div id="fbd-panel-legend" class="border-t border-slate-200/80 pt-3" style="opacity: 0.4;">
+      <div id="fbd-panel-legend" class="border-t border-slate-200/80 pt-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Force Vector Legend</span>
         </div>
 
         <div class="space-y-1.5 text-xs">
-          <div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors">
+          <div id="legend-tension" class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors" style="opacity: 0.4;">
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-400/50"></span>
               <span class="font-medium text-slate-700">Tension (<span class="font-mono font-semibold text-blue-600">F<sub>T</sub></span>)</span>
             </div>
           </div>
 
-          <div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors">
+          <div id="legend-gravity" class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors" style="opacity: 0.4;">
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400/50"></span>
               <span class="font-medium text-slate-700">Gravity / Weight (<span class="font-mono font-semibold text-emerald-600">F<sub>g</sub></span>)</span>
             </div>
           </div>
 
-          <div id="fbd-fc-legend" class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors" style="opacity: 0.4;">
+          <div id="legend-fc" class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors" style="opacity: 0.4;">
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-400/50"></span>
               <span class="font-medium text-slate-700">Centripetal (<span class="font-mono font-semibold text-amber-600">F<sub>c</sub></span>)</span>
@@ -609,25 +609,25 @@
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium text-slate-700">Show Force Vectors (FBD)</span>
           <input type="checkbox" id="chk-fbd" class="sr-only peer">
-          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
         </label>
 
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium text-slate-700">Vector Components</span>
           <input type="checkbox" id="chk-components" class="sr-only peer">
-          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
         </label>
 
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium text-slate-700">Centripetal Force (<span class="font-mono font-semibold text-amber-600">F<sub>c</sub></span>)</span>
           <input type="checkbox" id="chk-fc" class="sr-only peer">
-          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
         </label>
 
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium text-slate-700">Orbit Ring & Cone</span>
           <input type="checkbox" id="chk-orbit" checked class="sr-only peer">
-          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
         </label>
       </div>
 
@@ -638,7 +638,7 @@
           <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
             <span>Rotation Speed (ω)</span>
           </div>
-          <div id="val-omega" class="font-mono text-xs font-semibold text-blue-600">0.0 rpm (0.00 rad/s)</div>
+          <div id="val-omega" class="font-mono text-xs font-semibold text-blue-600">21.5 rpm (2.25 rad/s)</div>
           <input type="range" id="input-omega" min="0" max="6.0" step="0.05" value="2.25"
             class="w-full">
           <div class="flex justify-between text-[11px] text-slate-400">
@@ -653,11 +653,11 @@
             <span>String Length (L)</span>
             <span id="val-length" class="font-mono text-xs font-semibold text-slate-800">3.0 m</span>
           </div>
-          <input type="range" id="input-length" min="1.5" max="5.0" step="0.1" value="3.0"
+          <input type="range" id="input-length" min="1.5" max="3.5" step="0.1" value="3.0"
             class="w-full">
           <div class="flex justify-between text-[11px] text-slate-400">
             <span>1.5 m</span>
-            <span>5.0 m</span>
+            <span>3.5 m</span>
           </div>
         </div>
 
@@ -765,13 +765,42 @@
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium text-slate-700">Show Force Vectors (FBD)</span>
           <input type="checkbox" id="m-chk-fbd" class="sr-only peer">
-          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Vector Components</span>
+          <input type="checkbox" id="m-chk-components" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
         </label>
         <label class="flex items-center justify-between cursor-pointer">
           <span class="font-medium text-slate-700">Centripetal Force (Fc)</span>
           <input type="checkbox" id="m-chk-fc" class="sr-only peer">
-          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
         </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Orbit Ring &amp; Cone</span>
+          <input type="checkbox" id="m-chk-orbit" checked class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+        </label>
+      </div>
+
+      <!-- Force Vector Legend in Mobile Drawer -->
+      <div class="pt-2 border-t border-slate-200">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Force Vector Legend</span>
+        <div class="space-y-1.5 text-xs">
+          <div id="m-legend-tension" class="flex items-center gap-2 p-1.5" style="opacity: 0.4;">
+            <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-400/50"></span>
+            <span class="font-medium text-slate-700">Tension (<span class="font-mono font-semibold text-blue-600">F<sub>T</sub></span>)</span>
+          </div>
+          <div id="m-legend-gravity" class="flex items-center gap-2 p-1.5" style="opacity: 0.4;">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400/50"></span>
+            <span class="font-medium text-slate-700">Gravity / Weight (<span class="font-mono font-semibold text-emerald-600">F<sub>g</sub></span>)</span>
+          </div>
+          <div id="m-legend-fc" class="flex items-center gap-2 p-1.5" style="opacity: 0.4;">
+            <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-400/50"></span>
+            <span class="font-medium text-slate-700">Centripetal (<span class="font-mono font-semibold text-amber-600">F<sub>c</sub></span>)</span>
+          </div>
+        </div>
       </div>
 
       <!-- Sliders inside Mobile Drawer -->
@@ -779,7 +808,7 @@
         <div>
           <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
             <span>Rotation Speed</span>
-            <span id="m-val-omega" class="font-mono text-blue-600">0.0 rpm</span>
+            <span id="m-val-omega" class="font-mono text-blue-600">21.5 rpm</span>
           </div>
           <input type="range" id="m-input-omega" min="0" max="6.0" step="0.05" value="2.25" class="w-full">
         </div>
@@ -788,7 +817,14 @@
             <span>String Length</span>
             <span id="m-val-length" class="font-mono text-slate-800">3.0 m</span>
           </div>
-          <input type="range" id="m-input-length" min="1.5" max="5.0" step="0.1" value="3.0" class="w-full">
+          <input type="range" id="m-input-length" min="1.5" max="3.5" step="0.1" value="3.0" class="w-full">
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+            <span>Pig Mass</span>
+            <span id="m-val-mass" class="font-mono text-slate-800">25 kg</span>
+          </div>
+          <input type="range" id="m-input-mass" min="15" max="45" step="1" value="25" class="w-full">
         </div>
       </div>
 
@@ -803,6 +839,14 @@
       </div>
     </div>
   </aside>
+
+  <!-- Shown only if the 3D libraries or WebGL fail to load -->
+  <div id="load-error" class="absolute inset-0 z-30 items-center justify-center p-4 pointer-events-none" style="display: none;">
+    <div class="glass-card rounded-2xl p-4 text-sm text-slate-700 text-center pointer-events-auto" style="max-width: 22rem;">
+      <p class="font-semibold text-slate-900 mb-1">The 3D simulation couldn't load</p>
+      <p id="load-error-detail" class="text-slate-500">Check your internet connection and reload the page.</p>
+    </div>
+  </div>
 
   <script>
     const GRAVITY = 9.81; // m/s²
@@ -833,7 +877,7 @@
     let orbitRingMesh, coneMesh;
     
     let vectorGroup;
-    let arrowTension, arrowGravity, arrowCentripetal;
+    let arrowTension, arrowGravity;
     let arrowTensionY, arrowTensionX;
     let labelTension, labelGravity, labelCentripetal, labelAngle;
     let labelTensionY, labelTensionX;
@@ -1004,6 +1048,22 @@
       knuckle.position.set(armLength, 0, 0);
       knuckle.castShadow = true;
       topArmMesh.add(knuckle);
+
+      // Dashed plumb line hanging straight down from the pivot: the vertical reference for the cone angle
+      const plumbGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(armLength, 0, 0),
+        new THREE.Vector3(armLength, -state.poleHeight, 0)
+      ]);
+      const plumbMat = new THREE.LineDashedMaterial({
+        color: 0x94a3b8,
+        dashSize: 0.15,
+        gapSize: 0.1,
+        transparent: true,
+        opacity: 0.5
+      });
+      const plumbLine = new THREE.Line(plumbGeo, plumbMat);
+      plumbLine.computeLineDistances();
+      topArmMesh.add(plumbLine);
 
       poleMesh.add(topArmMesh);
       scene.add(poleMesh);
@@ -1271,8 +1331,17 @@
       scene.add(swingAssembly);
     }
 
+    let coneVertexInfo; // per cone vertex: unit radial x, top(+1)/bottom(-1), unit radial z
+
     function createVisualIndicators() {
-      const ringGeo = new THREE.BufferGeometry();
+      // Unit circle in the XZ plane, scaled to the orbit radius each frame
+      const ringSegments = 64;
+      const ringPoints = [];
+      for (let i = 0; i < ringSegments; i++) {
+        const a = (i / ringSegments) * Math.PI * 2;
+        ringPoints.push(new THREE.Vector3(Math.cos(a), 0, -Math.sin(a)));
+      }
+      const ringGeo = new THREE.BufferGeometry().setFromPoints(ringPoints);
       const ringMat = new THREE.LineBasicMaterial({
         color: 0x3b82f6,
         transparent: true,
@@ -1282,7 +1351,18 @@
       orbitRingMesh = new THREE.LineLoop(ringGeo, ringMat);
       scene.add(orbitRingMesh);
 
-      const coneGeo = new THREE.CylinderGeometry(0.01, 1.0, 1.0, 48, 1, true);
+      // Open-ended frustum whose vertices are repositioned each frame
+      const coneGeo = new THREE.CylinderGeometry(1, 1, 1, 48, 1, true);
+      const conePos = coneGeo.attributes.position;
+      coneVertexInfo = new Float32Array(conePos.count * 3);
+      for (let i = 0; i < conePos.count; i++) {
+        const x = conePos.getX(i);
+        const z = conePos.getZ(i);
+        const r = Math.hypot(x, z) || 1;
+        coneVertexInfo[i * 3] = x / r;
+        coneVertexInfo[i * 3 + 1] = conePos.getY(i) > 0 ? 1 : -1;
+        coneVertexInfo[i * 3 + 2] = z / r;
+      }
       const coneMat = new THREE.MeshBasicMaterial({
         color: 0x60a5fa,
         transparent: true,
@@ -1291,23 +1371,8 @@
         depthWrite: false
       });
       coneMesh = new THREE.Mesh(coneGeo, coneMat);
+      coneMesh.frustumCulled = false; // vertices move every frame, so the stored bounds go stale
       scene.add(coneMesh);
-
-      const plumbGeo = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, -6, 0)
-      ]);
-      const plumbMat = new THREE.LineDashedMaterial({
-        color: 0x94a3b8,
-        dashSize: 0.15,
-        gapSize: 0.1,
-        transparent: true,
-        opacity: 0.5
-      });
-      const plumbLine = new THREE.Line(plumbGeo, plumbMat);
-      plumbLine.computeLineDistances();
-      plumbLine.position.y = state.poleHeight;
-      scene.add(plumbLine);
     }
 
     function createVectorLabel(baseText, subText, color = '#1e293b') {
@@ -1385,15 +1450,7 @@
       labelGravity = createVectorLabel('F', 'g', '#059669');
       vectorGroup.add(labelGravity);
 
-      arrowCentripetal = new THREE.ArrowHelper(
-        new THREE.Vector3(-1, 0, 0),
-        new THREE.Vector3(0, 0, 0),
-        1.5,
-        0xf59e0b,
-        0.32,
-        0.2
-      );
-      vectorGroup.add(arrowCentripetal);
+      // The centripetal force is drawn by arrowTensionX (recoloured amber), so only its label is needed here
       labelCentripetal = createVectorLabel('F', 'c', '#d97706');
       vectorGroup.add(labelCentripetal);
 
@@ -1447,34 +1504,40 @@
       return (low + high) * 0.5;
     }
 
-    function updatePhysics(deltaTime) {
-      const statusBadge = document.getElementById('badge-motion-status');
+    const BADGE_STYLES = {
+      rest: { text: 'At Rest', cls: 'bg-slate-100 text-slate-600' },
+      paused: { text: 'Paused', cls: 'bg-amber-100 text-amber-800' },
+      cruising: { text: 'Cruising', cls: 'bg-emerald-100 text-emerald-800' }
+    };
+    let currentBadge = null;
 
+    function setStatusBadge(key) {
+      if (key === currentBadge) return;
+      const badge = document.getElementById('badge-motion-status');
+      if (!badge) return;
+      currentBadge = key;
+      badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ' + BADGE_STYLES[key].cls;
+      badge.innerText = BADGE_STYLES[key].text;
+    }
+
+    function updatePhysics(deltaTime) {
       if (!state.hasStarted) {
         state.omega = 0.0;
         state.targetAngle = 0.0;
         state.currentAngle = 0.0;
         state.thetaVel = 0.0;
-        if (statusBadge) {
-          statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600';
-          statusBadge.innerText = 'At Rest';
-        }
+        setStatusBadge('rest');
         return;
       }
 
       if (!state.isPlaying) {
-        if (statusBadge) {
-          statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800';
-          statusBadge.innerText = 'Paused';
-        }
+        // Paused: nothing moves, so the telemetry keeps showing a snapshot of the moment it stopped
+        setStatusBadge('paused');
         return;
       }
 
       state.omega = state.targetOmega;
-      if (statusBadge) {
-        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800';
-        statusBadge.innerText = 'Cruising';
-      }
+      setStatusBadge('cruising');
 
       state.azimuthAngle += state.omega * deltaTime;
       state.targetAngle = solveEquilibriumAngle(state.omega, state.length, state.armRadius);
@@ -1542,18 +1605,22 @@
         orbitRingMesh.visible = true;
         coneMesh.visible = true;
 
-        const segments = 64;
-        const ringPoints = [];
-        for (let i = 0; i <= segments; i++) {
-          const a = (i / segments) * Math.PI * 2;
-          ringPoints.push(new THREE.Vector3(Math.cos(a) * totalRadius, bobY, -Math.sin(a) * totalRadius));
-        }
-        orbitRingMesh.geometry.dispose();
-        orbitRingMesh.geometry = new THREE.BufferGeometry().setFromPoints(ringPoints);
+        orbitRingMesh.scale.set(totalRadius, 1, totalRadius);
+        orbitRingMesh.position.y = bobY;
 
         const coneHeight = H - bobY;
-        coneMesh.geometry.dispose();
-        coneMesh.geometry = new THREE.CylinderGeometry(armR, totalRadius, coneHeight, 48, 1, true);
+        const conePos = coneMesh.geometry.attributes.position;
+        for (let i = 0; i < conePos.count; i++) {
+          const isTop = coneVertexInfo[i * 3 + 1] > 0;
+          const r = isTop ? armR : totalRadius;
+          conePos.setXYZ(
+            i,
+            coneVertexInfo[i * 3] * r,
+            isTop ? coneHeight / 2 : -coneHeight / 2,
+            coneVertexInfo[i * 3 + 2] * r
+          );
+        }
+        conePos.needsUpdate = true;
         coneMesh.position.set(0, H - coneHeight / 2, 0);
       } else {
         orbitRingMesh.visible = false;
@@ -1665,8 +1732,6 @@
       const dirInward = new THREE.Vector3(centerOfOrbit.x - bobPos.x, 0, centerOfOrbit.z - bobPos.z).normalize();
       const showHorizontal = (state.showComponents || state.showFc) && theta > 0.05;
 
-      arrowCentripetal.visible = false;
-
       if (showHorizontal) {
         arrowTensionX.visible = true;
         arrowTensionX.position.copy(bobPos);
@@ -1736,125 +1801,100 @@
       }
     }
 
+    function formatRpm(w) {
+      return ((w * 60) / (2 * Math.PI)).toFixed(1) + ' rpm';
+    }
+
     function setupEventListeners() {
-      const omegaSlider = document.getElementById('input-omega');
-      const omegaVal = document.getElementById('val-omega');
-      const mOmegaSlider = document.getElementById('m-input-omega');
-      const mOmegaVal = document.getElementById('m-val-omega');
+      const $ = (id) => document.getElementById(id);
+      const setText = (ids, text) => ids.forEach((id) => { const el = $(id); if (el) el.innerText = text; });
+
+      // ----- Rotation speed (ω): the label always shows the slider setting -----
+      const omegaSliders = [$('input-omega'), $('m-input-omega')].filter(Boolean);
 
       function syncOmega(value) {
+        // Picked up on the next playing frame, so a paused snapshot is left untouched
         state.targetOmega = parseFloat(value);
-        if (state.hasStarted) {
-          state.omega = state.targetOmega;
-          const display = formatOmegaDisplay(state.omega);
-          if (omegaVal) omegaVal.innerText = display;
-          if (mOmegaVal) mOmegaVal.innerText = display;
-        } else {
-          const display = `${formatOmegaDisplay(0.0)} (Target: ${formatOmegaDisplay(state.targetOmega)})`;
-          if (omegaVal) omegaVal.innerText = display;
-          if (mOmegaVal) mOmegaVal.innerText = `${(state.targetOmega * 60 / (2 * Math.PI)).toFixed(1)} rpm`;
+        omegaSliders.forEach((s) => { s.value = value; });
+        setText(['val-omega'], formatOmegaDisplay(state.targetOmega));
+        setText(['m-val-omega'], formatRpm(state.targetOmega));
+      }
+      omegaSliders.forEach((s) => s.addEventListener('input', (e) => syncOmega(e.target.value)));
+
+      // ----- String length (L) -----
+      const lengthSliders = [$('input-length'), $('m-input-length')].filter(Boolean);
+
+      function syncLength(value) {
+        state.length = parseFloat(value);
+        lengthSliders.forEach((s) => { s.value = value; });
+        setText(['val-length', 'm-val-length'], state.length.toFixed(1) + ' m');
+      }
+      lengthSliders.forEach((s) => s.addEventListener('input', (e) => syncLength(e.target.value)));
+
+      // ----- Pig mass (m) -----
+      const massSliders = [$('input-mass'), $('m-input-mass')].filter(Boolean);
+
+      function syncMass(value) {
+        state.mass = parseFloat(value);
+        massSliders.forEach((s) => { s.value = value; });
+        setText(['val-mass', 'm-val-mass'], state.mass.toFixed(0) + ' kg');
+        const scale = Math.cbrt(state.mass / 25.0);
+        childGroup.scale.set(scale, scale, scale);
+      }
+      massSliders.forEach((s) => s.addEventListener('input', (e) => syncMass(e.target.value)));
+
+      // ----- Play / pause -----
+      const playPauseBtn = $('btn-play-pause');
+      const iconPlay = $('icon-play');
+      const iconPause = $('icon-pause');
+      const textPlayPause = $('text-play-pause');
+
+      const mPlayPauseBtn = $('btn-mobile-play-pause');
+      const mIconPlay = $('icon-mobile-play');
+      const mIconStop = $('icon-mobile-stop');
+      const mTextPlayPause = $('text-mobile-play-pause');
+
+      function setPlayButtons(playing) {
+        // Desktop: green Play / blue Pause
+        if (iconPlay) iconPlay.classList.toggle('hidden', playing);
+        if (iconPause) iconPause.classList.toggle('hidden', !playing);
+        if (textPlayPause) textPlayPause.innerText = playing ? 'Pause' : 'Play';
+        if (playPauseBtn) {
+          playPauseBtn.classList.toggle('bg-blue-600', playing);
+          playPauseBtn.classList.toggle('hover:bg-blue-700', playing);
+          playPauseBtn.classList.toggle('bg-emerald-600', !playing);
+          playPauseBtn.classList.toggle('hover:bg-emerald-700', !playing);
         }
-        if (omegaSlider) omegaSlider.value = value;
-        if (mOmegaSlider) mOmegaSlider.value = value;
+
+        // Mobile: green Play / red Stop
+        if (mIconPlay) mIconPlay.classList.toggle('hidden', playing);
+        if (mIconStop) mIconStop.classList.toggle('hidden', !playing);
+        if (mTextPlayPause) mTextPlayPause.innerText = playing ? 'Stop' : 'Play';
+        if (mPlayPauseBtn) {
+          mPlayPauseBtn.classList.toggle('bg-rose-600', playing);
+          mPlayPauseBtn.classList.toggle('hover:bg-rose-700', playing);
+          mPlayPauseBtn.classList.toggle('shadow-rose-900/25', playing);
+          mPlayPauseBtn.classList.toggle('bg-emerald-600', !playing);
+          mPlayPauseBtn.classList.toggle('hover:bg-emerald-700', !playing);
+          mPlayPauseBtn.classList.toggle('shadow-emerald-900/25', !playing);
+        }
       }
-
-      if (omegaSlider) omegaSlider.addEventListener('input', (e) => syncOmega(e.target.value));
-      if (mOmegaSlider) mOmegaSlider.addEventListener('input', (e) => syncOmega(e.target.value));
-
-      const lengthSlider = document.getElementById('input-length');
-      const lengthVal = document.getElementById('val-length');
-      const mLengthSlider = document.getElementById('m-input-length');
-      const mLengthVal = document.getElementById('m-val-length');
-
-      function syncLength(val) {
-        state.length = parseFloat(val);
-        const lStr = state.length.toFixed(1) + ' m';
-        if (lengthVal) lengthVal.innerText = lStr;
-        if (mLengthVal) mLengthVal.innerText = lStr;
-        if (lengthSlider) lengthSlider.value = val;
-        if (mLengthSlider) mLengthSlider.value = val;
-      }
-
-      if (lengthSlider) lengthSlider.addEventListener('input', (e) => syncLength(e.target.value));
-      if (mLengthSlider) mLengthSlider.addEventListener('input', (e) => syncLength(e.target.value));
-
-      const massSlider = document.getElementById('input-mass');
-      const massVal = document.getElementById('val-mass');
-      if (massSlider) {
-        massSlider.addEventListener('input', (e) => {
-          state.mass = parseFloat(e.target.value);
-          if (massVal) massVal.innerText = state.mass.toFixed(0) + ' kg';
-          const s = Math.cbrt(state.mass / 25.0);
-          childGroup.scale.set(s, s, s);
-        });
-      }
-
-      const playPauseBtn = document.getElementById('btn-play-pause');
-      const iconPlay = document.getElementById('icon-play');
-      const iconPause = document.getElementById('icon-pause');
-      const textPlayPause = document.getElementById('text-play-pause');
-
-      // Mobile button elements
-      const mPlayPauseBtn = document.getElementById('btn-mobile-play-pause');
-      const mIconPlay = document.getElementById('icon-mobile-play');
-      const mIconStop = document.getElementById('icon-mobile-stop');
-      const mTextPlayPause = document.getElementById('text-mobile-play-pause');
 
       function togglePlayPause() {
         state.isPlaying = !state.isPlaying;
         if (state.isPlaying) {
           state.hasStarted = true;
           state.omega = state.targetOmega;
-          if (omegaVal) omegaVal.innerText = formatOmegaDisplay(state.omega);
-          if (mOmegaVal) mOmegaVal.innerText = formatOmegaDisplay(state.omega);
-
-          // Update Desktop Button UI
-          if (iconPlay) iconPlay.classList.add('hidden');
-          if (iconPause) iconPause.classList.remove('hidden');
-          if (textPlayPause) textPlayPause.innerText = 'Pause';
-          if (playPauseBtn) {
-            playPauseBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
-            playPauseBtn.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
-          }
-
-          // Update Mobile Button UI (Play -> Stop)
-          if (mIconPlay) mIconPlay.classList.add('hidden');
-          if (mIconStop) mIconStop.classList.remove('hidden');
-          if (mTextPlayPause) mTextPlayPause.innerText = 'Stop';
-          if (mPlayPauseBtn) {
-            mPlayPauseBtn.classList.replace('bg-emerald-600', 'bg-rose-600');
-            mPlayPauseBtn.classList.replace('hover:bg-emerald-700', 'hover:bg-rose-700');
-            mPlayPauseBtn.classList.replace('shadow-emerald-900/25', 'shadow-rose-900/25');
-          }
-        } else {
-          // Update Desktop Button UI
-          if (iconPause) iconPause.classList.add('hidden');
-          if (iconPlay) iconPlay.classList.remove('hidden');
-          if (textPlayPause) textPlayPause.innerText = 'Play';
-          if (playPauseBtn) {
-            playPauseBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
-            playPauseBtn.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
-          }
-
-          // Update Mobile Button UI (Stop -> Play)
-          if (mIconStop) mIconStop.classList.add('hidden');
-          if (mIconPlay) mIconPlay.classList.remove('hidden');
-          if (mTextPlayPause) mTextPlayPause.innerText = 'Play';
-          if (mPlayPauseBtn) {
-            mPlayPauseBtn.classList.replace('bg-rose-600', 'bg-emerald-600');
-            mPlayPauseBtn.classList.replace('hover:bg-rose-700', 'hover:bg-emerald-700');
-            mPlayPauseBtn.classList.replace('shadow-rose-900/25', 'shadow-emerald-900/25');
-          }
         }
+        setPlayButtons(state.isPlaying);
       }
 
       if (playPauseBtn) playPauseBtn.addEventListener('click', togglePlayPause);
       if (mPlayPauseBtn) mPlayPauseBtn.addEventListener('click', togglePlayPause);
 
-      const mobileDrawer = document.getElementById('mobile-drawer');
-      const drawerBackdrop = document.getElementById('drawer-backdrop');
-      const btnOpenDrawer = document.getElementById('btn-open-drawer');
-      const btnCloseDrawer = document.getElementById('btn-close-drawer');
+      // ----- Mobile drawer -----
+      const mobileDrawer = $('mobile-drawer');
+      const drawerBackdrop = $('drawer-backdrop');
 
       function openDrawer() {
         if (mobileDrawer) mobileDrawer.classList.add('drawer-open');
@@ -1866,151 +1906,76 @@
         if (drawerBackdrop) drawerBackdrop.classList.remove('active');
       }
 
-      if (btnOpenDrawer) btnOpenDrawer.addEventListener('click', openDrawer);
-      if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
+      if ($('btn-open-drawer')) $('btn-open-drawer').addEventListener('click', openDrawer);
+      if ($('btn-close-drawer')) $('btn-close-drawer').addEventListener('click', closeDrawer);
       if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
 
-      const chkFBD = document.getElementById('chk-fbd');
-      const chkComponents = document.getElementById('chk-components');
-      const chkFc = document.getElementById('chk-fc');
-      const chkOrbit = document.getElementById('chk-orbit');
-      const fbdLegend = document.getElementById('fbd-panel-legend');
-      const fcLegend = document.getElementById('fbd-fc-legend');
+      // ----- Display toggles (desktop and mobile copies kept in sync) -----
+      const toggles = [
+        { key: 'showFBD', ids: ['chk-fbd', 'm-chk-fbd'], initial: false },
+        { key: 'showComponents', ids: ['chk-components', 'm-chk-components'], initial: false },
+        { key: 'showFc', ids: ['chk-fc', 'm-chk-fc'], initial: false },
+        { key: 'showOrbit', ids: ['chk-orbit', 'm-chk-orbit'], initial: true }
+      ];
 
-      const mChkFBD = document.getElementById('m-chk-fbd');
-      const mChkFc = document.getElementById('m-chk-fc');
+      function setToggle(t, checked) {
+        state[t.key] = checked;
+        t.ids.forEach((id) => { const el = $(id); if (el) el.checked = checked; });
+      }
 
+      // Each legend row is lit only while its arrow can be on screen
+      function updateLegends() {
+        const rows = {
+          'legend-tension': state.showFBD || state.showComponents,
+          'legend-gravity': state.showFBD,
+          'legend-fc': state.showFc
+        };
+        Object.entries(rows).forEach(([id, lit]) => {
+          [$(id), $('m-' + id)].forEach((el) => { if (el) el.style.opacity = lit ? '1' : '0.4'; });
+        });
+      }
+
+      toggles.forEach((t) => {
+        t.ids.forEach((id) => {
+          const el = $(id);
+          if (!el) return;
+          el.addEventListener('change', (e) => {
+            setToggle(t, e.target.checked);
+            updateLegends();
+          });
+        });
+      });
+
+      // ----- Reset -----
       function executeReset() {
         state.hasStarted = false;
+        state.isPlaying = false;
         state.omega = 0.0;
-        state.targetOmega = 2.25;
-        state.length = 3.0;
-        state.mass = 25.0;
         state.currentAngle = 0.0;
         state.thetaVel = 0.0;
         state.targetAngle = 0.0;
         state.azimuthAngle = 0.0;
-        state.isPlaying = false;
 
-        state.showFBD = false;
-        state.showComponents = false;
-        state.showFc = false;
-        state.showOrbit = true;
+        toggles.forEach((t) => setToggle(t, t.initial));
+        updateLegends();
 
-        if (chkFBD) chkFBD.checked = false;
-        if (chkComponents) chkComponents.checked = false;
-        if (chkFc) chkFc.checked = false;
-        if (chkOrbit) chkOrbit.checked = true;
+        syncOmega('2.25');
+        syncLength('3.0');
+        syncMass('25');
 
-        if (mChkFBD) mChkFBD.checked = false;
-        if (mChkFc) mChkFc.checked = false;
-
-        if (fbdLegend) fbdLegend.style.opacity = '0.4';
-        if (fcLegend) fcLegend.style.opacity = '0.4';
-
-        if (omegaSlider) omegaSlider.value = "2.25";
-        if (mOmegaSlider) mOmegaSlider.value = "2.25";
-        if (omegaVal) omegaVal.innerText = "0.0 rpm (0.00 rad/s)";
-        if (mOmegaVal) mOmegaVal.innerText = "0.0 rpm";
-
-        if (lengthSlider) lengthSlider.value = "3.0";
-        if (mLengthSlider) mLengthSlider.value = "3.0";
-        if (lengthVal) lengthVal.innerText = "3.0 m";
-        if (mLengthVal) mLengthVal.innerText = "3.0 m";
-
-        if (massSlider) massSlider.value = "25";
-        if (massVal) massVal.innerText = "25 kg";
-        if (childGroup) childGroup.scale.set(1, 1, 1);
-
-        const elAngle = document.getElementById('stat-angle');
-        const elSpeed = document.getElementById('stat-speed');
-        const elTension = document.getElementById('stat-tension');
-        const elFc = document.getElementById('stat-fc');
-        if (elAngle) elAngle.innerText = "0.0°";
-        if (elSpeed) elSpeed.innerText = "0.00 m/s";
-        if (elTension) elTension.innerText = "0.0 N";
-        if (elFc) elFc.innerText = "0.0 N";
-
-        if (iconPause) iconPause.classList.add('hidden');
-        if (iconPlay) iconPlay.classList.remove('hidden');
-        if (textPlayPause) textPlayPause.innerText = 'Play';
-        if (playPauseBtn) {
-          playPauseBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-          playPauseBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-        }
-
-        // Mobile button reset to Play
-        if (mIconStop) mIconStop.classList.add('hidden');
-        if (mIconPlay) mIconPlay.classList.remove('hidden');
-        if (mTextPlayPause) mTextPlayPause.innerText = 'Play';
-        if (mPlayPauseBtn) {
-          mPlayPauseBtn.classList.remove('bg-rose-600', 'hover:bg-rose-700', 'shadow-rose-900/25');
-          mPlayPauseBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'shadow-emerald-900/25');
-        }
-
-        const statusBadge = document.getElementById('badge-motion-status');
-        if (statusBadge) {
-          statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600';
-          statusBadge.innerText = 'At Rest';
-        }
-
+        setPlayButtons(false);
+        setStatusBadge('rest');
         setCameraView('orbit');
         updateTransforms();
       }
 
-      const btnReset = document.getElementById('btn-reset');
-      const mBtnReset = document.getElementById('m-btn-reset');
-      if (btnReset) btnReset.addEventListener('click', executeReset);
-      if (mBtnReset) mBtnReset.addEventListener('click', () => {
+      if ($('btn-reset')) $('btn-reset').addEventListener('click', executeReset);
+      if ($('m-btn-reset')) $('m-btn-reset').addEventListener('click', () => {
         executeReset();
         closeDrawer();
       });
 
-      if (chkFBD) {
-        chkFBD.addEventListener('change', (e) => {
-          state.showFBD = e.target.checked;
-          if (mChkFBD) mChkFBD.checked = state.showFBD;
-          if (fbdLegend) fbdLegend.style.opacity = (state.showFBD || state.showFc || state.showComponents) ? '1' : '0.4';
-        });
-      }
-
-      if (mChkFBD) {
-        mChkFBD.addEventListener('change', (e) => {
-          state.showFBD = e.target.checked;
-          if (chkFBD) chkFBD.checked = state.showFBD;
-          if (fbdLegend) fbdLegend.style.opacity = (state.showFBD || state.showFc || state.showComponents) ? '1' : '0.4';
-        });
-      }
-
-      if (chkComponents) {
-        chkComponents.addEventListener('change', (e) => {
-          state.showComponents = e.target.checked;
-          if (fbdLegend) fbdLegend.style.opacity = (state.showFBD || state.showFc || state.showComponents) ? '1' : '0.4';
-        });
-      }
-
-      if (chkFc) {
-        chkFc.addEventListener('change', (e) => {
-          state.showFc = e.target.checked;
-          if (mChkFc) mChkFc.checked = state.showFc;
-          if (fcLegend) fcLegend.style.opacity = state.showFc ? '1' : '0.4';
-        });
-      }
-
-      if (mChkFc) {
-        mChkFc.addEventListener('change', (e) => {
-          state.showFc = e.target.checked;
-          if (chkFc) chkFc.checked = state.showFc;
-          if (fcLegend) fcLegend.style.opacity = state.showFc ? '1' : '0.4';
-        });
-      }
-
-      if (chkOrbit) {
-        chkOrbit.addEventListener('change', (e) => {
-          state.showOrbit = e.target.checked;
-        });
-      }
-
+      // ----- Camera presets -----
       const camButtons = {
         'cam-orbit': 'orbit',
         'cam-side': 'side',
@@ -2023,13 +1988,11 @@
       };
 
       Object.entries(camButtons).forEach(([id, mode]) => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.addEventListener('click', () => {
-            setCameraView(mode);
-          });
-        }
+        const el = $(id);
+        if (el) el.addEventListener('click', () => setCameraView(mode));
       });
+
+      updateLegends();
     }
 
     function setCameraView(mode) {
@@ -2098,8 +2061,25 @@
       renderer.render(scene, camera);
     }
 
+    function showLoadError(detail) {
+      const box = document.getElementById('load-error');
+      const text = document.getElementById('load-error-detail');
+      if (text && detail) text.innerText = detail;
+      if (box) box.style.display = 'flex';
+    }
+
     window.onload = function () {
-      initScene();
+      if (typeof THREE === 'undefined' || typeof THREE.OrbitControls !== 'function') {
+        showLoadError("The 3D graphics library didn't download. Check your internet connection and reload the page.");
+        return;
+      }
+      try {
+        initScene();
+      } catch (err) {
+        console.error(err);
+        showLoadError("Your browser couldn't start 3D graphics (WebGL). Try another browser, or turn on hardware acceleration.");
+        return;
+      }
       setupEventListeners();
       animate();
     };
