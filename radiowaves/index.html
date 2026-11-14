@@ -101,6 +101,7 @@
     .w-20 { width: 5rem; }
     .w-44 { width: 11rem; }
     .w-60 { width: 15rem; }
+    .w-\[264px\] { width: 264px; }
     .w-full { width: 100%; }
     .max-w-lg { max-width: 32rem; }
     .max-w-7xl { max-width: 80rem; }
@@ -193,13 +194,13 @@
     /* ---- Typography ---- */
     .text-left { text-align: left; }
     .text-center { text-align: center; }
-    /* Small text sizes are 1px larger than Tailwind's defaults (text-xs 13px, text-sm 15px) */
-    .text-\[9\.5px\] { font-size: 9.5px; }
-    .text-\[10px\] { font-size: 10px; }
+    /* Small text sizes are 2px larger than Tailwind's defaults (text-xs 14px, text-sm 16px) */
+    .text-\[10\.5px\] { font-size: 10.5px; }
     .text-\[11px\] { font-size: 11px; }
     .text-\[12px\] { font-size: 12px; }
-    .text-xs { font-size: 13px; line-height: 1.0625rem; }
-    .text-sm { font-size: 15px; line-height: 1.3125rem; }
+    .text-\[13px\] { font-size: 13px; }
+    .text-xs { font-size: 14px; line-height: 1.125rem; }
+    .text-sm { font-size: 16px; line-height: 1.375rem; }
     .text-base { font-size: 1rem; line-height: 1.5rem; }
     .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
     .font-medium { font-weight: 500; }
@@ -427,8 +428,8 @@
         <!-- Vertically Stacked Controls on the Right Side -->
         <div id="simPanel" class="absolute top-2.5 right-2.5 z-10 flex flex-col gap-2 pointer-events-auto w-44">
           <!-- View Modes (Stacked Vertically) -->
-          <div class="bg-white/95 backdrop-blur-md rounded-xl p-1.5 border border-slate-200 shadow-sm flex flex-col gap-1 text-[12px]">
-            <div class="text-[10px] font-bold text-slate-400 px-1 pb-0.5">View Mode</div>
+          <div class="bg-white/95 backdrop-blur-md rounded-xl p-1.5 border border-slate-200 shadow-sm flex flex-col gap-1 text-[13px]">
+            <div class="text-[11px] font-bold text-slate-400 px-1 pb-0.5">View Mode</div>
             <button id="viewTransverse" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold transition flex items-center gap-2">
               <span class="truncate">Transverse (E ⟂ B)</span>
             </button>
@@ -441,8 +442,8 @@
           </div>
 
           <!-- Component Checkboxes (Stacked Vertically) -->
-          <div class="bg-white/95 backdrop-blur-md rounded-xl p-2 border border-slate-200 shadow-sm flex flex-col gap-1.5 text-[12px]">
-            <div class="text-[10px] font-bold text-slate-400 px-0.5 pb-0.5">Display Elements</div>
+          <div class="bg-white/95 backdrop-blur-md rounded-xl p-2 border border-slate-200 shadow-sm flex flex-col gap-1.5 text-[13px]">
+            <div class="text-[11px] font-bold text-slate-400 px-0.5 pb-0.5">Display Elements</div>
             <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-50 px-1 py-0.5 rounded transition">
               <input type="checkbox" id="chkEField" checked class="accent-cyan-600 rounded">
               <span class="text-cyan-700 font-medium">E-Field (Electric)</span>
@@ -463,7 +464,7 @@
           <canvas id="simCanvas" class="w-full h-full block cursor-default"></canvas>
           
           <!-- Hint for manual draggable mode -->
-          <div id="manualHint" class="hidden absolute bottom-2 left-4 bg-cyan-50 border border-cyan-300 text-cyan-800 text-[12px] px-2.5 py-1 rounded-lg shadow-xs pointer-events-none flex items-center gap-1.5">
+          <div id="manualHint" class="hidden absolute bottom-2 left-4 bg-cyan-50 border border-cyan-300 text-cyan-800 text-[13px] px-2.5 py-1 rounded-lg shadow-xs pointer-events-none flex items-center gap-1.5">
             <span>Drag the blue electron on the cell tower up and down!</span>
           </div>
         </div>
@@ -477,11 +478,11 @@
       <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col items-center">
         <div class="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between w-full">
           <span>Smartphone Receiver</span>
-          <span class="text-[11px] font-mono text-cyan-700 px-1.5 py-0.5 bg-cyan-50 rounded border border-cyan-200">5G / LTE Demodulator</span>
+          <span class="text-[12px] font-mono text-cyan-700 px-1.5 py-0.5 bg-cyan-50 rounded border border-cyan-200">5G / LTE Demodulator</span>
         </div>
 
         <!-- Phone chassis (Compact modern design) -->
-        <div class="w-60 h-[336px] bg-slate-100 rounded-3xl border-4 border-slate-300 shadow-md p-2.5 flex flex-col relative overflow-hidden ring-1 ring-slate-200">
+        <div class="w-[264px] h-[336px] bg-slate-100 rounded-3xl border-4 border-slate-300 shadow-md p-2.5 flex flex-col relative overflow-hidden ring-1 ring-slate-200">
           <!-- Dynamic Island / Speaker notch -->
           <div class="w-20 h-3 bg-slate-800 rounded-full mx-auto mb-1.5 flex items-center justify-end px-2">
             <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
@@ -490,7 +491,7 @@
           <!-- Smartphone Screen Display (The Second Animation) -->
           <div class="flex-1 bg-white rounded-2xl p-2.5 flex flex-col justify-between border border-slate-200 text-xs overflow-hidden relative shadow-inner">
             <!-- Screen Top Status Bar -->
-            <div class="flex justify-between items-center text-[11px] text-slate-500 border-b border-slate-100 pb-1">
+            <div class="flex justify-between items-center text-[12px] text-slate-500 border-b border-slate-100 pb-1">
               <span class="font-mono">12:42</span>
               <div class="flex items-center gap-1.5">
                 <span id="phoneBars" class="signal-bars text-slate-300" data-level="0" aria-label="Signal strength"><i></i><i></i><i></i><i></i></span>
@@ -502,21 +503,21 @@
             <!-- Main App Content (Second Animation Demodulator Canvas) -->
             <div class="flex-1 py-1 flex flex-col justify-center">
               <div class="text-center mb-1">
-                <span class="text-[10px] font-mono text-slate-500">Demodulated Signal (V(t))</span>
+                <span class="text-[11px] font-mono text-slate-500">Demodulated Signal (V(t))</span>
                 <h4 id="phoneDecodedTitle" class="text-xs font-bold text-slate-800">Transmitter Idle</h4>
               </div>
 
               <!-- Animated Voice/Data waveform canvas (Second Animation) -->
               <div class="h-16 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-center px-1 overflow-hidden relative">
                 <canvas id="phoneCanvas" class="w-full h-full block"></canvas>
-                <div id="noSignalOverlay" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-slate-500 text-[11px]">
+                <div id="noSignalOverlay" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center text-slate-500 text-[12px]">
                   <span class="font-medium text-slate-600">No Carrier Signal</span>
-                  <span id="noSignalReason" class="text-[10px] text-slate-400">Transmitter is turned off</span>
+                  <span id="noSignalReason" class="text-[11px] text-slate-400">Transmitter is turned off</span>
                 </div>
               </div>
 
               <!-- Live Bitstream / Data Packet Decoding -->
-              <div class="mt-2 bg-slate-50 rounded p-1.5 border border-slate-200 font-mono text-[10px]">
+              <div class="mt-2 bg-slate-50 rounded p-1.5 border border-slate-200 font-mono text-[11px]">
                 <div class="text-slate-500 flex justify-between">
                   <span>Packet Decode:</span>
                   <span id="phonePacketLoss" class="text-slate-400">BER: --</span>
@@ -524,14 +525,14 @@
                 <div id="phoneBitstream" class="text-cyan-700 font-bold tracking-wider truncate">
                   00000000 00000000 00000000
                 </div>
-                <div class="text-slate-500 mt-0.5 text-[9.5px] truncate" id="phonePayload">
+                <div class="text-slate-500 mt-0.5 text-[10.5px] truncate" id="phonePayload">
                   Payload: Waiting for radio waves...
                 </div>
               </div>
             </div>
 
             <!-- Receiver Antenna Internal Indicator -->
-            <div class="bg-cyan-50 rounded-lg p-1 border border-cyan-200 flex items-center justify-between text-[10px] text-cyan-800">
+            <div class="bg-cyan-50 rounded-lg p-1 border border-cyan-200 flex items-center justify-between gap-2 text-[11px] text-cyan-800">
               <span>Internal Antenna (λ/4):</span>
               <span id="antennaOscStatus" class="font-mono text-slate-500 font-semibold">Idle</span>
             </div>
@@ -576,7 +577,7 @@
             <span id="lblFreq" class="font-mono text-cyan-700 font-bold">1.00 Hz</span>
           </div>
           <input type="range" id="slFreq" min="0.2" max="3.0" step="0.05" value="1.0" class="custom-slider w-full">
-          <div class="flex justify-between text-[11px] text-slate-500 font-mono">
+          <div class="flex justify-between text-[12px] text-slate-500 font-mono">
             <span>0.2 Hz</span>
             <span>Wavelength λ ∝ 1/f</span>
             <span>3.0 Hz</span>
@@ -599,7 +600,7 @@
             <span id="lblDist" class="font-mono text-emerald-700 font-bold">1200 m</span>
           </div>
           <input type="range" id="slDist" min="400" max="2200" step="50" value="1200" class="custom-slider w-full">
-          <div class="text-[11px] text-slate-500">
+          <div class="text-[12px] text-slate-500">
             Far-field attenuation: Signal decreases as 1/r
           </div>
         </div>
@@ -1147,7 +1148,7 @@
       simCtx.setLineDash([]);
 
       simCtx.fillStyle = '#0284c7';
-      simCtx.font = 'bold 11px "JetBrains Mono", ui-monospace, monospace';
+      simCtx.font = 'bold 12px "JetBrains Mono", ui-monospace, monospace';
       simCtx.textAlign = 'left';
       simCtx.fillText('Omnidirectional Radiation (Spreading in all directions at speed c)', srcX + 28, srcY + 16);
 
@@ -1307,7 +1308,7 @@
       }
 
       // Labels positioned clearly above the waves to prevent any overlap
-      simCtx.font = 'bold 11px "JetBrains Mono", ui-monospace, monospace';
+      simCtx.font = 'bold 12px "JetBrains Mono", ui-monospace, monospace';
       simCtx.textAlign = 'left';
       simCtx.textBaseline = 'middle';
       const labelY = startY - 48;
@@ -1319,7 +1320,7 @@
         simCtx.arc(curX + 4, labelY, 3.5, 0, Math.PI * 2);
         simCtx.fill();
         simCtx.fillText('Electric Field (E)', curX + 12, labelY);
-        curX += 140;
+        curX += 12 + simCtx.measureText('Electric Field (E)').width + 18; // space by real text width
       }
       if (STATE.showB) {
         simCtx.fillStyle = '#d97706';
@@ -1443,7 +1444,7 @@
       // The electron carries negative charge: when it moves up (chargePos > 0) the top end
       // becomes negative and the bottom end positive.
       const isPositiveTop = STATE.chargePos < 0;
-      simCtx.font = 'bold 10px "Inter", sans-serif';
+      simCtx.font = 'bold 11px "Inter", sans-serif';
       simCtx.textAlign = 'center';
       simCtx.textBaseline = 'middle';
 
@@ -1475,11 +1476,11 @@
       simCtx.fill();
 
       simCtx.fillStyle = '#0f172a';
-      simCtx.font = 'bold 10px "Inter", sans-serif';
+      simCtx.font = 'bold 11px "Inter", sans-serif';
       simCtx.fillText('e⁻', txX + 13, electronY);
 
       simCtx.fillStyle = '#334155';
-      simCtx.font = 'bold 11px "Inter", sans-serif';
+      simCtx.font = 'bold 12px "Inter", sans-serif';
       simCtx.fillText('Tower TX', txX, rodTop - 22);
 
       simCtx.restore();
