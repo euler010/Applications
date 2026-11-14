@@ -1411,8 +1411,10 @@
         return;
       }
       
-      const targetGain = Math.abs(STATE.rxEMF) * 0.08 * (STATE.amplitude);
-      STATE.gainNode.gain.setTargetAtTime(targetGain, STATE.audioCtx.currentTime, 0.05);
+      // Volume follows the height of the arriving wave (not its instantaneous value),
+      // so a steady sine wave gives a steady tone with no wobble.
+      const targetGain = Math.min(0.05, (STATE.rxPeak || 0) * 0.05);
+      STATE.gainNode.gain.setTargetAtTime(targetGain, STATE.audioCtx.currentTime, 0.08);
       
       const targetFreq = 180 + STATE.frequency * 140;
       STATE.carrierOsc.frequency.setTargetAtTime(targetFreq, STATE.audioCtx.currentTime, 0.05);
@@ -1595,6 +1597,14 @@
       }
       
       STATE.rxEMF = inducedE;
+
+      // Height of the wave reaching the phone: the peak over the last full cycle.
+      // For a steady sine wave this is constant, so the tone holds a steady volume
+      // instead of pulsing with every crest of the wave.
+      const period = 1 / Math.max(0.2, STATE.frequency);
+      let peak = 0;
+      for (let k = 0; k < 16; k++) peak = Math.max(peak, Math.abs(sampleHistory(retardedTime - k * period / 16)));
+      STATE.rxPeak = peak * distanceFactor;
       
       // Signal presence uses a decaying peak of the received field, so the phone no longer
       // drops to "no signal" every time the sine wave crosses zero.
