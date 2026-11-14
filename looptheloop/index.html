@@ -360,7 +360,7 @@
           </div>
           <div class="flex items-center gap-2">
             <button id="btnHeightDec" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition"><i class="fa-solid fa-minus text-xs"></i></button>
-            <input id="sliderHeight" type="range" min="0.1" max="6.0" step="0.1" value="4.0" class="w-full flex-1">
+            <input id="sliderHeight" type="range" min="0.1" max="6.0" step="0.05" value="4.0" class="w-full flex-1">
             <button id="btnHeightInc" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition"><i class="fa-solid fa-plus text-xs"></i></button>
           </div>
           <div class="grid grid-cols-2 gap-1.5 pt-1">
@@ -512,12 +512,15 @@
     });
 
     // Presets
-    document.getElementById('btnPresetCrit').addEventListener('click', () => {
-      sliderHeight.value = 2.5 * R; updateReleaseHeight(2.5 * R); resetSimulation();
-    });
-    document.getElementById('btnPresetSafe').addEventListener('click', () => {
-      sliderHeight.value = 3.0 * R; updateReleaseHeight(3.0 * R); resetSimulation();
-    });
+    function setPresetHeight(multiple) {
+      const min = parseFloat(sliderHeight.min), max = parseFloat(sliderHeight.max);
+      const h = Math.min(max, Math.max(min, Math.round(multiple * R * 100) / 100));
+      sliderHeight.value = h.toFixed(2);
+      updateReleaseHeight(parseFloat(sliderHeight.value)); // read back so label, slider and physics agree
+      resetSimulation();
+    }
+    document.getElementById('btnPresetCrit').addEventListener('click', () => setPresetHeight(2.5));
+    document.getElementById('btnPresetSafe').addEventListener('click', () => setPresetHeight(3.0));
 
     // Helper for slider +/- buttons
     function adjustSlider(slider, delta, updateFn) {
@@ -525,7 +528,7 @@
       let min = parseFloat(slider.min);
       let max = parseFloat(slider.max);
       val = Math.max(min, Math.min(max, val));
-      slider.value = val.toFixed(1);
+      slider.value = val.toFixed(2);
       updateFn(parseFloat(slider.value));
       resetSimulation();
     }
@@ -608,12 +611,27 @@
       ctx.scale(dpr, dpr);
 
       const fixedScaleMeters = 6.5;
-      world.scale = Math.max(10, ((ch - 45) / fixedScaleMeters) * 0.9);
-      world.groundY = Math.max(100, ch - 81);
-      world.originX = 36;
       const wPixels = canvas.width / dpr;
       const centerPixelX = wPixels * 0.65;
+      // Scale so the highest possible start point (max height, max radius) and the loop's right edge fit on screen
+      const maxH = parseFloat(sliderHeight.max), maxR = parseFloat(sliderRadius.max);
+      const yRampEndM = -slopeM * Wf / 2;
+      const leftSpanM = maxR + 0.5 + Wf + (maxH - yRampEndM) / -slopeM;
+      const heightScale = ((ch - 45) / fixedScaleMeters) * 0.9;
+      const leftScale = (centerPixelX - 24) / leftSpanM;
+      const rightScale = (wPixels - centerPixelX - 12) / maxR;
+      world.scale = Math.max(10, Math.min(heightScale, leftScale, rightScale));
+      world.groundY = Math.max(100, ch - 81);
+      world.originX = 36;
+      // The track is anchored to the loop centre, so move everything stored in metres along with it
+      const oldCenterX_m = world.loopCenterX_m;
       world.loopCenterX_m = (centerPixelX - world.originX) / world.scale;
+      const shift = world.loopCenterX_m - oldCenterX_m;
+      if (shift !== 0) {
+        state.x += shift;
+        if (state.lossContactX !== null) state.lossContactX += shift;
+        for (const p of state.trail) p.x += shift;
+      }
       render();
     }
     window.addEventListener('resize', resizeCanvas);
@@ -629,6 +647,7 @@
       state.dir = 1;
       state.t = 0; state.v = 0; state.vx = 0; state.vy = 0; state.theta = 0;
       state.lossContactX = null; state.lossContactY = null; state.trail = [];
+      state.restOnLoop = false;
       
       state.x = getStartXFromHeight(releaseH);
       const geom = getTrackGeom(state.x);
@@ -647,7 +666,7 @@
 
     function updateStatusUI(text, badgeClasses, dotColor) {
       statusBadge.className = `flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${badgeClasses}`;
-      statusBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full ${dotColor}"></span><span>${text}</span>`;
+      statusBadge.firstElementChild.className = `w-2.5 h-2.5 rounded-full ${dotColor}`;
       statusBadgeText.textContent = text;
     }
 
@@ -788,6 +807,37 @@
         state.x += state.vx * dt; state.vy -= g * dt; state.y += state.vy * dt;
         state.v = Math.sqrt(state.vx * state.vx + state.vy * state.vy);
 
+        // Collision with the inside of the loop (contact can only be lost from inside it)
+        const dxL = state.x - world.loopCenterX_m, dyL = state.y - R;
+        const distL = Math.hypot(dxL, dyL);
+        if (distL >= R) {
+          const nx = -dxL / distL, ny = -dyL / distL;   // track normal, pointing toward the loop centre
+          const vn = state.vx * nx + state.vy * ny;      // negative = moving into the track
+          if (vn < 0) {
+            state.x = world.loopCenterX_m - nx * R; state.y = R - ny * R;
+            const tx = -ny, ty = nx;
+            const vt = state.vx * tx + state.vy * ty;
+            const hardHit = -vn > 0.3;
+            if (-vn > 0.4) playImpactThud();
+            const vnOut = -vn * 0.25;
+            const vtOut = hardHit ? vt * 0.7 : vt;
+            if (vnOut < 0.3 && state.y < 0.08 * R) {
+              // Comes to rest in the bottom of the loop
+              let th = Math.atan2(-nx, ny); if (th < 0) th += 2 * Math.PI;
+              state.theta = th; state.surfaceAngle = th; state.restOnLoop = true;
+              state.vx = 0; state.vy = 0; state.v = 0; state.radialAccel = 0;
+              state.normalForce = mass * g * Math.max(0, ny);
+              state.displayFn = state.normalForce;
+              state.phase = 'STOPPED'; state.isRunning = false;
+              labelPlay.textContent = 'Replay'; iconPlay.className = 'fa-solid fa-rotate-right';
+              updateStatusUI('Crashed', 'bg-rose-50 border-rose-300 text-rose-800', 'bg-rose-600');
+              return;
+            }
+            state.vx = vnOut * nx + vtOut * tx; state.vy = vnOut * ny + vtOut * ty;
+            state.v = Math.hypot(state.vx, state.vy);
+          }
+        }
+
         if (state.y <= 0) {
           state.y = 0;
           state.surfaceAngle = 0;
@@ -824,7 +874,6 @@
         state.trail.push({ x: state.x, y: state.y, phase: state.phase });
         if (state.trail.length > 300) state.trail.shift();
       }
-      updateTelemetry();
     }
 
     function triggerDetachment() {
@@ -929,7 +978,9 @@
       const bx = toScreenX(state.x); const by = toScreenY(state.y);
       ctx.translate(bx, by); ctx.rotate(-state.surfaceAngle);
       const blockW = 26, blockH = 16;
-      ctx.beginPath(); ctx.roundRect(-blockW / 2, -blockH, blockW, blockH, 3);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-blockW / 2, -blockH, blockW, blockH, 3);
+      else ctx.rect(-blockW / 2, -blockH, blockW, blockH);
       ctx.fillStyle = state.phase === 'PROJECTILE' ? '#ef4444' : '#2563eb'; ctx.fill();
       ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px JetBrains Mono, monospace';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('m', 0, -blockH / 2);
@@ -955,7 +1006,7 @@
           let vnx = 0, vny = 0;
           if (state.phase === 'READY' || state.phase === 'RAMP_FLAT') {
             vnx = nx * state.displayFn * forceScale; vny = ny * state.displayFn * forceScale;
-          } else if (state.phase === 'LOOP') {
+          } else if (state.phase === 'LOOP' || state.restOnLoop) {
             const dxC = toScreenX(world.loopCenterX_m) - bx; const dyC = toScreenY(R) - by; 
             const dist = Math.hypot(dxC, dyC);
             if (dist > 0.1) { vnx = (dxC / dist) * state.displayFn * forceScale; vny = (dyC / dist) * state.displayFn * forceScale; }
@@ -1037,6 +1088,7 @@
         const subSteps = 10; 
         const stepDt = simDt / subSteps;
         for (let i = 0; i < subSteps; i++) physicsStep(stepDt);
+        updateTelemetry();
       }
       render();
       requestAnimationFrame(animate);
