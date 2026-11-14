@@ -783,7 +783,8 @@
       audio: null,         // what the phone is doing with the latest sentence:
                            // { index, state: 'queued'|'playing'|'ended'|'dropped', startSim, endSim }
       waitStart: 0,
-      startLatency: 0.15   // learned delay between speak() and the first sound (s)
+      startLatency: 0.15,  // learned delay between speak() and the first sound (s)
+      latencySamples: 0
     };
 
     function wordHash(w) {
@@ -921,6 +922,9 @@
         if (sc > bestScore) { best = v; bestScore = sc; }
       }
       SPEECH.voice = best;
+      // Online voices (generated on a server) take longer to start; begin with a bigger head start
+      // until the real start-up delay has been measured.
+      if (!VOICE.latencySamples) VOICE.startLatency = (best && best.localService === false) ? 0.3 : 0.15;
     }
     if (SPEECH.supported) {
       pickVoice();
@@ -952,7 +956,12 @@
         audio.startSim = STATE.time;
         startedAt = performance.now();
         const latency = (startedAt - calledAt) / 1000;
-        if (!queuedBehindOther && latency < 2) VOICE.startLatency = 0.7 * VOICE.startLatency + 0.3 * latency;
+        if (!queuedBehindOther && latency < 3) {
+          // Learn gradually and limit how far one slow (cold) start can move the estimate.
+          const sample = Math.min(latency, VOICE.startLatency + 0.25);
+          VOICE.startLatency = 0.6 * VOICE.startLatency + 0.4 * sample;
+          VOICE.latencySamples++;
+        }
       };
       const finished = (ev) => {
         if (!SPEECH.live.has(u)) return; // cancelled on purpose
@@ -975,6 +984,19 @@
       u.onerror = finished;
       SPEECH.live.add(u);
       window.speechSynthesis.speak(u);
+    }
+
+    // Wake the speech engine as soon as Voice / Data is chosen. Online voices need to connect
+    // to their server first; doing it now (silently) means the first sentence can start on time.
+    function warmUpSpeech() {
+      if (!SPEECH.supported) return;
+      try {
+        if (window.speechSynthesis.speaking || SPEECH.live.size) return;
+        const u = new SpeechSynthesisUtterance(' ');
+        if (SPEECH.voice) { u.voice = SPEECH.voice; u.lang = SPEECH.voice.lang; }
+        u.volume = 0;
+        window.speechSynthesis.speak(u);
+      } catch (err) { /* warm-up is optional */ }
     }
 
     function stopSpeech() {
@@ -1958,7 +1980,10 @@
         }
       }
 
-      btnTxPower.addEventListener('click', toggleTransmitterPower);
+      btnTxPower.addEventListener('click', () => {
+        toggleTransmitterPower();
+        if (STATE.txPowered && STATE.mode === 'data') warmUpSpeech();
+      });
 
       // Play / Pause
       const btnPlayPause = document.getElementById('btnPlayPause');
@@ -2039,7 +2064,7 @@
       }
 
       modeButtons.sine.addEventListener('click', () => setMode('sine'));
-      modeButtons.data.addEventListener('click', () => setMode('data'));
+      modeButtons.data.addEventListener('click', () => { warmUpSpeech(); setMode('data'); });
       modeButtons.manual.addEventListener('click', () => setMode('manual'));
       modeButtons.pulse.addEventListener('click', () => setMode('pulse'));
 
