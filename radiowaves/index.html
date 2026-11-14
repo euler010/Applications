@@ -649,7 +649,7 @@
             <li><strong class="text-slate-800">Transmitter Power:</strong> Toggle the transmitter ON or OFF to observe how fields originate and stop.</li>
             <li><strong class="text-slate-800">Spreading Wavefronts:</strong> Observe the waves radiating across the entire space in all directions away from the broadcast mast.</li>
             <li><strong class="text-slate-800">Manual Wiggle:</strong> Switch to Manual Wiggle mode, grab the conduction electron on the mast, and move it up and down to create custom electromagnetic wave pulses.</li>
-            <li><strong class="text-slate-800">Voice / Data:</strong> Modulate the carrier wave with digital packet data and observe how the phone demodulator decodes the stream.</li>
+            <li><strong class="text-slate-800">Voice / Data:</strong> Modulate the carrier wave with digital packet data and observe how the phone demodulator decodes the stream. Once the wave reaches the phone, it reads aloud a short explanation of digital data transmission; the volume follows the signal strength.</li>
             <li><strong class="text-slate-800">Distance & Delay:</strong> Move the distance slider to observe transmission delay (Δt = r / c) and signal attenuation (1/r).</li>
           </ul>
         </div>
@@ -746,6 +746,116 @@
       return h2.y + alpha * (h1.y - h2.y);
     }
 
+    // ---------------------------------------------------------------------------
+    // Voice playback for Voice / Data mode.
+    // The phone "decodes" this paragraph and reads it aloud with the browser's
+    // built-in speech voice. Reading starts when the wave reaches the phone,
+    // volume follows the received signal strength, it pauses with the
+    // simulation and stops when the signal is lost.
+    // ---------------------------------------------------------------------------
+    const VOICE_SCRIPT =
+      "Digital data transmission turns information into a long string of ones and zeros, called bits. " +
+      "When you talk on your phone or send a message, your voice, text, or photo is first measured and converted into these numbers. " +
+      "To send the bits through the air, the phone and the cell tower change a radio wave in small, precise ways, such as making it slightly stronger or weaker, or shifting the timing of its peaks. " +
+      "Each small change stands for a particular pattern of bits. " +
+      "The receiving antenna picks up the wave, and a part of the phone called the demodulator measures those changes to recover the original ones and zeros. " +
+      "Extra check bits are sent along with the data, so the receiver can spot and fix errors caused by noise or distance. " +
+      "Finally, the phone turns the bits back into sound, text, or pictures, all in a tiny fraction of a second.";
+    const VOICE_SENTENCES = VOICE_SCRIPT.match(/[^.!?]+[.!?]+/g).map(t => t.trim());
+
+    const SPEECH = {
+      supported: ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined'),
+      active: false,     // reading is in progress (speaking, paused, or between sentences)
+      paused: false,
+      index: 0,          // sentence to read next
+      utterance: null,
+      gapTimer: null,
+      voice: null,
+      current: ''        // sentence currently being read (shown on the phone)
+    };
+
+    function pickVoice() {
+      if (!SPEECH.supported) return;
+      const voices = window.speechSynthesis.getVoices();
+      SPEECH.voice = voices.find(v => /^en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || null;
+    }
+    if (SPEECH.supported) {
+      pickVoice();
+      if (window.speechSynthesis.addEventListener) window.speechSynthesis.addEventListener('voiceschanged', pickVoice);
+      else window.speechSynthesis.onvoiceschanged = pickVoice;
+    }
+
+    // Received signal -> loudness: strong signal (about -70 dBm or better) is full volume,
+    // fading to a quiet 25% near -100 dBm where the signal drops out.
+    function speechVolume() {
+      return Math.max(0.25, Math.min(1, (STATE.rxPowerDbm + 110) / 40));
+    }
+
+    function speakNextSentence() {
+      if (!SPEECH.active) return;
+      const text = VOICE_SENTENCES[SPEECH.index];
+      const u = new SpeechSynthesisUtterance(text);
+      if (SPEECH.voice) { u.voice = SPEECH.voice; u.lang = SPEECH.voice.lang; } else { u.lang = 'en-US'; }
+      u.rate = 0.95;
+      u.volume = speechVolume();
+      const finished = () => {
+        if (SPEECH.utterance !== u) return; // ignore utterances we cancelled on purpose
+        SPEECH.utterance = null;
+        SPEECH.index = (SPEECH.index + 1) % VOICE_SENTENCES.length;
+        const gap = SPEECH.index === 0 ? 2000 : 150; // short breath between sentences, longer before repeating
+        SPEECH.gapTimer = setTimeout(() => {
+          SPEECH.gapTimer = null;
+          if (SPEECH.active && !SPEECH.paused) speakNextSentence();
+        }, gap);
+      };
+      u.onend = finished;
+      u.onerror = finished;
+      SPEECH.utterance = u;
+      SPEECH.current = text;
+      window.speechSynthesis.speak(u);
+    }
+
+    function stopSpeech(restartFromBeginning) {
+      if (!SPEECH.supported) return;
+      SPEECH.active = false;
+      SPEECH.paused = false;
+      clearTimeout(SPEECH.gapTimer);
+      SPEECH.gapTimer = null;
+      SPEECH.utterance = null;
+      window.speechSynthesis.cancel();
+      if (restartFromBeginning) { SPEECH.index = 0; SPEECH.current = ''; }
+    }
+
+    // Called every animation frame.
+    function updateSpeech() {
+      if (!SPEECH.supported) return;
+      const voiceSelected = STATE.txPowered && STATE.mode === 'data';
+      const signalPresent = STATE.amplitude > 0.05 && STATE.rxPowerDbm > -100;
+
+      if (!voiceSelected) {             // transmitter off or another mode: stop, start over next time
+        if (SPEECH.active || SPEECH.index !== 0) stopSpeech(true);
+        return;
+      }
+      if (!signalPresent || document.hidden) { // signal lost / tab hidden: stop, resume this sentence later
+        if (SPEECH.active) stopSpeech(false);
+        return;
+      }
+      if (!STATE.running) {             // simulation paused
+        if (SPEECH.active && !SPEECH.paused) { SPEECH.paused = true; window.speechSynthesis.pause(); }
+        return;
+      }
+      if (SPEECH.paused) {
+        SPEECH.paused = false;
+        window.speechSynthesis.resume();
+        if (!SPEECH.utterance && !SPEECH.gapTimer) speakNextSentence();
+        return;
+      }
+      if (!SPEECH.active) {
+        SPEECH.active = true;
+        speakNextSentence();
+      }
+    }
+
     // Scope wave history buffer for phone screen
     const phoneWaveHistory = new Array(100).fill(0);
 
@@ -779,6 +889,7 @@
     function updateAudio() {
       if (!STATE.audioCtx || !STATE.audioEnabled) return;
       if (!STATE.running) { muteAudio(); return; }
+      if (STATE.mode === 'data' && SPEECH.active) { muteAudio(); return; } // voice replaces the tone
       if (!STATE.txPowered) {
         STATE.gainNode.gain.setTargetAtTime(0, STATE.audioCtx.currentTime, 0.05);
         return;
@@ -1006,7 +1117,10 @@
       
       if (STATE.mode === 'data') {
         document.getElementById('phoneDecodedTitle').textContent = '5G Audio & Data Stream';
-        document.getElementById('phonePayload').textContent = 'Decoded Voice: "Cellular Voice Stream Active"';
+        const payloadEl = document.getElementById('phonePayload');
+        const spoken = (SPEECH.supported && SPEECH.active && SPEECH.current) ? SPEECH.current : 'Cellular Voice Stream Active';
+        payloadEl.textContent = `Decoded Voice: "${spoken}"`;
+        payloadEl.title = spoken;
       } else if (STATE.mode === 'pulse') {
         document.getElementById('phoneDecodedTitle').textContent = 'Single Pulse Received';
         document.getElementById('phonePayload').textContent = `Transient burst at ${STATE.pulseFreq.toFixed(2)} Hz`;
@@ -1674,6 +1788,7 @@
         STATE.rxPowerDbm = -115;
         STATE.bitstreamTimer = 0;
         STATE.pulseTriggered = false; // a pending pulse would otherwise fire much later
+        stopSpeech(true);
         updateBitstreamMock();
       });
 
@@ -1849,6 +1964,7 @@
       lastTime = now;
 
       if (dt > 0) updatePhysics(dt);
+      updateSpeech();
       drawSimulation();
       drawPhoneScreen();
       updateHUD();
