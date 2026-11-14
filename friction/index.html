@@ -274,6 +274,8 @@
 
     /* ---------- Top-right panel view toggle ---------- */
     .view-hidden { display: none !important; }
+    /* 11px + 1pt text; padding/line-height keep it the same 22px height as the regime badge */
+    .view-toggle-btn { font-size: calc(11px + 1pt); line-height: 1rem; padding: 0.125rem 0.75rem; white-space: nowrap; }
 
     /* ---------- State variants (after base rules so they win) ---------- */
     .selection\:bg-blue-500 *::selection, .selection\:bg-blue-500::selection { background-color: #3b82f6; }
@@ -421,6 +423,9 @@
               </span>
               <button id="btn-clear-graph" class="hover:text-slate-700 text-slate-400 text-xs underline decoration-dotted font-mono">Clear</button>
               </div>
+              <button id="btn-view-toggle" type="button"
+                      class="view-toggle-btn bg-white border border-slate-200 shadow-sm rounded-lg font-semibold text-blue-700 hover:bg-blue-50 transition"
+                      aria-label="Show the atomic scale animation">Atomic Scale</button>
             </div>
           </div>
 
@@ -428,9 +433,6 @@
           <div class="relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-white border border-slate-200 flex items-center justify-center">
             <canvas id="canvas-graph" role="img" aria-label="Graph of applied force and friction force over time" class="w-full h-full block"></canvas>
             <canvas id="canvas-micro" role="img" aria-label="Magnified view of the contact surfaces between block and table" class="view-hidden absolute top-0 left-0 w-full h-full block"></canvas>
-            <button id="btn-view-toggle" type="button"
-                    class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[11px] font-semibold text-blue-700 hover:bg-blue-50 transition"
-                    aria-label="Show the atomic scale animation">Atomic Scale</button>
           </div>
         </div>
 
@@ -1262,7 +1264,7 @@
       ctxMicro.font = 'bold 11px Inter, sans-serif';
       ctxMicro.fillStyle = '#1d4ed8';
       ctxMicro.textAlign = 'left';
-      ctxMicro.fillText('Block Atomic Surface', 14, 62); // below the view box
+      ctxMicro.fillText('Block Atomic Surface', 14, 20);
 
       ctxMicro.fillStyle = '#e2e8f0';
       ctxMicro.strokeStyle = '#475569';
@@ -1405,7 +1407,7 @@
 
       const padL = 66; // room for 3-digit tick labels plus the rotated axis title
       const padR = 20;
-      const padT = 52; // leaves room for the view box in the top-left corner
+      const padT = 20;
       const padB = 34;
       const plotW = w - padL - padR;
       const plotH = h - padT - padB;
