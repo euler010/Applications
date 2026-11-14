@@ -507,7 +507,7 @@
           ? (30 * Math.PI / 180)
           : (24 * Math.PI / 180));
 
-      const subLabels = ['v1', 'v2', 'v3', 'v4', 'v5'];
+      const subLabels = ['A', 'B', 'C', 'D', 'E'];
 
       // Search for a configuration that keeps all heads, resultant, and clear separations visible
       for (let attempt = 0; attempt < 300; attempt++) {
@@ -575,7 +575,7 @@
           candidateVectors.push({
             id: i,
             name: String.fromCharCode(65 + i),
-            label: subLabels[i] || `v${i + 1}`,
+            label: subLabels[i] || String.fromCharCode(65 + i),
             color: chosenColors[i],
             dx: dx,
             dy: dy,
@@ -618,7 +618,7 @@
         fallbackVectors.push({
           id: i,
           name: String.fromCharCode(65 + i),
-          label: subLabels[i] || `v${i + 1}`,
+          label: subLabels[i] || String.fromCharCode(65 + i),
           color: chosenColors[i],
           dx: Math.cos(ang) * len,
           dy: Math.sin(ang) * len,
