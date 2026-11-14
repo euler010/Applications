@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vector Addition & Head-to-Tail Rule</title>
+  <!-- Hand-written replacement for the Tailwind CSS CDN: only the utilities this page uses (Tailwind v3 values) -->
+  <style>
+    /* ---------- Base reset (equivalent to Tailwind Preflight) ---------- */
+    *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+    html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: ui-sans-serif, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; line-height: inherit; }
+    h1, p { margin: 0; }
+    h1 { font-size: inherit; font-weight: inherit; }
+    strong { font-weight: bolder; }
+    button, input { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+    button { text-transform: none; background-color: transparent; background-image: none; cursor: pointer; -webkit-appearance: button; }
+    canvas { display: block; vertical-align: middle; }
+
+    /* ---------- Layout ---------- */
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .bottom-4 { bottom: 1rem; }
+    .right-4 { right: 1rem; }
+    .z-20 { z-index: 20; }
+    .block { display: block; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .flex-col { flex-direction: column; }
+    .flex-1 { flex: 1 1 0%; }
+    .shrink-0 { flex-shrink: 0; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
+    .space-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.75rem; }
+    .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+    .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+    .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem; }
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+
+    /* ---------- Sizing ---------- */
+    .w-3 { width: 0.75rem; }
+    .w-8 { width: 2rem; }
+    .w-9 { width: 2.25rem; }
+    .w-full { width: 100%; }
+    .w-screen { width: 100vw; }
+    .h-3 { height: 0.75rem; }
+    .h-8 { height: 2rem; }
+    .h-9 { height: 2.25rem; }
+    .h-auto { height: auto; }
+    .h-full { height: 100%; }
+    .h-screen { height: 100vh; }
+    .max-h-\[45vh\] { max-height: 45vh; }
+
+    /* ---------- Spacing ---------- */
+    .p-1\.5 { padding: 0.375rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .pt-4 { padding-top: 1rem; }
+    .mb-1\.5 { margin-bottom: 0.375rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+
+    /* ---------- Typography ---------- */
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; }
+    .tracking-wide { letter-spacing: 0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .text-white { color: #ffffff; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-600 { color: #475569; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-800 { color: #1e293b; }
+    .text-blue-500 { color: #3b82f6; }
+    .text-blue-600 { color: #2563eb; }
+    .text-red-600 { color: #dc2626; }
+    .text-red-800 { color: #991b1b; }
+    .text-red-900 { color: #7f1d1d; }
+
+    /* ---------- Backgrounds ---------- */
+    .bg-white { background-color: #ffffff; }
+    .bg-white\/90 { background-color: rgb(255 255 255 / 0.9); }
+    .bg-slate-50 { background-color: #f8fafc; }
+    .bg-slate-50\/80 { background-color: rgb(248 250 252 / 0.8); }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .bg-slate-200 { background-color: #e2e8f0; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-red-50\/60 { background-color: rgb(254 242 242 / 0.6); }
+    .bg-red-100 { background-color: #fee2e2; }
+    .bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-from), var(--tw-gradient-to)); }
+    .from-blue-600 { --tw-gradient-from: #2563eb; }
+    .to-sky-600 { --tw-gradient-to: #0284c7; }
+
+    /* ---------- Borders ---------- */
+    .border { border-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-slate-200 { border-color: #e2e8f0; }
+    .border-slate-300 { border-color: #cbd5e1; }
+    .border-blue-200 { border-color: #bfdbfe; }
+    .border-blue-600 { border-color: #2563eb; }
+    .border-red-200 { border-color: #fecaca; }
+    .border-red-300 { border-color: #fca5a5; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* Selected-row highlight (generated in JS) — listed after the base colours so it wins */
+    .border-blue-500 { border-color: #3b82f6; }
+    .bg-blue-50\/50 { background-color: rgb(239 246 255 / 0.5); }
+
+    /* ---------- Effects ---------- */
+    .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+    .shadow-md.shadow-blue-200 { box-shadow: 0 4px 6px -1px #bfdbfe, 0 2px 4px -2px #bfdbfe; }
+    .backdrop-blur-md { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+    .cursor-pointer { cursor: pointer; }
+    .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .transform { transform: translateZ(0); }
+
+    /* ---------- State variants ---------- */
+    .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
+    .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+    .hover\:from-blue-500:hover { --tw-gradient-from: #3b82f6; }
+    .hover\:to-sky-500:hover { --tw-gradient-to: #0ea5e9; }
+    .focus\:ring-0:focus { box-shadow: none; }
+    .active\:scale-95:active { transform: scale(0.95); }
+    .active\:scale-\[0\.98\]:active { transform: scale(0.98); }
+
+    /* ---------- Responsive ---------- */
+    @media (min-width: 768px) {
+      .md\:flex-row { flex-direction: row; }
+      .md\:w-80 { width: 20rem; }
+      .md\:h-full { height: 100%; }
+      .md\:max-h-full { max-height: 100%; }
+      .md\:border-b-0 { border-bottom-width: 0; }
+      .md\:border-r { border-right-width: 1px; }
+    }
+    @media (min-width: 1024px) {
+      .lg\:w-96 { width: 24rem; }
+    }
+  </style>
+  <!-- Tone.js for educational audio feedback -->
+  <!-- Must be set before Tone.js loads: suppresses its "* Tone.js v14.8.49 *" console banner -->
+  <script>window.TONE_SILENCE_LOGGING = true;</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <!-- FontAwesome for UI icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .math-font {
+      font-family: 'Fira Code', monospace;
+    }
+    /* Custom scrollbars for details panel in light mode */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Custom high-contrast black cross cursor with subtle light outline for guaranteed visibility */
+    .crosshair-cursor {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='21' height='21' viewBox='0 0 21 21'%3E%3Cpath d='M10 2v6m0 5v6M2 10h6m5 0h6' stroke='%23ffffff' stroke-width='3.5' stroke-linecap='square'/%3E%3Cpath d='M10 2v6m0 5v6M2 10h6m5 0h6' stroke='%23000000' stroke-width='1.5' stroke-linecap='square'/%3E%3Ccircle cx='10' cy='10' r='1' fill='%23000000'/%3E%3C/svg%3E") 10 10, crosshair;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen w-screen overflow-hidden flex flex-col md:flex-row">
+
+  <!-- Left/Top Sidebar Controls -->
+  <aside class="w-full md:w-80 lg:w-96 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col z-20 shadow-lg shrink-0 h-auto md:h-full max-h-[45vh] md:max-h-full overflow-y-auto">
+    <!-- Header -->
+    <div class="p-4 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold shadow-sm">
+          <i class="fa-solid fa-arrows-split-up-and-left"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold uppercase tracking-wider text-slate-800">Vector Addition</h1>
+          <p class="text-xs text-slate-500">Head-to-Tail Rule Lab</p>
+        </div>
+      </div>
+      <button id="soundToggleBtn" title="Unmute Sound" class="p-2 rounded-lg bg-white hover:bg-slate-100 text-slate-600 transition-colors text-xs flex items-center gap-1.5 border border-slate-200 shadow-sm">
+        <i id="soundIcon" class="fa-solid fa-volume-xmark text-slate-400"></i>
+      </button>
+    </div>
+
+    <div class="p-4 space-y-5 flex-1">
+      <!-- Vector Count Selector -->
+      <div>
+        <label class="text-xs font-semibold text-slate-600 tracking-wider uppercase mb-2 block">
+          Vector Count
+        </label>
+        <div class="grid grid-cols-4 gap-2">
+          <button data-count="2" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-all border border-blue-600 active:scale-95">2</button>
+          <button data-count="3" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">3</button>
+          <button data-count="4" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">4</button>
+          <button data-count="5" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">5</button>
+        </div>
+      </div>
+
+      <!-- Main Action Buttons -->
+      <div class="space-y-2">
+        <button id="addVectorsBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white font-bold text-sm tracking-wide shadow-md shadow-blue-200 flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98]">
+          <i class="fa-solid fa-play"></i>
+          <span>Add Vectors (Head-to-Tail)</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="resetTailsBtn" class="py-2.5 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center justify-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-arrows-to-circle text-blue-600"></i>
+            <span>Reset to Origin</span>
+          </button>
+          <button id="randomizeBtn" class="py-2.5 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 shadow-sm flex items-center justify-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-dice text-blue-500"></i>
+            <span>Randomize</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Display Options -->
+      <div class="border-t border-slate-200 pt-4">
+        <div class="text-xs font-semibold text-slate-600 tracking-wider uppercase mb-2">Display Options</div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <label class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" id="showComponentsCheck" class="rounded bg-white border-slate-300 text-blue-600 focus:ring-0">
+            <span class="text-slate-700 font-medium">Components</span>
+          </label>
+          <label class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" id="showAnglesCheck" class="rounded bg-white border-slate-300 text-blue-600 focus:ring-0">
+            <span class="text-slate-700 font-medium">Angles & Lengths</span>
+          </label>
+          <label class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" id="showGridCheck" class="rounded bg-white border-slate-300 text-blue-600 focus:ring-0">
+            <span class="text-slate-700 font-medium">Grid Overlay</span>
+          </label>
+          <label class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" id="snapGridCheck" class="rounded bg-white border-slate-300 text-blue-600 focus:ring-0">
+            <span class="text-slate-700 font-medium">Snap to Grid</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Vector Values List & Math Card -->
+      <div class="border-t border-slate-200 pt-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-600 tracking-wider uppercase">Active Vectors</span>
+          <span class="text-[11px] text-slate-400">drag circles to alter</span>
+        </div>
+        <div id="vectorListContainer" class="space-y-1.5 math-font text-xs">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Resultant Summary Box -->
+        <div id="resultantCard" class="mt-3 p-3 rounded-xl bg-red-50/60 border border-red-200 shadow-sm">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-red-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-flag-checkered text-red-600"></i>
+              <span>Resultant (R)</span>
+            </span>
+            <span id="resultantStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Standard</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs math-font text-slate-700">
+            <div>|R|: <span id="resMag" class="text-red-600 font-semibold">0.0 u</span></div>
+            <div>Angle: <span id="resAngle" class="text-red-600 font-semibold">0.0 deg</span></div>
+            <div>Rx: <span id="resX" class="text-slate-600">0.0</span></div>
+            <div>Ry: <span id="resY" class="text-slate-600">0.0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instruction footer -->
+    <div class="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center gap-2">
+      <i class="fa-solid fa-circle-info text-blue-600"></i>
+      <span>Drag any vector's circular arrowhead to modify magnitude and angle.</span>
+    </div>
+  </aside>
+
+  <!-- Interactive Canvas Workspace -->
+  <main class="relative flex-1 h-full w-full bg-slate-50 overflow-hidden flex flex-col">
+    <!-- Quick action floating bar on canvas -->
+    <div class="absolute bottom-4 right-4 z-20 flex items-center space-x-2 bg-white/90 backdrop-blur-md border border-slate-200 p-1.5 rounded-xl shadow-md">
+      <button id="zoomInBtn" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs flex items-center justify-center transition-colors border border-slate-200 shadow-sm" title="Zoom In">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button id="zoomOutBtn" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs flex items-center justify-center transition-colors border border-slate-200 shadow-sm" title="Zoom Out">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+      <button id="centerOriginBtn" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs flex items-center justify-center transition-colors border border-slate-200 shadow-sm" title="Center Origin">
+        <i class="fa-solid fa-crosshairs"></i>
+      </button>
+    </div>
+
+    <!-- HTML5 Canvas -->
+    <canvas id="vectorCanvas" class="w-full h-full block bg-white crosshair-cursor"></canvas>
+  </main>
+
+  <script>
+    // Resultant is always a distinctive bold red
+    const RESULTANT_STYLE = {
+      stroke: '#dc2626', // Pure bright red
+      name: 'R',
+      label: 'R'
+    };
+
+    // Curated distinctly separated color families (excluding red, grey, and black hues).
+    // Each family represents a distinct chromatic zone so no two vectors look similar.
+    const COLOR_FAMILIES = [
+      // FIX: removed shades that sat on the border between families (sky #0284c7 vs cyan,
+      // orange #f97316/#c2410c vs amber #d97706/#b45309) so every family is visually separate.
+      { name: 'blue', colors: ['#2563eb', '#1d4ed8', '#3b82f6'] },       // Royal Blue
+      { name: 'green', colors: ['#16a34a', '#15803d'] },                 // Vivid Green
+      { name: 'purple', colors: ['#7c3aed', '#6d28d9'] },                // Violet / Purple
+      { name: 'orange', colors: ['#ea580c', '#c2410c'] },                // Warm Orange
+      { name: 'cyan', colors: ['#0891b2', '#0e7490'] },                  // Deep Cyan / Marine
+      { name: 'gold', colors: ['#ca8a04', '#a16207'] },                  // Gold / Mustard
+      { name: 'fuchsia', colors: ['#c026d3', '#a21caf'] }                // Bright Magenta / Fuchsia
+    ];
+
+    // Selects distinct colors guaranteeing each vector gets a completely different color family
+    function pickDistinctFamilyColors(count) {
+      // FIX: unbiased Fisher-Yates shuffle (sort(() => Math.random() - 0.5) is skewed)
+      const shuffledFamilies = [...COLOR_FAMILIES];
+      for (let i = shuffledFamilies.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledFamilies[i], shuffledFamilies[j]] = [shuffledFamilies[j], shuffledFamilies[i]];
+      }
+      const chosen = [];
+      for (let i = 0; i < count; i++) {
+        const family = shuffledFamilies[i % shuffledFamilies.length];
+        const randomShade = family.colors[Math.floor(Math.random() * family.colors.length)];
+        chosen.push(randomShade);
+      }
+      return chosen;
+    }
+
+    // Helper to calculate minimal angular difference around a full 360° circle
+    function minAngularDistance(a1, a2) {
+      let diff = Math.abs(a1 - a2) % (Math.PI * 2);
+      if (diff > Math.PI) diff = Math.PI * 2 - diff;
+      return diff;
+    }
+
+    // FIX: one shared angle formatter so canvas, sidebar and resultant always agree
+    // (previously 359.6° showed as "360 deg" on canvas but "0 deg" in the sidebar).
+    function normalizedAngleDeg(dx, dy, decimals = 0) {
+      let deg = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (deg < 0) deg += 360;
+      const f = Math.pow(10, decimals);
+      deg = Math.round(deg * f) / f;
+      if (deg >= 360) deg -= 360;
+      return deg;
+    }
+
+    // State
+    const state = {
+      vectorCount: 2,
+      vectors: [], // Each: { id, dx, dy, tailX, tailY, color, isDragging, targetTailX, targetTailY, animTailX, animTailY }
+      origin: { x: 0, y: 0 },
+      canvasW: 0, // last known canvas size, used to keep the scene in place on resize
+      canvasH: 0,
+      pixelsPerGridUnit: 40, // zoom level: pixels per 1 unit
+      animToken: 0, // FIX: incremented to cancel any in-flight animation loops
+      lastPointer: null,
+      showGrid: false,
+      snapToGrid: false,
+      showComponents: false,
+      showAngles: false,
+      soundEnabled: false,
+      isAnimating: false,
+      animationStep: -1,
+      animationProgress: 0,
+      animationStartTime: 0,
+      isChained: false,
+      resultantRevealed: false,
+      resultantAnimProgress: 0,
+      hoveredVectorIndex: -1,
+      draggedVectorIndex: -1,
+      dragOffset: { x: 0, y: 0 }
+    };
+
+    // DOM Elements
+    const canvas = document.getElementById('vectorCanvas');
+    const ctx = canvas.getContext('2d');
+    const vectorCountBtns = document.querySelectorAll('.vector-count-btn');
+    const addVectorsBtn = document.getElementById('addVectorsBtn');
+    const resetTailsBtn = document.getElementById('resetTailsBtn');
+    const randomizeBtn = document.getElementById('randomizeBtn');
+    const showComponentsCheck = document.getElementById('showComponentsCheck');
+    const showAnglesCheck = document.getElementById('showAnglesCheck');
+    const showGridCheck = document.getElementById('showGridCheck');
+    const snapGridCheck = document.getElementById('snapGridCheck');
+    const vectorListContainer = document.getElementById('vectorListContainer');
+    const resMagEl = document.getElementById('resMag');
+    const resAngleEl = document.getElementById('resAngle');
+    const resXEl = document.getElementById('resX');
+    const resYEl = document.getElementById('resY');
+    const resultantStatusBadge = document.getElementById('resultantStatusBadge');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const centerOriginBtn = document.getElementById('centerOriginBtn');
+
+    let synth = null;
+    let polySynth = null;
+
+    // FIX: every Tone.js access goes through this check, so a blocked/failed CDN
+    // only disables sound instead of breaking "Add Vectors".
+    function toneAvailable() {
+      return typeof window.Tone !== 'undefined' && !!window.Tone.context;
+    }
+
+    function ensureAudioRunning() {
+      if (!toneAvailable()) return;
+      try {
+        if (Tone.context.state !== 'running') Tone.start();
+      } catch (e) {}
+    }
+
+    function initAudio() {
+      if (!synth && toneAvailable()) {
+        try {
+          synth = new Tone.Synth({
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.01, decay: 0.15, sustain: 0, release: 0.2 }
+          }).toDestination();
+          synth.volume.value = -12;
+
+          polySynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: 'triangle' },
+            envelope: { attack: 0.02, decay: 0.3, sustain: 0.1, release: 0.4 }
+          }).toDestination();
+          polySynth.volume.value = -14;
+        } catch (e) {
+          console.warn("Audio initialization muted:", e);
+        }
+      }
+    }
+
+    function playNote(note, dur = '16n') {
+      if (!state.soundEnabled || !toneAvailable()) return;
+      try {
+        if (!synth) initAudio();
+        ensureAudioRunning();
+        if (synth) synth.triggerAttackRelease(note, dur);
+      } catch (e) {}
+    }
+
+    function playSuccessChord() {
+      if (!state.soundEnabled || !toneAvailable()) return;
+      try {
+        if (!polySynth) initAudio();
+        ensureAudioRunning();
+        if (polySynth) {
+          polySynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '8n');
+        }
+      } catch (e) {}
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+
+      // Center origin the first time; afterwards shift the whole scene by half the size
+      // change so vectors stay in the same place relative to the canvas center.
+      // FIX: previously the origin never moved on resize, pushing vectors off-screen.
+      if (state.canvasW === 0 && state.canvasH === 0) {
+        state.origin.x = rect.width / 2;
+        state.origin.y = rect.height / 2;
+      } else {
+        translateScene((rect.width - state.canvasW) / 2, (rect.height - state.canvasH) / 2);
+      }
+      state.canvasW = rect.width;
+      state.canvasH = rect.height;
+      drawScene();
+    }
+
+    // Moves the origin and every vector position (current, animation start and target)
+    // by the same offset, so chained/animating layouts stay intact.
+    function translateScene(offX, offY) {
+      state.origin.x += offX;
+      state.origin.y += offY;
+      state.vectors.forEach(v => {
+        v.tailX += offX; v.tailY += offY;
+        v.animTailX += offX; v.animTailY += offY;
+        v.targetTailX += offX; v.targetTailY += offY;
+      });
+    }
+
+    // FIX: zoom now scales the vectors with the grid. Vectors are stored in pixels, so
+    // changing pixelsPerGridUnit alone used to change their reported magnitudes.
+    function applyZoom(newPixelsPerUnit) {
+      const ratio = newPixelsPerUnit / state.pixelsPerGridUnit;
+      if (ratio === 1) return;
+      const ox = state.origin.x;
+      const oy = state.origin.y;
+      const scaleX = x => ox + (x - ox) * ratio;
+      const scaleY = y => oy + (y - oy) * ratio;
+      state.vectors.forEach(v => {
+        v.dx *= ratio; v.dy *= ratio;
+        v.tailX = scaleX(v.tailX); v.tailY = scaleY(v.tailY);
+        v.animTailX = scaleX(v.animTailX); v.animTailY = scaleY(v.animTailY);
+        v.targetTailX = scaleX(v.targetTailX); v.targetTailY = scaleY(v.targetTailY);
+      });
+      state.pixelsPerGridUnit = newPixelsPerUnit;
+      updateUI();
+      drawScene();
+    }
+
+    // FIX: invalidates any running animation loop (move phase or resultant reveal)
+    function cancelAnimation() {
+      state.animToken++;
+      state.isAnimating = false;
+      state.animationStep = -1;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Helper to generate vectors guaranteed to fit within visible canvas boundaries and avoid overlapping
+    function generateBoundedVectorSet(count, originX, originY, chosenColors) {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width > 0 ? rect.width : window.innerWidth;
+      const h = rect.height > 0 ? rect.height : window.innerHeight;
+      const margin = 50; // Buffer distance from screen edges
+
+      const minX = margin;
+      const maxX = w - margin;
+      const minY = margin;
+      const maxY = h - margin;
+
+      // Adjust average vector lengths based on vector count
+      const minUnits = count <= 2 ? 2.5 : (count === 3 ? 2.0 : 1.6);
+      const maxUnits = count <= 2 ? 5.0 : (count === 3 ? 3.8 : 3.0);
+      const minResultantUnits = 1.3;
+
+      // Minimum angular separation between vectors radiating from origin (in radians)
+      // Ensures vectors never overlap or cluster too closely together
+      const minAngleSeparation = (count <= 2)
+        ? (38 * Math.PI / 180)
+        : ((count === 3)
+          ? (30 * Math.PI / 180)
+          : (24 * Math.PI / 180));
+
+      const subLabels = ['v1', 'v2', 'v3', 'v4', 'v5'];
+
+      // Search for a configuration that keeps all heads, resultant, and clear separations visible
+      for (let attempt = 0; attempt < 300; attempt++) {
+        const candidateVectors = [];
+        const candidateAngles = [];
+        let valid = true;
+        let chainX = originX;
+        let chainY = originY;
+        let sumDx = 0;
+        let sumDy = 0;
+
+        for (let i = 0; i < count; i++) {
+          let angle;
+          let angleFound = false;
+
+          // Attempt to find an angle with sufficient angular separation from existing vectors
+          for (let aTry = 0; aTry < 35; aTry++) {
+            angle = Math.PI * 2 * Math.random();
+            let farEnough = true;
+            for (const prevAngle of candidateAngles) {
+              if (minAngularDistance(angle, prevAngle) < minAngleSeparation) {
+                farEnough = false;
+                break;
+              }
+            }
+            if (farEnough) {
+              angleFound = true;
+              break;
+            }
+          }
+
+          if (!angleFound) {
+            valid = false;
+            break;
+          }
+          candidateAngles.push(angle);
+
+          const lengthUnits = minUnits + Math.random() * (maxUnits - minUnits);
+          const lengthPx = lengthUnits * state.pixelsPerGridUnit;
+          const dx = Math.cos(angle) * lengthPx;
+          const dy = Math.sin(angle) * lengthPx; // Math coordinate (+y upwards)
+
+          // Individual vector head at origin
+          const soloHeadX = originX + dx;
+          const soloHeadY = originY - dy;
+
+          // Head-to-tail chain accumulation
+          chainX += dx;
+          chainY -= dy;
+          sumDx += dx;
+          sumDy += dy;
+
+          // Check if individual vector head at origin is within visible screen
+          if (soloHeadX < minX || soloHeadX > maxX || soloHeadY < minY || soloHeadY > maxY) {
+            valid = false;
+            break;
+          }
+
+          // Check if chained head position is within visible screen
+          if (chainX < minX || chainX > maxX || chainY < minY || chainY > maxY) {
+            valid = false;
+            break;
+          }
+
+          candidateVectors.push({
+            id: i,
+            name: String.fromCharCode(65 + i),
+            label: subLabels[i] || `v${i + 1}`,
+            color: chosenColors[i],
+            dx: dx,
+            dy: dy,
+            tailX: originX,
+            tailY: originY,
+            animTailX: originX,
+            animTailY: originY,
+            targetTailX: originX,
+            targetTailY: originY
+          });
+        }
+
+        if (valid) {
+          const resultantMagUnits = Math.hypot(sumDx, sumDy) / state.pixelsPerGridUnit;
+          const resultantTipX = originX + sumDx;
+          const resultantTipY = originY - sumDy;
+
+          // Resultant tip must also lie strictly inside screen boundaries and have clear magnitude
+          const resultantInBounds = (resultantTipX >= minX && resultantTipX <= maxX &&
+                                     resultantTipY >= minY && resultantTipY <= maxY);
+
+          if (resultantInBounds && resultantMagUnits >= minResultantUnits) {
+            return candidateVectors;
+          }
+        }
+      }
+
+      // Fallback: angles fanned across a 120° sector so they stay separated but never cancel.
+      // FIX: the old fallback spread equal-length vectors evenly around 360°, which always
+      // summed to a zero resultant. Lengths are also no longer forced past the safe fit.
+      const fallbackVectors = [];
+      const baseAngle = Math.random() * Math.PI * 2;
+      const fanSpan = (2 * Math.PI) / 3;
+      const angleStep = count > 1 ? fanSpan / (count - 1) : 0;
+      const safeLen = Math.min((maxX - minX) / (count * 2.2), (maxY - minY) / (count * 2.2));
+
+      for (let i = 0; i < count; i++) {
+        const ang = baseAngle + i * angleStep;
+        const len = Math.max(safeLen, 15);
+        fallbackVectors.push({
+          id: i,
+          name: String.fromCharCode(65 + i),
+          label: subLabels[i] || `v${i + 1}`,
+          color: chosenColors[i],
+          dx: Math.cos(ang) * len,
+          dy: Math.sin(ang) * len,
+          tailX: originX,
+          tailY: originY,
+          animTailX: originX,
+          animTailY: originY,
+          targetTailX: originX,
+          targetTailY: originY
+        });
+      }
+      return fallbackVectors;
+    }
+
+    function regenerateVectors(count) {
+      cancelAnimation();
+      state.vectorCount = count;
+      state.isChained = false;
+      state.resultantRevealed = false;
+
+      // Select distinctly separated colors across different color families
+      const chosenColors = pickDistinctFamilyColors(count);
+
+      state.vectors = generateBoundedVectorSet(count, state.origin.x, state.origin.y, chosenColors);
+      updateUI();
+      playNote('C4');
+      drawScene();
+    }
+
+    function resetTailsToOrigin() {
+      cancelAnimation();
+      state.isChained = false;
+      state.resultantRevealed = false;
+
+      state.vectors.forEach(v => {
+        v.tailX = state.origin.x;
+        v.tailY = state.origin.y;
+        v.animTailX = state.origin.x;
+        v.animTailY = state.origin.y;
+        v.targetTailX = state.origin.x;
+        v.targetTailY = state.origin.y;
+      });
+
+      updateUI();
+      showToast("Reset all vector tails to center origin.");
+      playNote('G3');
+      drawScene();
+    }
+
+    function calculateResultant() {
+      let sumDx = 0;
+      let sumDy = 0;
+      state.vectors.forEach(v => {
+        sumDx += v.dx;
+        sumDy += v.dy;
+      });
+      const magPx = Math.hypot(sumDx, sumDy);
+      const magUnits = magPx / state.pixelsPerGridUnit;
+      // angle in standard degrees [0, 360) or (-180, 180]
+      const angleRad = Math.atan2(sumDy, sumDx);
+      const angleDeg = normalizedAngleDeg(sumDx, sumDy, 1);
+
+      return {
+        dx: sumDx,
+        dy: sumDy,
+        magnitudeUnits: magUnits,
+        magnitudePx: magPx,
+        angleDeg: angleDeg,
+        angleRad: angleRad
+      };
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function startHeadToTailAnimation() {
+      if (state.isAnimating || state.vectors.length === 0) return;
+      // FIX: guarded — this line used to throw "Tone is not defined" when the CDN failed
+      if (state.soundEnabled) ensureAudioRunning();
+
+      // FIX: each glide starts from where the vector actually is now. After dragging in
+      // chained mode the stored start points were stale, making vectors jump.
+      state.vectors.forEach(v => {
+        v.animTailX = v.tailX;
+        v.animTailY = v.tailY;
+      });
+
+      // First ensure initial vector 0 starts at origin
+      state.vectors[0].tailX = state.origin.x;
+      state.vectors[0].tailY = state.origin.y;
+      state.vectors[0].animTailX = state.origin.x;
+      state.vectors[0].animTailY = state.origin.y;
+      state.vectors[0].targetTailX = state.origin.x;
+      state.vectors[0].targetTailY = state.origin.y;
+
+      // Compute targets head-to-tail chain
+      for (let i = 1; i < state.vectors.length; i++) {
+        const prev = state.vectors[i - 1];
+        // Target tail of i is target tail of prev + prev.dx, prev.dy (in canvas y: prev.targetTailY - prev.dy)
+        state.vectors[i].targetTailX = state.vectors[i - 1].targetTailX + prev.dx;
+        state.vectors[i].targetTailY = state.vectors[i - 1].targetTailY - prev.dy;
+      }
+
+      const token = ++state.animToken;
+      state.isAnimating = true;
+      state.animationStep = 1; // vector 0 stays, vector 1 moves first
+      state.animationProgress = 0;
+      state.animationStartTime = performance.now();
+      state.resultantRevealed = false;
+      state.resultantAnimProgress = 0;
+      state.isChained = false;
+      state.hoveredVectorIndex = -1;
+      state.draggedVectorIndex = -1;
+      canvas.style.cursor = '';
+
+      showToast("Moving vectors into head-to-tail arrangement...");
+      playNote('D4', '8n');
+      requestAnimationFrame(t => animationLoop(t, token));
+    }
+
+    function animationLoop(timestamp, token) {
+      // FIX: a loop from a cancelled run exits instead of fighting the new one
+      if (token !== state.animToken || !state.isAnimating) return;
+
+      const DURATION = 1400; // ms per vector transition (slower glide for educational clarity)
+      // FIX: clamp — rAF timestamps can be slightly earlier than performance.now(),
+      // which produced negative progress and a small backwards twitch.
+      const elapsed = Math.max(0, timestamp - state.animationStartTime);
+      const rawProgress = Math.min(elapsed / DURATION, 1.0);
+      const eased = easeInOutCubic(rawProgress);
+
+      const currentVec = state.vectors[state.animationStep];
+      if (currentVec) {
+        // Interpolate between initial position and target position
+        currentVec.tailX = currentVec.animTailX + (currentVec.targetTailX - currentVec.animTailX) * eased;
+        currentVec.tailY = currentVec.animTailY + (currentVec.targetTailY - currentVec.animTailY) * eased;
+      }
+
+      if (rawProgress >= 1.0) {
+        // Finalize this vector
+        currentVec.tailX = currentVec.targetTailX;
+        currentVec.tailY = currentVec.targetTailY;
+        currentVec.animTailX = currentVec.targetTailX;
+        currentVec.animTailY = currentVec.targetTailY;
+
+        // Play chord/beep on step snap
+        const notes = ['E4', 'G4', 'B4', 'D5'];
+        playNote(notes[(state.animationStep - 1) % notes.length], '16n');
+
+        // Move to next vector
+        state.animationStep++;
+        state.animationStartTime = performance.now();
+
+        if (state.animationStep >= state.vectors.length) {
+          // All vectors chained! Reveal resultant
+          state.animationStep = -1;
+          state.isChained = true;
+          revealResultantAnimation(token);
+          return;
+        }
+      }
+
+      drawScene();
+      requestAnimationFrame(t => animationLoop(t, token));
+    }
+
+    function revealResultantAnimation(token) {
+      const RES_DURATION = 1100;
+      const startTime = performance.now();
+      state.resultantRevealed = true;
+      state.resultantAnimProgress = 0;
+      playSuccessChord();
+      showToast("Vectors joined head-to-tail! Resultant vector R drawn from initial tail to final head.");
+
+      function resAnim(time) {
+        // FIX: stop if Reset/Randomize/another run cancelled this reveal. Previously this
+        // loop kept going and its final "isAnimating = false" froze the next animation.
+        if (token !== state.animToken) return;
+        const elapsed = Math.max(0, time - startTime);
+        const progress = Math.min(elapsed / RES_DURATION, 1.0);
+        state.resultantAnimProgress = easeInOutCubic(progress);
+        drawScene();
+
+        if (progress < 1.0) {
+          requestAnimationFrame(resAnim);
+        } else {
+          state.isAnimating = false;
+          updateUI();
+        }
+      }
+      requestAnimationFrame(resAnim);
+    }
+
+    function drawGrid(w, h) {
+      if (!state.showGrid) return;
+
+      const gridSize = state.pixelsPerGridUnit;
+      ctx.save();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#e2e8f0'; // slate-200 subtle grid on white
+
+      // Vertical lines
+      const startX = state.origin.x % gridSize;
+      for (let x = startX; x < w; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+
+      // Horizontal lines
+      const startY = state.origin.y % gridSize;
+      for (let y = startY; y < h; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      // Draw Main Axes
+      ctx.lineWidth = 1.75;
+      ctx.strokeStyle = '#64748b'; // slate-500
+      ctx.beginPath();
+      // X Axis
+      ctx.moveTo(0, state.origin.y);
+      ctx.lineTo(w, state.origin.y);
+      // Y Axis
+      ctx.moveTo(state.origin.x, 0);
+      ctx.lineTo(state.origin.x, h);
+      ctx.stroke();
+
+      // Small Axis Labels & Origin tick
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px "Fira Code", monospace';
+      ctx.fillText('+x', w - 24, state.origin.y - 8);
+      ctx.fillText('+y', state.origin.x + 8, 20);
+      ctx.fillText('(0,0)', state.origin.x + 6, state.origin.y + 14);
+
+      // Unit tick indicators along axes
+      ctx.strokeStyle = '#94a3b8';
+      for (let x = state.origin.x + gridSize; x < w; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, state.origin.y - 3);
+        ctx.lineTo(x, state.origin.y + 3);
+        ctx.stroke();
+      }
+      for (let x = state.origin.x - gridSize; x > 0; x -= gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, state.origin.y - 3);
+        ctx.lineTo(x, state.origin.y + 3);
+        ctx.stroke();
+      }
+      for (let y = state.origin.y + gridSize; y < h; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(state.origin.x - 3, y);
+        ctx.lineTo(state.origin.x + 3, y);
+        ctx.stroke();
+      }
+      for (let y = state.origin.y - gridSize; y > 0; y -= gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(state.origin.x - 3, y);
+        ctx.lineTo(state.origin.x + 3, y);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawArrow(startX, startY, endX, endY, color, isDashed = false, lineWidth = 3.5) {
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const angle = Math.atan2(dy, dx);
+      const length = Math.hypot(dx, dy);
+      // FIX: nothing to draw for a zero-length arrow (avoids a stray right-pointing head
+      // on the first frame of the resultant reveal)
+      if (length < 1) return;
+      // FIX: the head shrinks on short arrows so it never sticks out behind the tail
+      const headLength = Math.min(15, length * 0.6);
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (isDashed) {
+        ctx.setLineDash([6, 5]);
+      } else {
+        ctx.setLineDash([]);
+      }
+
+      // Depth of the inner swept curve notch from the arrowhead tip
+      const innerNotchDepth = headLength * 0.58;
+
+      // Draw vector body extending smoothly into the arrowhead notch to eliminate any gap
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      const stemEndX = length > headLength ? endX - (innerNotchDepth - 1.5) * Math.cos(angle) : startX;
+      const stemEndY = length > headLength ? endY - (innerNotchDepth - 1.5) * Math.sin(angle) : startY;
+      ctx.lineTo(stemEndX, stemEndY);
+      ctx.stroke();
+
+      // Draw solid filled curved arrowhead with swept wings
+      const barbAngle = Math.PI / 5.8;
+      const leftX = endX - headLength * Math.cos(angle - barbAngle);
+      const leftY = endY - headLength * Math.sin(angle - barbAngle);
+      const rightX = endX - headLength * Math.cos(angle + barbAngle);
+      const rightY = endY - headLength * Math.sin(angle + barbAngle);
+      const notchX = endX - innerNotchDepth * Math.cos(angle);
+      const notchY = endY - innerNotchDepth * Math.sin(angle);
+
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(leftX, leftY);
+      // Smooth swept curve through the inner notch to the opposite barb
+      ctx.quadraticCurveTo(notchX, notchY, rightX, rightY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawVectorComponents(v) {
+      if (!state.showComponents) return;
+      const headX = v.tailX + v.dx;
+      const headY = v.tailY - v.dy; // inverted y for canvas
+
+      ctx.save();
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+
+      // X component: (tailX, tailY) -> (headX, tailY)
+      ctx.strokeStyle = '#94a3b8'; // slate-400
+      ctx.beginPath();
+      ctx.moveTo(v.tailX, v.tailY);
+      ctx.lineTo(headX, v.tailY);
+      ctx.stroke();
+
+      // Y component: (headX, tailY) -> (headX, headY)
+      ctx.beginPath();
+      ctx.moveTo(headX, v.tailY);
+      ctx.lineTo(headX, headY);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawAngleArc(v, idx) {
+      if (!state.showAngles) return;
+      const lengthPx = Math.hypot(v.dx, v.dy);
+      if (lengthPx < 25) return;
+
+      // FIX: each vector gets its own arc radius, so arcs sharing a tail (all vectors at
+      // the origin) nest instead of piling on top of each other.
+      let nestLevel = 0;
+      for (let j = 0; j < idx; j++) {
+        const o = state.vectors[j];
+        if (Math.abs(o.tailX - v.tailX) < 1 && Math.abs(o.tailY - v.tailY) < 1) nestLevel++;
+      }
+      const arcRadius = Math.min(18 + nestLevel * 9, lengthPx * 0.6);
+      let angleRad = Math.atan2(v.dy, v.dx); // standard cartesian
+      if (angleRad < 0) angleRad += 2 * Math.PI;
+      const isReflex = angleRad > Math.PI;
+
+      ctx.save();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = v.color;
+
+      // Arc from 0 to -angleRad on canvas (counter-clockwise from +x, as in the sidebar)
+      ctx.beginPath();
+      if (!isReflex) {
+        // Shaded sector for angles up to 180°
+        ctx.moveTo(v.tailX, v.tailY);
+        ctx.arc(v.tailX, v.tailY, arcRadius, 0, -angleRad, true);
+        ctx.closePath();
+        ctx.fillStyle = v.color;
+        ctx.globalAlpha = 0.15;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      } else {
+        // FIX: angles over 180° get an outline arc only, instead of a near-full shaded
+        // disc that hid the origin and the other vectors.
+        ctx.arc(v.tailX, v.tailY, arcRadius, 0, -angleRad, true);
+      }
+      ctx.stroke();
+
+      // Angle text, coloured like its vector so it is clear which arc it belongs to
+      const deg = normalizedAngleDeg(v.dx, v.dy, 0);
+      const textAngle = -angleRad / 2;
+      const textDist = arcRadius + 12;
+      const tx = v.tailX + Math.cos(textAngle) * textDist;
+      const ty = v.tailY + Math.sin(textAngle) * textDist;
+
+      ctx.font = '600 10px "Fira Code", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      drawLabelWithHalo(`${deg} deg`, tx, ty, v.color);
+      ctx.restore();
+    }
+
+    // Text with a white outline so labels stay readable over grid lines and arrows
+    function drawLabelWithHalo(text, x, y, color) {
+      ctx.save();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineJoin = 'round';
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    // FIX: "Angles & Lengths" now also draws each vector's length (in units) beside it
+    function drawLengthLabel(tailX, tailY, dx, dy, color) {
+      if (!state.showAngles) return;
+      const lengthPx = Math.hypot(dx, dy);
+      if (lengthPx < 25) return;
+      const units = (lengthPx / state.pixelsPerGridUnit).toFixed(1);
+      // Midpoint of the arrow on canvas, nudged out along the left-hand normal
+      const midX = tailX + dx / 2;
+      const midY = tailY - dy / 2;
+      const nx = -dy / lengthPx;
+      const ny = -dx / lengthPx;
+      ctx.save();
+      ctx.font = '600 10px "Fira Code", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      drawLabelWithHalo(`${units} u`, midX + nx * 12, midY + ny * 12, color);
+      ctx.restore();
+    }
+
+    function drawDraggableHead(headX, headY, color, isHovered, isDragging) {
+      ctx.save();
+      const radius = isDragging ? 9 : (isHovered ? 8 : 6.5);
+
+      // Soft glow
+      if (isHovered || isDragging) {
+        ctx.beginPath();
+        ctx.arc(headX, headY, radius + 6, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.25;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+
+      // Outer circle (white inside on light mode)
+      ctx.beginPath();
+      ctx.arc(headX, headY, radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(headX, headY, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawScene() {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background Grid
+      drawGrid(w, h);
+
+      // Draw Vector Components if enabled
+      state.vectors.forEach(v => drawVectorComponents(v));
+
+      // Draw Individual Vectors
+      state.vectors.forEach((v, idx) => {
+        const headX = v.tailX + v.dx;
+        const headY = v.tailY - v.dy;
+        const isHovered = state.hoveredVectorIndex === idx;
+        const isDragging = state.draggedVectorIndex === idx;
+
+        // Angle sector arc
+        drawAngleArc(v, idx);
+
+        // Vector Stem & Arrow
+        drawArrow(v.tailX, v.tailY, headX, headY, v.color, false, isHovered || isDragging ? 4.5 : 3.5);
+        drawLengthLabel(v.tailX, v.tailY, v.dx, v.dy, v.color);
+
+        // Draggable Arrowhead Handle (only active if not actively animating)
+        if (!state.isAnimating) {
+          drawDraggableHead(headX, headY, v.color, isHovered, isDragging);
+        }
+      });
+
+      // Draw Resultant Vector if revealed or chained
+      if (state.resultantRevealed && state.vectors.length > 0) {
+        const firstVec = state.vectors[0];
+        const res = calculateResultant();
+        const startX = firstVec.tailX;
+        const startY = firstVec.tailY;
+
+        // During reveal animation, animate length from 0 to full
+        const animProgress = state.resultantAnimProgress;
+        const currentDx = res.dx * animProgress;
+        const currentDy = res.dy * animProgress;
+        const endX = startX + currentDx;
+        const endY = startY - currentDy;
+
+        // Red Resultant Arrow (drawn with same thickness as other vectors)
+        drawArrow(startX, startY, endX, endY, RESULTANT_STYLE.stroke, false, 3.5);
+        if (animProgress >= 1) {
+          drawLengthLabel(startX, startY, res.dx, res.dy, RESULTANT_STYLE.stroke);
+        }
+      }
+    }
+
+    function getCanvasCoordinates(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+      const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function findHoveredHead(pos) {
+      const hitRadius = 18;
+      for (let i = state.vectors.length - 1; i >= 0; i--) {
+        const v = state.vectors[i];
+        const headX = v.tailX + v.dx;
+        const headY = v.tailY - v.dy;
+        const dist = Math.hypot(pos.x - headX, pos.y - headY);
+        if (dist <= hitRadius) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    // Pointer Down
+    function handlePointerDown(evt) {
+      if (state.isAnimating) return;
+      const pos = getCanvasCoordinates(evt);
+      const hitIndex = findHoveredHead(pos);
+
+      if (hitIndex !== -1) {
+        state.draggedVectorIndex = hitIndex;
+        const v = state.vectors[hitIndex];
+        const headX = v.tailX + v.dx;
+        const headY = v.tailY - v.dy;
+        state.dragOffset.x = pos.x - headX;
+        state.dragOffset.y = pos.y - headY;
+
+        canvas.style.cursor = 'grabbing';
+        playNote('A4', '32n');
+        drawScene();
+      }
+    }
+
+    // Pointer Move
+    function handlePointerMove(evt) {
+      const pos = getCanvasCoordinates(evt);
+      state.lastPointer = pos;
+
+      if (state.draggedVectorIndex !== -1 && !state.isAnimating) {
+        const v = state.vectors[state.draggedVectorIndex];
+        let targetHeadX = pos.x - state.dragOffset.x;
+        let targetHeadY = pos.y - state.dragOffset.y;
+
+        // Snap to grid if enabled
+        if (state.snapToGrid) {
+          const gridSize = state.pixelsPerGridUnit;
+          targetHeadX = Math.round((targetHeadX - state.origin.x) / gridSize) * gridSize + state.origin.x;
+          targetHeadY = Math.round((targetHeadY - state.origin.y) / gridSize) * gridSize + state.origin.y;
+        }
+
+        // Calculate new dx, dy relative to tail
+        let newDx = targetHeadX - v.tailX;
+        let newDy = -(targetHeadY - v.tailY);
+
+        // Limit minimum length so vector doesn't vanish entirely
+        const minPx = 15;
+        if (Math.hypot(newDx, newDy) < minPx) {
+          const ang = Math.atan2(newDy, newDx);
+          newDx = Math.cos(ang) * minPx;
+          newDy = Math.sin(ang) * minPx;
+        }
+
+        v.dx = newDx;
+        v.dy = newDy;
+
+        // If currently in chained mode, ripple update the following tails!
+        if (state.isChained) {
+          for (let i = 1; i < state.vectors.length; i++) {
+            const prev = state.vectors[i - 1];
+            state.vectors[i].tailX = prev.tailX + prev.dx;
+            state.vectors[i].tailY = prev.tailY - prev.dy;
+          }
+        }
+
+        updateUI();
+        drawScene();
+      } else if (!state.isAnimating) {
+        const hitIndex = findHoveredHead(pos);
+        if (hitIndex !== state.hoveredVectorIndex) {
+          state.hoveredVectorIndex = hitIndex;
+          if (hitIndex !== -1) {
+            canvas.style.cursor = 'grab';
+          } else {
+            canvas.style.cursor = '';
+          }
+          drawScene();
+        }
+      }
+    }
+
+    // Pointer Up
+    function handlePointerUp(evt) {
+      if (state.draggedVectorIndex !== -1) {
+        state.draggedVectorIndex = -1;
+        // FIX: re-check what is under the pointer now. Hover was frozen during the drag,
+        // so the cursor could stay as "grab" over empty canvas. Touch has no hover.
+        const isTouch = evt && evt.type && evt.type.startsWith('touch');
+        state.hoveredVectorIndex = (!isTouch && state.lastPointer) ? findHoveredHead(state.lastPointer) : -1;
+        if (state.hoveredVectorIndex !== -1) {
+          canvas.style.cursor = 'grab';
+        } else {
+          canvas.style.cursor = '';
+        }
+        playNote('F4', '32n');
+        updateUI(); // clears the dragged-row highlight in the sidebar
+        drawScene();
+      }
+    }
+
+    canvas.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+
+    canvas.addEventListener('touchstart', (e) => {
+      handlePointerDown(e);
+      e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('touchmove', handlePointerMove, { passive: true });
+    window.addEventListener('touchend', handlePointerUp);
+
+    function updateUI() {
+      // Build vector item elements
+      vectorListContainer.innerHTML = '';
+      state.vectors.forEach((v, idx) => {
+        const magUnits = (Math.hypot(v.dx, v.dy) / state.pixelsPerGridUnit).toFixed(1);
+        const angDeg = normalizedAngleDeg(v.dx, v.dy, 0);
+
+        const row = document.createElement('div');
+        row.className = `p-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between transition-all ${state.draggedVectorIndex === idx ? 'border-blue-500 bg-blue-50/50 shadow-sm' : ''}`;
+        row.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full" style="background-color: ${v.color}"></span>
+            <span class="font-bold text-slate-800">${v.label}</span>
+          </div>
+          <div class="flex items-center space-x-3 text-slate-600">
+            <span>mag: <strong class="text-slate-800">${magUnits}</strong></span>
+            <span>angle: <strong class="text-slate-800">${angDeg} deg</strong></span>
+          </div>
+        `;
+        vectorListContainer.appendChild(row);
+      });
+
+      // Update Resultant Values
+      const res = calculateResultant();
+      resMagEl.textContent = `${res.magnitudeUnits.toFixed(1)} u`;
+      resAngleEl.textContent = `${res.angleDeg.toFixed(1)} deg`;
+      resXEl.textContent = (res.dx / state.pixelsPerGridUnit).toFixed(1);
+      resYEl.textContent = (res.dy / state.pixelsPerGridUnit).toFixed(1);
+
+      if (state.isChained) {
+        resultantStatusBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 font-medium';
+        resultantStatusBadge.textContent = 'Head-to-Tail Chained';
+      } else {
+        resultantStatusBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium';
+        resultantStatusBadge.textContent = 'Standard';
+      }
+
+      // Update button active state
+      vectorCountBtns.forEach(btn => {
+        const count = parseInt(btn.getAttribute('data-count'), 10);
+        if (count === state.vectorCount) {
+          btn.className = "vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600 active:scale-95";
+        } else {
+          btn.className = "vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-sm active:scale-95";
+        }
+      });
+    }
+
+    function showToast(msg) {
+      // Workspace toast caption removed to keep workspace clear
+    }
+
+    // Vector count button events
+    vectorCountBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const count = parseInt(btn.getAttribute('data-count'), 10);
+        regenerateVectors(count);
+      });
+    });
+
+    addVectorsBtn.addEventListener('click', () => {
+      startHeadToTailAnimation();
+    });
+
+    resetTailsBtn.addEventListener('click', () => {
+      resetTailsToOrigin();
+    });
+
+    randomizeBtn.addEventListener('click', () => {
+      regenerateVectors(state.vectorCount);
+    });
+
+    showComponentsCheck.addEventListener('change', (e) => {
+      state.showComponents = e.target.checked;
+      drawScene();
+    });
+
+    showAnglesCheck.addEventListener('change', (e) => {
+      state.showAngles = e.target.checked;
+      drawScene();
+    });
+
+    showGridCheck.addEventListener('change', (e) => {
+      state.showGrid = e.target.checked;
+      drawScene();
+    });
+
+    snapGridCheck.addEventListener('change', (e) => {
+      state.snapToGrid = e.target.checked;
+    });
+
+    soundToggleBtn.addEventListener('click', () => {
+      // FIX: if Tone.js never loaded, say so instead of showing a toggle that does nothing
+      if (!toneAvailable()) {
+        state.soundEnabled = false;
+        soundIcon.className = 'fa-solid fa-volume-xmark text-slate-400';
+        soundToggleBtn.title = "Sound unavailable (audio library failed to load)";
+        return;
+      }
+      state.soundEnabled = !state.soundEnabled;
+      if (state.soundEnabled) {
+        soundIcon.className = 'fa-solid fa-volume-high text-blue-600';
+        soundToggleBtn.title = "Mute Sound";
+        playNote('C5', '16n');
+      } else {
+        soundIcon.className = 'fa-solid fa-volume-xmark text-slate-400';
+        soundToggleBtn.title = "Unmute Sound";
+      }
+    });
+
+    // Zoom and pan controls
+    zoomInBtn.addEventListener('click', () => {
+      applyZoom(Math.min(80, state.pixelsPerGridUnit + 6));
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      applyZoom(Math.max(25, state.pixelsPerGridUnit - 6));
+    });
+
+    centerOriginBtn.addEventListener('click', () => {
+      // FIX: move the vectors together with the origin. Previously, in chained mode the
+      // grid moved to the center but the vectors stayed behind.
+      const rect = canvas.getBoundingClientRect();
+      translateScene(rect.width / 2 - state.origin.x, rect.height / 2 - state.origin.y);
+      drawScene();
+      playNote('D4', '32n');
+    });
+
+    // FIX: redraw once web fonts arrive so canvas labels don't stay in the fallback font
+    if (document.fonts) {
+      document.fonts.ready.then(() => drawScene());
+      document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', () => drawScene());
+    }
+
+    window.onload = function () {
+      resizeCanvas();
+      regenerateVectors(2);
+    };
+  </script>
+</body>
+</html>
