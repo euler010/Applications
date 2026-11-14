@@ -732,20 +732,220 @@
 
     // Retarded-time lookup. STATE.history is newest-first (t descending), so binary search
     // keeps this O(log n) even when slow sim speeds make the buffer very long.
-    function sampleHistory(targetTime) {
+    function sampleHistory(targetTime, field = 'y') {
       const hist = STATE.history;
       const n = hist.length;
-      if (n < 2 || targetTime > hist[0].t || targetTime < hist[n - 1].t) return 0;
+      if (n < 2 || targetTime > hist[0].t || targetTime < hist[n - 1].t) return field === 'y' ? 0 : NaN;
       let lo = 0, hi = n - 1; // invariant: hist[lo].t >= targetTime >= hist[hi].t
       while (hi - lo > 1) {
         const mid = (lo + hi) >> 1;
         if (hist[mid].t >= targetTime) lo = mid; else hi = mid;
       }
       const h1 = hist[lo], h2 = hist[hi];
+      const v1 = h1[field], v2 = h2[field];
       const span = h1.t - h2.t;
-      if (span <= 0) return h1.y;
+      if (span <= 0) return v1;
       const alpha = (targetTime - h2.t) / span;
-      return h2.y + alpha * (h1.y - h2.y);
+      return v2 + alpha * (v1 - v2); // NaN in either sample gives NaN (e.g. before the recording started)
+    }
+
+    // ---------------------------------------------------------------------------
+    // Recorded voice for Voice / Data mode.
+    //
+    // The recording sits next to this page (same folder). The app decodes it,
+    // measures its loudness every 10 ms, and the tower transmits that loudness.
+    // Every moment of the wave remembers its position in the recording, so the
+    // phone plays exactly the part of the recording that is reaching it now:
+    // the sound you hear always matches the wave arriving at the phone.
+    // If the file can't be loaded (e.g. the page was opened straight from disk),
+    // the app falls back to the browser's built-in speech voice below.
+    // ---------------------------------------------------------------------------
+    const VOICE_RECORDINGS = {
+      us: 'voice-1-us.mp3', // Female voice 1 (US)
+      uk: 'voice-2-uk.mp3'  // Female voice 2 (UK)
+    };
+    // Which recording the app plays. Change to VOICE_RECORDINGS.uk to use recording #2.
+    const VOICE_RECORDING = VOICE_RECORDINGS.us;
+
+    const RECORDING_LEAD_IN = 0.8;  // seconds of flat carrier before the recording starts
+    const RECORDING_LOOP_GAP = 2.2; // seconds of silence before it repeats
+
+    const REC = {
+      status: 'loading', // 'loading' | 'ready' | 'failed'
+      audio: null,       // <audio> element used for playback
+      env: null,         // loudness 0..1, 100 values per second
+      duration: 0,
+      sentenceStarts: [],// where each sentence of VOICE_SCRIPT starts in the recording (s)
+      rxTarget: null,    // recording position that should be playing at the phone now (null = silence)
+      unlocked: false,
+      playPending: false
+    };
+
+    function loadRecording() {
+      try {
+        const a = new Audio();
+        a.preload = 'auto';
+        a.src = VOICE_RECORDING;
+        a.preservesPitch = true; a.mozPreservesPitch = true; a.webkitPreservesPitch = true; // keep pitch when speed ≠ 1×
+        REC.audio = a;
+      } catch (err) { REC.audio = null; }
+      const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OAC || !window.fetch || !REC.audio) { REC.status = 'failed'; return; }
+      setTimeout(() => { if (REC.status === 'loading') REC.status = 'failed'; }, 10000);
+      fetch(VOICE_RECORDING)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        .then(buf => new Promise((resolve, reject) => {
+          const ctx = new OAC(1, 1, 44100);
+          const pr = ctx.decodeAudioData(buf, resolve, reject);
+          if (pr && pr.then) pr.then(resolve, reject);
+        }))
+        .then(analyseRecording)
+        .catch(() => { REC.status = 'failed'; });
+    }
+
+    function analyseRecording(audioBuffer) {
+      const data = audioBuffer.getChannelData(0);
+      const hop = Math.max(1, Math.round(audioBuffer.sampleRate / 100));
+      const n = Math.floor(data.length / hop);
+      const rms = new Float32Array(n);
+      let peak = 0;
+      for (let i = 0; i < n; i++) {
+        let sum = 0;
+        for (let j = i * hop; j < (i + 1) * hop; j++) sum += data[j] * data[j];
+        rms[i] = Math.sqrt(sum / hop);
+        if (rms[i] > peak) peak = rms[i];
+      }
+      const sorted = Array.from(rms).sort((x, y) => x - y);
+      const loud = sorted[Math.floor(0.95 * (n - 1))] || peak || 1; // 95th percentile = "full" loudness
+      const silence = 0.06 * peak;
+      const env = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const r = (rms[Math.max(0, i - 1)] + rms[i] + rms[Math.min(n - 1, i + 1)]) / 3; // light smoothing
+        env[i] = r < silence ? 0 : Math.min(1, Math.pow(r / loud, 0.6));
+      }
+      REC.env = env;
+      REC.duration = audioBuffer.duration;
+      REC.sentenceStarts = findSentenceStarts(rms, silence);
+      REC.status = 'ready';
+    }
+
+    // Match the sentences of VOICE_SCRIPT to pauses in the recording, so the phone's
+    // screen can show the sentence being heard.
+    function findSentenceStarts(rms, silence) {
+      const gaps = []; // [start s, end s] of silent stretches of at least 0.12 s
+      let first = -1, last = -1, runStart = -1;
+      for (let i = 0; i <= rms.length; i++) {
+        const quiet = i === rms.length || rms[i] < silence;
+        if (!quiet) { if (first < 0) first = i; last = i; }
+        if (quiet && runStart < 0) runStart = i;
+        if (!quiet && runStart >= 0) { if (i - runStart >= 12) gaps.push([runStart / 100, i / 100]); runStart = -1; }
+      }
+      if (first < 0) return [0];
+      // Merge pauses split by a tiny blip (breath or click under 80 ms).
+      for (let i = gaps.length - 1; i > 0; i--) {
+        if (gaps[i][0] - gaps[i - 1][1] < 0.08) { gaps[i - 1][1] = gaps[i][1]; gaps.splice(i, 1); }
+      }
+      const t0 = first / 100, t1 = last / 100;
+      const total = VOICE_SENTENCES.reduce((sum, x) => sum + x.length, 0);
+      const starts = [t0];
+      let cum = 0, prevEnd = t0;
+      for (let k = 0; k < VOICE_SENTENCES.length - 1; k++) {
+        cum += VOICE_SENTENCES[k].length;
+        const expected = t0 + (t1 - t0) * cum / total;
+        let best = null, bestScore = -Infinity;
+        for (const [gs, ge] of gaps) {
+          const mid = (gs + ge) / 2;
+          if (gs <= prevEnd || Math.abs(mid - expected) > 3) continue;
+          const score = (ge - gs) - 0.12 * Math.abs(mid - expected); // long pause near the expected spot
+          if (score > bestScore) { bestScore = score; best = ge; }
+        }
+        const st = best !== null ? best : expected;
+        starts.push(st);
+        prevEnd = st;
+      }
+      return starts;
+    }
+
+    // Program clock -> position in the recording (null during the lead-in and the gap before it repeats).
+    function progToRecording(prog) {
+      if (!(prog >= 0) || !REC.duration) return null;
+      const q = prog % (REC.duration + RECORDING_LOOP_GAP);
+      return q < REC.duration ? q : null;
+    }
+
+    function recordingLoudnessAt(q) {
+      const env = REC.env;
+      const x = q * 100;
+      const i = Math.floor(x);
+      if (i < 0 || i >= env.length - 1) return 0;
+      return env[i] + (x - i) * (env[i + 1] - env[i]);
+    }
+
+    function sentenceAtRecordingTime(q) {
+      let k = 0;
+      for (let i = 0; i < REC.sentenceStarts.length; i++) if (q >= REC.sentenceStarts[i] - 0.05) k = i;
+      return VOICE_SENTENCES[k];
+    }
+
+    // Some browsers (Safari) only allow audio that was first started by a tap or click.
+    function unlockRecording() {
+      const a = REC.audio;
+      if (!a || REC.unlocked || REC.status === 'failed') return;
+      try {
+        a.muted = true;
+        const pr = a.play();
+        const done = () => { a.pause(); a.muted = false; REC.unlocked = true; };
+        if (pr && pr.then) pr.then(done, () => { a.muted = false; }); else done();
+      } catch (err) { a.muted = false; }
+    }
+
+    function stopRecording() {
+      if (REC.audio && !REC.audio.paused) REC.audio.pause();
+      REC.rxTarget = null;
+    }
+
+    // Called every animation frame: keep the <audio> element playing the part of the
+    // recording that is reaching the phone.
+    function updateRecordingPlayback() {
+      const a = REC.audio;
+      if (!a) return;
+      const target = REC.rxTarget;
+      const rate = STATE.speed;
+      const playable = STATE.running && !document.hidden && target !== null && rate >= 0.25 && rate <= 4;
+      if (!playable) { if (!a.paused) a.pause(); return; }
+      // Too weak to decode: the sound drops out but the recording keeps moving, like a bad call.
+      a.muted = STATE.amplitude <= 0.05 || STATE.linkDbm <= -100;
+      a.volume = speechVolume();
+      if (Math.abs(a.playbackRate - rate) > 1e-3) a.playbackRate = rate;
+      if (a.paused) {
+        if (!REC.playPending) {
+          try { a.currentTime = target; } catch (err) { /* not seekable yet */ }
+          REC.playPending = true;
+          const pr = a.play();
+          const clear = () => { REC.playPending = false; };
+          if (pr && pr.then) pr.then(clear, clear); else clear();
+        }
+        return;
+      }
+      // Stay in step with the wave (re-sync after distance changes, hiccups, etc.).
+      if (Math.abs(a.currentTime - target) > 0.2) {
+        try { a.currentTime = target + 0.05 * rate; } catch (err) { /* ignore */ }
+      }
+    }
+
+    // Tower side of Voice / Data: returns the loudness (0..1) to transmit now.
+    function voiceProgramStep(t, effectiveDt) {
+      if (!VOICE.active && !VOICE.source) {
+        if (REC.status === 'loading') return 0; // hold the carrier flat until the recording is decoded
+        VOICE.source = REC.status === 'ready' ? 'recording' : 'speech';
+        if (VOICE.source === 'recording') { VOICE.active = true; VOICE.prog = -RECORDING_LEAD_IN; }
+      }
+      if (VOICE.source === 'recording') {
+        VOICE.prog += effectiveDt / Math.max(0.05, STATE.speed); // recording time runs in real time
+        const q = progToRecording(VOICE.prog);
+        return q === null ? 0 : recordingLoudnessAt(q);
+      }
+      return voiceTransmitterStep(t); // browser speech voice (fallback)
     }
 
     // ---------------------------------------------------------------------------
@@ -771,6 +971,8 @@
 
     const VOICE = {
       active: false,       // tower is transmitting the voice program
+      source: null,        // 'recording' (the MP3) or 'speech' (browser voice fallback)
+      prog: NaN,           // recording program clock at the tower (s); negative during the lead-in
       segment: 'idle',     // 'lead' (silence before speaking) | 'sentence' | 'gap'
       segStart: 0,         // sim time the current segment started
       segDur: 0,           // sim duration of the current segment
@@ -1093,8 +1295,11 @@
       VOICE.markers = [];
       VOICE.arrived = false;
       VOICE.waitStart = 0;
+      VOICE.source = null;
+      VOICE.prog = NaN;
       SPEECH.current = '';
       stopSpeech();
+      stopRecording();
       VOICE.audio = null;
     }
 
@@ -1115,9 +1320,10 @@
     function updateSpeech() {
       const voiceSelected = STATE.txPowered && STATE.mode === 'data';
       if (!voiceSelected) {
-        if (VOICE.active || VOICE.markers.length || SPEECH.live.size || VOICE.arrived) resetVoice();
+        if (VOICE.active || VOICE.source || VOICE.markers.length || SPEECH.live.size || VOICE.arrived) resetVoice();
         return;
       }
+      if (VOICE.source === 'recording') { updateRecordingPlayback(); return; }
       if (!SPEECH.supported) return;
       if (document.hidden) { if (SPEECH.live.size) stopSpeech(); return; }
       // Signal lost mid-sentence: the audio cuts out.
@@ -1252,7 +1458,7 @@
       } else if (STATE.mode === 'data') {
         // Voice-shaped signal: loudness follows the words being spoken, flat in silences.
         // The oscillation runs a little faster than the carrier slider so each word shows as a burst.
-        const env = voiceTransmitterStep(STATE.time);
+        const env = voiceProgramStep(STATE.time, effectiveDt);
         STATE.voicePhase = (STATE.voicePhase + 2 * Math.PI * (3 + STATE.frequency) * effectiveDt) % (2 * Math.PI * 1000);
         const vp = STATE.voicePhase;
         const raw = env * (0.7 * Math.sin(vp) + 0.3 * Math.sin(1.5 * vp + 0.6));
@@ -1294,7 +1500,9 @@
         t: STATE.time,
         y: STATE.chargePos,
         v: STATE.chargeVel,
-        a: currentAcc
+        a: currentAcc,
+        // Position in the recorded voice carried by this moment of the wave (NaN when none).
+        p: (STATE.txPowered && STATE.mode === 'data' && VOICE.source === 'recording') ? VOICE.prog : NaN
       });
 
       while (STATE.history.length > 0 && (STATE.time - STATE.history[STATE.history.length - 1].t) > STATE.maxHistoryTime) {
@@ -1319,9 +1527,18 @@
       // Voice / Data: start saying each sentence as its wave reaches the phone
       // (slightly early to cover the speech engine's start-up delay).
       if (STATE.txPowered && STATE.mode === 'data') {
-        const lead = VOICE.startLatency * STATE.speed;
-        while (VOICE.markers.length && retardedTime + lead >= VOICE.markers[0].t) {
-          onSentenceArrives(VOICE.markers.shift());
+        if (VOICE.source === 'recording') {
+          // The part of the recording reaching the phone now.
+          const progRx = sampleHistory(retardedTime, 'p');
+          if (progRx >= 0) VOICE.arrived = true;
+          const q = progToRecording(progRx);
+          REC.rxTarget = q;
+          if (q !== null) SPEECH.current = sentenceAtRecordingTime(q);
+        } else {
+          const lead = VOICE.startLatency * STATE.speed;
+          while (VOICE.markers.length && retardedTime + lead >= VOICE.markers[0].t) {
+            onSentenceArrives(VOICE.markers.shift());
+          }
         }
       }
 
@@ -2060,7 +2277,10 @@
 
       btnTxPower.addEventListener('click', () => {
         toggleTransmitterPower();
-        if (STATE.txPowered && STATE.mode === 'data') warmUpSpeech();
+        if (STATE.txPowered && STATE.mode === 'data') {
+          unlockRecording();
+          if (REC.status !== 'ready') warmUpSpeech();
+        }
       });
 
       // Play / Pause
@@ -2142,7 +2362,11 @@
       }
 
       modeButtons.sine.addEventListener('click', () => setMode('sine'));
-      modeButtons.data.addEventListener('click', () => { warmUpSpeech(); setMode('data'); });
+      modeButtons.data.addEventListener('click', () => {
+        unlockRecording();
+        if (REC.status !== 'ready') warmUpSpeech();
+        setMode('data');
+      });
       modeButtons.manual.addEventListener('click', () => setMode('manual'));
       modeButtons.pulse.addEventListener('click', () => setMode('pulse'));
 
@@ -2269,6 +2493,7 @@
     }
 
     window.onload = function() {
+      loadRecording();
       resizeCanvases();
       setupInteractions();
       updateBitstreamMock();
