@@ -224,16 +224,16 @@
           Vector Count
         </label>
         <div class="grid grid-cols-4 gap-2">
-          <button data-count="2" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-all border border-blue-600 active:scale-95">2</button>
-          <button data-count="3" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">3</button>
-          <button data-count="4" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">4</button>
-          <button data-count="5" class="vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">5</button>
+          <button data-count="2" class="vector-count-btn py-2 px-3 text-xs font-semibold rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700 transition-all border border-blue-600 active:scale-95">2</button>
+          <button data-count="3" class="vector-count-btn py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">3</button>
+          <button data-count="4" class="vector-count-btn py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">4</button>
+          <button data-count="5" class="vector-count-btn py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm active:scale-95">5</button>
         </div>
       </div>
 
       <!-- Main Action Buttons -->
       <div class="space-y-2">
-        <button id="addVectorsBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white font-bold text-sm tracking-wide shadow-md shadow-blue-200 flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98]">
+        <button id="addVectorsBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white font-bold text-xs tracking-wide shadow-md shadow-blue-200 flex items-center justify-center space-x-2 transition-all transform active:scale-[0.98]">
           <i class="fa-solid fa-play"></i>
           <span>Add Vectors (Head-to-Tail)</span>
         </button>
@@ -275,9 +275,9 @@
       <div class="border-t border-slate-200 pt-4 space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold text-slate-600">Active Vectors</span>
-          <span class="text-[11px] text-slate-400">drag circles to alter</span>
+          <span class="text-xs text-slate-400">drag circles to alter</span>
         </div>
-        <div id="vectorListContainer" class="space-y-1.5 math-font text-xs">
+        <div id="vectorListContainer" class="space-y-1.5 text-xs">
           <!-- Populated by JS -->
         </div>
 
@@ -287,10 +287,10 @@
             <span class="text-xs font-bold text-red-900 flex items-center gap-1.5">
               <span>Resultant (R)</span>
             </span>
-            <span id="resultantStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Standard</span>
+            <span id="resultantStatusBadge" class="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Standard</span>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-xs math-font text-slate-700">
-            <div>|R|: <span id="resMag" class="text-red-600 font-semibold">0.0 u</span></div>
+          <div class="grid grid-cols-2 gap-2 text-xs text-slate-700">
+            <div>|R|: <span id="resMag" class="text-red-600 font-semibold">0.0</span></div>
             <div>Angle: <span id="resAngle" class="text-red-600 font-semibold">0.0 deg</span></div>
             <div>Rx: <span id="resX" class="text-slate-600">0.0</span></div>
             <div>Ry: <span id="resY" class="text-slate-600">0.0</span></div>
@@ -1112,7 +1112,7 @@
       ctx.font = '600 10px "Fira Code", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      drawLabelWithHalo(`${units} u`, midX + nx * 12, midY + ny * 12, color);
+      drawLabelWithHalo(`${units}`, midX + nx * 12, midY + ny * 12, color);
       ctx.restore();
     }
 
@@ -1358,16 +1358,16 @@
 
       // Update Resultant Values
       const res = calculateResultant();
-      resMagEl.textContent = `${res.magnitudeUnits.toFixed(1)} u`;
+      resMagEl.textContent = `${res.magnitudeUnits.toFixed(1)}`;
       resAngleEl.textContent = `${res.angleDeg.toFixed(1)} deg`;
       resXEl.textContent = (res.dx / state.pixelsPerGridUnit).toFixed(1);
       resYEl.textContent = (res.dy / state.pixelsPerGridUnit).toFixed(1);
 
       if (state.isChained) {
-        resultantStatusBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 font-medium';
+        resultantStatusBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300 font-medium';
         resultantStatusBadge.textContent = 'Head-to-Tail Chained';
       } else {
-        resultantStatusBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium';
+        resultantStatusBadge.className = 'text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium';
         resultantStatusBadge.textContent = 'Standard';
       }
 
@@ -1375,9 +1375,9 @@
       vectorCountBtns.forEach(btn => {
         const count = parseInt(btn.getAttribute('data-count'), 10);
         if (count === state.vectorCount) {
-          btn.className = "vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600 active:scale-95";
+          btn.className = "vector-count-btn py-2 px-3 text-xs font-semibold rounded-lg bg-blue-600 text-white shadow-sm border border-blue-600 active:scale-95";
         } else {
-          btn.className = "vector-count-btn py-2 px-3 text-sm font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-sm active:scale-95";
+          btn.className = "vector-count-btn py-2 px-3 text-xs font-semibold rounded-lg bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-sm active:scale-95";
         }
       });
     }
