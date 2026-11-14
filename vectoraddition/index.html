@@ -80,6 +80,9 @@
     .text-\[10px\] { font-size: 10px; }
     .text-\[11px\] { font-size: 11px; }
     .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    /* Sidebar text one size up from text-xs, title two sizes up from its old text-sm */
+    aside .text-xs { font-size: 13px; line-height: 18px; }
+    .text-title { font-size: 16px; line-height: 24px; }
     .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
     .font-medium { font-weight: 500; }
     .font-semibold { font-weight: 600; }
@@ -166,10 +169,6 @@
       .lg\:w-96 { width: 24rem; }
     }
   </style>
-  <!-- Tone.js for educational audio feedback -->
-  <!-- Must be set before Tone.js loads: suppresses its "* Tone.js v14.8.49 *" console banner -->
-  <script>window.TONE_SILENCE_LOGGING = true;</script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <!-- FontAwesome for UI icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -211,10 +210,7 @@
   <aside class="w-full md:w-80 lg:w-96 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col z-20 shadow-lg shrink-0 h-auto md:h-full max-h-[45vh] md:max-h-full overflow-y-auto">
     <!-- Header -->
     <div class="p-4 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between">
-      <h1 class="text-sm font-bold text-slate-800">Vector Addition</h1>
-      <button id="soundToggleBtn" title="Unmute Sound" class="p-2 rounded-lg bg-white hover:bg-slate-100 text-slate-600 transition-colors text-xs flex items-center gap-1.5 border border-slate-200 shadow-sm">
-        <i id="soundIcon" class="fa-solid fa-volume-xmark text-slate-400"></i>
-      </button>
+      <h1 class="text-title font-bold text-slate-800">Vector Addition</h1>
     </div>
 
     <div class="p-4 space-y-5 flex-1">
@@ -391,7 +387,6 @@
       snapToGrid: false,
       showComponents: false,
       showAngles: false,
-      soundEnabled: false,
       isAnimating: false,
       animationStep: -1,
       animationProgress: 0,
@@ -421,67 +416,9 @@
     const resXEl = document.getElementById('resX');
     const resYEl = document.getElementById('resY');
     const resultantStatusBadge = document.getElementById('resultantStatusBadge');
-    const soundToggleBtn = document.getElementById('soundToggleBtn');
-    const soundIcon = document.getElementById('soundIcon');
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomOutBtn = document.getElementById('zoomOutBtn');
     const centerOriginBtn = document.getElementById('centerOriginBtn');
-
-    let synth = null;
-    let polySynth = null;
-
-    // FIX: every Tone.js access goes through this check, so a blocked/failed CDN
-    // only disables sound instead of breaking "Add Vectors".
-    function toneAvailable() {
-      return typeof window.Tone !== 'undefined' && !!window.Tone.context;
-    }
-
-    function ensureAudioRunning() {
-      if (!toneAvailable()) return;
-      try {
-        if (Tone.context.state !== 'running') Tone.start();
-      } catch (e) {}
-    }
-
-    function initAudio() {
-      if (!synth && toneAvailable()) {
-        try {
-          synth = new Tone.Synth({
-            oscillator: { type: 'sine' },
-            envelope: { attack: 0.01, decay: 0.15, sustain: 0, release: 0.2 }
-          }).toDestination();
-          synth.volume.value = -12;
-
-          polySynth = new Tone.PolySynth(Tone.Synth, {
-            oscillator: { type: 'triangle' },
-            envelope: { attack: 0.02, decay: 0.3, sustain: 0.1, release: 0.4 }
-          }).toDestination();
-          polySynth.volume.value = -14;
-        } catch (e) {
-          console.warn("Audio initialization muted:", e);
-        }
-      }
-    }
-
-    function playNote(note, dur = '16n') {
-      if (!state.soundEnabled || !toneAvailable()) return;
-      try {
-        if (!synth) initAudio();
-        ensureAudioRunning();
-        if (synth) synth.triggerAttackRelease(note, dur);
-      } catch (e) {}
-    }
-
-    function playSuccessChord() {
-      if (!state.soundEnabled || !toneAvailable()) return;
-      try {
-        if (!polySynth) initAudio();
-        ensureAudioRunning();
-        if (polySynth) {
-          polySynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '8n');
-        }
-      } catch (e) {}
-    }
 
     function resizeCanvas() {
       const rect = canvas.getBoundingClientRect();
@@ -708,7 +645,6 @@
 
       state.vectors = generateBoundedVectorSet(count, state.origin.x, state.origin.y, chosenColors);
       updateUI();
-      playNote('C4');
       drawScene();
     }
 
@@ -728,7 +664,6 @@
 
       updateUI();
       showToast("Reset all vector tails to center origin.");
-      playNote('G3');
       drawScene();
     }
 
@@ -761,8 +696,6 @@
 
     function startHeadToTailAnimation() {
       if (state.isAnimating || state.vectors.length === 0) return;
-      // FIX: guarded — this line used to throw "Tone is not defined" when the CDN failed
-      if (state.soundEnabled) ensureAudioRunning();
 
       // FIX: each glide starts from where the vector actually is now. After dragging in
       // chained mode the stored start points were stale, making vectors jump.
@@ -800,7 +733,6 @@
       canvas.style.cursor = '';
 
       showToast("Moving vectors into head-to-tail arrangement...");
-      playNote('D4', '8n');
       requestAnimationFrame(t => animationLoop(t, token));
     }
 
@@ -829,10 +761,6 @@
         currentVec.animTailX = currentVec.targetTailX;
         currentVec.animTailY = currentVec.targetTailY;
 
-        // Play chord/beep on step snap
-        const notes = ['E4', 'G4', 'B4', 'D5'];
-        playNote(notes[(state.animationStep - 1) % notes.length], '16n');
-
         // Move to next vector
         state.animationStep++;
         state.animationStartTime = performance.now();
@@ -855,7 +783,6 @@
       const startTime = performance.now();
       state.resultantRevealed = true;
       state.resultantAnimProgress = 0;
-      playSuccessChord();
       showToast("Vectors joined head-to-tail! Resultant vector R drawn from initial tail to final head.");
 
       function resAnim(time) {
@@ -1242,7 +1169,6 @@
         state.dragOffset.y = pos.y - headY;
 
         canvas.style.cursor = 'grabbing';
-        playNote('A4', '32n');
         drawScene();
       }
     }
@@ -1317,7 +1243,6 @@
         } else {
           canvas.style.cursor = '';
         }
-        playNote('F4', '32n');
         updateUI(); // clears the dragged-row highlight in the sidebar
         drawScene();
       }
@@ -1425,25 +1350,6 @@
       state.snapToGrid = e.target.checked;
     });
 
-    soundToggleBtn.addEventListener('click', () => {
-      // FIX: if Tone.js never loaded, say so instead of showing a toggle that does nothing
-      if (!toneAvailable()) {
-        state.soundEnabled = false;
-        soundIcon.className = 'fa-solid fa-volume-xmark text-slate-400';
-        soundToggleBtn.title = "Sound unavailable (audio library failed to load)";
-        return;
-      }
-      state.soundEnabled = !state.soundEnabled;
-      if (state.soundEnabled) {
-        soundIcon.className = 'fa-solid fa-volume-high text-blue-600';
-        soundToggleBtn.title = "Mute Sound";
-        playNote('C5', '16n');
-      } else {
-        soundIcon.className = 'fa-solid fa-volume-xmark text-slate-400';
-        soundToggleBtn.title = "Unmute Sound";
-      }
-    });
-
     // Zoom and pan controls
     zoomInBtn.addEventListener('click', () => {
       applyZoom(Math.min(80, state.pixelsPerGridUnit + 6));
@@ -1459,7 +1365,6 @@
       const rect = canvas.getBoundingClientRect();
       translateScene(rect.width / 2 - state.origin.x, rect.height / 2 - state.origin.y);
       drawScene();
-      playNote('D4', '32n');
     });
 
     // FIX: redraw once web fonts arrive so canvas labels don't stay in the fallback font
