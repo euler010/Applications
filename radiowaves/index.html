@@ -774,10 +774,38 @@
       current: ''        // sentence currently being read (shown on the phone)
     };
 
+    // Pick the most natural-sounding English female voice the browser offers.
+    // Edge: "Microsoft Aria/Jenny Online (Natural)"; Chrome: "Google US English";
+    // macOS/iOS: Ava, Samantha, Allison...; Windows: Zira. Falls back to any English voice.
+    const FEMALE_VOICE_NAMES = ['aria', 'jenny', 'michelle', 'ava', 'emma', 'ana', 'sonia', 'libby', 'natasha',
+      'clara', 'samantha', 'allison', 'susan', 'zoe', 'karen', 'moira', 'tessa', 'serena', 'victoria', 'fiona',
+      'nicky', 'joanna', 'salli', 'kendra', 'kimberly', 'ivy', 'zira', 'hazel', 'catherine', 'female',
+      'google us english'];
+    const MALE_VOICE_NAMES = ['david', 'mark', 'guy', 'daniel', 'alex', 'fred', 'ryan', 'eric', 'christopher',
+      'andrew', 'brian', 'roger', 'steffan', 'thomas', 'oliver', 'aaron', 'tom', 'rishi', 'george', 'james', 'male'];
+
+    function scoreVoice(v) {
+      const name = v.name.toLowerCase();
+      if (!/^en/i.test(v.lang)) return -Infinity;
+      let score = 0;
+      if (/natural|neural|premium|enhanced|online/.test(name)) score += 100; // high-quality voices
+      if (FEMALE_VOICE_NAMES.some(n => new RegExp('\\b' + n + '\\b').test(name))) score += 60;
+      if (MALE_VOICE_NAMES.some(n => new RegExp('\\b' + n + '\\b').test(name)) && !/female/.test(name)) score -= 80;
+      if (/^en[-_]US/i.test(v.lang)) score += 20;
+      if (v.localService === false) score += 10; // network voices are usually more natural
+      if (/espeak|compact|novelty|whisper|bad news|bells|boing|bubbles|cellos|jester|organ|trinoids|zarvox|superstar|wobble|albert|bahh|junior|ralph/.test(name)) score -= 200;
+      return score;
+    }
+
     function pickVoice() {
       if (!SPEECH.supported) return;
       const voices = window.speechSynthesis.getVoices();
-      SPEECH.voice = voices.find(v => /^en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || null;
+      let best = null, bestScore = -Infinity;
+      for (const v of voices) {
+        const sc = scoreVoice(v);
+        if (sc > bestScore) { best = v; bestScore = sc; }
+      }
+      SPEECH.voice = best;
     }
     if (SPEECH.supported) {
       pickVoice();
@@ -796,7 +824,8 @@
       const text = VOICE_SENTENCES[SPEECH.index];
       const u = new SpeechSynthesisUtterance(text);
       if (SPEECH.voice) { u.voice = SPEECH.voice; u.lang = SPEECH.voice.lang; } else { u.lang = 'en-US'; }
-      u.rate = 0.95;
+      u.rate = 1.0;
+      u.pitch = 1.0;
       u.volume = speechVolume();
       const finished = () => {
         if (SPEECH.utterance !== u) return; // ignore utterances we cancelled on purpose
