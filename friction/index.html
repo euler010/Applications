@@ -264,6 +264,14 @@
     }
     .animate-bounce { animation: bounce 1s infinite; }
 
+    /* ---------- Section text +1pt (microscopic view + bottom control cards) ---------- */
+    .text-plus-1pt .text-\[10px\] { font-size: calc(10px + 1pt); }
+    .text-plus-1pt .text-\[11px\] { font-size: calc(11px + 1pt); }
+    .text-plus-1pt .text-xs { font-size: calc(0.75rem + 1pt); line-height: calc(1rem + 1pt); }
+    .text-plus-1pt .text-sm { font-size: calc(0.875rem + 1pt); line-height: calc(1.25rem + 1pt); }
+    .text-plus-1pt .leading-relaxed { line-height: 1.625; }
+    .text-plus-1pt p .font-mono { white-space: nowrap; } /* keep formulas like "f_s,max = μs · N" on one line */
+
     /* ---------- State variants (after base rules so they win) ---------- */
     .selection\:bg-blue-500 *::selection, .selection\:bg-blue-500::selection { background-color: #3b82f6; }
     .selection\:text-white *::selection, .selection\:text-white::selection { color: #ffffff; }
@@ -437,7 +445,7 @@
     </div>
 
     <!-- MIDDLE ROW: Microscopic Zoom View (Interface Roughness / Asperities) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-plus-1pt">
       <!-- Canvas Container for Microscopic Interface -->
       <div class="relative w-full aspect-[21/7] min-h-[190px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
         <canvas id="canvas-micro" role="img" aria-label="Magnified view of the contact surfaces between block and table" class="w-full h-full block"></canvas>
@@ -483,7 +491,7 @@
     </div>
 
     <!-- BOTTOM ROW: Controls and Physical Parameters -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 text-plus-1pt">
       
       <!-- Manual Force Control Card -->
       <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
@@ -805,7 +813,7 @@
       lastBadgeSliding = state.isSliding;
       if (state.isSliding) {
         motionBadge.className = "px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-mono font-semibold flex items-center gap-1.5";
-        motionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> KINETIC REGIME (Sliding)`;
+        motionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> Kinetic Regime (Sliding)`;
       } else {
         motionBadge.className = "px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-mono font-semibold flex items-center gap-1.5";
         motionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Static Regime (Locked)`;
