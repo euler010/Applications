@@ -299,6 +299,10 @@
       /* Top row: left panel 50px narrower, right panel 50px wider than an even split.
          Each half of an even split is (100% - 1.25rem gap) / 2. */
       .top-row-split { grid-template-columns: calc((100% - 1.25rem) / 2 - 50px) minmax(0, 1fr); }
+      /* Block view fills the left card's height down to the telemetry row. */
+      .macro-column { flex: 1 1 auto; display: flex; flex-direction: column; }
+      .macro-fill { flex: 1 1 auto; aspect-ratio: auto; }
+      .macro-fill > canvas { position: absolute; inset: 0; } /* size from the box, never the reverse */
     }
   </style>
   <!-- Must run before Tone.js loads: suppresses Tone's "%c * Tone.js v14.8.49 *" console banner. -->
@@ -352,7 +356,7 @@
       
       <!-- Macroscopic Block View -->
       <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
-        <div>
+        <div class="macro-column">
           <div class="flex items-center justify-between mb-2.5">
             <div class="flex items-center gap-2">
               <h2 class="text-sm font-bold text-slate-800">Macroscopic Block (Drag Block to Pull)</h2>
@@ -364,7 +368,7 @@
           </div>
 
           <!-- Canvas Container for Block -->
-          <div class="relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
+          <div class="macro-fill relative w-full aspect-[16/10] min-h-[220px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center">
             <canvas id="canvas-macro" role="img" aria-label="Block on a table with applied force, friction, velocity and acceleration arrows. Drag to change the pull force." class="w-full h-full cursor-grab active:cursor-grabbing block"></canvas>
             
             <div id="drag-hint" class="pointer-events-none absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-[11px] text-slate-600 flex items-center gap-2 transition-opacity duration-300">
@@ -922,7 +926,9 @@
       ctxMacro.fillStyle = '#f8fafc';
       ctxMacro.fillRect(0, 0, w, h);
 
-      const floorY = h * 0.72;
+      // Keep the ground band the thickness it has at 16:10 (28% of h = 17.5% of w);
+      // when the view is stretched taller, the floor and block move down instead.
+      const floorY = Math.max(h * 0.72, h - w * 0.175);
 
       const floorGrad = ctxMacro.createLinearGradient(0, floorY, 0, h);
       floorGrad.addColorStop(0, '#e2e8f0');
