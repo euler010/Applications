@@ -322,9 +322,6 @@
   <!-- Main Navigation Header -->
   <header class="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4 shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
-        <i class="fa-solid fa-arrows-left-right text-lg"></i>
-      </div>
       <div>
         <h1 class="font-extrabold text-slate-900 text-lg leading-tight flex items-center gap-2">
           Static Friction vs. Kinetic Friction
@@ -335,15 +332,12 @@
     <!-- Quick simulation controls -->
     <div class="flex items-center gap-2 flex-wrap">
       <button id="btn-sound" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 border border-slate-200 transition flex items-center gap-2 shadow-sm">
-        <i class="fa-solid fa-volume-xmark text-slate-500"></i>
         <span>Sound: <span id="sound-status" class="text-rose-600 font-bold">OFF</span></span>
       </button>
       <button id="btn-autopull" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm shadow-blue-500/30 transition flex items-center gap-2 active:scale-95">
-        <i class="fa-solid fa-play"></i>
         <span id="autopull-text">Auto Ramp Pull</span>
       </button>
       <button id="btn-reset" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-xs font-semibold text-rose-600 border border-slate-200 transition flex items-center gap-1.5 shadow-sm">
-        <i class="fa-solid fa-arrow-rotate-left"></i>
         <span>Reset</span>
       </button>
     </div>
@@ -464,7 +458,7 @@
 
       <div class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
         <div>
-          <strong class="text-slate-800"><i class="fa-solid fa-microscope text-cyan-600 mr-1"></i>Contact Junctions and Asperities:</strong>
+          <strong class="text-slate-800">Contact Junctions and Asperities:</strong>
           Even smooth surfaces have jagged microscopic peaks called <em>asperities</em>. The colored circles mark real-time physical contact between the block and the table:
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
@@ -1725,15 +1719,12 @@
     btnSound.addEventListener('click', () => {
       initAudio();
       state.soundEnabled = !state.soundEnabled;
-      const soundIcon = btnSound.querySelector('i');
       if (state.soundEnabled) {
         soundStatus.textContent = "ON";
         soundStatus.className = "text-emerald-600 font-bold";
-        if (soundIcon) soundIcon.className = "fa-solid fa-volume-high text-blue-600";
       } else {
         soundStatus.textContent = "OFF";
         soundStatus.className = "text-rose-600 font-bold";
-        if (soundIcon) soundIcon.className = "fa-solid fa-volume-xmark text-slate-500";
       }
     });
 
