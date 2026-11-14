@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relative Velocity Laboratory</title>
+  <!-- Local utility stylesheet (replaces Tailwind CDN) -->
+  <style>
+    /* ---------- Base reset (Preflight-equivalent) ---------- */
+    *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+    html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; line-height: inherit; }
+    h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; margin: 0; }
+    p { margin: 0; }
+    button, input, select, textarea { font-family: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+    button, select { text-transform: none; }
+    button, [type='button'] { -webkit-appearance: button; background-color: transparent; background-image: none; }
+    button { cursor: pointer; }
+    svg, canvas, img, video { display: block; vertical-align: middle; }
+
+    /* ---------- Layout ---------- */
+    .block { display: block; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .flex-col { flex-direction: column; }
+    .flex-wrap { flex-wrap: wrap; }
+    .flex-1 { flex: 1 1 0%; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .relative { position: relative; }
+    .sticky { position: sticky; }
+    .top-0 { top: 0; }
+    .z-30 { z-index: 30; }
+    .overflow-hidden { overflow: hidden; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ---------- Gap & spacing ---------- */
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+
+    .p-1\.5 { padding: 0.375rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+
+    .mx-1 { margin-left: 0.25rem; margin-right: 0.25rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-1\.5 { margin-bottom: 0.375rem; }
+    .mb-2\.5 { margin-bottom: 0.625rem; }
+    .mt-0\.5 { margin-top: 0.125rem; }
+
+    /* ---------- Sizing ---------- */
+    .w-px { width: 1px; }
+    .w-2 { width: 0.5rem; }
+    .w-3\.5 { width: 0.875rem; }
+    .w-4 { width: 1rem; }
+    .w-full { width: 100%; }
+    .h-1\.5 { height: 0.375rem; }
+    .h-2 { height: 0.5rem; }
+    .h-3\.5 { height: 0.875rem; }
+    .h-4 { height: 1rem; }
+    .h-full { height: 100%; }
+    .h-\[370px\] { height: 370px; }
+    .min-h-screen { min-height: 100vh; }
+    .max-w-\[1600px\] { max-width: 1600px; }
+
+    /* ---------- Typography ---------- */
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; }
+    .text-left { text-align: left; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .leading-none { line-height: 1; }
+    .leading-tight { line-height: 1.25; }
+    .leading-snug { line-height: 1.375; }
+    .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    /* ---------- Text colors ---------- */
+    .text-white { color: #ffffff; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-600 { color: #475569; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-800 { color: #1e293b; }
+    .text-slate-900 { color: #0f172a; }
+    .text-blue-600 { color: #2563eb; }
+    .text-blue-900 { color: #1e3a8a; }
+    .text-emerald-600 { color: #059669; }
+    .text-emerald-800 { color: #065f46; }
+    .text-cyan-700 { color: #0e7490; }
+    .text-cyan-800 { color: #155e75; }
+    .text-teal-800 { color: #115e59; }
+    .text-amber-700 { color: #b45309; }
+    .text-indigo-700 { color: #4338ca; }
+
+    /* ---------- Backgrounds ---------- */
+    .bg-white { background-color: #ffffff; }
+    .bg-slate-50 { background-color: #f8fafc; }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .bg-slate-200 { background-color: #e2e8f0; }
+    .bg-slate-300 { background-color: #cbd5e1; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-emerald-50 { background-color: #ecfdf5; }
+    .bg-emerald-500 { background-color: #10b981; }
+    .bg-emerald-100\/70 { background-color: rgb(209 250 229 / 0.7); }
+    .bg-cyan-100\/70 { background-color: rgb(207 250 254 / 0.7); }
+    .bg-teal-100\/70 { background-color: rgb(204 251 241 / 0.7); }
+
+    /* ---------- Borders ---------- */
+    .border { border-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-slate-200 { border-color: #e2e8f0; }
+    .border-slate-300 { border-color: #cbd5e1; }
+    .border-blue-500 { border-color: #3b82f6; }
+    .border-emerald-200 { border-color: #a7f3d0; }
+    .border-cyan-200 { border-color: #a5f3fc; }
+    .border-teal-200 { border-color: #99f6e4; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* ---------- Effects ---------- */
+    .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .shadow-inner { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05); }
+    .accent-cyan-600 { accent-color: #0891b2; }
+    .accent-emerald-600 { accent-color: #059669; }
+    .accent-teal-600 { accent-color: #0d9488; }
+    .cursor-pointer { cursor: pointer; }
+    .transition {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    @keyframes pulse { 50% { opacity: 0.5; } }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    /* ---------- State variants ---------- */
+    .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+    .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
+    .hover\:border-slate-300:hover { border-color: #cbd5e1; }
+    .active\:scale-95:active { transform: scale(0.95); }
+    .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus\:ring-1:focus { box-shadow: 0 0 0 1px var(--ring-color, #3b82f6); }
+    .focus\:ring-blue-500:focus { --ring-color: #3b82f6; }
+    .focus\:ring-0:focus { box-shadow: none; }
+
+    /* ---------- Responsive: sm (>= 640px) ---------- */
+    @media (min-width: 640px) {
+      .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .sm\:p-4 { padding: 1rem; }
+      .sm\:p-5 { padding: 1.25rem; }
+      .sm\:gap-3 { gap: 0.75rem; }
+      .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+      .sm\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+      .sm\:h-\[410px\] { height: 410px; }
+    }
+
+    /* ---------- Responsive: lg (>= 1024px) ---------- */
+    @media (min-width: 1024px) {
+      .lg\:flex-row { flex-direction: row; }
+      .lg\:w-96 { width: 24rem; }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <header class="bg-white border-b border-slate-200 px-4 py-3 sm:px-6 shadow-sm flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900">
+        Relative Velocity Laboratory
+      </h1>
+    </div>
+
+    <!-- Playback and Simulation Speed Controls -->
+    <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-inner">
+      <button id="btnPlayPause" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+        <svg id="iconPlayPause" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>
+        <span id="textPlayPause">Pause</span>
+      </button>
+
+      <button id="btnResetPositions" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm transition flex items-center gap-1 shadow-xs">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <span>Reset</span>
+      </button>
+
+      <div class="h-4 w-px bg-slate-300 mx-1"></div>
+
+      <!-- Time scale selector (rescaled so loading speed is Default Speed) -->
+      <select id="timeScaleSelect" class="bg-white text-slate-700 text-xs rounded-lg px-2 py-1.5 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium cursor-pointer">
+        <option value="0.5">0.5x Speed</option>
+        <option value="0.75">0.75x Speed</option>
+        <option value="1.0" selected>Default Speed</option>
+        <option value="1.5">1.5x Speed</option>
+        <option value="2.0">2x Speed</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 flex flex-col lg:flex-row gap-4">
+    
+    <!-- Left Column: Primary Simulation Canvas & Live Readouts -->
+    <div class="flex-1 flex flex-col gap-3">
+      
+      <!-- Frame of Reference Indicator Bar -->
+      <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Reference Frame:</span>
+          <div id="activeFrameBadge" class="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs sm:text-sm shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="activeFrameName">Shoreline</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer bg-slate-50 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 transition">
+            <input type="checkbox" id="toggleVectors" class="rounded text-blue-600 focus:ring-0 w-3.5 h-3.5 border-slate-300" checked>
+            <span>Show Vectors</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Canvas container: Expanded height by 25% of river span (shoreline stays 64px) -->
+      <div class="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm h-[370px] sm:h-[410px]">
+        <canvas id="simCanvas" class="w-full h-full block cursor-pointer"></canvas>
+      </div>
+
+      <!-- Live Relative Velocities bar -->
+      <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-500">Live Relative Velocities:</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+            <span class="text-slate-500 block text-[10px] font-medium">Shore Observer</span>
+            <span class="font-bold text-amber-700 mono text-xs sm:text-sm" id="observerRelativeSpeed">0 m/s (Rest)</span>
+          </div>
+          <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+            <span class="text-slate-500 block text-[10px] font-medium">Frog and River</span>
+            <span class="font-bold text-cyan-700 mono text-xs sm:text-sm" id="riverRelativeSpeed">3 m/s east</span>
+          </div>
+          <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+            <span class="text-slate-500 block text-[10px] font-medium">Boat on Screen</span>
+            <span class="font-bold text-indigo-700 mono text-xs sm:text-sm" id="boatRelativeSpeed">7 m/s west</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Reference Frame Selector & Velocity Controls -->
+    <div class="w-full lg:w-96 flex flex-col gap-3">
+      
+      <!-- Frame Selection Section -->
+      <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
+        <h2 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 mb-1.5">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+          Select Reference Frame (Stationary)
+        </h2>
+        <p class="text-[11px] text-slate-500 mb-2.5 leading-snug">
+          The selected object will appear stationary on your screen. All other objects move relative to it.
+        </p>
+
+        <div class="grid grid-cols-2 gap-2" id="frameButtonsContainer">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Velocity Controls
+          </h2>
+          <span class="text-[10px] text-slate-400 mono font-medium">(rel. to Shore)</span>
+        </div>
+
+        <!-- Slider 1: River Flow (Default 3 m/s east) -->
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <span>🐸 Frog (and River Water)</span>
+            </label>
+            <span id="sliderRiverVal" class="text-xs font-bold mono text-cyan-800 bg-cyan-100/70 px-2 py-0.5 rounded border border-cyan-200">3 m/s east</span>
+          </div>
+          <input type="range" id="sliderRiver" min="-10" max="10" step="0.5" value="3" class="w-full accent-cyan-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+        </div>
+
+        <!-- Slider 2: Turtle (Default 4 m/s east) -->
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <span>🐢 Turtle</span>
+            </label>
+            <span id="sliderTurtleVal" class="text-xs font-bold mono text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-200">4 m/s east</span>
+          </div>
+          <input type="range" id="sliderTurtle" min="-10" max="10" step="0.5" value="4" class="w-full accent-emerald-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+        </div>
+
+        <!-- Slider 3: Fish (Default 1 m/s west) -->
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <span>🐟 Fish</span>
+            </label>
+            <span id="sliderFishVal" class="text-xs font-bold mono text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded border border-teal-200">1 m/s west</span>
+          </div>
+          <input type="range" id="sliderFish" min="-10" max="10" step="0.5" value="-1" class="w-full accent-teal-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // System definitions: East is positive (+x), West is negative (-x)
+    const PIXELS_PER_METER = 22;
+    const BASE_SIM_SPEED = 0.25; // Physical speed corresponding to Default Speed (1.0x baseline)
+
+    // Passenger walk path insets (pixels from the bow tip / stern edge of the hull)
+    const BOW_INSET_PX = 32;
+    const STERN_INSET_PX = 26;
+
+    // Repeating scenery spacings (pixels) and the world-distance periods they repeat over
+    const TREE_SPACING_PX = 85;
+    const WAVE_SPACING_PX = 65;
+    const FLOW_ARROW_STEP_PX = 150;
+    const TREE_PERIOD_M = TREE_SPACING_PX / PIXELS_PER_METER;
+    const RIVER_PATTERN_PERIOD_M = 1950 / PIXELS_PER_METER; // 1950 px = LCM(65, 150): ripples and flow arrows both line up
+
+    // Fallback for browsers without CanvasRenderingContext2D.roundRect (Safari < 16, Firefox < 112)
+    if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        let rad = Array.isArray(r) ? (r[0] || 0) : (r || 0);
+        rad = Math.max(0, Math.min(rad, Math.abs(w) / 2, Math.abs(h) / 2));
+        this.moveTo(x + rad, y);
+        this.arcTo(x + w, y, x + w, y + h, rad);
+        this.arcTo(x + w, y + h, x, y + h, rad);
+        this.arcTo(x, y + h, x, y, rad);
+        this.arcTo(x, y, x + w, y, rad);
+        this.closePath();
+        return this;
+      };
+    }
+
+    const state = {
+      isPlaying: true,
+      speedMultiplier: 1.0, // 1.0x corresponds to Default Speed
+      showVectors: true, // Default checked
+      currentFrame: 'shore',
+
+      // Velocities relative to the SHORE (Earth frame) in m/s
+      // Positive = East (+x), Negative = West (-x)
+      velocities: {
+        shore: 0.0,
+        river: 3.0,      // 3 m/s east (default)
+        turtle: 4.0,     // 4 m/s east (default)
+        fish: -1.0,      // 1 m/s west (default)
+        log: 3.0,        // always matches river
+        boat: -7.0,      // 7 m/s west fixed
+        passengerWalkRelBoat: 1.0 // 1 m/s relative to boat towards stern
+      },
+
+      // World positions in meters relative to origin
+      positions: {
+        shore: 0,
+        observer: 0,
+        riverOffset: 0,
+        turtle: -12,
+        fish: 11,
+        log: -6,
+        boat: 16,
+        passengerDeckRatio: 0.0 // 0.0 = front (bow), 1.0 = back (stern)
+      },
+
+      boatLengthMeters: 9.5,
+      boatWidthMeters: 2.8,
+
+      entities: [
+        { id: 'shore', name: 'Shoreline', emoji: '🧍', color: '#b45309' },
+        { id: 'river', name: 'Frog and River', emoji: '🐸🌊', color: '#0284c7' },
+        { id: 'boat', name: 'Boat', emoji: '🚤', color: '#4338ca' },
+        { id: 'passenger', name: 'Passenger', emoji: '🚶', color: '#be185d' },
+        { id: 'turtle', name: 'Turtle', emoji: '🐢', color: '#047857' },
+        { id: 'fish', name: 'Fish', emoji: '🐟', color: '#ec4899' },
+      ]
+    };
+
+    function getPassengerShoreVelocity() {
+      // Boat moves West: bow is West, stern is East -> walking bow to stern is East (+1 m/s)
+      // Boat moves East: bow is East, stern is West -> walking bow to stern is West (-1 m/s)
+      const walkDir = state.velocities.boat < 0 ? 1 : -1;
+      return state.velocities.boat + (Math.abs(state.velocities.passengerWalkRelBoat) * walkDir);
+    }
+
+    function getShoreVelocity(id) {
+      if (id === 'shore') return 0.0;
+      if (id === 'passenger') return getPassengerShoreVelocity();
+      if (id === 'log') return state.velocities.river;
+      return state.velocities[id] !== undefined ? state.velocities[id] : 0.0;
+    }
+
+    function getRelativeVelocity(id) {
+      const v_obj_shore = getShoreVelocity(id);
+      const v_ref_shore = getShoreVelocity(state.currentFrame);
+      return v_obj_shore - v_ref_shore;
+    }
+
+    function formatSpeedNumber(val) {
+      const rounded = Math.round(Math.abs(val) * 10) / 10;
+      return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+    }
+
+    function formatVelocityWithDirection(v) {
+      if (Math.abs(v) < 0.001) return '0 m/s (Rest)';
+      const dir = v > 0 ? 'east' : 'west';
+      return `${formatSpeedNumber(v)} m/s ${dir}`;
+    }
+
+    function formatSliderVelocity(v) {
+      if (Math.abs(v) < 0.001) return '0 m/s';
+      return `${formatSpeedNumber(v)} m/s ${v > 0 ? 'east' : 'west'}`;
+    }
+
+    // ---- Geometry helpers ----
+    function getHalfViewMeters() {
+      const canvasLogicalWidth = canvas.width / (window.devicePixelRatio || 1);
+      return (canvasLogicalWidth / 2) / PIXELS_PER_METER;
+    }
+
+    // Half-width of each object's drawn body, in meters
+    function getBodyExtent(key) {
+      if (key === 'boat') return (state.boatLengthMeters / 2) + 0.8;
+      if (key === 'log') return 2.2;
+      return 1.5;
+    }
+
+    // Distance the passenger actually walks between the bow and stern points on the deck
+    function getDeckTravelMeters() {
+      return state.boatLengthMeters - (BOW_INSET_PX + STERN_INSET_PX) / PIXELS_PER_METER;
+    }
+
+    // Passenger's position relative to the boat's centre, in meters
+    function getPassengerOffsetFromBoatCenter() {
+      const halfBoatLen = state.boatLengthMeters / 2;
+      const bowInset = BOW_INSET_PX / PIXELS_PER_METER;
+      const sternInset = STERN_INSET_PX / PIXELS_PER_METER;
+      const boatMovesWest = state.velocities.boat < 0;
+      const bowOffset = boatMovesWest ? (-halfBoatLen + bowInset) : (halfBoatLen - bowInset);
+      const sternOffset = boatMovesWest ? (halfBoatLen - sternInset) : (-halfBoatLen + sternInset);
+      return bowOffset + (sternOffset - bowOffset) * state.positions.passengerDeckRatio;
+    }
+
+    // Place the boat so the passenger sits at the centre of the screen
+    function centerPassengerOnScreen() {
+      state.positions.boat = -getPassengerOffsetFromBoatCenter();
+    }
+
+    // If an object is not fully on screen, move it back into view (centre, or just inside the nearest edge).
+    // The shore observer is moved together with the shoreline by whole tree spacings, so the scenery doesn't jump.
+    function bringIntoView(key, target) {
+      const maxVisible = Math.max(0, getHalfViewMeters() - getBodyExtent(key));
+      const pos = state.positions[key];
+      if (Math.abs(pos) <= maxVisible) return;
+
+      if (key === 'observer') {
+        const shift = Math.round(-pos / TREE_PERIOD_M) * TREE_PERIOD_M;
+        state.positions.observer += shift;
+        state.positions.shore += shift;
+        return;
+      }
+      state.positions[key] = target === 'edge' ? Math.sign(pos) * maxVisible : 0;
+    }
+
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    const frameButtonsContainer = document.getElementById('frameButtonsContainer');
+    function renderFrameButtons() {
+      frameButtonsContainer.innerHTML = '';
+      state.entities.forEach(ent => {
+        const isSelected = state.currentFrame === ent.id;
+        const btn = document.createElement('button');
+        btn.className = `p-2 rounded-lg border text-left transition flex items-center gap-2 ${
+          isSelected 
+            ? 'bg-blue-50 border-blue-500 text-blue-900 font-bold shadow-xs' 
+            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+        }`;
+        
+        btn.innerHTML = `
+          <span class="text-base">${ent.emoji}</span>
+          <div class="truncate">
+            <div class="text-[11px] font-semibold truncate leading-tight">${ent.name}</div>
+            <div class="text-[10px] ${isSelected ? 'text-blue-600 font-bold' : 'text-slate-500'} mono leading-none mt-0.5">${formatVelocityWithDirection(getRelativeVelocity(ent.id))}</div>
+          </div>
+        `;
+
+        btn.onclick = () => {
+          setReferenceFrame(ent.id);
+        };
+        frameButtonsContainer.appendChild(btn);
+      });
+    }
+
+    function setReferenceFrame(id) {
+      state.currentFrame = id;
+      const entity = state.entities.find(e => e.id === id);
+      document.getElementById('activeFrameName').textContent = entity ? entity.name : id;
+      
+      // Make sure the newly stationary object is actually visible; otherwise it would stay off-screen forever
+      if (id === 'shore') {
+        bringIntoView('observer', 'centre');
+      } else if (id === 'boat') {
+        bringIntoView('boat', 'centre');
+      } else if (id === 'passenger') {
+        centerPassengerOnScreen();
+      } else if (id === 'river') {
+        bringIntoView('log', 'centre');
+      } else if (id === 'turtle' || id === 'fish') {
+        bringIntoView(id, 'centre');
+      }
+
+      renderFrameButtons();
+      updateHUD();
+    }
+
+    const sliderRiver = document.getElementById('sliderRiver');
+    const sliderTurtle = document.getElementById('sliderTurtle');
+    const sliderFish = document.getElementById('sliderFish');
+
+    function updateSliderLabels() {
+      const rV = parseFloat(sliderRiver.value);
+      state.velocities.river = rV;
+      state.velocities.log = rV;
+      document.getElementById('sliderRiverVal').textContent = formatSliderVelocity(rV);
+
+      const tV = parseFloat(sliderTurtle.value);
+      state.velocities.turtle = tV;
+      document.getElementById('sliderTurtleVal').textContent = formatSliderVelocity(tV);
+
+      const fV = parseFloat(sliderFish.value);
+      state.velocities.fish = fV;
+      document.getElementById('sliderFishVal').textContent = formatSliderVelocity(fV);
+
+      renderFrameButtons();
+      updateHUD();
+    }
+
+    sliderRiver.addEventListener('input', updateSliderLabels);
+    sliderTurtle.addEventListener('input', updateSliderLabels);
+    sliderFish.addEventListener('input', updateSliderLabels);
+
+    document.getElementById('toggleVectors').addEventListener('change', (e) => {
+      state.showVectors = e.target.checked;
+    });
+
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const iconPlayPause = document.getElementById('iconPlayPause');
+    const textPlayPause = document.getElementById('textPlayPause');
+
+    btnPlayPause.addEventListener('click', () => {
+      state.isPlaying = !state.isPlaying;
+      if (state.isPlaying) {
+        textPlayPause.textContent = 'Pause';
+        iconPlayPause.innerHTML = '<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>';
+      } else {
+        textPlayPause.textContent = 'Play';
+        iconPlayPause.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      }
+    });
+
+    document.getElementById('btnResetPositions').addEventListener('click', () => {
+      state.isPlaying = true;
+      textPlayPause.textContent = 'Pause';
+      iconPlayPause.innerHTML = '<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>';
+
+      state.speedMultiplier = 1.0;
+      document.getElementById('timeScaleSelect').value = '1.0';
+
+      state.showVectors = true;
+      document.getElementById('toggleVectors').checked = true;
+
+      state.velocities.shore = 0.0;
+      state.velocities.river = 3.0;
+      state.velocities.turtle = 4.0;
+      state.velocities.fish = -1.0;
+      state.velocities.log = 3.0;
+      state.velocities.boat = -7.0;
+      state.velocities.passengerWalkRelBoat = 1.0;
+
+      sliderRiver.value = 3;
+      sliderTurtle.value = 4;
+      sliderFish.value = -1;
+      updateSliderLabels();
+
+      state.positions.turtle = -12;
+      state.positions.fish = 11;
+      state.positions.log = -6;
+      state.positions.boat = 16;
+      state.positions.passengerDeckRatio = 0.0;
+      state.positions.riverOffset = 0;
+      state.positions.shore = 0;
+      state.positions.observer = 0;
+
+      setReferenceFrame('shore');
+      renderFrameButtons();
+      updateHUD();
+    });
+
+    document.getElementById('timeScaleSelect').addEventListener('change', (e) => {
+      state.speedMultiplier = parseFloat(e.target.value);
+    });
+
+    function updateHUD() {
+      const vObs = getRelativeVelocity('shore');
+      const vRiv = getRelativeVelocity('river');
+      const vBoat = getRelativeVelocity('boat');
+
+      document.getElementById('observerRelativeSpeed').textContent = formatVelocityWithDirection(vObs);
+      document.getElementById('riverRelativeSpeed').textContent = formatVelocityWithDirection(vRiv);
+      document.getElementById('boatRelativeSpeed').textContent = formatVelocityWithDirection(vBoat);
+    }
+
+    function stepPhysics(dt) {
+      // 1. Move passenger from Front of boat (0.0) to Back of boat (1.0)
+      //    The deck fraction advances at walk speed divided by the real bow-to-stern walking distance,
+      //    so the on-screen walk matches the stated 1 m/s relative to the boat.
+      const deckSpeedFractionPerSec = Math.abs(state.velocities.passengerWalkRelBoat) / getDeckTravelMeters();
+      state.positions.passengerDeckRatio += deckSpeedFractionPerSec * dt;
+      if (state.positions.passengerDeckRatio >= 1.0) {
+        state.positions.passengerDeckRatio -= 1.0;
+      }
+
+      // 2. Relative motion in current frame
+      const v_ref = getShoreVelocity(state.currentFrame);
+      const v_shore_rel = 0.0 - v_ref;
+
+      state.positions.turtle += (state.velocities.turtle - v_ref) * dt;
+      state.positions.fish += (state.velocities.fish - v_ref) * dt;
+      state.positions.log += (state.velocities.river - v_ref) * dt;
+      state.positions.boat += (state.velocities.boat - v_ref) * dt;
+      state.positions.riverOffset += (state.velocities.river - v_ref) * dt;
+      state.positions.shore += v_shore_rel * dt;
+      state.positions.observer += v_shore_rel * dt;
+
+      // In the passenger's frame, lock the passenger to screen centre (the boat slides beneath them)
+      if (state.currentFrame === 'passenger') {
+        centerPassengerOnScreen();
+      }
+
+      // Keep scenery offsets bounded, wrapping only by whole pattern periods so nothing visibly jumps
+      state.positions.riverOffset %= RIVER_PATTERN_PERIOD_M;
+      state.positions.shore %= TREE_PERIOD_M;
+
+      // 3. Screen bounds calculation with dynamic clearance for vector arrows & labels
+      const halfViewMeters = getHalfViewMeters();
+
+      // Calculate the required offscreen margin so that the entity, its full vector arrow,
+      // text labels, and passenger (if boat) are completely beyond the screen edge before wrapping.
+      function getEntityMargin(key) {
+        const bodyExtent = getBodyExtent(key);
+
+        let vectorMeters = 0;
+        if (state.showVectors) {
+          const v_rel = key === 'observer' ? getRelativeVelocity('shore') : getRelativeVelocity(key);
+          const mag = Math.abs(v_rel);
+          const arrowPx = mag < 0.05 ? 18 : Math.max(32, Math.min(140, mag * 12));
+          const labelPaddingPx = 50; // Extra clearance for the text label and outline
+
+          if (key === 'boat') {
+            // Boat must account for both its own vector and the walking passenger's vector
+            const v_pass_rel = getRelativeVelocity('passenger');
+            const passMag = Math.abs(v_pass_rel);
+            const passArrowPx = passMag < 0.05 ? 18 : Math.max(32, Math.min(140, passMag * 12));
+            const passReachMeters = (state.boatLengthMeters / 2) + ((passArrowPx + 55) / PIXELS_PER_METER) + 1.0;
+            vectorMeters = Math.max((arrowPx + labelPaddingPx) / PIXELS_PER_METER, passReachMeters);
+          } else {
+            vectorMeters = (arrowPx + labelPaddingPx) / PIXELS_PER_METER;
+          }
+        }
+
+        // Add 1 meter buffer so the arrowhead tip starts fully behind the screen boundary
+        return bodyExtent + vectorMeters + 1.0;
+      }
+
+      // Wrap turtle, fish, log, and shoreline observer directionally
+      ['turtle', 'fish', 'log', 'observer'].forEach(key => {
+        const v_rel = key === 'observer' ? getRelativeVelocity('shore') : getRelativeVelocity(key);
+        const limit = halfViewMeters + getEntityMargin(key);
+        // The observer stands on the shore, so it wraps by a whole number of tree spacings
+        const span = key === 'observer'
+          ? Math.ceil((2 * limit) / TREE_PERIOD_M) * TREE_PERIOD_M
+          : 2 * limit;
+
+        if (v_rel < -0.01 && state.positions[key] < -limit) {
+          state.positions[key] += span;
+        } else if (v_rel > 0.01 && state.positions[key] > limit) {
+          state.positions[key] -= span;
+        }
+      });
+
+      // Wrap boat directionally with full boat + passenger + vector clearance
+      const v_boat_rel = getRelativeVelocity('boat');
+      const boatLimit = halfViewMeters + getEntityMargin('boat');
+      const boatSpan = 2 * boatLimit;
+
+      if (v_boat_rel < -0.01 && state.positions.boat < -boatLimit) {
+        state.positions.boat += boatSpan;
+      } else if (v_boat_rel > 0.01 && state.positions.boat > boatLimit) {
+        state.positions.boat -= boatSpan;
+      }
+
+      // Objects at rest relative to the current frame never wrap, so if one is off-screen
+      // (e.g. a slider was set to match the frame's speed) bring it back just inside the edge.
+      ['turtle', 'fish', 'log', 'observer', 'boat'].forEach(key => {
+        if (key === 'boat' && state.currentFrame === 'passenger') return;
+        const v_rel = key === 'observer' ? getRelativeVelocity('shore') : getRelativeVelocity(key);
+        if (Math.abs(v_rel) <= 0.01 && Math.abs(state.positions[key]) > halfViewMeters + getBodyExtent(key)) {
+          bringIntoView(key, 'edge');
+        }
+      });
+    }
+
+    function drawVectorArrow(x, y, velocity, color, arrowYOverride = null, labelYOverride = null) {
+      if (!state.showVectors) return;
+      const mag = Math.abs(velocity);
+      const isZero = mag < 0.05;
+
+      const speedStr = formatSpeedNumber(velocity);
+      const labelText = isZero ? '0 m/s' : `${speedStr} m/s ${velocity > 0 ? 'east' : 'west'}`;
+      const arrowY = arrowYOverride !== null ? arrowYOverride : (y - 26);
+
+      ctx.save();
+      ctx.font = 'bold 15px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (isZero) {
+        // Zero-velocity marker
+        ctx.beginPath();
+        ctx.arc(x, arrowY, 5.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = '#475569';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(x, arrowY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#64748b';
+        ctx.fill();
+
+        const labelY = labelYOverride !== null ? labelYOverride : (arrowY - 16);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText(labelText, x, labelY);
+        ctx.fillStyle = '#1e293b';
+        ctx.fillText(labelText, x, labelY);
+
+        ctx.restore();
+        return;
+      }
+
+      const arrowScale = 12;
+      const length = Math.max(32, Math.min(140, mag * arrowScale));
+      const dir = velocity > 0 ? 1 : -1;
+      const startX = x;
+      const endX = x + (dir * length);
+      const headSize = 8;
+
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // 1. White border outline around arrow stem and head
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5.2;
+      ctx.beginPath();
+      ctx.moveTo(startX, arrowY);
+      ctx.lineTo(endX, arrowY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(endX + (dir * 2), arrowY);
+      ctx.lineTo(endX - dir * (headSize + 2.5), arrowY - (headSize + 2.5) * 0.75);
+      ctx.lineTo(endX - dir * (headSize + 2.5), arrowY + (headSize + 2.5) * 0.75);
+      ctx.closePath();
+      ctx.fill();
+
+      // 2. Colored arrow inner
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(startX, arrowY);
+      ctx.lineTo(endX, arrowY);
+      ctx.stroke();
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(endX, arrowY);
+      ctx.lineTo(endX - dir * headSize, arrowY - headSize * 0.7);
+      ctx.lineTo(endX - dir * headSize, arrowY + headSize * 0.7);
+      ctx.closePath();
+      ctx.fill();
+
+      // 3. Text label with white boundary outline (no white box)
+      const textCenterX = startX + (dir * length * 0.5);
+      const textCenterY = labelYOverride !== null ? labelYOverride : (arrowY - 15);
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineJoin = 'round';
+      ctx.miterLimit = 2;
+      ctx.strokeText(labelText, textCenterX, textCenterY);
+
+      ctx.fillStyle = color;
+      ctx.fillText(labelText, textCenterX, textCenterY);
+
+      ctx.restore();
+    }
+
+    function worldToScreenX(worldMeters, width) {
+      return (width / 2) + (worldMeters * PIXELS_PER_METER);
+    }
+
+    function drawSimulation() {
+      const width = canvas.width / (window.devicePixelRatio || 1);
+      const height = canvas.height / (window.devicePixelRatio || 1);
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Shoreline height is kept constant at 64px; the river span expands by 25%
+      const topShoreHeight = 64;
+      const bottomShoreHeight = 64;
+      const riverTopY = topShoreHeight;
+      const riverBottomY = height - bottomShoreHeight;
+      const riverHeight = riverBottomY - riverTopY;
+
+      // 1. River Water
+      const waterGrad = ctx.createLinearGradient(0, riverTopY, 0, riverBottomY);
+      waterGrad.addColorStop(0, '#38bdf8');
+      waterGrad.addColorStop(0.5, '#0ea5e9');
+      waterGrad.addColorStop(1, '#0284c7');
+      ctx.fillStyle = waterGrad;
+      ctx.fillRect(0, riverTopY, width, riverHeight);
+
+      // Ripples
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 1.75;
+      const waveSpacing = WAVE_SPACING_PX;
+      const rippleOffset = (state.positions.riverOffset * PIXELS_PER_METER) % waveSpacing;
+      for (let x = -waveSpacing + rippleOffset; x < width + waveSpacing; x += waveSpacing) {
+        for (let y = riverTopY + 16; y < riverBottomY - 8; y += 32) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(x + 16, y - 5, x + 32, y);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+
+      // Flow direction arrows
+      const vWaterRel = getRelativeVelocity('river');
+      if (Math.abs(vWaterRel) > 0.1) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+        const arrowStep = FLOW_ARROW_STEP_PX;
+        const arrowDir = vWaterRel > 0 ? 1 : -1;
+        const flowOffset = (state.positions.riverOffset * PIXELS_PER_METER) % arrowStep;
+        for (let x = -arrowStep + flowOffset; x < width + arrowStep; x += arrowStep) {
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(arrowDir > 0 ? '➔' : '⬅', x, riverTopY + riverHeight * 0.52);
+        }
+        ctx.restore();
+      }
+
+      // 2. Top Shoreline
+      const topShoreGrad = ctx.createLinearGradient(0, 0, 0, topShoreHeight);
+      topShoreGrad.addColorStop(0, '#22c55e');
+      topShoreGrad.addColorStop(0.85, '#16a34a');
+      topShoreGrad.addColorStop(1, '#eab308');
+      ctx.fillStyle = topShoreGrad;
+      ctx.fillRect(0, 0, width, topShoreHeight);
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(0, topShoreHeight - 3, width, 3);
+
+      // 3. Bottom Shoreline
+      const bottomShoreGrad = ctx.createLinearGradient(0, riverBottomY, 0, height);
+      bottomShoreGrad.addColorStop(0, '#eab308');
+      bottomShoreGrad.addColorStop(0.15, '#16a34a');
+      bottomShoreGrad.addColorStop(1, '#22c55e');
+      ctx.fillStyle = bottomShoreGrad;
+      ctx.fillRect(0, riverBottomY, width, bottomShoreHeight);
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(0, riverBottomY, width, 3);
+
+      // Shore Foliage
+      const shoreScreenOriginX = worldToScreenX(state.positions.shore, width);
+      ctx.save();
+      const treeSpacing = TREE_SPACING_PX;
+      const treeOffset = shoreScreenOriginX % treeSpacing;
+      for (let x = -treeSpacing + treeOffset; x < width + treeSpacing; x += treeSpacing) {
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.arc(x, topShoreHeight - 18, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(x + 4, topShoreHeight - 22, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#166534';
+        ctx.beginPath();
+        ctx.arc(x + 35, riverBottomY + 24, 8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 4. Shore Observer
+      const observerScreenX = worldToScreenX(state.positions.observer, width);
+      const observerY = riverBottomY + 22;
+
+      ctx.save();
+      if (state.currentFrame === 'shore') {
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(observerScreenX, observerY, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🧍', observerScreenX, observerY);
+
+      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 3;
+      ctx.fillText('Shore Observer', observerScreenX, observerY + 19);
+      ctx.shadowBlur = 0;
+      drawVectorArrow(observerScreenX, observerY - 12, getRelativeVelocity('shore'), '#d97706');
+      ctx.restore();
+
+      // Lane 1: Turtle (Top Lane)
+      const turtleX = worldToScreenX(state.positions.turtle, width);
+      const turtleY = riverTopY + (riverHeight * 0.16);
+      drawTurtle(turtleX, turtleY);
+
+      // Lane 2: Frog on Log (Above Boat, Below Turtle)
+      const logX = worldToScreenX(state.positions.log, width);
+      const logY = riverTopY + (riverHeight * 0.38);
+      drawLogWithFrog(logX, logY);
+
+      // Lane 3: Large Boat & Passenger (Below Frog)
+      const boatX = worldToScreenX(state.positions.boat, width);
+      const boatY = riverTopY + (riverHeight * 0.65);
+      drawBoatAndPassenger(boatX, boatY);
+
+      // Lane 4: Fish (Deep Lower Lane)
+      const fishX = worldToScreenX(state.positions.fish, width);
+      const fishY = riverTopY + (riverHeight * 0.88);
+      drawFish(fishX, fishY);
+    }
+
+    function drawTurtle(x, y) {
+      ctx.save();
+      const isSelected = state.currentFrame === 'turtle';
+      const v_rel = getRelativeVelocity('turtle');
+
+      if (isSelected) {
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y, 24, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const facingWest = state.velocities.turtle < 0;
+
+      ctx.save();
+      ctx.translate(x, y);
+      if (!facingWest) ctx.scale(-1, 1);
+
+      // Shell
+      ctx.fillStyle = '#065f46';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#022c22';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Shell pattern
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 11, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Head
+      ctx.fillStyle = '#059669';
+      ctx.beginPath();
+      ctx.arc(-20, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Flippers
+      ctx.fillStyle = '#047857';
+      ctx.beginPath();
+      ctx.ellipse(-8, -11, 7, 3.5, Math.PI / 4, 0, Math.PI * 2);
+      ctx.ellipse(8, -11, 6, 3, -Math.PI / 4, 0, Math.PI * 2);
+      ctx.ellipse(-8, 11, 7, 3.5, -Math.PI / 4, 0, Math.PI * 2);
+      ctx.ellipse(8, 11, 6, 3, Math.PI / 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 3;
+      ctx.textAlign = 'center';
+      ctx.fillText('Turtle', x, y + 21);
+      ctx.shadowBlur = 0;
+      drawVectorArrow(x, y, v_rel, '#047857');
+      ctx.restore();
+    }
+
+    function drawLogWithFrog(x, y) {
+      ctx.save();
+      const isSelected = state.currentFrame === 'river' || state.currentFrame === 'log';
+      const v_rel = getRelativeVelocity('log');
+
+      if (isSelected) {
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y, 30, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Wooden Log
+      ctx.fillStyle = '#78350f';
+      ctx.beginPath();
+      ctx.roundRect(x - 30, y - 5, 60, 13, 5);
+      ctx.fill();
+      ctx.strokeStyle = '#451a03';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+
+      ctx.strokeStyle = '#92400e';
+      ctx.beginPath();
+      ctx.moveTo(x - 16, y);
+      ctx.lineTo(x + 14, y);
+      ctx.stroke();
+
+      // Frog perched on top of log
+      ctx.font = '20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🐸', x - 2, y - 4);
+
+      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 3;
+      ctx.textAlign = 'center';
+      ctx.fillText('Frog', x, y + 21);
+      ctx.shadowBlur = 0;
+      drawVectorArrow(x, y, v_rel, '#b45309');
+      ctx.restore();
+    }
+
+    function drawFish(x, y) {
+      ctx.save();
+      const isSelected = state.currentFrame === 'fish';
+      const v_rel = getRelativeVelocity('fish');
+
+      if (isSelected) {
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const facingWest = state.velocities.fish < 0;
+
+      ctx.save();
+      ctx.translate(x, y);
+      if (!facingWest) ctx.scale(-1, 1);
+
+      // Bright Pink Fish Body Gradient
+      const fishGrad = ctx.createLinearGradient(-16, 0, 16, 0);
+      fishGrad.addColorStop(0, '#f43f5e');
+      fishGrad.addColorStop(0.5, '#ec4899');
+      fishGrad.addColorStop(1, '#fb7185');
+      ctx.fillStyle = fishGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 16, 8.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#be123c';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Fish Tail
+      ctx.beginPath();
+      ctx.moveTo(13, 0);
+      ctx.lineTo(24, -9);
+      ctx.lineTo(19, 0);
+      ctx.lineTo(24, 9);
+      ctx.closePath();
+      ctx.fillStyle = '#fb7185';
+      ctx.fill();
+      ctx.strokeStyle = '#be123c';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Dorsal Fin
+      ctx.beginPath();
+      ctx.moveTo(-4, -8);
+      ctx.quadraticCurveTo(2, -14, 7, -6);
+      ctx.fillStyle = '#f43f5e';
+      ctx.fill();
+
+      // Eye
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-9, -2.5, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(-9.8, -2.5, 1.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 3;
+      ctx.textAlign = 'center';
+      ctx.fillText('Fish', x, y + 20);
+      ctx.shadowBlur = 0;
+      drawVectorArrow(x, y, v_rel, '#db2777');
+      ctx.restore();
+    }
+
+    function drawBoatAndPassenger(boatCenterX, boatCenterY) {
+      ctx.save();
+      const isBoatSelected = state.currentFrame === 'boat';
+      const isPassengerSelected = state.currentFrame === 'passenger';
+
+      const boatPixelLen = state.boatLengthMeters * PIXELS_PER_METER;
+      const boatPixelWidth = state.boatWidthMeters * PIXELS_PER_METER;
+      const halfLen = boatPixelLen / 2;
+
+      // Boat orientation
+      const boatMovesWest = state.velocities.boat < 0;
+
+      if (isBoatSelected) {
+        ctx.strokeStyle = '#4338ca';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.roundRect(boatCenterX - halfLen - 10, boatCenterY - (boatPixelWidth / 2) - 8, boatPixelLen + 20, boatPixelWidth + 16, 14);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.save();
+      ctx.translate(boatCenterX, boatCenterY);
+
+      // Hull Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.beginPath();
+      ctx.ellipse(0, (boatPixelWidth / 2) + 3, halfLen + 4, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hull
+      const hullGrad = ctx.createLinearGradient(0, -boatPixelWidth / 2, 0, boatPixelWidth / 2);
+      hullGrad.addColorStop(0, '#312e81');
+      hullGrad.addColorStop(0.5, '#4338ca');
+      hullGrad.addColorStop(1, '#1e1b4b');
+      ctx.fillStyle = hullGrad;
+      ctx.strokeStyle = '#1e1b4b';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+
+      if (boatMovesWest) {
+        ctx.moveTo(-halfLen, 0);
+        ctx.lineTo(-halfLen + 28, -boatPixelWidth / 2);
+        ctx.lineTo(halfLen, -boatPixelWidth / 2);
+        ctx.lineTo(halfLen, boatPixelWidth / 2);
+        ctx.lineTo(-halfLen + 28, boatPixelWidth / 2);
+      } else {
+        ctx.moveTo(halfLen, 0);
+        ctx.lineTo(halfLen - 28, -boatPixelWidth / 2);
+        ctx.lineTo(-halfLen, -boatPixelWidth / 2);
+        ctx.lineTo(-halfLen, boatPixelWidth / 2);
+        ctx.lineTo(halfLen - 28, boatPixelWidth / 2);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Deck
+      ctx.fillStyle = '#f8fafc';
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      if (boatMovesWest) {
+        ctx.roundRect(-halfLen + 20, -boatPixelWidth / 2 + 5, boatPixelLen - 26, boatPixelWidth - 10, 5);
+      } else {
+        ctx.roundRect(-halfLen + 6, -boatPixelWidth / 2 + 5, boatPixelLen - 26, boatPixelWidth - 10, 5);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Cabin
+      ctx.fillStyle = '#38bdf8';
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-14, -boatPixelWidth / 2 + 9, 28, boatPixelWidth - 18, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+
+      // Boat label & Vector
+      const v_boat_rel = getRelativeVelocity('boat');
+      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 3;
+      ctx.textAlign = 'center';
+      ctx.fillText('Boat', boatCenterX, boatCenterY + 42);
+      ctx.shadowBlur = 0;
+      drawVectorArrow(boatCenterX, boatCenterY, v_boat_rel, '#4338ca');
+
+      // Passenger walking from front (bow) to back (stern)
+      let bowX, sternX;
+      if (boatMovesWest) {
+        bowX = boatCenterX - halfLen + BOW_INSET_PX;
+        sternX = boatCenterX + halfLen - STERN_INSET_PX;
+      } else {
+        bowX = boatCenterX + halfLen - BOW_INSET_PX;
+        sternX = boatCenterX - halfLen + STERN_INSET_PX;
+      }
+
+      const passengerX = bowX + (sternX - bowX) * state.positions.passengerDeckRatio;
+      const passengerY = boatCenterY + 1;
+
+      if (isPassengerSelected) {
+        ctx.strokeStyle = '#db2777';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(passengerX, passengerY, 20, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Passenger strictly faces stern
+      const dirToStern = (sternX >= bowX) ? 1 : -1;
+
+      ctx.save();
+      ctx.translate(passengerX, passengerY);
+      ctx.scale(dirToStern, 1);
+
+      const walkCycle = Math.sin(state.positions.passengerDeckRatio * Math.PI * 18);
+      const legSpread = walkCycle * 4;
+
+      // Legs
+      ctx.strokeStyle = '#831843';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(-1, 5);
+      ctx.lineTo(-1 - legSpread, 13);
+      ctx.moveTo(1, 5);
+      ctx.lineTo(1 + legSpread, 13);
+      ctx.stroke();
+
+      // Torso
+      ctx.fillStyle = '#be185d';
+      ctx.beginPath();
+      ctx.roundRect(-4.5, -4, 9, 10, 2.5);
+      ctx.fill();
+
+      // Arm swing
+      ctx.strokeStyle = '#9d174d';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -1);
+      ctx.lineTo(legSpread * 0.9, 6);
+      ctx.stroke();
+
+      // Head
+      ctx.fillStyle = '#fbcfe8';
+      ctx.beginPath();
+      ctx.arc(0, -9, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cap visor facing forward toward stern
+      ctx.fillStyle = '#9d174d';
+      ctx.beginPath();
+      ctx.arc(0, -10, 4.2, Math.PI, 0);
+      ctx.lineTo(4.5, -9);
+      ctx.lineTo(2, -8);
+      ctx.closePath();
+      ctx.fill();
+
+      // Eye
+      ctx.fillStyle = '#831843';
+      ctx.beginPath();
+      ctx.arc(2.2, -9, 0.9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Passenger Vector: positioned to the left of the passenger so it never overlaps the passenger
+      const v_passenger_rel = getRelativeVelocity('passenger');
+      const arrowScale = 12;
+      const passMag = Math.abs(v_passenger_rel);
+      const passArrowLen = Math.max(32, Math.min(140, passMag * arrowScale));
+
+      // Keep the vector strictly to the left of the passenger (with clearance from passenger center)
+      let passVectorX;
+      if (v_passenger_rel > 0.05) {
+        // Pointing East: start further left so the arrowhead terminates at (passengerX - 18)
+        passVectorX = passengerX - 18 - passArrowLen;
+      } else {
+        // Pointing West or stationary: anchor at (passengerX - 18)
+        passVectorX = passengerX - 18;
+      }
+
+      drawVectorArrow(passVectorX, passengerY, v_passenger_rel, '#be185d', passengerY, passengerY - 14);
+
+      ctx.restore();
+    }
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      const width = rect.width;
+      const height = rect.height;
+
+      const topShoreHeight = 64;
+      const bottomShoreHeight = 64;
+      const riverTopY = topShoreHeight;
+      const riverBottomY = height - bottomShoreHeight;
+      const riverHeight = riverBottomY - riverTopY;
+
+      // Click on shoreline
+      if (clickY <= topShoreHeight || clickY >= riverBottomY) {
+        setReferenceFrame('shore');
+        return;
+      }
+
+      // Turtle lane
+      const turtleX = worldToScreenX(state.positions.turtle, width);
+      const turtleY = riverTopY + (riverHeight * 0.16);
+      if (Math.hypot(clickX - turtleX, clickY - turtleY) < 28) {
+        setReferenceFrame('turtle');
+        return;
+      }
+
+      // Frog on log lane (combined with River frame)
+      const logX = worldToScreenX(state.positions.log, width);
+      const logY = riverTopY + (riverHeight * 0.38);
+      if (Math.hypot(clickX - logX, clickY - logY) < 32) {
+        setReferenceFrame('river');
+        return;
+      }
+
+      // Boat & Passenger lane
+      const boatCenterX = worldToScreenX(state.positions.boat, width);
+      const boatCenterY = riverTopY + (riverHeight * 0.65);
+      const boatPixelLen = state.boatLengthMeters * PIXELS_PER_METER;
+
+      if (Math.abs(clickX - boatCenterX) < (boatPixelLen / 2) + 16 && Math.abs(clickY - boatCenterY) < 28) {
+        if (state.currentFrame === 'boat') {
+          setReferenceFrame('passenger');
+        } else {
+          setReferenceFrame('boat');
+        }
+        return;
+      }
+
+      // Fish lane
+      const fishX = worldToScreenX(state.positions.fish, width);
+      const fishY = riverTopY + (riverHeight * 0.88);
+      if (Math.hypot(clickX - fishX, clickY - fishY) < 28) {
+        setReferenceFrame('fish');
+        return;
+      }
+
+      // River Water background
+      setReferenceFrame('river');
+    });
+
+    let lastTime = performance.now();
+    function animateLoop(now) {
+      const deltaSec = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      // Re-size the canvas if its display size or the device pixel ratio changed
+      // (e.g. window dragged to a monitor with a different scaling), so it never renders blurry.
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+        resizeCanvas();
+      }
+
+      if (state.isPlaying) {
+        stepPhysics(deltaSec * BASE_SIM_SPEED * state.speedMultiplier);
+      }
+
+      drawSimulation();
+      requestAnimationFrame(animateLoop);
+    }
+
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      renderFrameButtons();
+      updateSliderLabels();
+      updateHUD();
+      requestAnimationFrame(animateLoop);
+    });
+  </script>
+</body>
+</html>
