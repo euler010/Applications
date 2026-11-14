@@ -9,17 +9,17 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
 :root{
-  --bg:#eef1f5; --surface:#ffffff; --ink:#17202b; --muted:#5a6575; --line:#d8dde5; --grid:#e8ebf0; --axis:#3d4654;
+  --bg:#eef1f5; --surface:#ffffff; --ink:#17202b; --muted:#5a6575; --line:#d8dde5; --grid:#e8ebf0; --axis:#1f2630;
   --x:#2861a6; --v:#7b3fbf; --a:#2b8653; --pos:#b9d7f7; --neg:#f7bcbc; --accent:#17202b; --accent-ink:#ffffff;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body:"Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
   --mono:"Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
+  --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#dde3ea;
   --x:#73aaf0; --v:#b48cf0; --a:#5fc78d; --pos:#34506f; --neg:#6e3a3e; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
+  --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#dde3ea;
   --x:#73aaf0; --v:#b48cf0; --a:#5fc78d; --pos:#34506f; --neg:#6e3a3e; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
 .wrap{max-width:1040px;margin:0 auto;padding-block:26px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
@@ -100,7 +100,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
   <div class="stage">
     <svg viewBox="0 48 1000 174" role="img" aria-labelledby="stageT">
       <title id="stageT">Your cat on a number line</title>
-      <text x="990" y="66" fill="#8a7f70" font-size="13" font-family="Inter, system-ui, sans-serif" text-anchor="end">x (m)</text>
+      <text x="990" y="66" fill="#3f382f" font-size="13" font-family="Inter, system-ui, sans-serif" text-anchor="end">x (m)</text>
       <g id="axis"></g>
       <g id="disp"><path id="dLine" stroke="#2861a6" stroke-width="3" stroke-linecap="round" fill="none"/><path id="dHead" fill="#2861a6"/><text id="dLab" fill="#2861a6" font-size="13" font-family="Inter, system-ui, sans-serif"></text></g>
       <g id="arrows">
@@ -221,7 +221,7 @@ const xToX=xm=>LX+(xm-XLO)*PPM;
 function drawAxis(){let s=`<line x1="${LX-12}" y1="${FLOOR}" x2="${RX+12}" y2="${FLOOR}" stroke="#b9ae9f" stroke-width="3" stroke-linecap="round"/>`;
   const k0=Math.ceil(XLO/TICK-1e-9),k1=Math.floor(XHI/TICK+1e-9),dec=Math.max(0,-Math.floor(Math.log10(TICK*2)+1e-9));
   for(let k=k0;k<=k1;k++){const m=k===0?0:k*TICK,X=xToX(m),big=k%2===0;s+=`<line x1="${X}" y1="${FLOOR+1}" x2="${X}" y2="${FLOOR+(big?13:7)}" stroke="#a69a89" stroke-width="${m===0?2.5:1.5}"/>`;
-    if(big)s+=`<text x="${X}" y="${FLOOR+32}" fill="${m===0?'#3d362c':'#6f6556'}" font-size="${m===0?16:14}" font-weight="${m===0?600:400}" font-family="Inter, system-ui, sans-serif" text-anchor="middle">${fmt(m,Math.abs(m-Math.round(m))<1e-9?0:dec)}</text>`}
+    if(big)s+=`<text x="${X}" y="${FLOOR+32}" fill="${m===0?'#2a241d':'#3f382f'}" font-size="${m===0?16:14}" font-weight="${m===0?600:400}" font-family="Inter, system-ui, sans-serif" text-anchor="middle">${fmt(m,Math.abs(m-Math.round(m))<1e-9?0:dec)}</text>`}
   $('axis').innerHTML=s}
 
 /* ---------- cat rig (from Kittymatics) ---------- */
