@@ -302,11 +302,6 @@
       </div>
     </div>
 
-    <!-- Instruction footer -->
-    <div class="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex items-center gap-2">
-      <i class="fa-solid fa-circle-info text-blue-600"></i>
-      <span>Drag any vector's circular arrowhead to modify magnitude and angle.</span>
-    </div>
   </aside>
 
   <!-- Interactive Canvas Workspace -->
@@ -960,7 +955,7 @@
       ctx.restore();
     }
 
-    function drawArrow(startX, startY, endX, endY, color, isDashed = false, lineWidth = 3.5) {
+    function drawArrow(startX, startY, endX, endY, color, isDashed = false, lineWidth = 3.5, maxHeadLength = 15, dashPattern = [6, 5]) {
       const dx = endX - startX;
       const dy = endY - startY;
       const angle = Math.atan2(dy, dx);
@@ -969,7 +964,7 @@
       // on the first frame of the resultant reveal)
       if (length < 1) return;
       // FIX: the head shrinks on short arrows so it never sticks out behind the tail
-      const headLength = Math.min(15, length * 0.6);
+      const headLength = Math.min(maxHeadLength, length * 0.6);
 
       ctx.save();
       ctx.strokeStyle = color;
@@ -979,7 +974,7 @@
       ctx.lineJoin = 'round';
 
       if (isDashed) {
-        ctx.setLineDash([6, 5]);
+        ctx.setLineDash(dashPattern);
       } else {
         ctx.setLineDash([]);
       }
@@ -1020,24 +1015,24 @@
       const headX = v.tailX + v.dx;
       const headY = v.tailY - v.dy; // inverted y for canvas
 
-      ctx.save();
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
+      // Components are drawn as dashed arrows (2.5px, one pixel thicker than the old lines),
+      // placed head-to-tail: x-component from the tail, then y-component up/down to the head.
+      const COMPONENT_COLOR = '#94a3b8'; // slate-400
+      const COMPONENT_WIDTH = 2.5;
+      const COMPONENT_HEAD = 10;
+      const COMPONENT_DASH = [4, 4];
 
       // X component: (tailX, tailY) -> (headX, tailY)
-      ctx.strokeStyle = '#94a3b8'; // slate-400
-      ctx.beginPath();
-      ctx.moveTo(v.tailX, v.tailY);
-      ctx.lineTo(headX, v.tailY);
-      ctx.stroke();
+      drawArrow(v.tailX, v.tailY, headX, v.tailY, COMPONENT_COLOR, true, COMPONENT_WIDTH, COMPONENT_HEAD, COMPONENT_DASH);
 
-      // Y component: (headX, tailY) -> (headX, headY)
-      ctx.beginPath();
-      ctx.moveTo(headX, v.tailY);
-      ctx.lineTo(headX, headY);
-      ctx.stroke();
-
-      ctx.restore();
+      // Y component: (headX, tailY) -> (headX, headY). The tip stops just short of the
+      // vector's drag circle so its arrowhead isn't hidden underneath it.
+      const HANDLE_CLEARANCE = 9;
+      const yLen = Math.abs(headY - v.tailY);
+      const yEndY = yLen > HANDLE_CLEARANCE * 2
+        ? headY + Math.sign(v.tailY - headY) * HANDLE_CLEARANCE
+        : headY;
+      drawArrow(headX, v.tailY, headX, yEndY, COMPONENT_COLOR, true, COMPONENT_WIDTH, COMPONENT_HEAD, COMPONENT_DASH);
     }
 
     function drawAngleArc(v, idx) {
