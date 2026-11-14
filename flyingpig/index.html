@@ -1,0 +1,2108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conical Pendulum 3D Simulation</title>
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Google Fonts Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom clean scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.7);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    /* Glassmorphism card utility */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+    }
+    .glass-btn {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+    .glass-btn:active {
+      transform: translateY(0);
+    }
+    /* Improved smooth range slider styles */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      transition: background 0.2s;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      margin-top: -6px;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+      transition: transform 0.1s, background-color 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #1d4ed8;
+    }
+    input[type=range]::-moz-range-track {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+    }
+    /* High-contrast hand cursor with dark border against white background */
+    .cursor-grab {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='%23ffffff' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 11V6a2 2 0 0 0-4 0v4'%3E%3C/path%3E%3Cpath d='M14 10V4a2 2 0 0 0-4 0v7'%3E%3C/path%3E%3Cpath d='M10 10.5V6a2 2 0 0 0-4 0v8'%3E%3C/path%3E%3Cpath d='M18 8a2 2 0 0 1 4 2v4a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15'%3E%3C/path%3E%3C/svg%3E") 12 12, grab !important;
+    }
+    .cursor-grab:active, .cursor-grabbing {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='%23ffffff' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 11.5V9a2 2 0 0 0-4 0v2.5'%3E%3C/path%3E%3Cpath d='M14 10.5V8a2 2 0 0 0-4 0v2.5'%3E%3C/path%3E%3Cpath d='M10 11V9a2 2 0 0 0-4 0v4.5'%3E%3C/path%3E%3Cpath d='M18 11a2 2 0 0 1 4 2v2a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-2.6-2.6a2 2 0 0 1 2.83-2.82L9 15'%3E%3C/path%3E%3C/svg%3E") 12 12, grabbing !important;
+    }
+
+    /* Mobile drawer slide transition for viewports under 768px */
+    @media (max-width: 767px) {
+      .mobile-drawer-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 80vh;
+        z-index: 40;
+        transform: translateY(105%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(203, 213, 225, 0.8);
+        border-radius: 1.5rem 1.5rem 0 0;
+        box-shadow: 0 -12px 35px -8px rgba(15, 23, 42, 0.18);
+      }
+      .mobile-drawer-sheet.drawer-open {
+        transform: translateY(0);
+      }
+      .mobile-drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.35);
+        backdrop-filter: blur(3px);
+        z-index: 35;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .mobile-drawer-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    /* Safe area padding for mobile action buttons - raised for full mobile browser bar clearance */
+    .mobile-safe-bottom {
+      bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+    }
+  </style>
+  <!-- Utility Stylesheet (hand-written replacement for the Tailwind CSS CDN) -->
+  <style id="utility-styles">
+    /* ===== Base reset (Tailwind preflight equivalent) ===== */
+    *, ::before, ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: #e5e7eb;
+    }
+    ::before, ::after { --tw-content: ''; }
+    html {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      tab-size: 4;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { margin: 0; line-height: inherit; }
+    h1, p { margin: 0; }
+    h1 { font-size: inherit; font-weight: inherit; }
+    sub {
+      font-size: 75%;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+      bottom: -0.25em;
+    }
+    button, input {
+      font-family: inherit;
+      font-size: 100%;
+      font-weight: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+      padding: 0;
+    }
+    button {
+      -webkit-appearance: button;
+      background-color: transparent;
+      background-image: none;
+      cursor: pointer;
+      text-transform: none;
+    }
+    svg, canvas { display: block; vertical-align: middle; }
+    [hidden] { display: none; }
+
+    /* ===== Shadow variable defaults ===== */
+    *, ::before, ::after {
+      --tw-shadow: 0 0 #0000;
+      --tw-shadow-colored: 0 0 #0000;
+    }
+
+    /* ===== Display ===== */
+    .block { display: block; }
+    .flex { display: flex; }
+    .inline-flex { display: inline-flex; }
+    .grid { display: grid; }
+    .hidden { display: none; }
+
+    /* ===== Position ===== */
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .fixed { position: fixed; }
+    .inset-0 { inset: 0; }
+    .inset-x-0 { left: 0; right: 0; }
+    .top-4 { top: 1rem; }
+    .top-20 { top: 5rem; }
+    .left-4 { left: 1rem; }
+    .right-4 { right: 1rem; }
+    .z-0 { z-index: 0; }
+    .z-20 { z-index: 20; }
+    .z-30 { z-index: 30; }
+
+    /* ===== Sizing ===== */
+    .w-2\.5 { width: 0.625rem; }
+    .w-3 { width: 0.75rem; }
+    .w-4 { width: 1rem; }
+    .w-5 { width: 1.25rem; }
+    .w-8 { width: 2rem; }
+    .w-full { width: 100%; }
+    .w-screen { width: 100vw; }
+    .w-\[272px\] { width: 272px; }
+    .max-w-\[calc\(100vw-2rem\)\] { max-width: calc(100vw - 2rem); }
+    .h-2\.5 { height: 0.625rem; }
+    .h-3 { height: 0.75rem; }
+    .h-4 { height: 1rem; }
+    .h-5 { height: 1.25rem; }
+    .h-8 { height: 2rem; }
+    .h-full { height: 100%; }
+    .h-screen { height: 100vh; }
+    .max-h-\[calc\(100vh-100px\)\] { max-height: calc(100vh - 100px); }
+
+    /* ===== Flex & Grid ===== */
+    .flex-1 { flex: 1 1 0%; }
+    .flex-wrap { flex-wrap: wrap; }
+    .items-center { align-items: center; }
+    .items-baseline { align-items: baseline; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+
+    /* ===== Vertical rhythm (space-y) ===== */
+    .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }
+    .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+    .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+    .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+
+    /* ===== Overflow & interaction ===== */
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+    .pointer-events-none { pointer-events: none; }
+    .pointer-events-auto { pointer-events: auto; }
+    .cursor-pointer { cursor: pointer; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* ===== Spacing ===== */
+    .p-1 { padding: 0.25rem; }
+    .p-1\.5 { padding: 0.375rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-3\.5 { padding: 0.875rem; }
+    .p-4 { padding: 1rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .pt-1 { padding-top: 0.25rem; }
+    .pt-2 { padding-top: 0.5rem; }
+    .pt-3 { padding-top: 0.75rem; }
+    .pb-2 { padding-bottom: 0.5rem; }
+    .pb-3 { padding-bottom: 0.75rem; }
+    .pb-4 { padding-bottom: 1rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+
+    /* ===== Borders & radius ===== */
+    .border { border-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-slate-100 { border-color: #f1f5f9; }
+    .border-slate-200 { border-color: #e2e8f0; }
+    .border-slate-200\/80 { border-color: rgba(226, 232, 240, 0.8); }
+    .border-blue-200 { border-color: #bfdbfe; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* ===== Backgrounds ===== */
+    .bg-slate-50 { background-color: #f8fafc; }
+    .bg-slate-50\/80 { background-color: rgba(248, 250, 252, 0.8); }
+    .bg-slate-50\/90 { background-color: rgba(248, 250, 252, 0.9); }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .bg-slate-200 { background-color: #e2e8f0; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-emerald-100 { background-color: #d1fae5; }
+    .bg-emerald-500 { background-color: #10b981; }
+    .bg-emerald-600 { background-color: #059669; }
+    .bg-amber-100 { background-color: #fef3c7; }
+    .bg-amber-500 { background-color: #f59e0b; }
+    .bg-rose-600 { background-color: #e11d48; }
+
+    /* ===== Typography ===== */
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-\[15px\] { font-size: 15px; }
+    .text-xs { font-size: 0.75rem; line-height: 1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .leading-tight { line-height: 1.25; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wide { letter-spacing: 0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .uppercase { text-transform: uppercase; }
+    .text-center { text-align: center; }
+    .text-white { color: #ffffff; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-600 { color: #475569; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-800 { color: #1e293b; }
+    .text-slate-900 { color: #0f172a; }
+    .text-blue-600 { color: #2563eb; }
+    .text-blue-700 { color: #1d4ed8; }
+    .text-indigo-600 { color: #4f46e5; }
+    .text-teal-600 { color: #0d9488; }
+    .text-emerald-600 { color: #059669; }
+    .text-emerald-800 { color: #065f46; }
+    .text-amber-600 { color: #d97706; }
+    .text-amber-800 { color: #92400e; }
+
+    /* ===== Shadows (size, then optional tint) ===== */
+    .shadow-sm {
+      --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+      box-shadow: var(--tw-shadow);
+    }
+    .shadow-md {
+      --tw-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+      box-shadow: var(--tw-shadow);
+    }
+    .shadow-lg {
+      --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+      box-shadow: var(--tw-shadow);
+    }
+    .shadow-xl {
+      --tw-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+      box-shadow: var(--tw-shadow);
+    }
+    .shadow-blue-400\/50 { --tw-shadow-color: rgba(96, 165, 250, 0.5); --tw-shadow: var(--tw-shadow-colored); }
+    .shadow-blue-500\/20 { --tw-shadow-color: rgba(59, 130, 246, 0.2); --tw-shadow: var(--tw-shadow-colored); }
+    .shadow-emerald-400\/50 { --tw-shadow-color: rgba(52, 211, 153, 0.5); --tw-shadow: var(--tw-shadow-colored); }
+    .shadow-amber-400\/50 { --tw-shadow-color: rgba(251, 191, 36, 0.5); --tw-shadow: var(--tw-shadow-colored); }
+    .shadow-emerald-900\/25 { --tw-shadow-color: rgba(6, 78, 59, 0.25); --tw-shadow: var(--tw-shadow-colored); }
+    .shadow-rose-900\/25 { --tw-shadow-color: rgba(136, 19, 55, 0.25); --tw-shadow: var(--tw-shadow-colored); }
+
+    /* ===== Transitions & animation ===== */
+    .transition-all {
+      transition-property: all;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .transition-colors {
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    @keyframes pulse {
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    /* ===== Hover / active states ===== */
+    .hover\:bg-slate-100\/60:hover { background-color: rgba(241, 245, 249, 0.6); }
+    .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+    .hover\:bg-emerald-700:hover { background-color: #047857; }
+    .hover\:bg-rose-700:hover { background-color: #be123c; }
+    .hover\:text-slate-600:hover { color: #475569; }
+    .hover\:text-slate-900:hover { color: #0f172a; }
+    .active\:bg-slate-100:active { background-color: #f1f5f9; }
+    .active\:scale-95:active { transform: scale(0.95); }
+
+    /* ===== Toggle switch (peer + ::after knob) ===== */
+    .peer-focus\:outline-none { outline: none; }
+    .after\:content-\[\'\'\]::after { --tw-content: ''; content: var(--tw-content); }
+    .after\:absolute::after { content: var(--tw-content); position: absolute; }
+    .after\:top-\[2px\]::after { content: var(--tw-content); top: 2px; }
+    .after\:left-\[2px\]::after { content: var(--tw-content); left: 2px; }
+    .after\:h-3::after { content: var(--tw-content); height: 0.75rem; }
+    .after\:w-3::after { content: var(--tw-content); width: 0.75rem; }
+    .after\:rounded-full::after { content: var(--tw-content); border-radius: 9999px; }
+    .after\:border::after { content: var(--tw-content); border-width: 1px; }
+    .after\:border-slate-300::after { content: var(--tw-content); border-color: #cbd5e1; }
+    .after\:bg-white::after { content: var(--tw-content); background-color: #ffffff; }
+    .after\:transition-all::after {
+      content: var(--tw-content);
+      transition-property: all;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+    .peer:checked ~ .peer-checked\:bg-blue-600 { background-color: #2563eb; }
+    .peer:checked ~ .peer-checked\:bg-amber-500 { background-color: #f59e0b; }
+    .peer:checked ~ .peer-checked\:after\:translate-x-full::after { content: var(--tw-content); transform: translateX(100%); }
+    .peer:checked ~ .peer-checked\:after\:border-white::after { content: var(--tw-content); border-color: #ffffff; }
+    .peer:focus ~ .peer-focus\:outline-none { outline: none; }
+
+    /* ===== Responsive (min-width: 768px) ===== */
+    @media (min-width: 768px) {
+      .md\:block { display: block; }
+      .md\:flex { display: flex; }
+      .md\:hidden { display: none; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen w-screen relative overflow-hidden">
+  <!-- 3D WebGL Canvas Container -->
+  <div id="webgl-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+
+  <!-- Top App Navigation / Header Bar (Hidden on mobile phones <768px for clean view) -->
+  <header class="hidden md:flex absolute top-4 left-4 z-20 flex-wrap items-center gap-3 pointer-events-none">
+    <div class="glass-card px-4 py-2.5 rounded-2xl flex items-center gap-3 pointer-events-auto">
+      <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" stroke-width="2"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v9l5 5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm font-bold tracking-tight text-slate-900 leading-tight">Conical Pendulum Lab</h1>
+        </div>
+        <p class="text-[11px] text-slate-500 font-medium">3D Mechanics of Flying Pigs</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Left Floating Analytics & Free Body Diagram Card (Desktop/Laptop: Visible; Mobile <768px: hidden) -->
+  <aside id="desktop-panel-left" class="hidden md:block absolute top-20 left-4 z-20 w-[272px] max-w-[calc(100vw-2rem)] pointer-events-none">
+    <div class="glass-card rounded-2xl p-4 pointer-events-auto max-h-[calc(100vh-100px)] overflow-y-auto space-y-4">
+      <!-- Camera View Presets -->
+      <div class="border-b border-slate-200/80 pb-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Camera View</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button id="cam-orbit" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 shadow-xs text-center">
+            3D Orbit
+          </button>
+          <button id="cam-side" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center">
+            Front (FBD)
+          </button>
+          <button id="cam-top" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center">
+            Top View
+          </button>
+          <button id="cam-follow" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center">
+            Follow Pig
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Dynamics Telemetry -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Telemetry</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+            Real-time
+          </span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block text-[10px]">Cone Angle</span>
+            <span id="stat-angle" class="text-lg font-bold font-mono text-indigo-600">0.0°</span>
+          </div>
+          <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block text-[10px]">Pig Speed</span>
+            <span id="stat-speed" class="text-lg font-bold font-mono text-teal-600">0.00 m/s</span>
+          </div>
+          <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block text-[10px]">Tension Force</span>
+            <span id="stat-tension" class="text-lg font-bold font-mono text-blue-600">0.0 N</span>
+          </div>
+          <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
+            <span class="text-slate-400 block text-[10px]">Centripetal Force</span>
+            <span id="stat-fc" class="text-lg font-bold font-mono text-amber-600">0.0 N</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Free Body Diagram (FBD) Legend -->
+      <div id="fbd-panel-legend" class="border-t border-slate-200/80 pt-3" style="opacity: 0.4;">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Force Vector Legend</span>
+        </div>
+
+        <div class="space-y-1.5 text-xs">
+          <div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-400/50"></span>
+              <span class="font-medium text-slate-700">Tension (<span class="font-mono font-semibold text-blue-600">F<sub>T</sub></span>)</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400/50"></span>
+              <span class="font-medium text-slate-700">Gravity / Weight (<span class="font-mono font-semibold text-emerald-600">F<sub>g</sub></span>)</span>
+            </div>
+          </div>
+
+          <div id="fbd-fc-legend" class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors" style="opacity: 0.4;">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-400/50"></span>
+              <span class="font-medium text-slate-700">Centripetal (<span class="font-mono font-semibold text-amber-600">F<sub>c</sub></span>)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right Floating Control Panel (Desktop: Visible; Mobile <768px: hidden) -->
+  <aside id="desktop-panel-right" class="hidden md:block absolute top-4 right-4 z-20 w-[272px] max-w-[calc(100vw-2rem)] pointer-events-none">
+    <div class="glass-card rounded-2xl p-3.5 pointer-events-auto space-y-3 shadow-lg text-[15px]">
+      <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Simulation Controls</span>
+        <span id="badge-motion-status" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+          At Rest
+        </span>
+      </div>
+
+      <!-- Simulation Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button id="btn-play-pause" class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-all">
+          <svg id="icon-pause" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <svg id="icon-play" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span id="text-play-pause">Play</span>
+        </button>
+        
+        <button id="btn-reset" class="glass-btn py-2.5 px-3 rounded-xl text-slate-700 hover:text-slate-900 font-medium text-sm flex items-center justify-center gap-1.5 shadow-sm" title="Reset Simulation">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          <span>Reset</span>
+        </button>
+      </div>
+
+      <!-- Feature Toggle Switches Bar (Vertically Stacked) -->
+      <div class="pt-2 border-t border-slate-200/80 space-y-2 text-sm">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Show Force Vectors (FBD)</span>
+          <input type="checkbox" id="chk-fbd" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+        </label>
+
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Vector Components</span>
+          <input type="checkbox" id="chk-components" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+        </label>
+
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Centripetal Force (<span class="font-mono font-semibold text-amber-600">F<sub>c</sub></span>)</span>
+          <input type="checkbox" id="chk-fc" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
+        </label>
+
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Orbit Ring & Cone</span>
+          <input type="checkbox" id="chk-orbit" checked class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+        </label>
+      </div>
+
+      <!-- Vertically Stacked Physical Parameter Sliders -->
+      <div class="space-y-2.5 pt-2 border-t border-slate-200/80">
+        <!-- Motor Angular Velocity ω -->
+        <div class="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-1">
+          <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
+            <span>Rotation Speed (ω)</span>
+          </div>
+          <div id="val-omega" class="font-mono text-xs font-semibold text-blue-600">0.0 rpm (0.00 rad/s)</div>
+          <input type="range" id="input-omega" min="0" max="6.0" step="0.05" value="2.25"
+            class="w-full">
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>0 rpm</span>
+            <span>57.3 rpm</span>
+          </div>
+        </div>
+
+        <!-- Pendulum Cable Length L -->
+        <div class="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-1">
+          <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
+            <span>String Length (L)</span>
+            <span id="val-length" class="font-mono text-xs font-semibold text-slate-800">3.0 m</span>
+          </div>
+          <input type="range" id="input-length" min="1.5" max="5.0" step="0.1" value="3.0"
+            class="w-full">
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>1.5 m</span>
+            <span>5.0 m</span>
+          </div>
+        </div>
+
+        <!-- Flying Pig Mass m -->
+        <div class="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-1">
+          <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
+            <span>Pig Mass (m)</span>
+            <span id="val-mass" class="font-mono text-xs font-semibold text-slate-800">25 kg</span>
+          </div>
+          <input type="range" id="input-mass" min="15" max="45" step="1" value="25"
+            class="w-full">
+          <div class="flex justify-between text-[11px] text-slate-400">
+            <span>15 kg</span>
+            <span>45 kg</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-1 text-xs text-slate-400 text-center">
+        Left-drag to rotate • Scroll to zoom
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile-Only Floating Play / Stop Action Bar (<768px) -->
+  <div class="md:hidden fixed mobile-safe-bottom inset-x-0 z-30 flex items-center justify-center px-4 pointer-events-none">
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <!-- Primary Mobile Play / Stop Toggle Button -->
+      <button id="btn-mobile-play-pause" class="flex items-center gap-2.5 px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold text-sm shadow-xl shadow-emerald-900/25 transition-all">
+        <svg id="icon-mobile-play" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <svg id="icon-mobile-stop" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span id="text-mobile-play-pause" class="tracking-wide">Play</span>
+      </button>
+
+      <!-- Mobile Drawer Expand Button for optional settings & telemetry -->
+      <button id="btn-open-drawer" class="glass-btn p-3 rounded-full text-slate-700 active:scale-95 shadow-md flex items-center justify-center" aria-label="Open Controls Drawer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Backdrop Overlay (<768px) -->
+  <div id="drawer-backdrop" class="mobile-drawer-backdrop md:hidden"></div>
+
+  <!-- Mobile Collapsible Settings & Telemetry Drawer (<768px) -->
+  <aside id="mobile-drawer" class="mobile-drawer-sheet md:hidden">
+    <!-- Drawer Handle / Drag Header -->
+    <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+      <div class="flex items-center gap-2">
+        <div class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></div>
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Conical Pendulum Lab</span>
+      </div>
+      <button id="btn-close-drawer" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 active:bg-slate-100" aria-label="Close Drawer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Scrollable Drawer Body Content -->
+    <div class="overflow-y-auto px-5 py-4 space-y-4">
+      <!-- Camera View Presets on Mobile -->
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Camera Angle</span>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button id="m-cam-orbit" class="glass-btn px-2 py-2 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 text-center">Orbit</button>
+          <button id="m-cam-side" class="glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center">Front</button>
+          <button id="m-cam-top" class="glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center">Top</button>
+          <button id="m-cam-follow" class="glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center">Follow</button>
+        </div>
+      </div>
+
+      <!-- Live Telemetry in Mobile Drawer -->
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Live Dynamics</span>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block text-[10px]">Cone Angle</span>
+            <span id="m-stat-angle" class="text-base font-bold font-mono text-indigo-600">0.0°</span>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block text-[10px]">Pig Speed</span>
+            <span id="m-stat-speed" class="text-base font-bold font-mono text-teal-600">0.00 m/s</span>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block text-[10px]">Tension Force</span>
+            <span id="m-stat-tension" class="text-base font-bold font-mono text-blue-600">0.0 N</span>
+          </div>
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span class="text-slate-400 block text-[10px]">Centripetal Force</span>
+            <span id="m-stat-fc" class="text-base font-bold font-mono text-amber-600">0.0 N</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Toggles on Mobile -->
+      <div class="pt-2 border-t border-slate-200 space-y-2 text-sm">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Show Force Vectors (FBD)</span>
+          <input type="checkbox" id="m-chk-fbd" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
+        </label>
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="font-medium text-slate-700">Centripetal Force (Fc)</span>
+          <input type="checkbox" id="m-chk-fc" class="sr-only peer">
+          <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
+        </label>
+      </div>
+
+      <!-- Sliders inside Mobile Drawer -->
+      <div class="space-y-3 pt-2 border-t border-slate-200">
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+            <span>Rotation Speed</span>
+            <span id="m-val-omega" class="font-mono text-blue-600">0.0 rpm</span>
+          </div>
+          <input type="range" id="m-input-omega" min="0" max="6.0" step="0.05" value="2.25" class="w-full">
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+            <span>String Length</span>
+            <span id="m-val-length" class="font-mono text-slate-800">3.0 m</span>
+          </div>
+          <input type="range" id="m-input-length" min="1.5" max="5.0" step="0.1" value="3.0" class="w-full">
+        </div>
+      </div>
+
+      <!-- Quick Reset Button in Drawer -->
+      <div class="pt-2 pb-4">
+        <button id="m-btn-reset" class="w-full py-2.5 px-4 rounded-xl glass-btn text-slate-700 font-medium text-sm flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset Simulation
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    const GRAVITY = 9.81; // m/s²
+    const state = {
+      omega: 0.0,
+      targetOmega: 2.25,
+      length: 3.0,
+      mass: 25.0,
+      currentAngle: 0.0,
+      thetaVel: 0.0,
+      targetAngle: 0.0,
+      azimuthAngle: 0.0,
+      isPlaying: false,
+      hasStarted: false,
+      showFBD: false,
+      showComponents: false,
+      showFc: false,
+      showOrbit: true,
+      camMode: 'orbit',
+      poleHeight: 4.5,
+      armRadius: 0.45
+    };
+
+    let scene, camera, renderer, controls;
+    let poleMesh, topArmMesh, groundGrid;
+    let swingAssembly, swingRopeMesh, swingSeatGroup, childGroup;
+    let leftWingGroup, rightWingGroup;
+    let orbitRingMesh, coneMesh;
+    
+    let vectorGroup;
+    let arrowTension, arrowGravity, arrowCentripetal;
+    let arrowTensionY, arrowTensionX;
+    let labelTension, labelGravity, labelCentripetal, labelAngle;
+    let labelTensionY, labelTensionX;
+
+    function isMobileViewport() {
+      return window.innerWidth < 768;
+    }
+
+    function initScene() {
+      const container = document.getElementById('webgl-container');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf8fafc);
+      scene.fog = new THREE.FogExp2(0xf8fafc, 0.035);
+
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      
+      // Zoom out a small amount on mobile screens so the whole apparatus fits comfortably
+      if (isMobileViewport()) {
+        camera.position.set(6.45, 4.85, 8.55);
+      } else {
+        camera.position.set(5.25, 3.97, 6.99);
+      }
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.minDistance = 2.5;
+      controls.maxDistance = 25;
+      controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      controls.target.set(0, 2.4, 0);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.72);
+      scene.add(ambientLight);
+
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0xe2e8f0, 0.5);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+
+      const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
+      keyLight.position.set(10, 16, 8);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.width = 2048;
+      keyLight.shadow.mapSize.height = 2048;
+      keyLight.shadow.camera.near = 0.5;
+      keyLight.shadow.camera.far = 40;
+      keyLight.shadow.camera.left = -8;
+      keyLight.shadow.camera.right = 8;
+      keyLight.shadow.camera.top = 8;
+      keyLight.shadow.camera.bottom = -8;
+      keyLight.shadow.bias = -0.0005;
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0xe0f2fe, 0.35);
+      fillLight.position.set(-10, 10, -8);
+      scene.add(fillLight);
+
+      createEnvironment();
+      createCentralPole();
+      createSwingAndChild();
+      createVisualIndicators();
+      createVectorHelpers();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function createEnvironment() {
+      const floorGeo = new THREE.CircleGeometry(25, 64);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.9,
+        metalness: 0.05
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = 0;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      groundGrid = new THREE.GridHelper(20, 20, 0xcbd5e1, 0xe2e8f0);
+      groundGrid.position.y = 0.002;
+      scene.add(groundGrid);
+
+      const baseGeo = new THREE.CylinderGeometry(0.8, 0.9, 0.12, 48);
+      const baseMat = new THREE.MeshStandardMaterial({
+        color: 0xe2e8f0,
+        roughness: 0.4,
+        metalness: 0.6
+      });
+      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+      baseMesh.position.y = 0.06;
+      baseMesh.castShadow = true;
+      baseMesh.receiveShadow = true;
+      scene.add(baseMesh);
+
+      const rimGeo = new THREE.TorusGeometry(0.8, 0.02, 16, 48);
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+      const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+      rimMesh.rotation.x = Math.PI / 2;
+      rimMesh.position.y = 0.12;
+      scene.add(rimMesh);
+    }
+
+    function createCentralPole() {
+      poleMesh = new THREE.Group();
+
+      const columnGeo = new THREE.CylinderGeometry(0.09, 0.11, state.poleHeight, 32);
+      const columnMat = new THREE.MeshStandardMaterial({
+        color: 0xdbeafe,
+        metalness: 0.85,
+        roughness: 0.25
+      });
+      const column = new THREE.Mesh(columnGeo, columnMat);
+      column.position.y = state.poleHeight / 2;
+      column.castShadow = true;
+      column.receiveShadow = true;
+      poleMesh.add(column);
+
+      for (let i = 1; i <= 3; i++) {
+        const ringGeo = new THREE.TorusGeometry(0.105, 0.015, 16, 32);
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.6, roughness: 0.3 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = i * (state.poleHeight / 4);
+        poleMesh.add(ring);
+      }
+
+      topArmMesh = new THREE.Group();
+      topArmMesh.position.y = state.poleHeight;
+
+      const hubGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.25, 32);
+      const hubMat = new THREE.MeshStandardMaterial({
+        color: 0x1e293b,
+        metalness: 0.8,
+        roughness: 0.2
+      });
+      const hub = new THREE.Mesh(hubGeo, hubMat);
+      hub.castShadow = true;
+      topArmMesh.add(hub);
+
+      const domeGeo = new THREE.SphereGeometry(0.2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      const domeMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.7, roughness: 0.3 });
+      const dome = new THREE.Mesh(domeGeo, domeMat);
+      dome.position.y = 0.125;
+      topArmMesh.add(dome);
+
+      const armLength = state.armRadius;
+      const armGeo = new THREE.CylinderGeometry(0.04, 0.04, armLength, 16);
+      armGeo.rotateZ(Math.PI / 2);
+      armGeo.translate(armLength / 2, 0, 0);
+      const armMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7, roughness: 0.3 });
+      const arm = new THREE.Mesh(armGeo, armMat);
+      arm.castShadow = true;
+      topArmMesh.add(arm);
+
+      const knuckleGeo = new THREE.SphereGeometry(0.08, 24, 24);
+      const knuckleMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.8, roughness: 0.2 });
+      const knuckle = new THREE.Mesh(knuckleGeo, knuckleMat);
+      knuckle.position.set(armLength, 0, 0);
+      knuckle.castShadow = true;
+      topArmMesh.add(knuckle);
+
+      poleMesh.add(topArmMesh);
+      scene.add(poleMesh);
+    }
+
+    function createSwingAndChild() {
+      swingAssembly = new THREE.Group();
+
+      const ropeGeo = new THREE.CylinderGeometry(0.014, 0.014, 1.0, 16);
+      ropeGeo.translate(0, -0.5, 0);
+      const ropeMat = new THREE.MeshStandardMaterial({
+        color: 0x64748b,
+        roughness: 0.6,
+        metalness: 0.2
+      });
+      
+      swingRopeMesh = new THREE.Group();
+      const singleString = new THREE.Mesh(ropeGeo, ropeMat);
+      singleString.castShadow = true;
+      swingRopeMesh.add(singleString);
+      swingAssembly.add(swingRopeMesh);
+
+      swingSeatGroup = new THREE.Group();
+      childGroup = new THREE.Group();
+
+      function addCartoonOutline(geometry, thickness = 1.055, color = 0x1e293b) {
+        const outlineMat = new THREE.MeshBasicMaterial({
+          color: color,
+          side: THREE.BackSide
+        });
+        const outlineMesh = new THREE.Mesh(geometry, outlineMat);
+        outlineMesh.scale.set(thickness, thickness, thickness);
+        return outlineMesh;
+      }
+
+      // Unlit MeshBasicMaterial so studio lights don't bleach the pink body to white
+      const pinkSkinMat = new THREE.MeshBasicMaterial({ color: 0xff9eb5 });
+      const snoutPinkMat = new THREE.MeshBasicMaterial({ color: 0xf47296 });
+      const cheekMat = new THREE.MeshBasicMaterial({ color: 0xe11d48 });
+      const darkFeatureMat = new THREE.MeshBasicMaterial({ color: 0x18181b });
+      const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+      const pigModel = new THREE.Group();
+      pigModel.position.set(0, -0.24, 0);
+
+      const hookRingGeo = new THREE.TorusGeometry(0.032, 0.008, 12, 24);
+      const hookRingMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.2 });
+      const hookRing = new THREE.Mesh(hookRingGeo, hookRingMat);
+      hookRing.position.set(0, 0.24, 0);
+      pigModel.add(hookRing);
+
+      const bodyGroup = new THREE.Group();
+      bodyGroup.scale.set(1.28, 0.96, 0.98);
+      const bodyGeo = new THREE.SphereGeometry(0.25, 32, 24);
+      const bodyMesh = new THREE.Mesh(bodyGeo, pinkSkinMat);
+      bodyGroup.add(bodyMesh);
+      bodyGroup.add(addCartoonOutline(bodyGeo, 1.05));
+      pigModel.add(bodyGroup);
+
+      const headGroup = new THREE.Group();
+      headGroup.position.set(0.24, 0.07, 0);
+      const headGeo = new THREE.SphereGeometry(0.195, 28, 24);
+      const headMesh = new THREE.Mesh(headGeo, pinkSkinMat);
+      headGroup.add(headMesh);
+      headGroup.add(addCartoonOutline(headGeo, 1.055));
+
+      const snoutGroup = new THREE.Group();
+      snoutGroup.position.set(0.175, -0.015, 0);
+      snoutGroup.rotation.z = -Math.PI / 2;
+      snoutGroup.scale.set(0.82, 1.0, 1.15);
+      const snoutGeo = new THREE.CylinderGeometry(0.088, 0.095, 0.07, 24);
+      const snoutMesh = new THREE.Mesh(snoutGeo, snoutPinkMat);
+      snoutGroup.add(snoutMesh);
+      snoutGroup.add(addCartoonOutline(snoutGeo, 1.09));
+
+      const nostrilGeo = new THREE.SphereGeometry(0.02, 12, 12);
+      const leftNostril = new THREE.Mesh(nostrilGeo, darkFeatureMat);
+      leftNostril.scale.set(1.3, 0.4, 0.85);
+      leftNostril.position.set(0, 0.036, 0.034);
+      snoutGroup.add(leftNostril);
+
+      const rightNostril = new THREE.Mesh(nostrilGeo, darkFeatureMat);
+      rightNostril.scale.set(1.3, 0.4, 0.85);
+      rightNostril.position.set(0, 0.036, -0.034);
+      snoutGroup.add(rightNostril);
+
+      headGroup.add(snoutGroup);
+
+      [-1, 1].forEach((side) => {
+        const eyeGroup = new THREE.Group();
+        eyeGroup.position.set(0.145, 0.065, side * 0.105);
+
+        const eyeGeo = new THREE.SphereGeometry(0.028, 16, 16);
+        const eyeMesh = new THREE.Mesh(eyeGeo, darkFeatureMat);
+        eyeMesh.scale.set(0.7, 1.15, 0.95);
+        eyeGroup.add(eyeMesh);
+
+        headGroup.add(eyeGroup);
+
+        const cheekGeo = new THREE.SphereGeometry(0.03, 14, 14);
+        const cheekMesh = new THREE.Mesh(cheekGeo, cheekMat);
+        cheekMesh.scale.set(0.55, 0.7, 1.25);
+        cheekMesh.position.set(0.13, 0.0, side * 0.14);
+        headGroup.add(cheekMesh);
+      });
+
+      const smileArcGeo = new THREE.TorusGeometry(0.055, 0.009, 10, 20, Math.PI * 0.85);
+      const smileArc = new THREE.Mesh(smileArcGeo, darkFeatureMat);
+      smileArc.position.set(0.155, -0.045, 0);
+      smileArc.rotation.set(0, Math.PI / 2, -Math.PI * 0.92);
+      headGroup.add(smileArc);
+
+      const tongueGeo = new THREE.SphereGeometry(0.028, 12, 12);
+      const tongueMesh = new THREE.Mesh(tongueGeo, cheekMat);
+      tongueMesh.scale.set(0.5, 0.65, 1.1);
+      tongueMesh.position.set(0.155, -0.085, 0);
+      headGroup.add(tongueMesh);
+
+      function createPigEar(side) {
+        const earPivot = new THREE.Group();
+        earPivot.position.set(0.02, 0.155, side * 0.125);
+        earPivot.rotation.z = -0.35;
+        earPivot.rotation.x = side * 0.52;
+        earPivot.rotation.y = side * 0.25;
+
+        const earGeo = new THREE.ConeGeometry(0.075, 0.15, 16);
+        earGeo.scale(0.65, 1.0, 1.15);
+        const earMesh = new THREE.Mesh(earGeo, pinkSkinMat);
+        earMesh.position.y = 0.05;
+        earPivot.add(earMesh);
+
+        const earOutline = addCartoonOutline(earGeo, 1.1);
+        earOutline.position.y = 0.05;
+        earPivot.add(earOutline);
+
+        return earPivot;
+      }
+      headGroup.add(createPigEar(1));
+      headGroup.add(createPigEar(-1));
+
+      pigModel.add(headGroup);
+
+      function createFlyingLeg(x, y, z, sweepAngle) {
+        const legGroup = new THREE.Group();
+        legGroup.position.set(x, y, z);
+        legGroup.rotation.z = sweepAngle;
+
+        const upperLegGeo = new THREE.CylinderGeometry(0.058, 0.042, 0.18, 16);
+        upperLegGeo.translate(0, -0.08, 0);
+        const legMesh = new THREE.Mesh(upperLegGeo, pinkSkinMat);
+        legGroup.add(legMesh);
+        legGroup.add(addCartoonOutline(upperLegGeo, 1.09));
+
+        const hoofGroup = new THREE.Group();
+        hoofGroup.position.set(0, -0.17, 0);
+
+        const hoofBaseGeo = new THREE.CylinderGeometry(0.043, 0.046, 0.045, 14);
+        const hoofBase = new THREE.Mesh(hoofBaseGeo, snoutPinkMat);
+        hoofGroup.add(hoofBase);
+        hoofGroup.add(addCartoonOutline(hoofBaseGeo, 1.12));
+
+        [-1, 1].forEach((toeSide) => {
+          const toeGeo = new THREE.ConeGeometry(0.022, 0.04, 10);
+          toeGeo.rotateX(Math.PI);
+          const toe = new THREE.Mesh(toeGeo, snoutPinkMat);
+          toe.position.set(0.008, -0.03, toeSide * 0.016);
+          hoofGroup.add(toe);
+        });
+
+        legGroup.add(hoofGroup);
+        return legGroup;
+      }
+
+      pigModel.add(createFlyingLeg(0.14, -0.15, 0.11, -0.35));
+      pigModel.add(createFlyingLeg(0.14, -0.15, -0.11, -0.35));
+      pigModel.add(createFlyingLeg(-0.18, -0.14, 0.11, -0.62));
+      pigModel.add(createFlyingLeg(-0.18, -0.14, -0.11, -0.62));
+
+      const tailGroup = new THREE.Group();
+      tailGroup.position.set(-0.31, 0.03, 0);
+
+      const tailPoints = [];
+      const numPts = 40;
+      for (let i = 0; i <= numPts; i++) {
+        const t = i / numPts;
+        const angle = t * Math.PI * 2.8;
+        const radius = 0.042 * (1 - t * 0.35);
+        const tx = -t * 0.13 + Math.cos(angle) * 0.022;
+        const ty = Math.sin(angle) * radius + t * 0.03;
+        const tz = Math.cos(angle) * radius;
+        tailPoints.push(new THREE.Vector3(tx, ty, tz));
+      }
+      const tailCurve = new THREE.CatmullRomCurve3(tailPoints);
+      const tailGeo = new THREE.TubeGeometry(tailCurve, 32, 0.018, 10, false);
+      const tailMesh = new THREE.Mesh(tailGeo, pinkSkinMat);
+      tailGroup.add(tailMesh);
+
+      const tailOutlineGeo = new THREE.TubeGeometry(tailCurve, 32, 0.024, 10, false);
+      const tailOutline = new THREE.Mesh(tailOutlineGeo, new THREE.MeshBasicMaterial({
+        color: 0x1e293b,
+        side: THREE.BackSide
+      }));
+      tailGroup.add(tailOutline);
+
+      pigModel.add(tailGroup);
+
+      function createFeatheredWing(side) {
+        const wingPivot = new THREE.Group();
+        wingPivot.position.set(-0.02, 0.16, side * 0.14);
+
+        const wingContent = new THREE.Group();
+
+        const baseGeo = new THREE.CylinderGeometry(0.045, 0.035, 0.22, 14);
+        baseGeo.rotateZ(Math.PI / 2);
+        baseGeo.translate(-0.08, 0.12, 0);
+        baseGeo.scale(1, 1, 0.45);
+        const baseMesh = new THREE.Mesh(baseGeo, whiteMat);
+        wingContent.add(baseMesh);
+        wingContent.add(addCartoonOutline(baseGeo, 1.12));
+
+        const featherSpecs = [
+          { len: 0.34, rad: 0.044, ang: 0.48, yOff: 0.16, xOff: -0.02 },
+          { len: 0.31, rad: 0.041, ang: 0.78, yOff: 0.12, xOff: -0.05 },
+          { len: 0.26, rad: 0.038, ang: 1.08, yOff: 0.07, xOff: -0.07 },
+          { len: 0.20, rad: 0.034, ang: 1.38, yOff: 0.02, xOff: -0.08 }
+        ];
+
+        featherSpecs.forEach((f) => {
+          const fGroup = new THREE.Group();
+          fGroup.position.set(f.xOff, f.yOff, 0);
+          fGroup.rotation.z = f.ang;
+
+          const fGeo = new THREE.CylinderGeometry(f.rad * 0.85, f.rad, f.len, 14);
+          fGeo.translate(0, f.len * 0.45, 0);
+          fGeo.scale(1.0, 1.0, 0.38);
+          const fMesh = new THREE.Mesh(fGeo, whiteMat);
+          fGroup.add(fMesh);
+          fGroup.add(addCartoonOutline(fGeo, 1.12));
+
+          const tipGeo = new THREE.SphereGeometry(f.rad * 0.85, 14, 12);
+          tipGeo.translate(0, f.len * 0.95, 0);
+          tipGeo.scale(1.0, 1.0, 0.38);
+          const tipMesh = new THREE.Mesh(tipGeo, whiteMat);
+          fGroup.add(tipMesh);
+          fGroup.add(addCartoonOutline(tipGeo, 1.14));
+
+          wingContent.add(fGroup);
+        });
+
+        wingContent.rotation.x = side * 0.48;
+        wingContent.rotation.y = -side * 0.18;
+        wingPivot.add(wingContent);
+
+        return wingPivot;
+      }
+
+      leftWingGroup = createFeatheredWing(1);
+      rightWingGroup = createFeatheredWing(-1);
+      pigModel.add(leftWingGroup);
+      pigModel.add(rightWingGroup);
+
+      childGroup.add(pigModel);
+      swingSeatGroup.add(childGroup);
+      scene.add(swingSeatGroup);
+      scene.add(swingAssembly);
+    }
+
+    function createVisualIndicators() {
+      const ringGeo = new THREE.BufferGeometry();
+      const ringMat = new THREE.LineBasicMaterial({
+        color: 0x3b82f6,
+        transparent: true,
+        opacity: 0.65,
+        linewidth: 2
+      });
+      orbitRingMesh = new THREE.LineLoop(ringGeo, ringMat);
+      scene.add(orbitRingMesh);
+
+      const coneGeo = new THREE.CylinderGeometry(0.01, 1.0, 1.0, 48, 1, true);
+      const coneMat = new THREE.MeshBasicMaterial({
+        color: 0x60a5fa,
+        transparent: true,
+        opacity: 0.08,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      coneMesh = new THREE.Mesh(coneGeo, coneMat);
+      scene.add(coneMesh);
+
+      const plumbGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, -6, 0)
+      ]);
+      const plumbMat = new THREE.LineDashedMaterial({
+        color: 0x94a3b8,
+        dashSize: 0.15,
+        gapSize: 0.1,
+        transparent: true,
+        opacity: 0.5
+      });
+      const plumbLine = new THREE.Line(plumbGeo, plumbMat);
+      plumbLine.computeLineDistances();
+      plumbLine.position.y = state.poleHeight;
+      scene.add(plumbLine);
+    }
+
+    function createVectorLabel(baseText, subText, color = '#1e293b') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 384;
+      canvas.height = 112;
+      const ctx = canvas.getContext('2d');
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+
+      const baseFont = 'bold 64px Inter, sans-serif';
+      const subFont = 'bold 42px Inter, sans-serif';
+
+      ctx.font = baseFont;
+      const baseWidth = ctx.measureText(baseText).width;
+      ctx.font = subFont;
+      const subWidth = subText ? ctx.measureText(subText).width : 0;
+
+      const totalWidth = baseWidth + subWidth;
+      const startX = (384 - totalWidth) / 2;
+      const baseY = 74;
+      const subY = 88;
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.lineWidth = 10;
+      ctx.lineJoin = 'round';
+      ctx.miterLimit = 2;
+
+      ctx.font = baseFont;
+      ctx.strokeText(baseText, startX, baseY);
+      ctx.fillStyle = color;
+      ctx.fillText(baseText, startX, baseY);
+
+      if (subText) {
+        ctx.font = subFont;
+        ctx.strokeText(subText, startX + baseWidth + 2, subY);
+        ctx.fillStyle = color;
+        ctx.fillText(subText, startX + baseWidth + 2, subY);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(1.5, 0.44, 1);
+      return sprite;
+    }
+
+    function createVectorHelpers() {
+      vectorGroup = new THREE.Group();
+
+      arrowTension = new THREE.ArrowHelper(
+        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(0, 0, 0),
+        1.5,
+        0x2563eb,
+        0.32,
+        0.2
+      );
+      vectorGroup.add(arrowTension);
+      labelTension = createVectorLabel('F', 'T', '#1d4ed8');
+      vectorGroup.add(labelTension);
+
+      arrowGravity = new THREE.ArrowHelper(
+        new THREE.Vector3(0, -1, 0),
+        new THREE.Vector3(0, 0, 0),
+        1.5,
+        0x10b981,
+        0.32,
+        0.2
+      );
+      vectorGroup.add(arrowGravity);
+      labelGravity = createVectorLabel('F', 'g', '#059669');
+      vectorGroup.add(labelGravity);
+
+      arrowCentripetal = new THREE.ArrowHelper(
+        new THREE.Vector3(-1, 0, 0),
+        new THREE.Vector3(0, 0, 0),
+        1.5,
+        0xf59e0b,
+        0.32,
+        0.2
+      );
+      vectorGroup.add(arrowCentripetal);
+      labelCentripetal = createVectorLabel('F', 'c', '#d97706');
+      vectorGroup.add(labelCentripetal);
+
+      arrowTensionY = new THREE.ArrowHelper(
+        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(0, 0, 0),
+        1.2,
+        0x2563eb,
+        0.24,
+        0.16
+      );
+      vectorGroup.add(arrowTensionY);
+      labelTensionY = createVectorLabel('F', 'Ty', '#2563eb');
+      labelTensionY.visible = false;
+      vectorGroup.add(labelTensionY);
+
+      arrowTensionX = new THREE.ArrowHelper(
+        new THREE.Vector3(-1, 0, 0),
+        new THREE.Vector3(0, 0, 0),
+        1.2,
+        0x2563eb,
+        0.24,
+        0.16
+      );
+      vectorGroup.add(arrowTensionX);
+      labelTensionX = createVectorLabel('F', 'Tx', '#2563eb');
+      labelTensionX.visible = false;
+      vectorGroup.add(labelTensionX);
+
+      vectorGroup.visible = false;
+      scene.add(vectorGroup);
+    }
+
+    function solveEquilibriumAngle(w, L, armR) {
+      if (w <= 0.001) return 0.0;
+      
+      let low = 0.0;
+      let high = Math.PI / 2 - 0.005;
+      
+      for (let i = 0; i < 20; i++) {
+        const mid = (low + high) * 0.5;
+        const sinMid = Math.sin(mid);
+        const cosMid = Math.cos(mid);
+        const f = GRAVITY * sinMid - (w * w) * (armR + L * sinMid) * cosMid;
+        if (f < 0) {
+          low = mid;
+        } else {
+          high = mid;
+        }
+      }
+      return (low + high) * 0.5;
+    }
+
+    function updatePhysics(deltaTime) {
+      const statusBadge = document.getElementById('badge-motion-status');
+
+      if (!state.hasStarted) {
+        state.omega = 0.0;
+        state.targetAngle = 0.0;
+        state.currentAngle = 0.0;
+        state.thetaVel = 0.0;
+        if (statusBadge) {
+          statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600';
+          statusBadge.innerText = 'At Rest';
+        }
+        return;
+      }
+
+      if (!state.isPlaying) {
+        if (statusBadge) {
+          statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800';
+          statusBadge.innerText = 'Paused';
+        }
+        return;
+      }
+
+      state.omega = state.targetOmega;
+      if (statusBadge) {
+        statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800';
+        statusBadge.innerText = 'Cruising';
+      }
+
+      state.azimuthAngle += state.omega * deltaTime;
+      state.targetAngle = solveEquilibriumAngle(state.omega, state.length, state.armRadius);
+
+      const springK = 16.0;
+      const dampingD = 6.2;
+      const accelTheta = springK * (state.targetAngle - state.currentAngle) - dampingD * state.thetaVel;
+      state.thetaVel += accelTheta * deltaTime;
+      state.currentAngle += state.thetaVel * deltaTime;
+
+      if (state.currentAngle < 0) {
+        state.currentAngle = 0;
+        state.thetaVel = 0;
+      }
+    }
+
+    function updateTransforms() {
+      const H = state.poleHeight;
+      const armR = state.armRadius;
+      const L = state.length;
+      const theta = state.currentAngle;
+      const phi = state.azimuthAngle;
+
+      poleMesh.rotation.y = phi;
+
+      const pivotX = Math.cos(phi) * armR;
+      const pivotY = H;
+      const pivotZ = -Math.sin(phi) * armR;
+      const pivotPos = new THREE.Vector3(pivotX, pivotY, pivotZ);
+
+      const r_swing = L * Math.sin(theta);
+      const bobY = H - L * Math.cos(theta);
+      const bobX = Math.cos(phi) * (armR + r_swing);
+      const bobZ = -Math.sin(phi) * (armR + r_swing);
+      const bobPos = new THREE.Vector3(bobX, bobY, bobZ);
+
+      const centerOfOrbit = new THREE.Vector3(0, bobY, 0);
+      const totalRadius = armR + r_swing;
+
+      swingAssembly.position.copy(pivotPos);
+
+      const cordDir = new THREE.Vector3().subVectors(bobPos, pivotPos).normalize();
+
+      swingRopeMesh.scale.set(1, L, 1);
+      
+      const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, -1, 0), cordDir);
+      swingAssembly.quaternion.copy(targetQuat);
+
+      swingSeatGroup.position.copy(bobPos);
+      swingSeatGroup.rotation.set(0, phi + Math.PI / 2, 0);
+      childGroup.rotation.set(-theta, 0, 0);
+
+      if (leftWingGroup && rightWingGroup) {
+        if (state.isPlaying && state.hasStarted) {
+          const flapAngle = Math.sin(performance.now() * 0.014) * 0.28;
+          leftWingGroup.rotation.x = flapAngle;
+          rightWingGroup.rotation.x = -flapAngle;
+        } else if (!state.hasStarted) {
+          leftWingGroup.rotation.x = 0;
+          rightWingGroup.rotation.x = 0;
+        }
+      }
+
+      if (state.showOrbit && theta > 0.02) {
+        orbitRingMesh.visible = true;
+        coneMesh.visible = true;
+
+        const segments = 64;
+        const ringPoints = [];
+        for (let i = 0; i <= segments; i++) {
+          const a = (i / segments) * Math.PI * 2;
+          ringPoints.push(new THREE.Vector3(Math.cos(a) * totalRadius, bobY, -Math.sin(a) * totalRadius));
+        }
+        orbitRingMesh.geometry.dispose();
+        orbitRingMesh.geometry = new THREE.BufferGeometry().setFromPoints(ringPoints);
+
+        const coneHeight = H - bobY;
+        coneMesh.geometry.dispose();
+        coneMesh.geometry = new THREE.CylinderGeometry(armR, totalRadius, coneHeight, 48, 1, true);
+        coneMesh.position.set(0, H - coneHeight / 2, 0);
+      } else {
+        orbitRingMesh.visible = false;
+        coneMesh.visible = false;
+      }
+
+      updateVectors(pivotPos, bobPos, centerOfOrbit, cordDir, theta, totalRadius);
+      updateTelemetry(theta, totalRadius);
+    }
+
+    function updateTelemetry(theta, totalRadius) {
+      const m = state.mass;
+      const w = state.omega;
+      const cosT = Math.max(0.04, Math.cos(theta));
+      const Fg_val = m * GRAVITY;
+      const T_val = Fg_val / cosT;
+      const Fc_val = m * w * w * totalRadius;
+      const speedVal = w * totalRadius;
+
+      const angleStr = (theta * (180 / Math.PI)).toFixed(1) + '°';
+      const speedStr = speedVal.toFixed(2) + ' m/s';
+      const tensionStr = (state.isPlaying || theta > 0.01 ? T_val : Fg_val).toFixed(1) + ' N';
+      const fcStr = Fc_val.toFixed(1) + ' N';
+
+      // Desktop telemetry elements
+      const elAngle = document.getElementById('stat-angle');
+      const elSpeed = document.getElementById('stat-speed');
+      const elTension = document.getElementById('stat-tension');
+      const elFc = document.getElementById('stat-fc');
+
+      if (elAngle) elAngle.innerText = angleStr;
+      if (elSpeed) elSpeed.innerText = speedStr;
+      if (elTension) elTension.innerText = tensionStr;
+      if (elFc) elFc.innerText = fcStr;
+
+      // Mobile drawer telemetry elements
+      const mAngle = document.getElementById('m-stat-angle');
+      const mSpeed = document.getElementById('m-stat-speed');
+      const mTension = document.getElementById('m-stat-tension');
+      const mFc = document.getElementById('m-stat-fc');
+
+      if (mAngle) mAngle.innerText = angleStr;
+      if (mSpeed) mSpeed.innerText = speedStr;
+      if (mTension) mTension.innerText = tensionStr;
+      if (mFc) mFc.innerText = fcStr;
+    }
+
+    function updateVectors(pivotPos, bobPos, centerOfOrbit, cordDir, theta, totalRadius) {
+      const showAnyVector = state.showFBD || state.showFc || state.showComponents;
+      if (!showAnyVector) {
+        vectorGroup.visible = false;
+        return;
+      }
+      vectorGroup.visible = true;
+
+      const m = state.mass;
+      const w = state.omega;
+      const cosT = Math.max(0.04, Math.cos(theta));
+      const sinT = Math.sin(theta);
+
+      const Fg_val = m * GRAVITY;
+      const T_val = Fg_val / cosT;
+      const Fc_val = m * w * w * totalRadius;
+
+      const scaleFactor = 0.0055;
+      const rawLenFg = Fg_val * scaleFactor;
+      const rawLenT = rawLenFg / cosT;
+
+      const maxAllowedT = 3.6;
+      const diagramScale = rawLenT > maxAllowedT ? (maxAllowedT / rawLenT) : 1.0;
+
+      const lenFg = rawLenFg * diagramScale;
+      const lenT = rawLenT * diagramScale;
+      const lenTy = lenFg;
+      const lenTx = lenT * sinT;
+
+      const headLen = Math.min(0.26, Math.max(0.12, lenFg * 0.18));
+      const headWidth = headLen * 0.65;
+
+      if (state.showFBD) {
+        const dirT = new THREE.Vector3().subVectors(pivotPos, bobPos).normalize();
+        arrowTension.visible = true;
+        labelTension.visible = true;
+        arrowTension.position.copy(bobPos);
+        arrowTension.setDirection(dirT);
+        arrowTension.setLength(lenT, headLen, headWidth);
+
+        const normalOut = new THREE.Vector3(bobPos.x, 0, bobPos.z).normalize();
+        labelTension.position
+          .copy(bobPos)
+          .addScaledVector(dirT, lenT * 0.65)
+          .add(new THREE.Vector3(0, 0.44, 0))
+          .addScaledVector(normalOut, 0.18);
+
+        const dirFg = new THREE.Vector3(0, -1, 0);
+        arrowGravity.visible = true;
+        labelGravity.visible = true;
+        arrowGravity.position.copy(bobPos);
+        arrowGravity.setDirection(dirFg);
+        arrowGravity.setLength(lenFg, headLen, headWidth);
+        labelGravity.position.copy(bobPos).addScaledVector(dirFg, lenFg + 0.38);
+      } else {
+        arrowTension.visible = false;
+        labelTension.visible = false;
+        arrowGravity.visible = false;
+        labelGravity.visible = false;
+      }
+
+      const dirInward = new THREE.Vector3(centerOfOrbit.x - bobPos.x, 0, centerOfOrbit.z - bobPos.z).normalize();
+      const showHorizontal = (state.showComponents || state.showFc) && theta > 0.05;
+
+      arrowCentripetal.visible = false;
+
+      if (showHorizontal) {
+        arrowTensionX.visible = true;
+        arrowTensionX.position.copy(bobPos);
+        arrowTensionX.setDirection(dirInward);
+        arrowTensionX.setLength(lenTx, headLen, headWidth);
+
+        if (state.showFc) {
+          arrowTensionX.setColor(0xf59e0b);
+        } else {
+          arrowTensionX.setColor(0x2563eb);
+        }
+
+        if (state.showComponents) {
+          labelTensionX.visible = true;
+          labelTensionX.position.copy(bobPos).addScaledVector(dirInward, lenTx * 0.55).add(new THREE.Vector3(0, 0.28, 0));
+        } else {
+          labelTensionX.visible = false;
+        }
+
+        if (state.showFc) {
+          labelCentripetal.visible = true;
+          labelCentripetal.position.copy(bobPos).addScaledVector(dirInward, lenTx + 0.38);
+        } else {
+          labelCentripetal.visible = false;
+        }
+      } else {
+        arrowTensionX.visible = false;
+        labelTensionX.visible = false;
+        labelCentripetal.visible = false;
+      }
+
+      if (state.showComponents && theta > 0.05) {
+        arrowTensionY.visible = true;
+        if (labelTensionY) labelTensionY.visible = true;
+        arrowTensionY.position.copy(bobPos);
+        arrowTensionY.setDirection(new THREE.Vector3(0, 1, 0));
+        arrowTensionY.setLength(lenTy, headLen, headWidth);
+        if (labelTensionY) {
+          labelTensionY.position.copy(bobPos).add(new THREE.Vector3(0, lenTy + 0.35, 0));
+        }
+      } else {
+        arrowTensionY.visible = false;
+        if (labelTensionY) labelTensionY.visible = false;
+      }
+    }
+
+    function formatOmegaDisplay(w) {
+      const rpm = (w * 60) / (2 * Math.PI);
+      return `${rpm.toFixed(1)} rpm (${w.toFixed(2)} rad/s)`;
+    }
+
+    function updateCameraMode() {
+      if (state.camMode === 'follow') {
+        const phi = state.azimuthAngle;
+        const totalRadius = state.armRadius + state.length * Math.sin(state.currentAngle);
+        const bobY = state.poleHeight - state.length * Math.cos(state.currentAngle);
+        const bobX = Math.cos(phi) * totalRadius;
+        const bobZ = -Math.sin(phi) * totalRadius;
+
+        const followCamOffset = 3.6;
+        const camX = bobX - Math.sin(phi) * followCamOffset + Math.cos(phi) * 1.5;
+        const camZ = bobZ - Math.cos(phi) * followCamOffset - Math.sin(phi) * 1.5;
+        const camY = bobY + 1.2;
+
+        camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.06);
+        controls.target.lerp(new THREE.Vector3(bobX, bobY + 0.3, bobZ), 0.1);
+      }
+    }
+
+    function setupEventListeners() {
+      const omegaSlider = document.getElementById('input-omega');
+      const omegaVal = document.getElementById('val-omega');
+      const mOmegaSlider = document.getElementById('m-input-omega');
+      const mOmegaVal = document.getElementById('m-val-omega');
+
+      function syncOmega(value) {
+        state.targetOmega = parseFloat(value);
+        if (state.hasStarted) {
+          state.omega = state.targetOmega;
+          const display = formatOmegaDisplay(state.omega);
+          if (omegaVal) omegaVal.innerText = display;
+          if (mOmegaVal) mOmegaVal.innerText = display;
+        } else {
+          const display = `${formatOmegaDisplay(0.0)} (Target: ${formatOmegaDisplay(state.targetOmega)})`;
+          if (omegaVal) omegaVal.innerText = display;
+          if (mOmegaVal) mOmegaVal.innerText = `${(state.targetOmega * 60 / (2 * Math.PI)).toFixed(1)} rpm`;
+        }
+        if (omegaSlider) omegaSlider.value = value;
+        if (mOmegaSlider) mOmegaSlider.value = value;
+      }
+
+      if (omegaSlider) omegaSlider.addEventListener('input', (e) => syncOmega(e.target.value));
+      if (mOmegaSlider) mOmegaSlider.addEventListener('input', (e) => syncOmega(e.target.value));
+
+      const lengthSlider = document.getElementById('input-length');
+      const lengthVal = document.getElementById('val-length');
+      const mLengthSlider = document.getElementById('m-input-length');
+      const mLengthVal = document.getElementById('m-val-length');
+
+      function syncLength(val) {
+        state.length = parseFloat(val);
+        const lStr = state.length.toFixed(1) + ' m';
+        if (lengthVal) lengthVal.innerText = lStr;
+        if (mLengthVal) mLengthVal.innerText = lStr;
+        if (lengthSlider) lengthSlider.value = val;
+        if (mLengthSlider) mLengthSlider.value = val;
+      }
+
+      if (lengthSlider) lengthSlider.addEventListener('input', (e) => syncLength(e.target.value));
+      if (mLengthSlider) mLengthSlider.addEventListener('input', (e) => syncLength(e.target.value));
+
+      const massSlider = document.getElementById('input-mass');
+      const massVal = document.getElementById('val-mass');
+      if (massSlider) {
+        massSlider.addEventListener('input', (e) => {
+          state.mass = parseFloat(e.target.value);
+          if (massVal) massVal.innerText = state.mass.toFixed(0) + ' kg';
+          const s = Math.cbrt(state.mass / 25.0);
+          childGroup.scale.set(s, s, s);
+        });
+      }
+
+      const playPauseBtn = document.getElementById('btn-play-pause');
+      const iconPlay = document.getElementById('icon-play');
+      const iconPause = document.getElementById('icon-pause');
+      const textPlayPause = document.getElementById('text-play-pause');
+
+      // Mobile button elements
+      const mPlayPauseBtn = document.getElementById('btn-mobile-play-pause');
+      const mIconPlay = document.getElementById('icon-mobile-play');
+      const mIconStop = document.getElementById('icon-mobile-stop');
+      const mTextPlayPause = document.getElementById('text-mobile-play-pause');
+
+      function togglePlayPause() {
+        state.isPlaying = !state.isPlaying;
+        if (state.isPlaying) {
+          state.hasStarted = true;
+          state.omega = state.targetOmega;
+          if (omegaVal) omegaVal.innerText = formatOmegaDisplay(state.omega);
+          if (mOmegaVal) mOmegaVal.innerText = formatOmegaDisplay(state.omega);
+
+          // Update Desktop Button UI
+          if (iconPlay) iconPlay.classList.add('hidden');
+          if (iconPause) iconPause.classList.remove('hidden');
+          if (textPlayPause) textPlayPause.innerText = 'Pause';
+          if (playPauseBtn) {
+            playPauseBtn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            playPauseBtn.classList.replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+          }
+
+          // Update Mobile Button UI (Play -> Stop)
+          if (mIconPlay) mIconPlay.classList.add('hidden');
+          if (mIconStop) mIconStop.classList.remove('hidden');
+          if (mTextPlayPause) mTextPlayPause.innerText = 'Stop';
+          if (mPlayPauseBtn) {
+            mPlayPauseBtn.classList.replace('bg-emerald-600', 'bg-rose-600');
+            mPlayPauseBtn.classList.replace('hover:bg-emerald-700', 'hover:bg-rose-700');
+            mPlayPauseBtn.classList.replace('shadow-emerald-900/25', 'shadow-rose-900/25');
+          }
+        } else {
+          // Update Desktop Button UI
+          if (iconPause) iconPause.classList.add('hidden');
+          if (iconPlay) iconPlay.classList.remove('hidden');
+          if (textPlayPause) textPlayPause.innerText = 'Play';
+          if (playPauseBtn) {
+            playPauseBtn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            playPauseBtn.classList.replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+          }
+
+          // Update Mobile Button UI (Stop -> Play)
+          if (mIconStop) mIconStop.classList.add('hidden');
+          if (mIconPlay) mIconPlay.classList.remove('hidden');
+          if (mTextPlayPause) mTextPlayPause.innerText = 'Play';
+          if (mPlayPauseBtn) {
+            mPlayPauseBtn.classList.replace('bg-rose-600', 'bg-emerald-600');
+            mPlayPauseBtn.classList.replace('hover:bg-rose-700', 'hover:bg-emerald-700');
+            mPlayPauseBtn.classList.replace('shadow-rose-900/25', 'shadow-emerald-900/25');
+          }
+        }
+      }
+
+      if (playPauseBtn) playPauseBtn.addEventListener('click', togglePlayPause);
+      if (mPlayPauseBtn) mPlayPauseBtn.addEventListener('click', togglePlayPause);
+
+      const mobileDrawer = document.getElementById('mobile-drawer');
+      const drawerBackdrop = document.getElementById('drawer-backdrop');
+      const btnOpenDrawer = document.getElementById('btn-open-drawer');
+      const btnCloseDrawer = document.getElementById('btn-close-drawer');
+
+      function openDrawer() {
+        if (mobileDrawer) mobileDrawer.classList.add('drawer-open');
+        if (drawerBackdrop) drawerBackdrop.classList.add('active');
+      }
+
+      function closeDrawer() {
+        if (mobileDrawer) mobileDrawer.classList.remove('drawer-open');
+        if (drawerBackdrop) drawerBackdrop.classList.remove('active');
+      }
+
+      if (btnOpenDrawer) btnOpenDrawer.addEventListener('click', openDrawer);
+      if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
+      if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
+
+      const chkFBD = document.getElementById('chk-fbd');
+      const chkComponents = document.getElementById('chk-components');
+      const chkFc = document.getElementById('chk-fc');
+      const chkOrbit = document.getElementById('chk-orbit');
+      const fbdLegend = document.getElementById('fbd-panel-legend');
+      const fcLegend = document.getElementById('fbd-fc-legend');
+
+      const mChkFBD = document.getElementById('m-chk-fbd');
+      const mChkFc = document.getElementById('m-chk-fc');
+
+      function executeReset() {
+        state.hasStarted = false;
+        state.omega = 0.0;
+        state.targetOmega = 2.25;
+        state.length = 3.0;
+        state.mass = 25.0;
+        state.currentAngle = 0.0;
+        state.thetaVel = 0.0;
+        state.targetAngle = 0.0;
+        state.azimuthAngle = 0.0;
+        state.isPlaying = false;
+
+        state.showFBD = false;
+        state.showComponents = false;
+        state.showFc = false;
+        state.showOrbit = true;
+
+        if (chkFBD) chkFBD.checked = false;
+        if (chkComponents) chkComponents.checked = false;
+        if (chkFc) chkFc.checked = false;
+        if (chkOrbit) chkOrbit.checked = true;
+
+        if (mChkFBD) mChkFBD.checked = false;
+        if (mChkFc) mChkFc.checked = false;
+
+        if (fbdLegend) fbdLegend.style.opacity = '0.4';
+        if (fcLegend) fcLegend.style.opacity = '0.4';
+
+        if (omegaSlider) omegaSlider.value = "2.25";
+        if (mOmegaSlider) mOmegaSlider.value = "2.25";
+        if (omegaVal) omegaVal.innerText = "0.0 rpm (0.00 rad/s)";
+        if (mOmegaVal) mOmegaVal.innerText = "0.0 rpm";
+
+        if (lengthSlider) lengthSlider.value = "3.0";
+        if (mLengthSlider) mLengthSlider.value = "3.0";
+        if (lengthVal) lengthVal.innerText = "3.0 m";
+        if (mLengthVal) mLengthVal.innerText = "3.0 m";
+
+        if (massSlider) massSlider.value = "25";
+        if (massVal) massVal.innerText = "25 kg";
+        if (childGroup) childGroup.scale.set(1, 1, 1);
+
+        const elAngle = document.getElementById('stat-angle');
+        const elSpeed = document.getElementById('stat-speed');
+        const elTension = document.getElementById('stat-tension');
+        const elFc = document.getElementById('stat-fc');
+        if (elAngle) elAngle.innerText = "0.0°";
+        if (elSpeed) elSpeed.innerText = "0.00 m/s";
+        if (elTension) elTension.innerText = "0.0 N";
+        if (elFc) elFc.innerText = "0.0 N";
+
+        if (iconPause) iconPause.classList.add('hidden');
+        if (iconPlay) iconPlay.classList.remove('hidden');
+        if (textPlayPause) textPlayPause.innerText = 'Play';
+        if (playPauseBtn) {
+          playPauseBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+          playPauseBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+        }
+
+        // Mobile button reset to Play
+        if (mIconStop) mIconStop.classList.add('hidden');
+        if (mIconPlay) mIconPlay.classList.remove('hidden');
+        if (mTextPlayPause) mTextPlayPause.innerText = 'Play';
+        if (mPlayPauseBtn) {
+          mPlayPauseBtn.classList.remove('bg-rose-600', 'hover:bg-rose-700', 'shadow-rose-900/25');
+          mPlayPauseBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'shadow-emerald-900/25');
+        }
+
+        const statusBadge = document.getElementById('badge-motion-status');
+        if (statusBadge) {
+          statusBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600';
+          statusBadge.innerText = 'At Rest';
+        }
+
+        setCameraView('orbit');
+        updateTransforms();
+      }
+
+      const btnReset = document.getElementById('btn-reset');
+      const mBtnReset = document.getElementById('m-btn-reset');
+      if (btnReset) btnReset.addEventListener('click', executeReset);
+      if (mBtnReset) mBtnReset.addEventListener('click', () => {
+        executeReset();
+        closeDrawer();
+      });
+
+      if (chkFBD) {
+        chkFBD.addEventListener('change', (e) => {
+          state.showFBD = e.target.checked;
+          if (mChkFBD) mChkFBD.checked = state.showFBD;
+          if (fbdLegend) fbdLegend.style.opacity = (state.showFBD || state.showFc || state.showComponents) ? '1' : '0.4';
+        });
+      }
+
+      if (mChkFBD) {
+        mChkFBD.addEventListener('change', (e) => {
+          state.showFBD = e.target.checked;
+          if (chkFBD) chkFBD.checked = state.showFBD;
+          if (fbdLegend) fbdLegend.style.opacity = (state.showFBD || state.showFc || state.showComponents) ? '1' : '0.4';
+        });
+      }
+
+      if (chkComponents) {
+        chkComponents.addEventListener('change', (e) => {
+          state.showComponents = e.target.checked;
+          if (fbdLegend) fbdLegend.style.opacity = (state.showFBD || state.showFc || state.showComponents) ? '1' : '0.4';
+        });
+      }
+
+      if (chkFc) {
+        chkFc.addEventListener('change', (e) => {
+          state.showFc = e.target.checked;
+          if (mChkFc) mChkFc.checked = state.showFc;
+          if (fcLegend) fcLegend.style.opacity = state.showFc ? '1' : '0.4';
+        });
+      }
+
+      if (mChkFc) {
+        mChkFc.addEventListener('change', (e) => {
+          state.showFc = e.target.checked;
+          if (chkFc) chkFc.checked = state.showFc;
+          if (fcLegend) fcLegend.style.opacity = state.showFc ? '1' : '0.4';
+        });
+      }
+
+      if (chkOrbit) {
+        chkOrbit.addEventListener('change', (e) => {
+          state.showOrbit = e.target.checked;
+        });
+      }
+
+      const camButtons = {
+        'cam-orbit': 'orbit',
+        'cam-side': 'side',
+        'cam-top': 'top',
+        'cam-follow': 'follow',
+        'm-cam-orbit': 'orbit',
+        'm-cam-side': 'side',
+        'm-cam-top': 'top',
+        'm-cam-follow': 'follow'
+      };
+
+      Object.entries(camButtons).forEach(([id, mode]) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('click', () => {
+            setCameraView(mode);
+          });
+        }
+      });
+    }
+
+    function setCameraView(mode) {
+      state.camMode = mode;
+      
+      const modes = ['orbit', 'side', 'top', 'follow'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`cam-${m}`);
+        const mBtn = document.getElementById(`m-cam-${m}`);
+        if (btn) {
+          if (m === mode) {
+            btn.className = 'glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 shadow-xs text-center';
+          } else {
+            btn.className = 'glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center';
+          }
+        }
+        if (mBtn) {
+          if (m === mode) {
+            mBtn.className = 'glass-btn px-2 py-2 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 text-center';
+          } else {
+            mBtn.className = 'glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center';
+          }
+        }
+      });
+
+      controls.enabled = (mode !== 'follow');
+
+      if (mode === 'orbit') {
+        if (isMobileViewport()) {
+          camera.position.set(6.45, 4.85, 8.55);
+        } else {
+          camera.position.set(5.25, 3.97, 6.99);
+        }
+        controls.target.set(0, 2.4, 0);
+      } else if (mode === 'side') {
+        const sideDist = isMobileViewport() ? 9.5 : 7.76;
+        camera.position.set(0, 2.5, sideDist);
+        controls.target.set(0, 2.5, 0);
+      } else if (mode === 'top') {
+        const topHeight = isMobileViewport() ? 11.2 : 9.0;
+        camera.position.set(0, topHeight, 0.01);
+        controls.target.set(0, 0, 0);
+      }
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('webgl-container');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    let lastTime = performance.now();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const currentTime = performance.now();
+      const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
+      lastTime = currentTime;
+
+      updatePhysics(deltaTime);
+      updateTransforms();
+      updateCameraMode();
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.onload = function () {
+      initScene();
+      setupEventListeners();
+      animate();
+    };
+  </script>
+</body>
+</html>
