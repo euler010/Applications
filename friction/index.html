@@ -641,6 +641,8 @@
       microStrain: 0.0,
       microRoughnessOffset: 0.0,
       microLift: 0.0, // Smooth vertical displacement of top surface
+      microSeat: null,  // Smoothed vertical seat so the block rests on its highest peaks
+      microSettle: 0.0, // Contact aging, 0..1: how far the asperities have crept into each other at rest
       isDraggingBlock: false,
       dragStartX: 0,
       dragStartForce: 0,
@@ -887,15 +889,49 @@
     const microTerrainFloor = [];
     const NUM_ASPERITIES = 260;
 
+    // Contact aging (atomic view). At rest the surfaces slowly creep together and their
+    // peaks flatten into wider contact patches with more bonds; sliding quickly undoes it.
+    const SETTLE_SECONDS = 10;       // time at rest to settle fully
+    const SETTLE_UNDO_SECONDS = 0.8; // time sliding to undo it completely
+    const SETTLE_MAX_APPROACH = 18;  // px the block surface moves toward the table when fully settled
+    const BOND_SPACING = 20;         // px between bond circles along a flattened patch
+
+    const TABLE_SURFACE_SAMPLES = 2048; // long table surface: each stop lands on a new stretch
+
+    // Random rough surface: sine waves in three wavelength bands (long swells, mid-size bumps,
+    // fine roughness), each with a random wavelength, phase and strength. Every wave completes
+    // whole cycles over the array, so the surface wraps seamlessly. Rescaled to the same
+    // roughness (std. dev. ~15.5 px) as the original fixed shapes.
+    function randomSurface(length) {
+      const bands = [
+        { wavelength: 28, amp: 19, waves: 3 },
+        { wavelength: 9.7, amp: 9.5, waves: 3 },
+        { wavelength: 4.2, amp: 5.5, waves: 2 },
+      ];
+      const arr = new Array(length).fill(0);
+      bands.forEach(band => {
+        for (let j = 0; j < band.waves; j++) {
+          const wavelength = band.wavelength * (0.75 + 0.5 * Math.random());
+          const cycles = Math.max(1, Math.round(length / wavelength));
+          const phase = Math.random() * Math.PI * 2;
+          const amp = band.amp * (0.6 + 0.8 * Math.random()) / Math.sqrt(band.waves);
+          for (let i = 0; i < length; i++) {
+            arr[i] += amp * Math.sin((2 * Math.PI * cycles * i) / length + phase);
+          }
+        }
+      });
+      const mean = arr.reduce((a, v) => a + v, 0) / length;
+      const std = Math.sqrt(arr.reduce((a, v) => a + (v - mean) ** 2, 0) / length) || 1;
+      return arr.map(v => ((v - mean) / std) * 15.5);
+    }
+
+    // New random block and table surfaces (page load and Reset).
     function generateAsperities() {
       microTerrainBlock.length = 0;
       microTerrainFloor.length = 0;
-      for (let i = 0; i < NUM_ASPERITIES; i++) {
-        const noiseF = Math.sin(i * 0.22) * 19 + Math.cos(i * 0.65) * 9.5 + (Math.sin(i * 1.5) * 5.5);
-        const noiseB = Math.sin(i * 0.22 + 1.2) * 18 + Math.cos(i * 0.55) * 10 + (Math.cos(i * 1.3) * 5.5);
-        microTerrainFloor.push(noiseF);
-        microTerrainBlock.push(noiseB);
-      }
+      microTerrainBlock.push(...randomSurface(NUM_ASPERITIES));
+      microTerrainFloor.push(...randomSurface(TABLE_SURFACE_SAMPLES));
+      state.microSeat = null; // re-seat the block on the new surfaces
     }
     generateAsperities();
 
@@ -938,8 +974,16 @@
         }
       }
 
-      const targetMicroLift = state.isSliding ? 11.5 : 0.0;
+      const targetMicroLift = state.isSliding ? 1.0 : 0.0; // block is seated on its peaks; slight lift while sliding
       state.microLift += (targetMicroLift - state.microLift) * Math.min(1.0, dt * 9.0);
+
+      // Aging builds only while the atomic view is on screen, so the student sees it happen;
+      // sliding undoes it whichever view is showing.
+      if (state.isSliding) {
+        state.microSettle = Math.max(0, state.microSettle - dt / SETTLE_UNDO_SECONDS);
+      } else if (!showGraphs) {
+        state.microSettle = Math.min(1, state.microSettle + dt / SETTLE_SECONDS);
+      }
 
       if (state.isAutoPulling) {
         // Ramp rate scales with the force range so heavy blocks still break away in reasonable time.
@@ -1249,23 +1293,51 @@
 
       const midY = h * 0.52;
       const verticalLift = state.microLift;
-      const topOffset = state.microRoughnessOffset + state.microStrain;
+      // View follows the block: the table scrolls left as the block slides right, and
+      // static shear nudges the block's surface to the right.
+      const tableOffset = state.microRoughnessOffset;
+      const shear = state.microStrain;
 
       function sampleTerrain(arr, rawX) {
-        const u = Math.abs(rawX) * 0.12;
-        const i0 = Math.floor(u) % NUM_ASPERITIES;
-        const i1 = (i0 + 1) % NUM_ASPERITIES;
-        const frac = u - Math.floor(u);
+        const n = arr.length;
+        const u = (((rawX * 0.12) % n) + n) % n;
+        const i0 = Math.floor(u);
+        const i1 = (i0 + 1) % n;
+        const frac = u - i0;
         return arr[i0] * (1 - frac) + arr[i1] * frac;
       }
 
-      function getTopY(x) {
-        return (midY - 14 - verticalLift) + sampleTerrain(microTerrainBlock, x + topOffset);
-      }
+      // Raw surface heights before seating, lift, settling or flattening.
+      function rawTopY(x) { return midY + sampleTerrain(microTerrainBlock, x - shear); }
+      function rawBotY(x) { return midY + sampleTerrain(microTerrainFloor, x + tableOffset); }
 
-      function getBotY(x) {
-        return (midY + 12) + sampleTerrain(microTerrainFloor, x);
+      // Seat the block on its highest peaks: lower it until the smallest gap is zero.
+      // Smoothed so the block glides over table bumps while sliding instead of jumping.
+      let minGap = Infinity;
+      for (let x = 12; x <= w - 12; x += 2.5) {
+        minGap = Math.min(minGap, rawBotY(x) - rawTopY(x));
       }
+      if (state.microSeat === null) state.microSeat = minGap;
+      state.microSeat += (minGap - state.microSeat) * 0.35;
+      const seat = state.microSeat;
+
+      // Ease-out: settling is quickest at first, then slows (as real contact aging does).
+      const settle = 1 - Math.pow(1 - state.microSettle, 1.6);
+      const approach = settle * SETTLE_MAX_APPROACH;
+
+      // Both surfaces at x. Where the settled block surface would pass into the table,
+      // the two peaks flatten against each other and meet in a shared flat patch.
+      function surfacesAt(x) {
+        const yt = rawTopY(x) + seat - verticalLift + approach;
+        const yb = rawBotY(x);
+        if (yt >= yb) {
+          const m = (yt + yb) / 2;
+          return [m, m];
+        }
+        return [yt, yb];
+      }
+      function getTopY(x) { return surfacesAt(x)[0]; }
+      function getBotY(x) { return surfacesAt(x)[1]; }
 
       ctxMicro.fillStyle = '#dbeafe';
       ctxMicro.strokeStyle = '#2563eb';
@@ -1306,43 +1378,48 @@
       ctxMicro.textAlign = 'left';
       ctxMicro.fillText('Table Atomic Surface', 14, h - 12);
 
+      // Find contact patches (runs where the gap is tiny). A narrow patch is one touching
+      // point; a wide, flattened patch carries one bond every BOND_SPACING px.
       const contacts = [];
       const scanStep = 2.5;
-      let inContact = false;
-      let bestGap = Infinity;
-      let bestX = 0;
-      let bestY = 0;
-      const touchThreshold = state.isSliding ? 4.8 : 4.0;
+      const touchThreshold = state.isSliding ? 5.5 : 8.0; // px gap that counts as touching
+      let patch = null;
 
-      for (let x = 12; x <= w - 12; x += scanStep) {
-        const yt = getTopY(x);
-        const yb = getBotY(x);
-        const gap = yb - yt;
-
-        if (gap <= touchThreshold) {
-          if (!inContact) {
-            inContact = true;
-            bestGap = gap;
-            bestX = x;
-            bestY = (yt + yb) / 2;
-          } else if (gap < bestGap) {
-            bestGap = gap;
-            bestX = x;
-            bestY = (yt + yb) / 2;
-          }
+      function closePatch() {
+        const width = patch.x1 - patch.x0;
+        const n = Math.max(1, Math.round(width / BOND_SPACING));
+        if (n === 1) {
+          contacts.push({ x: patch.bestX, y: patch.bestY });
         } else {
-          if (inContact) {
-            contacts.push({ x: bestX, y: bestY, gap: bestGap });
-            inContact = false;
-            bestGap = Infinity;
+          for (let k = 0; k < n; k++) {
+            const x = patch.x0 + (k + 0.5) * width / n;
+            const [yt, yb] = surfacesAt(x);
+            contacts.push({ x, y: (yt + yb) / 2 });
           }
         }
-      }
-      if (inContact) {
-        contacts.push({ x: bestX, y: bestY, gap: bestGap });
+        patch = null;
       }
 
+      for (let x = 12; x <= w - 12; x += scanStep) {
+        const [yt, yb] = surfacesAt(x);
+        const gap = yb - yt;
+        if (gap <= touchThreshold) {
+          if (!patch) {
+            patch = { x0: x, x1: x, bestGap: gap, bestX: x, bestY: (yt + yb) / 2 };
+          } else {
+            patch.x1 = x;
+            if (gap < patch.bestGap) {
+              patch.bestGap = gap; patch.bestX = x; patch.bestY = (yt + yb) / 2;
+            }
+          }
+        } else if (patch) {
+          closePatch();
+        }
+      }
+      if (patch) closePatch();
+
       const numContacts = contacts.length;
+      state.microContactCount = numContacts;
       if (!state.isSliding) {
         const stressRatio = Math.min(1.0, state.appliedForce / (getMaxStaticFriction() || 1));
 
@@ -1760,6 +1837,8 @@
       state.microStrain = 0;
       state.microRoughnessOffset = 0;
       state.microLift = 0;
+      state.microSettle = 0;
+      generateAsperities(); // fresh random surfaces
       state.history = [{ t: 0, fApp: 0, fFric: 0 }];
       state.elapsedTime = 0;
       dragHint.classList.remove('opacity-0');
