@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Official Time Clock - Gulliver Spirit</title>
+  <!-- Google Fonts: Inter (JetBrains Mono was loaded in the original but never used, so it is dropped) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== Theme ===== */
+    :root {
+      --gulliver-blue: #113257;        /* Gulliver Raider Navy Blue */
+      --gulliver-blue-70: rgba(17, 50, 87, 0.7);
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-200-80: rgba(226, 232, 240, 0.8);
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-800: #1e293b;
+      --emerald-400: #34d399;
+      --emerald-500: #10b981;
+      --amber-400: #fbbf24;
+      --amber-500: #f59e0b;
+      --blue-500: #3b82f6;
+      --blue-900: #1e3a8a;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== Base reset (replaces Tailwind preflight) ===== */
+    *, *::before, *::after { box-sizing: border-box; border: 0 solid #e5e7eb; }
+    html {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    html, body { margin: 0; padding: 0; height: auto; min-height: 0; }
+    p { margin: 0; }
+    img, svg { display: block; vertical-align: middle; }
+    img { max-width: 100%; }
+    button, select {
+      font: inherit;
+      line-height: inherit;
+      color: inherit;
+      margin: 0;
+      padding: 0;
+      text-transform: none;
+    }
+    button { background: transparent; cursor: pointer; -webkit-appearance: button; }
+
+    /* ===== Page ===== */
+    body {
+      background: #fff;
+      color: var(--slate-800);
+      font-family: 'Inter', sans-serif;
+      padding: 0.25rem 0.25rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    body ::selection, body::selection { background: var(--gulliver-blue); color: #fff; }
+
+    .wrapper {
+      width: 100%;
+      max-width: 64rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 auto;
+      padding: 100px 0 0;
+    }
+
+    .clock-main {
+      width: 100%;
+      max-width: 64rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: #fff;
+      margin: 0;
+      padding: 0 0.25rem;
+    }
+
+    /* G logo beside the stacked time & date */
+    .clock-row {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.25rem 0;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .logo-wrapper {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      width: auto;
+      max-width: 32vw;
+      object-fit: contain;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+      transition: all 150ms var(--ease);
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .text-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: left;
+      min-width: 0;
+      flex: 1 1 0%;
+    }
+
+    .time-line {
+      display: flex;
+      align-items: baseline;
+      width: 100%;
+      color: var(--gulliver-blue);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+    }
+
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    .time-display {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(2.2rem, 8.75vw, 6.875rem);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      color: var(--gulliver-blue);
+      white-space: nowrap;
+    }
+
+    .date-block { width: 100%; margin-top: 0.25rem; }
+
+    .date-display {
+      font-size: clamp(1.06rem, 4vw, 2.8rem);
+      line-height: 1.25;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--gulliver-blue);
+    }
+
+    .tz-row { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.125rem; }
+
+    .tz-badge {
+      font-size: clamp(0.81rem, 2.25vw, 1.06rem);
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      text-transform: uppercase;
+      color: var(--gulliver-blue-70);
+    }
+
+    /* ===== Controls & caption ===== */
+    .footer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.375rem;
+      margin: 0.25rem 0 0;
+      padding: 0.375rem 0 0;
+      border-top: 1px solid var(--slate-200-80);
+      font-size: 10px;
+      color: var(--slate-500);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+    }
+
+    .ctrl {
+      padding: 0.25rem 0.5rem;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gulliver-blue);
+      background-color: var(--slate-100);
+      border: 1px solid var(--slate-200-80);
+      border-radius: 0.5rem;
+      transition: color 150ms var(--ease), background-color 150ms var(--ease), border-color 150ms var(--ease);
+    }
+    .ctrl:hover { background-color: var(--slate-200); }
+    button.ctrl { display: flex; align-items: center; gap: 0.25rem; }
+    #resyncBtn:active { transform: scale(0.95); }
+
+    select.ctrl { cursor: pointer; max-width: 180px; }
+    select.ctrl:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 2px var(--gulliver-blue); }
+
+    .sync-icon { width: 0.75rem; height: 0.75rem; }
+    .label-long { display: none; }
+    .label-short { display: inline; }
+
+    .caption {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      font-weight: 500;
+      color: var(--gulliver-blue);
+    }
+    .caption-text { font-size: 10px; }
+
+    /* Live status beacon */
+    .beacon { position: relative; display: flex; width: 0.5rem; height: 0.5rem; }
+    .beacon-ping, .beacon-dot { display: inline-flex; border-radius: 9999px; }
+    .beacon-ping {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0.75;
+      animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .beacon-dot { position: relative; width: 100%; height: 100%; }
+
+    .beacon[data-state="success"] .beacon-ping { background: var(--emerald-400); }
+    .beacon[data-state="success"] .beacon-dot  { background: var(--emerald-500); }
+    .beacon[data-state="syncing"] .beacon-ping { background: var(--amber-400); }
+    .beacon[data-state="syncing"] .beacon-dot  { background: var(--amber-500); }
+    .beacon[data-state="offline"] .beacon-ping { display: none; }
+    .beacon[data-state="offline"] .beacon-dot  { background: var(--blue-500); }
+
+    .status-text { color: var(--slate-400); font-size: 9px; margin: 0; }
+
+    /* ===== Toast ===== */
+    .toast-container {
+      position: fixed;
+      top: 0.75rem;
+      right: 1rem;
+      z-index: 50;
+      pointer-events: none;
+      transition: all 300ms var(--ease);
+      transform: translateY(-0.5rem);
+      opacity: 0;
+    }
+    .toast-container.is-visible { transform: none; opacity: 1; }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      background: var(--gulliver-blue);
+      color: #fff;
+      font-size: 0.75rem;
+      line-height: 1rem;
+      font-weight: 500;
+      border: 1px solid var(--blue-900);
+      border-radius: 0.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    .toast svg { width: 1rem; height: 1rem; color: var(--emerald-400); }
+
+    /* ===== Animations ===== */
+    @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin 1s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .beacon-ping, .spinning { animation: none; }
+    }
+
+    /* ===== Responsive breakpoints (same as Tailwind sm / md) ===== */
+    @media (min-width: 480px) {
+      .label-long { display: inline; }
+      .label-short { display: none; }
+    }
+    @media (min-width: 640px) {
+      body { padding: 0.5rem 0.5rem 0; }
+      .clock-main { padding: 0 0.75rem; }
+      .clock-row { gap: 1.5rem; padding: 0.5rem 0; }
+      .text-stack { flex: 0 1 auto; }
+      .date-block { margin-top: 0.375rem; }
+      .tz-row { margin-top: 0.25rem; }
+      .footer { gap: 0.5rem; margin-top: 0.375rem; padding-top: 0.5rem; font-size: 0.75rem; line-height: 1rem; }
+      .controls { gap: 0.625rem; }
+      .ctrl { font-size: 0.75rem; line-height: 1rem; }
+      select.ctrl { max-width: none; }
+      .sync-icon { width: 0.875rem; height: 0.875rem; }
+      .caption { gap: 0.5rem; }
+      .caption-text { font-size: 0.75rem; line-height: 1rem; }
+      .beacon { width: 0.625rem; height: 0.625rem; }
+      .status-text { font-size: 11px; }
+    }
+    @media (min-width: 768px) {
+      .clock-row { gap: 2rem; }
+    }
+  </style>
+
+  <script>
+    // Logo is stored next to this page in the GitHub repo (euler010/Applications/digitalclock).
+    // If the relative path fails (e.g. page embedded elsewhere), fall back to the repo's raw copy.
+    window.handleImageFallback = function(img) {
+      if (!img) return;
+      var step = parseInt(img.getAttribute('data-fallback-step') || '0', 10);
+      var fallbacks = [
+        'https://raw.githubusercontent.com/euler010/Applications/main/digitalclock/Gulliver_Spirit_G_Logo_Blue.png'
+      ];
+      if (step < fallbacks.length) {
+        img.setAttribute('data-fallback-step', (step + 1).toString());
+        img.src = fallbacks[step];
+      } else {
+        img.onerror = null;
+        var wrapper = img.parentElement;
+        if (wrapper && !wrapper.querySelector('svg')) {
+          img.style.display = 'none';
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('id', 'gulliverLogoSvg');
+          svg.setAttribute('viewBox', '0 0 500 800');
+          svg.setAttribute('class', img.className);
+          svg.setAttribute('role', 'img');
+          svg.setAttribute('aria-label', 'Gulliver Spirit G');
+          if (img.style.height) svg.style.height = img.style.height;
+          svg.style.width = 'auto';
+          svg.innerHTML = '<path fill="#113257" d="M219.7,770.8c-18.4-5.3-43.2-22.3-64.4-44.2c-35-36.2-56.1-81.5-62-133.3c-2.3-20.1-2.4-57-0.3-77.5c2.3-22.9,8-50.6,14.6-70.3l3.6-10.8l-15.1,13.7c-21.8,19.8-38.3,45.2-46.2,71.1c-3.1,10.2-4.1,20.4-3.5,35.4c0.8,19.3,2.4,26.4,7.8,35.9c4.2,7.4,12.7,15.7,20.7,20.2l7.7,4.3l-8.5,4.7c-17.8,9.8-38.6,9.8-55.6,0.1c-15.4-8.8-24.9-25.1-27.1-46.6c-1.3-12.8,0.3-30.8,4.1-47c11.6-49.3,42.5-98.7,85.6-136.6c28.3-24.9,59.3-43.1,96-56.4l14.3-5.2l-1.9-18.6c-4.4-43.2-1.9-79.6,8-115.1c11.8-42.3,34.4-78.5,67.7-108.5c24.2-21.8,55.5-40,89.1-51.7c21.8-7.6,50.2-13.4,73.1-15l15.9-1.1v23.2v23.2l-11.4,1.8c-30.4,4.8-59.5,16.5-83.3,33.5c-20.1,14.3-36.3,33.8-46.8,56.1c-5.8,12.3-8.8,24-11.1,43.2l-1.6,13.1l21.3-1.6c43.6-3.3,87.8,6.8,124.9,28.6c32.7,19.2,58.3,47.7,73.3,81.6c11.7,26.4,16.3,51.8,16.3,89.8c0,29.9-1.9,43.4-8.7,60.8c-14.8,38.1-47.5,69.5-88.7,85.2c-15.1,5.8-28.7,8.6-49.5,10.2l-16.1,1.2l-0.3,55.3l-0.3,55.3l17.7,0.7c31.1,1.3,57,11.3,77.3,29.8c24.4,22.2,36.5,53.4,36.5,94.2c0,34.2-8.3,61.9-26,86.6c-21.7,30.3-56.4,52.2-96.8,61.1C260.6,773.1,232.8,774.5,219.7,770.8z M300.5,417.8c0-34-0.8-40.2-4.9-52.7c-9.5-28.9-33.8-47.7-65.7-50.8c-12.7-1.2-30.9,1.6-42.5,6.5c-15.3,6.5-29.2,18.7-37.1,32.7c-7.3,13-8.8,22.2-8.8,54.8c0,32.6,1.5,41.8,8.8,54.8c7.9,14,21.8,26.2,37.1,32.7c11.6,4.9,29.8,7.7,42.5,6.5c31.9-3.1,56.2-21.9,65.7-50.8C299.7,458,300.5,451.8,300.5,417.8z"/>';
+          wrapper.appendChild(svg);
+          // FIX: size the fallback SVG right away
+          if (window.syncLogoHeight) window.syncLogoHeight();
+        }
+      }
+    };
+
+    // Match the G logo height to the text stack (top of Time to bottom of Timezone)
+    window.syncLogoHeight = function() {
+      var textStack = document.getElementById('clockTextStack');
+      // FIX: prefer the SVG fallback when present; the hidden <img> still exists after fallback
+      var logoEl = document.getElementById('gulliverLogoSvg') || document.getElementById('gulliverLogoImg');
+      if (!textStack || !logoEl) return;
+      var h = textStack.offsetHeight;
+      if (h > 40) {
+        logoEl.style.height = h + 'px';
+        logoEl.style.width = 'auto';
+      }
+    };
+  </script>
+</head>
+<body>
+
+  <div class="wrapper">
+
+    <main class="clock-main">
+      <div class="clock-row">
+
+        <!-- Left: Gulliver Spirit G -->
+        <div id="logoWrapper" class="logo-wrapper">
+          <img
+            id="gulliverLogoImg"
+            src="Gulliver_Spirit_G_Logo_Blue.png"
+            alt="Gulliver Spirit G"
+            width="1297"
+            height="2063"
+            style="height: clamp(115px, 21vw, 255px); width: auto;"
+            class="logo"
+            loading="eager"
+            onload="if(window.syncLogoHeight) window.syncLogoHeight();"
+            onerror="window.handleImageFallback && window.handleImageFallback(this)"
+          />
+        </div>
+
+        <!-- Right: running time and date -->
+        <div id="clockTextStack" class="text-stack">
+
+          <div class="time-line">
+            <span id="timeFullDisplay" class="time-display tabular-nums" role="timer" aria-live="off">
+              --:--:-- --
+            </span>
+          </div>
+
+          <div class="date-block">
+            <div id="dateDisplay" class="date-display">
+              Tuesday, September 15, 2026
+            </div>
+            <div class="tz-row">
+              <span id="tzBadge" class="tz-badge">
+                Eastern Time (EDT)
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Controls & caption -->
+      <div class="footer">
+        <div class="controls">
+          <!-- 12/24 Hr Toggle -->
+          <button id="formatToggleBtn" type="button" class="ctrl" aria-label="Toggle 12 or 24 hour format">
+            <span id="formatLabel">12-Hour</span>
+          </button>
+
+          <!-- Time Zone Selector -->
+          <select id="timezoneSelect" class="ctrl" aria-label="Time zone">
+            <option value="America/New_York">Eastern Time (US/New York)</option>
+            <option value="America/Chicago">Central Time (US/Chicago)</option>
+            <option value="America/Denver">Mountain Time (US/Denver)</option>
+            <option value="America/Los_Angeles">Pacific Time (US/Los Angeles)</option>
+            <option value="UTC">Coordinated Universal Time (UTC)</option>
+            <option value="local">Local System Timezone</option>
+          </select>
+
+          <!-- Manual Resync Button -->
+          <button id="resyncBtn" type="button" class="ctrl">
+            <svg id="syncIcon" class="sync-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="label-long">Sync Now</span>
+            <span class="label-short">Sync</span>
+          </button>
+        </div>
+
+        <div class="caption">
+          <span id="syncBeacon" class="beacon" data-state="success" aria-hidden="true">
+            <span class="beacon-ping"></span>
+            <span class="beacon-dot"></span>
+          </span>
+          <span class="caption-text">Synchronized with official time standards via NIST / time.gov algorithms</span>
+        </div>
+        <p id="syncStatusText" class="status-text" aria-live="polite">Calibrating against authoritative time servers...</p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toastContainer" class="toast-container" role="status" aria-live="polite">
+    <div class="toast">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      <span id="toastMessage">Time calibrated successfully!</span>
+    </div>
+  </div>
+
+  <script>
+    /*
+     * Time Sync Engine (NTP-style round-trip estimation)
+     * 1. Record t0, request a server timestamp, record t1
+     * 2. RTT = t1 - t0; one-way latency ≈ RTT / 2
+     * 3. Estimated true time at t1 = serverTimestamp + RTT / 2
+     * 4. Offset = estimated true time - device clock at t1
+     */
+
+    // FIX: parse ISO strings safely. Strings without a zone (e.g. timeapi.io's
+    // "2026-11-14T23:53:01.1234567") would otherwise be read as LOCAL time,
+    // and 7-digit fractions are rejected by some browsers.
+    function parseUtcIso(str) {
+      if (typeof str !== 'string') return NaN;
+      var s = str.trim().replace(' ', 'T').replace(/(\.\d{3})\d+/, '$1');
+      if (!/(Z|[+-]\d{2}:?\d{2})$/i.test(s)) s += 'Z';
+      return new Date(s).getTime();
+    }
+
+    const TimeSync = {
+      offset: 0,
+      roundTripDelay: 0,
+      lastSyncTimestamp: null,
+      syncIntervalMinutes: 10,
+      isSyncing: false,
+      hasEverSynced: false,
+
+      endpoints: [
+        {
+          name: 'WorldTimeAPI (NTP pool synchronized)',
+          url: 'https://worldtimeapi.org/api/timezone/Etc/UTC',
+          parse: async (res) => {
+            const data = await res.json();
+            // unixtime is whole seconds; utc_datetime carries the fraction
+            return parseUtcIso(data.utc_datetime);
+          }
+        },
+        {
+          name: 'TimeAPI.io (UTC synchronized)',
+          // FIX: documented path is /api/Time/current/zone (the /api/v1/... path is not documented)
+          url: 'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
+          parse: async (res) => {
+            const data = await res.json();
+            return parseUtcIso(data.dateTime);
+          }
+        },
+        {
+          name: 'Cloudflare trace timestamp',
+          url: 'https://cloudflare.com/cdn-cgi/trace',
+          parse: async (res) => {
+            const text = await res.text();
+            const tsMatch = text.match(/ts=([0-9.]+)/);
+            if (tsMatch && tsMatch[1]) return Math.round(parseFloat(tsMatch[1]) * 1000);
+            const headerDate = res.headers.get('date');
+            if (headerDate) return new Date(headerDate).getTime();
+            // FIX: the original returned Date.now() here, which reported a fake "success"
+            throw new Error('No timestamp in response');
+          }
+        }
+      ],
+
+      async synchronize(opts) {
+        const manual = !!(opts && opts.manual);
+        if (this.isSyncing) return;
+        this.isSyncing = true;
+        updateSyncUIStatus('syncing');
+
+        let calibrated = false;
+
+        for (const endpoint of this.endpoints) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 4000);
+          try {
+            const t0 = performance.now();
+            const response = await fetch(endpoint.url, {
+              method: 'GET',
+              cache: 'no-store',
+              signal: controller.signal
+            });
+            const t1 = performance.now();
+            // FIX: capture the device clock at the moment the response arrived,
+            // not after the body has been downloaded and parsed
+            const clientDateAtT1 = Date.now();
+
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+
+            const serverUtcTime = await endpoint.parse(response);
+            // FIX: reject NaN / garbage instead of producing an "Invalid Date" clock
+            if (!Number.isFinite(serverUtcTime)) throw new Error('Unparseable timestamp');
+
+            const rtt = Math.round(t1 - t0);
+            const estimatedNow = serverUtcTime + rtt / 2;
+
+            this.offset = Math.round(estimatedNow - clientDateAtT1);
+            this.roundTripDelay = rtt;
+            this.lastSyncTimestamp = Date.now();
+
+            calibrated = true;
+            updateSyncUIStatus('success', endpoint.name, manual || !this.hasEverSynced);
+            this.hasEverSynced = true;
+            break;
+          } catch (err) {
+            console.warn(`Sync attempt failed for ${endpoint.name}, trying next server...`, err);
+          } finally {
+            // FIX: the timeout is now cleared on every path (it leaked when fetch threw)
+            clearTimeout(timeoutId);
+          }
+        }
+
+        if (!calibrated) {
+          // FIX: keep the last good offset instead of discarding it on a transient failure
+          if (!this.hasEverSynced) {
+            this.offset = 0;
+            this.roundTripDelay = 0;
+          }
+          updateSyncUIStatus('offline');
+        }
+
+        this.isSyncing = false;
+        resetSyncCountdown();
+      },
+
+      getNow() {
+        return new Date(Date.now() + this.offset);
+      }
+    };
+
+    const ClockState = {
+      is24Hour: false,
+      timezone: 'America/New_York',
+      nextSyncCountdown: 600
+    };
+
+    // DOM cache
+    const elTimeFullDisplay = document.getElementById('timeFullDisplay');
+    const elTzBadge = document.getElementById('tzBadge');
+    const elDateDisplay = document.getElementById('dateDisplay');
+    const elFormatLabel = document.getElementById('formatLabel');
+    const elFormatToggleBtn = document.getElementById('formatToggleBtn');
+    const elTimezoneSelect = document.getElementById('timezoneSelect');
+    const elResyncBtn = document.getElementById('resyncBtn');
+    const elSyncIcon = document.getElementById('syncIcon');
+    const elSyncBeacon = document.getElementById('syncBeacon');
+    const elSyncStatusText = document.getElementById('syncStatusText');
+    const elToastContainer = document.getElementById('toastContainer');
+    const elToastMessage = document.getElementById('toastMessage');
+
+    elTimezoneSelect.value = 'America/New_York';
+
+    const ZONE_TITLES = {
+      'America/New_York': 'Eastern Time',
+      'America/Chicago': 'Central Time',
+      'America/Denver': 'Mountain Time',
+      'America/Los_Angeles': 'Pacific Time',
+      'UTC': 'Universal Time'
+    };
+
+    // FIX: build formatters once per settings change instead of 30 times a second
+    let fmtTime, fmtDate, fmtZone;
+    function buildFormatters() {
+      const tz = ClockState.timezone === 'local' ? undefined : ClockState.timezone;
+      const withTz = (o) => (tz ? Object.assign(o, { timeZone: tz }) : o);
+      fmtTime = new Intl.DateTimeFormat('en-US', withTz(ClockState.is24Hour
+        // FIX: hourCycle 'h23' — hour12:false renders midnight as "24:00:00" in some Chrome versions
+        ? { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }
+        : { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }));
+      fmtDate = new Intl.DateTimeFormat('en-US', withTz({ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+      fmtZone = new Intl.DateTimeFormat('en-US', withTz({ timeZoneName: 'short' }));
+    }
+
+    function setText(el, text) {
+      if (el.textContent !== text) el.textContent = text;
+    }
+
+    function renderClock() {
+      const now = TimeSync.getNow();
+      try {
+        let t = fmtTime.format(now);
+        // Lowercase am/pm, e.g. "2:15:47 pm"
+        if (!ClockState.is24Hour) t = t.replace(/\s?(AM|PM)/i, (m) => ' ' + m.trim().toLowerCase());
+        setText(elTimeFullDisplay, t);
+        setText(elDateDisplay, fmtDate.format(now));
+
+        const tzCode = fmtZone.formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'Local';
+        const title = ZONE_TITLES[ClockState.timezone] || 'Device Time';
+        setText(elTzBadge, `${title} (${tzCode})`);
+      } catch (e) {
+        console.error('Time formatting error:', e);
+      }
+    }
+
+    function updateSyncUIStatus(status, serverName, announce) {
+      // FIX: change only the state; the original overwrote className with fixed
+      // h-3 w-3 sizes, so the dot grew and overflowed its h-2 container after the first sync
+      elSyncBeacon.dataset.state = status;
+
+      if (status === 'syncing') {
+        elSyncStatusText.textContent = 'Synchronizing with time servers...';
+        elSyncIcon.classList.add('spinning');
+      } else if (status === 'success') {
+        elSyncStatusText.textContent = `Synchronized with official time standards (${Math.abs(TimeSync.offset)}ms deviation)`;
+        elSyncIcon.classList.remove('spinning');
+        // FIX: accuracy bound is ±RTT/2, not ±RTT; toast only on first or manual sync
+        if (announce) showToast(`Synchronized with official standards. Accuracy: ±${Math.ceil(TimeSync.roundTripDelay / 2)}ms`);
+      } else if (status === 'offline') {
+        // FIX: original said "synchronized ... (±0ms)" while unsynchronized
+        elSyncStatusText.textContent = TimeSync.hasEverSynced
+          ? 'Time servers unreachable — using last calibration'
+          : 'Time servers unreachable — showing this device’s clock';
+        elSyncIcon.classList.remove('spinning');
+      }
+    }
+
+    function resetSyncCountdown() {
+      ClockState.nextSyncCountdown = TimeSync.syncIntervalMinutes * 60;
+    }
+
+    function updateNextSyncTimer() {
+      if (ClockState.nextSyncCountdown > 0) {
+        ClockState.nextSyncCountdown--;
+      } else if (!document.hidden) {
+        // FIX: don't hit the APIs while the tab is in the background
+        TimeSync.synchronize();
+      }
+    }
+
+    // FIX: overlapping toasts no longer hide each other early
+    let toastTimer = null;
+    function showToast(msg) {
+      elToastMessage.textContent = msg;
+      elToastContainer.classList.add('is-visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => elToastContainer.classList.remove('is-visible'), 3500);
+    }
+
+    elFormatToggleBtn.addEventListener('click', () => {
+      ClockState.is24Hour = !ClockState.is24Hour;
+      elFormatLabel.textContent = ClockState.is24Hour ? '24-Hour' : '12-Hour';
+      buildFormatters();
+      renderClock();
+    });
+
+    elTimezoneSelect.addEventListener('change', (e) => {
+      ClockState.timezone = e.target.value;
+      buildFormatters();
+      renderClock();
+    });
+
+    elResyncBtn.addEventListener('click', () => {
+      TimeSync.synchronize({ manual: true });
+    });
+
+    // Resync after waking from sleep / returning to a long-hidden tab
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && TimeSync.lastSyncTimestamp &&
+          Date.now() - TimeSync.lastSyncTimestamp > TimeSync.syncIntervalMinutes * 60000) {
+        TimeSync.synchronize();
+      }
+    });
+
+    function init() {
+      buildFormatters();
+      TimeSync.synchronize();
+
+      renderClock();
+      setInterval(renderClock, 100);
+      setInterval(updateNextSyncTimer, 1000);
+
+      window.syncLogoHeight();
+      window.addEventListener('resize', window.syncLogoHeight);
+      if (window.ResizeObserver) {
+        new ResizeObserver(() => window.syncLogoHeight()).observe(document.getElementById('clockTextStack'));
+      }
+      // FIX: the logo is sized from text that uses a web font; resize once it loads
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(window.syncLogoHeight);
+    }
+
+    // FIX: works whether or not DOMContentLoaded has already fired
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
