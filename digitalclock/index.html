@@ -521,15 +521,20 @@
         let calibrated = false;
 
         for (const endpoint of this.endpoints) {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000);
+          // FIX: no AbortSignal is passed to fetch. Sandboxed previews (e.g. Claude, some
+          // LMS/iframe embeds) relay fetch through postMessage, and an AbortSignal cannot be
+          // cloned ("DataCloneError"), which made every request fail instantly.
+          // A Promise.race timeout works everywhere.
+          let timeoutId;
+          const timeout = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Timed out after 4s')), 4000);
+          });
           try {
             const t0 = performance.now();
-            const response = await fetch(endpoint.url, {
-              method: 'GET',
-              cache: 'no-store',
-              signal: controller.signal
-            });
+            const response = await Promise.race([
+              fetch(endpoint.url, { method: 'GET', cache: 'no-store' }),
+              timeout
+            ]);
             const t1 = performance.now();
             // FIX: capture the device clock at the moment the response arrived,
             // not after the body has been downloaded and parsed
