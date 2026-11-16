@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equation Studio Pro — Advanced LaTeX Formula Editor</title>
+    <!-- Page Stylesheet (replaces Tailwind CSS) -->
+    <style>
+/* Base reset */
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}
+html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji"}
+body{margin:0;line-height:inherit}
+h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit;margin:0}
+p{margin:0}
+b,strong{font-weight:bolder}
+code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em}
+button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}
+button,select{text-transform:none}
+button,[type=button],[type=reset],[type=submit]{-webkit-appearance:button;background-color:transparent;background-image:none}
+button,[role=button]{cursor:pointer}
+:disabled{cursor:default}
+textarea{resize:vertical}
+input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}
+img,svg,video,canvas{display:block;vertical-align:middle}
+img,video{max-width:100%;height:auto}
+[hidden]{display:none}
+
+/* Utility classes */
+.absolute{position:absolute}
+.accent-blue-600{accent-color:#2563eb}
+.bg-amber-500{background-color:#f59e0b}
+.bg-black{background-color:#000000}
+.bg-blue-50{background-color:#eff6ff}
+.bg-blue-600{background-color:#2563eb}
+.bg-emerald-600{background-color:#059669}
+.bg-gradient-to-b{background-image:linear-gradient(to bottom,var(--g-from,transparent),var(--g-to,transparent))}
+.bg-orange-600{background-color:#ea580c}
+.bg-purple-600{background-color:#9333ea}
+.bg-red-50{background-color:#fef2f2}
+.bg-red-600{background-color:#dc2626}
+.bg-slate-100{background-color:#f1f5f9}
+.bg-slate-300{background-color:#cbd5e1}
+.bg-slate-50{background-color:#f8fafc}
+.bg-slate-50\/70{background-color:rgb(248 250 252 / 0.7)}
+.bg-slate-50\/90{background-color:rgb(248 250 252 / 0.9)}
+.bg-slate-800{background-color:#1e293b}
+.bg-slate-900{background-color:#0f172a}
+.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}
+.bg-transparent{background-color:transparent}
+.bg-white{background-color:#ffffff}
+.block{display:block}
+.border{border-width:1px}
+.border-0{border-width:0px}
+.border-b{border-bottom-width:1px}
+.border-blue-100{border-color:#dbeafe}
+.border-blue-200{border-color:#bfdbfe}
+.border-blue-300{border-color:#93c5fd}
+.border-red-200{border-color:#fecaca}
+.border-slate-100{border-color:#f1f5f9}
+.border-slate-200{border-color:#e2e8f0}
+.border-slate-200\/90{border-color:rgb(226 232 240 / 0.9)}
+.border-slate-300{border-color:#cbd5e1}
+.border-slate-700{border-color:#334155}
+.border-slate-800{border-color:#1e293b}
+.border-t{border-top-width:1px}
+.bottom-1{bottom:0.25rem}
+.bottom-5{bottom:1.25rem}
+.bottom-full{bottom:100%}
+.cursor-context-menu{cursor:context-menu}
+.cursor-pointer{cursor:pointer}
+.duration-150{transition-duration:150ms}
+.duration-200{transition-duration:200ms}
+.fixed{position:fixed}
+.flex{display:flex}
+.flex-1{flex:1 1 0%}
+.flex-col{flex-direction:column}
+.flex-wrap{flex-wrap:wrap}
+.font-bold{font-weight:700}
+.font-medium{font-weight:500}
+.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+.font-semibold{font-weight:600}
+.font-serif{font-family:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif}
+.from-white{--g-from:#ffffff}
+.gap-0\.5{gap:0.125rem}
+.gap-1{gap:0.25rem}
+.gap-1\.5{gap:0.375rem}
+.gap-2{gap:0.5rem}
+.gap-2\.5{gap:0.625rem}
+.gap-3{gap:0.75rem}
+.gap-3\.5{gap:0.875rem}
+.grid{display:grid}
+.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.grid-cols-6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.h-3{height:0.75rem}
+.h-3\.5{height:0.875rem}
+.h-4{height:1rem}
+.h-5{height:1.25rem}
+.h-6{height:1.5rem}
+.h-9{height:2.25rem}
+.h-auto{height:auto}
+.h-full{height:100%}
+.inline-block{display:inline-block}
+.inline-flex{display:inline-flex}
+.inset-0{inset:0px}
+.italic{font-style:italic}
+.items-center{align-items:center}
+.items-stretch{align-items:stretch}
+.justify-between{justify-content:space-between}
+.justify-center{justify-content:center}
+.justify-end{justify-content:flex-end}
+.leading-none{line-height:1}
+.leading-relaxed{line-height:1.625}
+.left-0{left:0px}
+.line-through{text-decoration-line:line-through}
+.max-w-7xl{max-width:80rem}
+.max-w-full{max-width:100%}
+.max-w-lg{max-width:32rem}
+.max-w-xl{max-width:36rem}
+.mb-1{margin-bottom:0.25rem}
+.mb-1\.5{margin-bottom:0.375rem}
+.mb-2{margin-bottom:0.5rem}
+.mb-2\.5{margin-bottom:0.625rem}
+.mb-3{margin-bottom:0.75rem}
+.min-h-\[140px\]{min-height:140px}
+.min-h-\[40px\]{min-height:40px}
+.min-h-\[95px\]{min-height:95px}
+.min-h-screen{min-height:100vh}
+.min-w-\[70px\]{min-width:70px}
+.min-w-\[82px\]{min-width:82px}
+.ml-auto{margin-left:auto}
+.mt-2{margin-top:0.5rem}
+.mx-1{margin-left:0.25rem;margin-right:0.25rem}
+.mx-auto{margin-left:auto;margin-right:auto}
+.opacity-0{opacity:0}
+.opacity-100{opacity:1}
+.opacity-40{opacity:0.4}
+.overflow-hidden{overflow:hidden}
+.overflow-x-auto{overflow-x:auto}
+.p-0\.5{padding:0.125rem}
+.p-1\.5{padding:0.375rem}
+.p-2\.5{padding:0.625rem}
+.p-3{padding:0.75rem}
+.p-4{padding:1rem}
+.p-5{padding:1.25rem}
+.pb-0\.5{padding-bottom:0.125rem}
+.pb-2{padding-bottom:0.5rem}
+.pb-2\.5{padding-bottom:0.625rem}
+.pb-4{padding-bottom:1rem}
+.pointer-events-none{pointer-events:none}
+.pt-1\.5{padding-top:0.375rem}
+.pt-2{padding-top:0.5rem}
+.pt-2\.5{padding-top:0.625rem}
+.px-0\.5{padding-left:0.125rem;padding-right:0.125rem}
+.px-1{padding-left:0.25rem;padding-right:0.25rem}
+.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}
+.px-2{padding-left:0.5rem;padding-right:0.5rem}
+.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}
+.px-3{padding-left:0.75rem;padding-right:0.75rem}
+.px-4{padding-left:1rem;padding-right:1rem}
+.px-5{padding-left:1.25rem;padding-right:1.25rem}
+.px-\[32\.5px\]{padding-left:32.5px;padding-right:32.5px}
+.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}
+.py-1{padding-top:0.25rem;padding-bottom:0.25rem}
+.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}
+.py-2{padding-top:0.5rem;padding-bottom:0.5rem}
+.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}
+.py-3{padding-top:0.75rem;padding-bottom:0.75rem}
+.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}
+.relative{position:relative}
+.resize-none{resize:none}
+.right-0{right:0px}
+.right-1{right:0.25rem}
+.right-5{right:1.25rem}
+.rounded{border-radius:0.25rem}
+.rounded-2xl{border-radius:1rem}
+.rounded-full{border-radius:9999px}
+.rounded-lg{border-radius:0.5rem}
+.rounded-md{border-radius:0.375rem}
+.rounded-t-2xl{border-top-left-radius:1rem;border-top-right-radius:1rem}
+.rounded-xl{border-radius:0.75rem}
+.select-none{-webkit-user-select:none;user-select:none}
+.shadow-2xl{--shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.shadow-inner{--shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.shadow-lg{--shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.shadow-md{--shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.shadow-sm{--shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.shadow-xl{--shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.shrink-0{flex-shrink:0}
+.space-y-2 > :not([hidden]) ~ :not([hidden]){margin-top:0.5rem}
+.space-y-4 > :not([hidden]) ~ :not([hidden]){margin-top:1rem}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
+.sticky{position:sticky}
+.text-\[10px\]{font-size:10px}
+.text-\[11px\]{font-size:11px}
+.text-\[12\.5px\]{font-size:12.5px}
+.text-\[13px\]{font-size:13px}
+.text-\[7px\]{font-size:7px}
+.text-\[8px\]{font-size:8px}
+.text-\[9px\]{font-size:9px}
+.text-amber-400{color:#fbbf24}
+.text-base{font-size:1rem;line-height:1.5rem}
+.text-blue-400{color:#60a5fa}
+.text-blue-600{color:#2563eb}
+.text-blue-700{color:#1d4ed8}
+.text-center{text-align:center}
+.text-emerald-400{color:#34d399}
+.text-left{text-align:left}
+.text-red-300{color:#fca5a5}
+.text-red-400{color:#f87171}
+.text-red-700{color:#b91c1c}
+.text-slate-400{color:#94a3b8}
+.text-slate-500{color:#64748b}
+.text-slate-600{color:#475569}
+.text-slate-700{color:#334155}
+.text-slate-800{color:#1e293b}
+.text-slate-900{color:#0f172a}
+.text-sm{font-size:0.875rem;line-height:1.25rem}
+.text-white{color:#ffffff}
+.text-xs{font-size:0.75rem;line-height:1rem}
+.top-0{top:0px}
+.top-full{top:100%}
+.tracking-tight{letter-spacing:-0.025em}
+.tracking-wider{letter-spacing:0.05em}
+.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms}
+.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms}
+.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms}
+.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4,0,0.2,1);transition-duration:150ms}
+.translate-x-0{--tx:0px;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.translate-x-4{--tx:1rem;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.translate-y-0{--ty:0px;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.translate-y-2{--ty:0.5rem;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.underline{text-decoration-line:underline}
+.uppercase{text-transform:uppercase}
+.w-12{width:3rem}
+.w-3{width:0.75rem}
+.w-3\.5{width:0.875rem}
+.w-4{width:1rem}
+.w-52{width:13rem}
+.w-6{width:1.5rem}
+.w-72{width:18rem}
+.w-8{width:2rem}
+.w-80{width:20rem}
+.w-full{width:100%}
+.w-px{width:1px}
+.whitespace-nowrap{white-space:nowrap}
+.z-20{z-index:20}
+.z-30{z-index:30}
+.z-50{z-index:50}
+.to-slate-50\/90{--g-to:rgb(248 250 252 / 0.9)}
+.hidden{display:none}
+.group:hover .group-hover\:border-b-slate-900{border-bottom-color:#0f172a}
+.group:hover .group-hover\:border-r-slate-900{border-right-color:#0f172a}
+.group:hover .group-hover\:border-slate-400{border-color:#94a3b8}
+.group:hover .group-hover\:from-slate-50{--g-from:#f8fafc}
+.group:hover .group-hover\:shadow-sm{--shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);box-shadow:var(--ring,0 0 #0000),var(--shadow)}
+.group:hover .group-hover\:text-slate-900{color:#0f172a}
+.group:hover .group-hover\:to-slate-100{--g-to:#f1f5f9}
+.hover\:bg-amber-600:hover{background-color:#d97706}
+.hover\:bg-blue-100:hover{background-color:#dbeafe}
+.hover\:bg-blue-50:hover{background-color:#eff6ff}
+.hover\:bg-blue-700:hover{background-color:#1d4ed8}
+.hover\:bg-emerald-700:hover{background-color:#047857}
+.hover\:bg-slate-100:hover{background-color:#f1f5f9}
+.hover\:bg-slate-50:hover{background-color:#f8fafc}
+.hover\:bg-slate-800:hover{background-color:#1e293b}
+.hover\:bg-slate-900:hover{background-color:#0f172a}
+.hover\:border-blue-400:hover{border-color:#60a5fa}
+.hover\:border-slate-400:hover{border-color:#94a3b8}
+.hover\:scale-110:hover{--sc:1.1;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.hover\:text-blue-600:hover{color:#2563eb}
+.hover\:text-red-500:hover{color:#ef4444}
+.hover\:text-slate-900:hover{color:#0f172a}
+.hover\:text-white:hover{color:#ffffff}
+.hover\:underline:hover{text-decoration-line:underline}
+.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}
+.focus\:ring-1:focus{--ring:0 0 0 1px var(--ring-color,rgb(59 130 246 / 0.5));box-shadow:var(--ring),var(--shadow,0 0 #0000)}
+.focus\:ring-2:focus{--ring:0 0 0 2px var(--ring-color,rgb(59 130 246 / 0.5));box-shadow:var(--ring),var(--shadow,0 0 #0000)}
+.focus\:ring-blue-500:focus{--ring-color:#3b82f6}
+.active\:scale-95:active{--sc:0.95;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.active\:scale-\[0\.99\]:active{--sc:0.99;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--sc,1))}
+.disabled\:opacity-40:disabled{opacity:0.4}
+@media (min-width:640px){
+  .sm\:flex-nowrap{flex-wrap:nowrap}
+  .sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:768px){
+  .md\:text-base{font-size:1rem;line-height:1.5rem}
+}
+@media (min-width:1024px){
+  .lg\:col-span-5{grid-column:span 5 / span 5}
+  .lg\:col-span-7{grid-column:span 7 / span 7}
+  .lg\:flex-\[1_0_auto\]{flex:1 0 auto}
+  .lg\:flex-row{flex-direction:row}
+  .lg\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}
+}
+    </style>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&family=Open+Sans:ital,wght@0,400..700;1,400..700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    
+    <!-- MathJax 3 Configuration for Self-Contained SVG Rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                packages: {'[+]': ['ams', 'color', 'newcommand', 'cancel', 'bbox', 'mhchem', 'physics']},
+                macros: {
+                    overrightharpoon: ['{\\overset{\\rightharpoonup}{\\smash{#1}\\vphantom{t}}}', 1],
+                    harpoon: ['{\\overset{\\rightharpoonup}{\\smash{#1}\\vphantom{t}}}', 1],
+                    vect: ['{\\overset{\\rightharpoonup}{\\smash{#1}\\vphantom{t}}}', 1]
+                }
+            },
+            svg: {
+                fontCache: 'none'
+            },
+            loader: {
+                load: ['[tex]/color', '[tex]/cancel', '[tex]/bbox', '[tex]/mhchem', '[tex]/physics']
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        if (window.onMathJaxReady) window.onMathJaxReady();
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .sym-btn mjx-container {
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .sym-btn svg {
+            max-height: 26px;
+            width: auto;
+        }
+        .frequent-btn {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .frequent-btn mjx-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            line-height: 1 !important;
+        }
+        mjx-container svg {
+            shape-rendering: geometricPrecision !important;
+            text-rendering: optimizeLegibility !important;
+        }
+        .ribbon-cluster {
+            position: relative;
+        }
+        .ribbon-popover {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(6px) scale(0.98);
+            transition: opacity 0.14s ease-out, transform 0.14s ease-out, visibility 0.14s;
+            pointer-events: none;
+        }
+        .ribbon-cluster:hover .ribbon-popover,
+        .ribbon-cluster.force-open .ribbon-popover {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .ribbon-popover::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 0;
+            right: 0;
+            height: 14px;
+            background: transparent;
+        }
+        .corner-triangle {
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 7px 7px;
+            border-color: transparent transparent #2563eb transparent;
+            transition: border-color 0.15s ease;
+        }
+        .cluster-preview mjx-container {
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center;
+            font-size: 1.15em !important;
+            pointer-events: none;
+        }
+        .cluster-preview svg {
+            max-height: 24px;
+            width: auto;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Top Application Bar -->
+    <header class="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center">
+                <h1 class="text-base font-bold tracking-tight text-white">
+                    LaTeX Equation Studio
+                </h1>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl w-full mx-auto px-4 pt-2.5 pb-4 flex-1 flex flex-col gap-3.5">
+
+        <!-- Symbol & Structure Ribbon -->
+        <section class="relative z-20 flex flex-col gap-1.5">
+            <div id="dynamicRibbonGrid" class="flex flex-col gap-1.5">
+                <!-- Row 1: Category Menus + Matrix Wizard -->
+                <div id="hoverRibbonRow1" class="flex flex-wrap items-center gap-1.5"></div>
+
+                <!-- Row 2: Frequently Used Operations & Formatting Options -->
+                <div class="flex flex-wrap items-center justify-between gap-1.5">
+                    <div id="frequentOpsRibbon" class="flex flex-wrap items-center gap-1.5">
+                        <button type="button" onclick="insertSnippet('\\frac{}{}')" title="Fraction (\frac{}{})" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\frac{a}{b}\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\left(  \\right)')" title="Auto-sizing Parentheses (\left( \right))" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\((x)\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\sqrt{}')" title="Square Root (\sqrt{})" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\sqrt{x}\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('^{}')" title="Superscript / Exponent (^{})" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(x^{n}\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('_{}')" title="Subscript (_{})" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(x_{n}\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\vec{}')" title="Vector Arrow (\vec{})" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\vec{A}\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\theta ')" title="Theta (\theta)" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\theta\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\cdot ')" title="Multiplication Dot (\cdot)" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\cdot\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\times ')" title="Multiplication Cross (\times)" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\times\)</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\div ')" title="Division Symbol (\div)" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] font-semibold text-slate-800 leading-none flex items-center justify-center">&divide;</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\pm ')" title="Plus-Minus (\pm)" class="sym-btn frequent-btn bg-white hover:bg-blue-50 hover:border-blue-400 border border-slate-300 rounded-lg shadow-2xs transition active:scale-95">
+                            <span class="text-[12.5px] text-slate-800 flex items-center justify-center">\(\pm\)</span>
+                        </button>
+
+                        <!-- Vertical Divider -->
+                        <div class="h-6 w-px bg-slate-300 mx-1"></div>
+
+                        <!-- Spacing & Layout Buttons -->
+                        <div class="flex items-center gap-1.5 text-[12.5px]">
+                            <span class="text-slate-500 text-[12.5px] font-medium">Space:</span>
+                            <button onclick="insertSnippet('\\, ')" class="px-2 py-0.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-md text-[12.5px] text-slate-700 shadow-2xs transition" title="Thin space (3mu)">Thin</button>
+                            <button onclick="insertSnippet('\\; ')" class="px-2 py-0.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-md text-[12.5px] text-slate-700 shadow-2xs transition" title="Medium / Thick space (~6mu)">Medium</button>
+                            <button onclick="handleLineBreakInsert()" class="px-2 py-0.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-md text-[12.5px] font-medium text-slate-900 shadow-2xs transition" title="Start a new line (inserts \\ and line break)">&#8629; Linebreak</button>
+                            <button onclick="wrapSelection('\\begin{aligned}\n', '\n\\end{aligned}')" class="px-2 py-0.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-md text-[12.5px] text-slate-700 shadow-2xs transition" title="Wrap into aligned multiline block">Align (=)</button>
+                        </div>
+
+                        <!-- Vertical Divider -->
+                        <div class="h-5 w-px bg-slate-300 mx-1"></div>
+
+                        <!-- Font & Text Formatting Tools -->
+                        <button onclick="wrapSelection('\\mathbf{', '}')" title="Bold Math" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md font-bold text-slate-700 shadow-2xs transition text-[12.5px]">B</button>
+                        <button onclick="wrapSelection('\\mathit{', '}')" title="Italic Math" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md italic font-serif text-slate-700 shadow-2xs transition text-[12.5px]">I</button>
+                        <button onclick="wrapSelection('\\underline{', '}')" title="Underline" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md underline text-slate-700 shadow-2xs transition text-[12.5px]">U</button>
+                        <button onclick="wrapSelection('\\text{', '}')" title="Plain Text inside Formula" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md text-slate-700 shadow-2xs transition text-[12.5px]">Text</button>
+                        <button onclick="wrapSelection('\\mathbb{', '}')" title="Blackboard Bold (e.g. R, N, Z)" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md font-serif text-slate-700 shadow-2xs transition text-[12.5px]">&#8477;</button>
+                        <button onclick="wrapSelection('\\cancel{', '}')" title="Strikethrough / Cancel term" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md line-through text-slate-700 shadow-2xs transition text-[12.5px]">Cancel</button>
+                        <button onclick="wrapSelection('\\boxed{', '}')" title="Boxed Formula" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md border-slate-800 font-medium text-slate-700 shadow-2xs transition text-[12.5px]">[Box]</button>
+                    </div>
+
+                    <!-- Overflow Menu Buttons -->
+                    <div id="hoverRibbonRow2Overflow" class="flex items-center gap-1.5 justify-end ml-auto"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Split Editor & Export Settings Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
+            
+            <!-- Left Column: LaTeX Code Editor (7 cols) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-full">
+                <div class="relative flex-1 flex flex-col h-full">
+                    <textarea id="latexInput" spellcheck="false" rows="3"
+                        placeholder="Write or click symbols above to build your LaTeX equation here..."
+                        class="mono-font w-full h-full flex-1 p-3 text-sm md:text-base text-slate-800 bg-white focus:outline-none resize-none leading-relaxed min-h-[95px]"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Right Column: Appearance Controls + Compact Actions (5 cols) -->
+            <div id="settingsBox" class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-2.5 flex flex-col justify-between gap-2 h-full">
+                <!-- Top Section: Appearance & Color Settings -->
+                <div class="space-y-2 text-xs">
+                    <!-- Adjustable Font Size & Font Family -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pb-0.5">
+                        <!-- Font Family Dropdown -->
+                        <div>
+                            <label for="fontFamilySelect" class="font-semibold text-slate-700 block mb-1">Font Family</label>
+                            <select id="fontFamilySelect" onchange="renderEquation()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 font-medium rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="computer-modern" selected>Computer Modern (Standard LaTeX)</option>
+                                <option value="arial">Arial / Sans-Serif (Modern)</option>
+                                <option value="mono">JetBrains Mono (Code / Monospace)</option>
+                                <option value="euler">Euler / Script (Upright AMS Style)</option>
+                                <option value="blackboard">Blackboard Bold (Double-Struck Math)</option>
+                            </select>
+                        </div>
+
+                        <!-- Font Size Controls -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="fontSizeNumber" class="font-semibold text-slate-700">Font Size</label>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" id="fontSizeNumber" min="10" max="120" value="30" 
+                                        oninput="syncFontSize(this.value)"
+                                        class="w-12 px-1 py-0.5 text-center font-semibold border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <span class="text-slate-400">px</span>
+                                </div>
+                            </div>
+                            <input type="range" id="fontSizeSlider" min="12" max="100" value="30" 
+                                oninput="syncFontSize(this.value)"
+                                class="w-full accent-blue-600 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Background Mode & Padding -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Background Selection -->
+                        <div>
+                            <label class="font-semibold text-slate-700 block mb-1">Image Background</label>
+                            <div class="grid grid-cols-3 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                                <button type="button" id="bgBtnTransparent" onclick="setBgMode('transparent')" 
+                                    class="px-1.5 py-1 rounded-md font-medium text-[11px] transition bg-white text-blue-700 shadow-2xs text-center flex items-center justify-center">
+                                    Transparent
+                                </button>
+                                <button type="button" id="bgBtnWhite" onclick="setBgMode('white')" 
+                                    class="px-1.5 py-1 rounded-md font-medium text-[11px] transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center">
+                                    White
+                                </button>
+                                <button type="button" id="bgBtnCustom" onclick="setBgMode('custom')" 
+                                    class="px-1.5 py-1 rounded-md font-medium text-[11px] transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center">
+                                    Custom
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Colors (Equation Foreground + Custom BG) -->
+                        <div>
+                            <label class="font-semibold text-slate-700 block mb-1">Colors &amp; Padding</label>
+                            <div class="flex items-center gap-1.5">
+                                <!-- Ink Popover Trigger -->
+                                <div class="relative" id="inkPickerDropdownWrapper">
+                                    <button type="button" id="inkTriggerBtn" onclick="toggleInkPalette(event)" class="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg transition active:scale-95 shadow-2xs" title="Choose equation color or preset">
+                                        <span class="text-[11px] text-slate-500 font-medium">Ink:</span>
+                                        <span id="inkColorIndicator" class="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-inner inline-block" style="background-color: #0f172a;"></span>
+                                        <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
+                                    </button>
+
+                                    <input type="color" id="fgColorPicker" value="#0f172a" class="hidden" onchange="updateInkColor(this.value)">
+
+                                    <!-- Custom Color Palette Popover -->
+                                    <div id="inkPalettePopover" class="hidden absolute left-0 bottom-full mb-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 p-3 z-50 animate-fadeIn">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preset Colors</div>
+                                        <div class="grid grid-cols-6 gap-1.5 pb-2.5 border-b border-slate-100">
+                                            <button type="button" onclick="setInkPreset('#000000')" title="Black" class="w-6 h-6 rounded-lg bg-black hover:scale-110 active:scale-95 transition shadow-2xs border border-slate-200"></button>
+                                            <button type="button" onclick="setInkPreset('#dc2626')" title="Red" class="w-6 h-6 rounded-lg bg-red-600 hover:scale-110 active:scale-95 transition shadow-2xs"></button>
+                                            <button type="button" onclick="setInkPreset('#2563eb')" title="Blue" class="w-6 h-6 rounded-lg bg-blue-600 hover:scale-110 active:scale-95 transition shadow-2xs"></button>
+                                            <button type="button" onclick="setInkPreset('#0B6623')" title="Green (#0B6623)" class="w-6 h-6 rounded-lg hover:scale-110 active:scale-95 transition shadow-2xs" style="background-color: #0B6623;"></button>
+                                            <button type="button" onclick="setInkPreset('#9333ea')" title="Purple" class="w-6 h-6 rounded-lg bg-purple-600 hover:scale-110 active:scale-95 transition shadow-2xs"></button>
+                                            <button type="button" onclick="setInkPreset('#ea580c')" title="Orange" class="w-6 h-6 rounded-lg bg-orange-600 hover:scale-110 active:scale-95 transition shadow-2xs"></button>
+                                        </div>
+
+                                        <div class="pt-2 flex items-center justify-between">
+                                            <span class="text-[11px] font-medium text-slate-600">Custom Picker:</span>
+                                            <label for="customColorTriggerInput" class="px-2 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 rounded-md text-[10px] font-semibold text-slate-700 cursor-pointer flex items-center gap-1 transition">
+                                                <i class="fa-solid fa-eye-dropper text-[9px]"></i> More...
+                                                <input type="color" id="customColorTriggerInput" value="#0f172a" oninput="updateInkColor(this.value)" class="sr-only">
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="customBgPickerWrap" class="hidden flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg" title="Custom Background Color">
+                                    <span class="text-[11px] text-slate-500">BG:</span>
+                                    <input type="color" id="bgColorPicker" value="#fef9c3" onchange="renderEquation()" class="w-4 h-4 rounded cursor-pointer border-0 bg-transparent">
+                                </div>
+
+                                <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg flex-1" title="Border Padding around exported image">
+                                    <span class="text-[11px] text-slate-500">Pad:</span>
+                                    <select id="paddingSelect" onchange="renderEquation()" class="bg-transparent font-medium text-slate-700 focus:outline-none w-full">
+                                        <option value="1">Tight (1px)</option>
+                                        <option value="4" selected>Snug (4px)</option>
+                                        <option value="10">Normal (10px)</option>
+                                        <option value="20">Roomy (20px)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section: Undo/Redo -> Clear -> Display Style -> Flatten -->
+                <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-1.5 text-xs text-slate-500">
+                    <!-- Left: Undo, Redo & Clear -->
+                    <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-0.5">
+                            <button onclick="undoEdit()" id="undoBtn" title="Undo (Ctrl+Z)" class="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition disabled:opacity-40">
+                                <i class="fa-solid fa-rotate-left text-xs"></i>
+                            </button>
+                            <button onclick="redoEdit()" id="redoBtn" title="Redo (Ctrl+Y)" class="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition disabled:opacity-40">
+                                <i class="fa-solid fa-rotate-right text-xs"></i>
+                            </button>
+                        </div>
+                        <button onclick="clearEquationEditor()" id="clearBtn" title="Clear Equation" class="px-2 py-1 text-[11px] font-medium text-red-400 hover:text-red-500 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
+                            <i class="fa-solid fa-trash-can text-[10px] text-red-300"></i> Clear
+                        </button>
+                    </div>
+
+                    <!-- Center: Display Style Switch -->
+                    <button type="button" id="displayStyleBtn" onclick="toggleDisplayStyle()" 
+                        class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition shadow-2xs font-medium cursor-pointer active:scale-95"
+                        title="Toggle between Display Style and Inline Style">
+                        <div id="displayStyleSwitch" class="w-8 h-4 bg-blue-600 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0">
+                            <div id="displayStyleKnob" class="w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-4 flex items-center justify-center">
+                                <i id="displayStyleIcon" class="fa-solid fa-check text-[7px] text-blue-600"></i>
+                            </div>
+                        </div>
+                        <span class="flex items-center gap-1 select-none">
+                            <span id="displayStyleLabelText" class="font-semibold text-slate-800 text-[11px]">Display Style</span>
+                            <code id="displayStyleCodeBadge" class="text-[9px] text-blue-600 font-mono bg-white px-1 py-0.2 rounded border border-blue-200">\displaystyle</code>
+                        </span>
+                    </button>
+                    <input type="checkbox" id="displayStyleToggle" checked class="hidden" onchange="renderEquation()">
+
+                    <!-- Right: Flatten Tool -->
+                    <button onclick="removeLineBreaks()" title="Remove Line Breaks" class="px-2 py-1 text-[11px] text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
+                        <i class="fa-solid fa-compress text-[10px]"></i> Flatten
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Equation Preview & Raster Image Output Area -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+            <div id="previewStage" class="bg-white min-h-[140px] p-4 flex flex-col items-center justify-center relative overflow-x-auto transition-colors rounded-t-2xl">
+                <div id="mathjaxHiddenRender" class="hidden"></div>
+                <div id="latexErrorBox" class="hidden max-w-xl w-full bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-mono mb-3"></div>
+                <div class="flex flex-col items-center justify-center max-w-full">
+                    <img id="rasterPreviewImage" alt="Rendered Equation Image" 
+                        class="hidden max-w-full h-auto rounded transition-all cursor-context-menu" />
+                </div>
+            </div>
+
+            <!-- Export Density, Live Output Dimensions & Actions -->
+            <div class="border-t border-slate-200 bg-slate-50/70 p-2.5">
+                <div class="flex flex-col lg:flex-row gap-2.5 items-stretch w-full">
+                    <!-- Left: Resolution / Export Crispness Multiplier -->
+                    <div class="lg:flex-[1_0_auto] bg-white px-5 py-2.5 rounded-xl border border-blue-100 flex flex-col items-center justify-center text-center gap-1.5 shadow-2xs">
+                        <div class="flex flex-col items-center text-center">
+                            <span class="font-bold text-slate-700 text-[11px] flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> Export Crispness / Density:
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200">
+                            <button type="button" onclick="setExportScale(1)" id="scaleBtn1" class="px-2.5 py-0.5 rounded text-[12.5px] font-semibold text-slate-600 hover:text-blue-600 transition">1×</button>
+                            <button type="button" onclick="setExportScale(2)" id="scaleBtn2" class="px-2.5 py-0.5 rounded text-[12.5px] font-semibold text-slate-600 hover:text-blue-600 transition">2× (HD)</button>
+                            <button type="button" onclick="setExportScale(3)" id="scaleBtn3" class="px-2.5 py-0.5 rounded text-[12.5px] font-semibold bg-blue-600 text-white shadow-2xs transition">3× (Ultra)</button>
+                            <button type="button" onclick="setExportScale(4)" id="scaleBtn4" class="px-2.5 py-0.5 rounded text-[12.5px] font-semibold text-slate-600 hover:text-blue-600 transition">4× (Print)</button>
+                        </div>
+                    </div>
+
+                    <!-- Middle: Live Rendered Output Status & Dimensions -->
+                    <div class="lg:flex-[1_0_auto] bg-white px-5 py-2.5 rounded-xl border border-slate-200 flex flex-col items-center justify-center text-center gap-1.5 shadow-2xs">
+                        <span class="text-[11px] font-semibold text-slate-700 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-eye text-blue-600 text-[10px]"></i> Live Rendered Output
+                        </span>
+                        <span id="imageDimensionsBadge" class="text-[12.5px] font-semibold font-mono bg-slate-100 text-slate-700 px-3 py-0.5 rounded-md border border-slate-200 whitespace-nowrap">
+                            Rendering...
+                        </span>
+                    </div>
+
+                    <!-- Right: Export & Clipboard Action Buttons -->
+                    <div class="lg:flex-[1_0_auto] bg-white px-5 py-2.5 rounded-xl border border-slate-200 flex flex-col items-center justify-center text-center shadow-2xs">
+                        <div class="flex flex-wrap sm:flex-nowrap items-center justify-center gap-2.5">
+                            <button onclick="copyImageToClipboard()" class="py-2.5 px-[32.5px] bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Copy image directly to clipboard">
+                                <i class="fa-solid fa-paste text-[11px]"></i> Copy
+                            </button>
+                            <button onclick="downloadEquation('png')" class="py-2.5 px-[32.5px] bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Download PNG">
+                                <i class="fa-solid fa-download text-[11px]"></i> .PNG
+                            </button>
+                            <button onclick="downloadEquation('gif')" class="py-2.5 px-[32.5px] bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Download GIF">
+                                <i class="fa-solid fa-file-image text-[11px]"></i> .GIF
+                            </button>
+                            <button onclick="downloadEquation('svg')" class="py-2.5 px-[32.5px] bg-slate-800 hover:bg-slate-900 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Download SVG">
+                                <i class="fa-solid fa-bezier-curve text-[11px]"></i> .SVG
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Matrix, Determinant & Piecewise Cases Builder Modal -->
+    <div id="matrixModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden animate-fadeIn">
+            <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-table-cells text-blue-400"></i> Matrix, Vector &amp; Piecewise Builder
+                </h3>
+                <button onclick="closeMatrixModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Structure Style</label>
+                        <select id="matrixBracketType" onchange="buildMatrixInputs()" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="bmatrix">[ ] Square Brackets</option>
+                            <option value="pmatrix">( ) Parentheses</option>
+                            <option value="vmatrix">| | Determinant</option>
+                            <option value="Bmatrix">{ } Curly Braces</option>
+                            <option value="matrix">None (Plain Array)</option>
+                            <option value="cases">{ Piecewise Cases</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Rows</label>
+                        <input type="number" id="matrixRows" value="3" min="1" max="8" onchange="buildMatrixInputs()" 
+                            class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div id="matrixColsWrap">
+                        <label class="font-semibold text-slate-700 block mb-1">Columns</label>
+                        <input type="number" id="matrixCols" value="3" min="1" max="8" onchange="buildMatrixInputs()" 
+                            class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="font-semibold text-slate-700">Fill Cell Values (LaTeX allowed):</span>
+                        <button onclick="fillSampleMatrix()" class="text-blue-600 hover:underline text-[11px]">Auto-fill variables</button>
+                    </div>
+                    <div id="matrixCellGrid" class="bg-slate-50 p-3 rounded-xl border border-slate-200 overflow-x-auto flex flex-col gap-2"></div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                    <button onclick="closeMatrixModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 font-medium">Cancel</button>
+                    <button onclick="insertGeneratedMatrix()" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm">
+                        Insert into Equation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toastBanner" class="fixed bottom-5 right-5 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200">
+        <div class="bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMessage">Action completed!</span>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const SYMBOL_CATEGORIES = [
+            {
+                id: 'structures',
+                name: 'Fractions, Roots & Accents',
+                previewLatex: '\\frac{a}{b} \\; \\sqrt[n]{x} \\; \\vec{A}',
+                cols: 'grid-cols-5',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\frac{a}{b}', latex: '\\frac{}{}', name: 'Fraction' },
+                    { label: 'x^{a}', latex: '^{}', name: 'Superscript / Power' },
+                    { label: 'x_{a}', latex: '_{}', name: 'Subscript' },
+                    { label: 'x_{b}^{a}', latex: '_{}^{}', name: 'Subscript & Superscript' },
+                    { label: '\\sqrt{x}', latex: '\\sqrt{}', name: 'Square Root' },
+                    { label: '\\sqrt[n]{x}', latex: '\\sqrt[]{}', name: 'Nth Root' },
+                    { label: '\\vec{v}', latex: '\\vec{}', name: 'Vector Arrow' },
+                    { label: '\\overset{\\rightharpoonup}{A}', latex: '\\overrightharpoon{}', name: 'Half Arrow Vector (Right Harpoon)' },
+                    { label: '\\overrightarrow{AB}', latex: '\\overrightarrow{}', name: 'Wide Right Vector' },
+                    { label: '\\overline{ab}', latex: '\\overline{}', name: 'Overline' },
+                    { label: '\\underline{ab}', latex: '\\underline{}', name: 'Underline' },
+                    { label: '\\hat{a}', latex: '\\hat{}', name: 'Hat Accent' },
+                    { label: '\\tilde{a}', latex: '\\tilde{}', name: 'Tilde Accent' },
+                    { label: '\\dot{x}', latex: '\\dot{}', name: 'First Derivative Dot' },
+                    { label: '\\ddot{x}', latex: '\\ddot{}', name: 'Second Derivative Double Dot' },
+                    { label: '\\binom{n}{k}', latex: '\\binom{}{}', name: 'Binomial Coefficient' },
+                    { label: '\\overbrace{a+b}^{c}', latex: '\\overbrace{}^{}', name: 'Overbrace with label' },
+                    { label: '\\underbrace{a+b}_{c}', latex: '\\underbrace{}_{}', name: 'Underbrace with label' },
+                    { label: '\\stackrel{a}{=}', latex: '\\overset{}{=}', name: 'Overset symbol' },
+                    { label: 'a^{\\prime}', latex: '^{\\prime}', name: 'Prime' },
+                    { label: '\\boxed{x=1}', latex: '\\boxed{}', name: 'Boxed Expression' }
+                ]
+            },
+            {
+                id: 'calculus',
+                name: 'Calculus, Limits & Sums',
+                previewLatex: '\\int \\; \\sum \\; \\prod',
+                cols: 'grid-cols-5',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\int', latex: '\\int ', name: 'Integral' },
+                    { label: '\\int_{a}^{b}', latex: '\\int_{}^{} ', name: 'Definite Integral' },
+                    { label: '\\iint', latex: '\\iint_{}^{} ', name: 'Double Integral' },
+                    { label: '\\iiint', latex: '\\iiint_{}^{} ', name: 'Triple Integral' },
+                    { label: '\\oint', latex: '\\oint_{}^{} ', name: 'Contour Loop Integral' },
+                    { label: '\\sum_{i=1}^{n}', latex: '\\sum_{i=1}^{n} ', name: 'Summation' },
+                    { label: '\\prod_{i=1}^{n}', latex: '\\prod_{i=1}^{n} ', name: 'Product' },
+                    { label: '\\coprod', latex: '\\coprod_{}^{} ', name: 'Coproduct' },
+                    { label: '\\lim_{x \\to \\infty}', latex: '\\lim_{x \\to \\infty} ', name: 'Limit' },
+                    { label: '\\frac{d}{dx}', latex: '\\frac{d}{dx}', name: 'Derivative d/dx' },
+                    { label: '\\frac{d^2y}{dx^2}', latex: '\\frac{d^2}{dx^2}', name: 'Second Derivative' },
+                    { label: '\\frac{\\partial}{\\partial x}', latex: '\\frac{\\partial }{\\partial x}', name: 'Partial Derivative' },
+                    { label: '\\partial', latex: '\\partial ', name: 'Partial Symbol' },
+                    { label: '\\nabla', latex: '\\nabla ', name: 'Nabla / Del / Gradient' },
+                    { label: '\\infty', latex: '\\infty ', name: 'Infinity' },
+                    { label: '\\bigcup_{i=1}^{n}', latex: '\\bigcup_{i=1}^{n} ', name: 'Big Union' },
+                    { label: '\\bigcap_{i=1}^{n}', latex: '\\bigcap_{i=1}^{n} ', name: 'Big Intersection' },
+                    { label: '\\bigoplus', latex: '\\bigoplus_{}^{} ', name: 'Big Direct Sum' },
+                    { label: '\\bigotimes', latex: '\\bigotimes_{}^{} ', name: 'Big Tensor Product' },
+                    { label: 'dx', latex: '\\,\\mathrm{d}x', name: 'Differential dx' }
+                ]
+            },
+            {
+                id: 'greek_lower',
+                name: 'Greek Lowercase',
+                previewLatex: '\\alpha \\; \\beta \\; \\pi',
+                cols: 'grid-cols-6',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\alpha', latex: '\\alpha ', name: 'Alpha' },
+                    { label: '\\beta', latex: '\\beta ', name: 'Beta' },
+                    { label: '\\gamma', latex: '\\gamma ', name: 'Gamma' },
+                    { label: '\\delta', latex: '\\delta ', name: 'Delta' },
+                    { label: '\\epsilon', latex: '\\epsilon ', name: 'Epsilon' },
+                    { label: '\\varepsilon', latex: '\\varepsilon ', name: 'Var Epsilon' },
+                    { label: '\\zeta', latex: '\\zeta ', name: 'Zeta' },
+                    { label: '\\eta', latex: '\\eta ', name: 'Eta' },
+                    { label: '\\theta', latex: '\\theta ', name: 'Theta' },
+                    { label: '\\vartheta', latex: '\\vartheta ', name: 'Var Theta' },
+                    { label: '\\iota', latex: '\\iota ', name: 'Iota' },
+                    { label: '\\kappa', latex: '\\kappa ', name: 'Kappa' },
+                    { label: '\\lambda', latex: '\\lambda ', name: 'Lambda' },
+                    { label: '\\mu', latex: '\\mu ', name: 'Mu' },
+                    { label: '\\nu', latex: '\\nu ', name: 'Nu' },
+                    { label: '\\xi', latex: '\\xi ', name: 'Xi' },
+                    { label: '\\pi', latex: '\\pi ', name: 'Pi' },
+                    { label: '\\rho', latex: '\\rho ', name: 'Rho' },
+                    { label: '\\sigma', latex: '\\sigma ', name: 'Sigma' },
+                    { label: '\\tau', latex: '\\tau ', name: 'Tau' },
+                    { label: '\\upsilon', latex: '\\upsilon ', name: 'Upsilon' },
+                    { label: '\\phi', latex: '\\phi ', name: 'Phi' },
+                    { label: '\\varphi', latex: '\\varphi ', name: 'Var Phi' },
+                    { label: '\\chi', latex: '\\chi ', name: 'Chi' },
+                    { label: '\\psi', latex: '\\psi ', name: 'Psi' },
+                    { label: '\\omega', latex: '\\omega ', name: 'Omega' }
+                ]
+            },
+            {
+                id: 'greek_upper',
+                name: 'Greek Uppercase & Constants',
+                previewLatex: '\\Gamma \\; \\Delta \\; \\hbar',
+                cols: 'grid-cols-5',
+                widthClass: 'w-72',
+                items: [
+                    { label: '\\Gamma', latex: '\\Gamma ', name: 'Capital Gamma' },
+                    { label: '\\Delta', latex: '\\Delta ', name: 'Capital Delta' },
+                    { label: '\\Theta', latex: '\\Theta ', name: 'Capital Theta' },
+                    { label: '\\Lambda', latex: '\\Lambda ', name: 'Capital Lambda' },
+                    { label: '\\Xi', latex: '\\Xi ', name: 'Capital Xi' },
+                    { label: '\\Pi', latex: '\\Pi ', name: 'Capital Pi' },
+                    { label: '\\Sigma', latex: '\\Sigma ', name: 'Capital Sigma' },
+                    { label: '\\Upsilon', latex: '\\Upsilon ', name: 'Capital Upsilon' },
+                    { label: '\\Phi', latex: '\\Phi ', name: 'Capital Phi' },
+                    { label: '\\Psi', latex: '\\Psi ', name: 'Capital Psi' },
+                    { label: '\\Omega', latex: '\\Omega ', name: 'Capital Omega' },
+                    { label: '\\aleph', latex: '\\aleph ', name: 'Aleph' },
+                    { label: '\\hbar', latex: '\\hbar ', name: 'h-bar (Planck)' },
+                    { label: '\\ell', latex: '\\ell ', name: 'Script l' },
+                    { label: '\\wp', latex: '\\wp ', name: 'Weierstrass p' }
+                ]
+            },
+            {
+                id: 'operators',
+                name: 'Operators & Relations',
+                previewLatex: '\\times \\; \\leq \\; \\approx',
+                cols: 'grid-cols-6',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\pm', latex: '\\pm ', name: 'Plus-Minus' },
+                    { label: '\\mp', latex: '\\mp ', name: 'Minus-Plus' },
+                    { label: '\\times', latex: '\\times ', name: 'Multiply Cross' },
+                    { label: '\\div', latex: '\\div ', name: 'Divide' },
+                    { label: '\\cdot', latex: '\\cdot ', name: 'Center Dot' },
+                    { label: '\\ast', latex: '\\ast ', name: 'Asterisk' },
+                    { label: '\\circ', latex: '\\circ ', name: 'Circle / Composition' },
+                    { label: '\\bullet', latex: '\\bullet ', name: 'Bullet' },
+                    { label: '\\oplus', latex: '\\oplus ', name: 'Direct Sum / XOR' },
+                    { label: '\\ominus', latex: '\\ominus ', name: 'Circled Minus' },
+                    { label: '\\otimes', latex: '\\otimes ', name: 'Tensor Product' },
+                    { label: '\\neq', latex: '\\neq ', name: 'Not Equal' },
+                    { label: '\\approx', latex: '\\approx ', name: 'Approximately Equal' },
+                    { label: '\\equiv', latex: '\\equiv ', name: 'Equivalent / Identical' },
+                    { label: '\\cong', latex: '\\cong ', name: 'Congruent' },
+                    { label: '\\sim', latex: '\\sim ', name: 'Similar / Distributed as' },
+                    { label: '\\simeq', latex: '\\simeq ', name: 'Asymptotically Equal' },
+                    { label: '\\propto', latex: '\\propto ', name: 'Proportional To' },
+                    { label: '\\leq', latex: '\\leq ', name: 'Less Than or Equal' },
+                    { label: '\\geq', latex: '\\geq ', name: 'Greater Than or Equal' },
+                    { label: '\\ll', latex: '\\ll ', name: 'Much Less Than' },
+                    { label: '\\gg', latex: '\\gg ', name: 'Much Greater Than' },
+                    { label: '\\prec', latex: '\\prec ', name: 'Precedes' },
+                    { label: '\\succ', latex: '\\succ ', name: 'Succeeds' },
+                    { label: '\\perp', latex: '\\perp ', name: 'Perpendicular / Orthogonal' },
+                    { label: '\\parallel', latex: '\\parallel ', name: 'Parallel' },
+                    { label: '\\mid', latex: '\\mid ', name: 'Divides / Given Pipe' },
+                    { label: '\\angle', latex: '\\angle ', name: 'Angle' },
+                    { label: '\\triangle', latex: '\\triangle ', name: 'Triangle' },
+                    { label: '\\therefore', latex: '\\therefore ', name: 'Therefore' },
+                    { label: '\\because', latex: '\\because ', name: 'Because' },
+                    { label: '\\dots', latex: '\\dots ', name: 'Horizontal Dots' },
+                    { label: '\\cdots', latex: '\\cdots ', name: 'Centered Dots' },
+                    { label: '\\vdots', latex: '\\vdots ', name: 'Vertical Dots' },
+                    { label: '\\ddots', latex: '\\ddots ', name: 'Diagonal Dots' }
+                ]
+            },
+            {
+                id: 'sets_logic',
+                name: 'Sets, Logic & Number Systems',
+                previewLatex: '\\in \\; \\cup \\; \\mathbb{R}',
+                cols: 'grid-cols-6',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\in', latex: '\\in ', name: 'Element Of' },
+                    { label: '\\notin', latex: '\\notin ', name: 'Not Element Of' },
+                    { label: '\\ni', latex: '\\ni ', name: 'Contains As Member' },
+                    { label: '\\subset', latex: '\\subset ', name: 'Proper Subset' },
+                    { label: '\\subseteq', latex: '\\subseteq ', name: 'Subset or Equal' },
+                    { label: '\\nsubseteq', latex: '\\nsubseteq ', name: 'Not Subset or Equal' },
+                    { label: '\\supset', latex: '\\supset ', name: 'Proper Superset' },
+                    { label: '\\supseteq', latex: '\\supseteq ', name: 'Superset or Equal' },
+                    { label: '\\cup', latex: '\\cup ', name: 'Set Union' },
+                    { label: '\\cap', latex: '\\cap ', name: 'Set Intersection' },
+                    { label: '\\setminus', latex: '\\setminus ', name: 'Set Difference' },
+                    { label: '\\emptyset', latex: '\\emptyset ', name: 'Empty Set' },
+                    { label: '\\varnothing', latex: '\\varnothing ', name: 'Var Empty Set' },
+                    { label: '\\forall', latex: '\\forall ', name: 'For All (Universal)' },
+                    { label: '\\exists', latex: '\\exists ', name: 'There Exists' },
+                    { label: '\\nexists', latex: '\\nexists ', name: 'Does Not Exist' },
+                    { label: '\\neg', latex: '\\neg ', name: 'Logical NOT' },
+                    { label: '\\land', latex: '\\land ', name: 'Logical AND' },
+                    { label: '\\lor', latex: '\\lor ', name: 'Logical OR' },
+                    { label: '\\mathbb{R}', latex: '\\mathbb{R}', name: 'Real Numbers' },
+                    { label: '\\mathbb{N}', latex: '\\mathbb{N}', name: 'Natural Numbers' },
+                    { label: '\\mathbb{Z}', latex: '\\mathbb{Z}', name: 'Integers' },
+                    { label: '\\mathbb{Q}', latex: '\\mathbb{Q}', name: 'Rational Numbers' },
+                    { label: '\\mathbb{C}', latex: '\\mathbb{C}', name: 'Complex Numbers' }
+                ]
+            },
+            {
+                id: 'arrows',
+                name: 'Arrows & Reactions',
+                previewLatex: '\\to \\; \\Rightarrow \\; \\Leftrightarrow',
+                cols: 'grid-cols-5',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\to', latex: '\\to ', name: 'Right Arrow' },
+                    { label: '\\leftarrow', latex: '\\leftarrow ', name: 'Left Arrow' },
+                    { label: '\\leftrightarrow', latex: '\\leftrightarrow ', name: 'Left-Right Arrow' },
+                    { label: '\\Rightarrow', latex: '\\Rightarrow ', name: 'Implies (Right Double)' },
+                    { label: '\\Leftarrow', latex: '\\Leftarrow ', name: 'Implied By (Left Double)' },
+                    { label: '\\Leftrightarrow', latex: '\\Leftrightarrow ', name: 'If and Only If (IFF)' },
+                    { label: '\\mapsto', latex: '\\mapsto ', name: 'Maps To' },
+                    { label: '\\longrightarrow', latex: '\\longrightarrow ', name: 'Long Right Arrow' },
+                    { label: '\\Longrightarrow', latex: '\\Longrightarrow ', name: 'Long Implies' },
+                    { label: '\\Longleftrightarrow', latex: '\\Longleftrightarrow ', name: 'Long IFF' },
+                    { label: '\\uparrow', latex: '\\uparrow ', name: 'Up Arrow (Gas)' },
+                    { label: '\\downarrow', latex: '\\downarrow ', name: 'Down Arrow (Precipitate)' },
+                    { label: '\\rightleftharpoons', latex: '\\rightleftharpoons ', name: 'Chemical Equilibrium' },
+                    { label: '\\xrightarrow{a}', latex: '\\xrightarrow[]{}', name: 'Labeled Right Arrow' },
+                    { label: '\\xleftarrow{a}', latex: '\\xleftarrow[]{}', name: 'Labeled Left Arrow' },
+                    { label: '\\hookrightarrow', latex: '\\hookrightarrow ', name: 'Hook Right Arrow (Injection)' },
+                    { label: '\\twoheadrightarrow', latex: '\\twoheadrightarrow ', name: 'Surjection Arrow' },
+                    { label: '\\nearrow', latex: '\\nearrow ', name: 'North-East Arrow' },
+                    { label: '\\searrow', latex: '\\searrow ', name: 'South-East Arrow' },
+                    { label: '\\leadsto', latex: '\\leadsto ', name: 'Leads To Squiggle Arrow' }
+                ]
+            },
+            {
+                id: 'brackets',
+                name: 'Brackets, Matrices & Cases',
+                previewLatex: '(x) \\; [x] \\; \\{x\\}',
+                cols: 'grid-cols-3',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\left( x \\right)', latex: '\\left(  \\right)', name: 'Auto-sizing Parentheses' },
+                    { label: '\\left[ x \\right]', latex: '\\left[  \\right]', name: 'Auto-sizing Square Brackets' },
+                    { label: '\\left\\{ x \\right\\}', latex: '\\left\\{  \\right\\}', name: 'Auto-sizing Curly Braces' },
+                    { label: '\\left| x \\right|', latex: '\\left|  \\right|', name: 'Absolute Value Bars' },
+                    { label: '\\left\\| x \\right\\|', latex: '\\left\\|  \\right\\|', name: 'Norm Double Bars' },
+                    { label: '\\langle x \\rangle', latex: '\\left\\langle  \\right\\rangle', name: 'Angle Brackets / Inner Product' },
+                    { label: '\\lfloor x \\rfloor', latex: '\\left\\lfloor  \\right\\rfloor', name: 'Floor Function Brackets' },
+                    { label: '\\lceil x \\rceil', latex: '\\left\\lceil  \\right\\rceil', name: 'Ceiling Function Brackets' },
+                    { label: '\\langle \\psi | \\phi \\rangle', latex: '\\left\\langle  \\middle|  \\right\\rangle', name: 'Bra-Ket Dirac Notation' },
+                    { label: '\\left. x \\right|_{a}^{b}', latex: '\\left.  \\right|_{}^{}', name: 'Evaluated At Bar' },
+                    { label: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', latex: '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}', name: '2x2 Parenthesis Matrix' },
+                    { label: '\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}', latex: '\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}', name: '2x2 Bracket Matrix' },
+                    { label: '\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}', latex: '\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}', name: '2x2 Determinant' },
+                    { label: '\\begin{cases} a & x>0 \\\\ b & x\\le 0 \\end{cases}', latex: '\\begin{cases} a & x > 0 \\\\ b & x \\le 0 \\end{cases}', name: 'Piecewise Cases' },
+                    { label: '\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}', latex: '\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}', name: 'Multi-line Aligned Equations' }
+                ]
+            },
+            {
+                id: 'functions',
+                name: 'Trig, Logs & Limits',
+                previewLatex: '\\sin \\; \\ln \\; \\lim',
+                cols: 'grid-cols-4',
+                widthClass: 'w-80',
+                items: [
+                    { label: '\\sin', latex: '\\sin()', name: 'Sine' },
+                    { label: '\\cos', latex: '\\cos()', name: 'Cosine' },
+                    { label: '\\tan', latex: '\\tan()', name: 'Tangent' },
+                    { label: '\\csc', latex: '\\csc()', name: 'Cosecant' },
+                    { label: '\\sec', latex: '\\sec()', name: 'Secant' },
+                    { label: '\\cot', latex: '\\cot()', name: 'Cotangent' },
+                    { label: '\\arcsin', latex: '\\arcsin()', name: 'Arcsine' },
+                    { label: '\\arccos', latex: '\\arccos()', name: 'Arccosine' },
+                    { label: '\\arctan', latex: '\\arctan()', name: 'Arctangent' },
+                    { label: '\\sinh', latex: '\\sinh()', name: 'Hyperbolic Sine' },
+                    { label: '\\cosh', latex: '\\cosh()', name: 'Hyperbolic Cosine' },
+                    { label: '\\tanh', latex: '\\tanh()', name: 'Hyperbolic Tangent' },
+                    { label: '\\ln', latex: '\\ln()', name: 'Natural Logarithm' },
+                    { label: '\\log_{b}', latex: '\\log_{}()', name: 'Logarithm Base b' },
+                    { label: '\\exp', latex: '\\exp()', name: 'Exponential' },
+                    { label: '\\det', latex: '\\det()', name: 'Determinant' },
+                    { label: '\\dim', latex: '\\dim()', name: 'Dimension' },
+                    { label: '\\ker', latex: '\\ker()', name: 'Kernel' },
+                    { label: '\\min', latex: '\\min_{}', name: 'Minimum' },
+                    { label: '\\max', latex: '\\max_{}', name: 'Maximum' },
+                    { label: '\\sup', latex: '\\sup_{}', name: 'Supremum' },
+                    { label: '\\inf', latex: '\\inf_{}', name: 'Infimum' },
+                    { label: '\\arg\\max', latex: '\\operatorname*{arg\\,max}_{}', name: 'Arg Max' },
+                    { label: '\\bmod', latex: '\\bmod ', name: 'Modulo' }
+                ]
+            }
+        ];
+
+        const PRESET_EXAMPLES = {
+            quadratic: `x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}`,
+            gaussian: `f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}} \\exp\\left( -\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^{\\!2}\\,\\right)`,
+            fourier: `\\hat{f}(\\xi) = \\int_{-\\infty}^{\\infty} f(x)\\, e^{-2\\pi i x \\xi}\\, \\mathrm{d}x`,
+            navier: `\\rho \\left( \\frac{\\partial \\mathbf{u}}{\\partial t} + (\\mathbf{u} \\cdot \\nabla) \\mathbf{u} \\right) = -\\nabla p + \\mu \\nabla^2 \\mathbf{u} + \\mathbf{f}`,
+            schrodinger: `i\\hbar \\frac{\\partial}{\\partial t} \\Psi(\\mathbf{r},t) = \\left [ -\\frac{\\hbar^2}{2m}\\nabla^2 + V(\\mathbf{r},t)\\right ] \\Psi(\\mathbf{r},t)`,
+            matrix_det: `\\det(A) = \\begin{vmatrix} a_{11} & a_{12} & a_{13} \\\\ a_{21} & a_{22} & a_{23} \\\\ a_{31} & a_{32} & a_{33} \\end{vmatrix} = \\sum_{\\sigma \\in S_3} \\operatorname{sgn}(\\sigma) \\prod_{i=1}^{3} a_{i,\\sigma(i)}`,
+            piecewise: `|x| = \\begin{cases} -x, & \\text{if } x < 0 \\\\ 0, & \\text{if } x = 0 \\\\ x, & \\text{if } x > 0 \\end{cases}`,
+            taylor: `f(x) = \\sum_{n=0}^{\\infty} \\frac{f^{(n)}(a)}{n!} (x-a)^n = f(a) + f'(a)(x-a) + \\frac{f''(a)}{2!}(x-a)^2 + \\cdots`,
+            maxwell: `\\begin{aligned} \\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\varepsilon_0} \\\\ \\nabla \\cdot \\mathbf{B} &= 0 \\\\ \\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\ \\nabla \\times \\mathbf{B} &= \\mu_0\\left(\\mathbf{J} + \\varepsilon_0 \\frac{\\partial \\mathbf{E}}{\\partial t}\\right) \\end{aligned}`,
+            chem: `\\mathrm{N_2(g) + 3H_2(g) \\underset{\\text{catalyst}}{\\overset{\\Delta, \\text{ high } P}{\\rightleftharpoons}} 2NH_3(g)} \\quad \\Delta H^\\circ = -92.4\\text{ kJ/mol}`
+        };
+
+        let bgMode = 'transparent';
+        let exportDensity = 3;
+        let historyStack = [];
+        let historyIndex = -1;
+        let isApplyingHistory = false;
+        let currentSvgElement = null;
+        let currentCanvas = null;
+
+        const latexInput = document.getElementById('latexInput');
+
+        window.onMathJaxReady = function() {
+            renderHoverRibbon();
+            const freqRibbon = document.getElementById('frequentOpsRibbon');
+            if (freqRibbon && window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([freqRibbon]).catch(err => console.warn(err));
+            }
+            saveHistorySnapshot(latexInput.value);
+            renderEquation();
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.MathJax && window.MathJax.startup && window.MathJax.tex2svgPromise) {
+                window.onMathJaxReady();
+            }
+            setupEditorListeners();
+        });
+
+        function setupEditorListeners() {
+            let debounceTimer;
+            latexInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    if (!isApplyingHistory) {
+                        saveHistorySnapshot(latexInput.value);
+                    }
+                    renderEquation();
+                }, 120);
+            });
+
+            latexInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const val = latexInput.value;
+                    const start = latexInput.selectionStart;
+                    const nextBrace = val.indexOf('{', start);
+                    const nextClose = val.indexOf('}', start);
+                    let target = -1;
+                    if (nextBrace !== -1 && (nextClose === -1 || nextBrace < nextClose)) {
+                        target = nextBrace + 1;
+                    } else if (nextClose !== -1) {
+                        target = nextClose + 1;
+                    }
+                    if (target !== -1) {
+                        latexInput.setSelectionRange(target, target);
+                    }
+                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) redoEdit();
+                    else undoEdit();
+                } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                    e.preventDefault();
+                    redoEdit();
+                }
+            });
+        }
+
+        function buildSymbolButtonHtml(item) {
+            const escapedLatex = item.latex.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+            return `
+                <button type="button" onclick="insertSnippet('${escapedLatex}')"
+                    title="${item.name} (${item.latex.trim()})"
+                    class="sym-btn group h-9 px-1 bg-slate-50/90 hover:bg-slate-100 hover:border-slate-400 border border-slate-200 rounded-lg flex items-center justify-center transition shadow-2xs active:scale-95 overflow-hidden">
+                    <span class="text-slate-900 text-xs">\\(${item.label}\\)</span>
+                </button>
+            `;
+        }
+
+        function createClusterElement(cat, idx) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ribbon-cluster group';
+            wrapper.setAttribute('onmouseenter', 'positionPopover(this)');
+
+            const buttonsHtml = cat.items.map(item => buildSymbolButtonHtml(item)).join('');
+            const alignPosition = idx >= SYMBOL_CATEGORIES.length - 2 ? 'right-0' : 'left-0';
+
+            wrapper.innerHTML = `
+                <div title="${cat.name}" class="px-2 py-1 min-w-[82px] bg-gradient-to-b from-white to-slate-50/90 group-hover:from-slate-50 group-hover:to-slate-100 border border-slate-200/90 group-hover:border-slate-400 group-hover:shadow-sm rounded-xl cursor-pointer transition-all duration-150 flex items-center justify-center min-h-[40px] shadow-2xs select-none relative">
+                    <div class="cluster-preview text-slate-900 font-medium flex items-center justify-center px-0.5">
+                        \\(${cat.previewLatex}\\)
+                    </div>
+                    <div class="corner-triangle absolute bottom-1 right-1 group-hover:border-b-slate-900 group-hover:border-r-slate-900"></div>
+                </div>
+
+                <div class="ribbon-popover ${alignPosition} absolute top-full mt-2 ${cat.widthClass || 'w-80'} bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900">${cat.name}</span>
+                        <span class="text-[10px] text-slate-500">Click to insert</span>
+                    </div>
+                    <div class="grid ${cat.cols || 'grid-cols-5'} gap-1">
+                        ${buttonsHtml}
+                    </div>
+                </div>
+            `;
+            return wrapper;
+        }
+
+        function renderHoverRibbon() {
+            const row1 = document.getElementById('hoverRibbonRow1');
+            const row2Overflow = document.getElementById('hoverRibbonRow2Overflow');
+            if (!row1 || !row2Overflow) return;
+
+            row1.innerHTML = '';
+            row2Overflow.innerHTML = '';
+
+            const containerWidth = row1.clientWidth || (window.innerWidth - 64);
+            const calculatedMax = Math.max(1, Math.floor(containerWidth / 92));
+            const countRow1 = Math.min(SYMBOL_CATEGORIES.length, calculatedMax >= 9 ? 9 : calculatedMax);
+
+            SYMBOL_CATEGORIES.forEach((cat, idx) => {
+                const el = createClusterElement(cat, idx);
+                if (idx < countRow1) {
+                    row1.appendChild(el);
+                } else {
+                    row2Overflow.appendChild(el);
+                }
+            });
+
+            const matrixWrapper = document.createElement('div');
+            matrixWrapper.className = 'ribbon-cluster group';
+            matrixWrapper.setAttribute('onmouseenter', 'positionPopover(this)');
+            matrixWrapper.innerHTML = `
+                <div title="Matrix & Vector Wizard" class="px-2 py-1 min-w-[82px] bg-gradient-to-b from-white to-slate-50/90 group-hover:from-slate-50 group-hover:to-slate-100 border border-slate-200/90 group-hover:border-slate-400 group-hover:shadow-sm rounded-xl cursor-pointer transition-all duration-150 flex items-center justify-center min-h-[40px] shadow-2xs select-none relative">
+                    <div class="flex items-center gap-1.5 text-slate-800 group-hover:text-slate-900 font-semibold text-xs px-1">
+                        <i class="fa-solid fa-table-cells text-slate-700 group-hover:text-slate-900 text-[11px]"></i>
+                        <span>Matrix</span>
+                    </div>
+                    <div class="corner-triangle absolute bottom-1 right-1 group-hover:border-b-slate-900 group-hover:border-r-slate-900"></div>
+                </div>
+
+                <div class="ribbon-popover right-0 absolute top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1">
+                            <i class="fa-solid fa-table-cells text-[10px]"></i> Matrix &amp; Cases
+                        </span>
+                        <span class="text-[10px] text-slate-500">Presets &amp; Custom</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-1.5 mb-2.5">
+                        <button type="button" onclick="insertSnippet('\\\\begin{pmatrix} a & b \\\\\\\\ c & d \\\\end{pmatrix}')" 
+                            class="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 border border-slate-200 rounded-lg text-left text-xs text-slate-800 transition flex items-center justify-between">
+                            <span class="font-medium">2×2 Matrix</span>
+                            <span class="text-[10px] text-slate-500 font-mono">( A )</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\\\begin{bmatrix} a & b \\\\\\\\ c & d \\\\end{bmatrix}')" 
+                            class="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 border border-slate-200 rounded-lg text-left text-xs text-slate-800 transition flex items-center justify-between">
+                            <span class="font-medium">2×2 Bracket</span>
+                            <span class="text-[10px] text-slate-500 font-mono">[ A ]</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\\\begin{vmatrix} a & b \\\\\\\\ c & d \\\\end{vmatrix}')" 
+                            class="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 border border-slate-200 rounded-lg text-left text-xs text-slate-800 transition flex items-center justify-between">
+                            <span class="font-medium">Determinant</span>
+                            <span class="text-[10px] text-slate-500 font-mono">| det |</span>
+                        </button>
+                        <button type="button" onclick="insertSnippet('\\\\begin{pmatrix} x \\\\\\\\ y \\\\\\\\ z \\\\end{pmatrix}')" 
+                            class="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 border border-slate-200 rounded-lg text-left text-xs text-slate-800 transition flex items-center justify-between">
+                            <span class="font-medium">3×1 Vector</span>
+                            <span class="text-[10px] text-slate-500 font-mono">( v )</span>
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="openMatrixModal()" 
+                        class="w-full py-1.5 px-3 bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-semibold rounded-lg shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-sliders text-[10px]"></i>
+                        <span>Custom Dimension Wizard...</span>
+                    </button>
+                </div>
+            `;
+            row1.appendChild(matrixWrapper);
+
+            const EXAMPLE_ITEMS = [
+                ['quadratic', 'Quadratic Formula', 'x = ...'],
+                ['piecewise', 'Piecewise Function (Cases)', '|x|'],
+                ['gaussian', 'Gaussian Normal Distribution', 'f(x)'],
+                ['fourier', 'Fourier Transform Integral', 'f&#770;(&xi;)'],
+                ['navier', 'Navier-Stokes Equation', '&part;u/&part;t'],
+                ['schrodinger', 'Schrödinger Equation', 'i&#8463; &part;&Psi;/&part;t'],
+                ['matrix_det', '3x3 Matrix Determinant', 'det(A)'],
+                ['taylor', 'Taylor Series Expansion', '&sum;'],
+                ['maxwell', "Maxwell's Equations (Aligned)", '&nabla;&times;E'],
+                ['chem', 'Chemical Reaction Equilibrium', '&#8652;']
+            ];
+            const examplesWrapper = document.createElement('div');
+            examplesWrapper.className = 'ribbon-cluster group';
+            examplesWrapper.innerHTML = `
+                <div title="Load an example equation" class="px-2 py-1 min-w-[82px] bg-gradient-to-b from-white to-slate-50/90 group-hover:from-slate-50 group-hover:to-slate-100 border border-slate-200/90 group-hover:border-slate-400 group-hover:shadow-sm rounded-xl cursor-pointer transition-all duration-150 flex items-center justify-center min-h-[40px] shadow-2xs select-none relative">
+                    <div class="flex items-center gap-1.5 text-slate-800 group-hover:text-slate-900 font-semibold text-xs px-1">
+                        <span>✨</span>
+                        <span>Examples</span>
+                    </div>
+                    <div class="corner-triangle absolute bottom-1 right-1 group-hover:border-b-slate-900 group-hover:border-r-slate-900"></div>
+                </div>
+
+                <div class="ribbon-popover right-0 absolute top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900">Examples</span>
+                        <span class="text-[10px] text-slate-500">Click to load</span>
+                    </div>
+                    <div class="flex flex-col gap-0.5 text-xs">
+                        ${EXAMPLE_ITEMS.map(([key, label, hint]) => `
+                            <button type="button" onclick="loadPresetExample('${key}')" class="text-left px-2.5 py-1.5 rounded-lg text-slate-800 hover:bg-slate-100 transition flex items-center justify-between">
+                                <span>${label}</span>
+                                <span class="text-[10px] text-slate-500 font-mono">${hint}</span>
+                            </button>`).join('')}
+                    </div>
+                </div>
+            `;
+            row1.appendChild(examplesWrapper);
+
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([row1, row2Overflow]).catch(err => console.warn(err));
+            }
+        }
+
+        let ribbonResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(ribbonResizeTimer);
+            ribbonResizeTimer = setTimeout(renderHoverRibbon, 100);
+        });
+
+        function positionPopover(clusterEl) {
+            const popover = clusterEl.querySelector('.ribbon-popover');
+            if (!popover) return;
+            popover.classList.remove('left-0', 'right-0');
+            const rect = clusterEl.getBoundingClientRect();
+            const popoverWidth = 320;
+            if (rect.left + popoverWidth > window.innerWidth - 16) {
+                popover.classList.add('right-0');
+            } else {
+                popover.classList.add('left-0');
+            }
+        }
+
+        function toggleDisplayStyle() {
+            const toggle = document.getElementById('displayStyleToggle');
+            const switchBg = document.getElementById('displayStyleSwitch');
+            const knob = document.getElementById('displayStyleKnob');
+            const btn = document.getElementById('displayStyleBtn');
+            const labelText = document.getElementById('displayStyleLabelText');
+            const codeBadge = document.getElementById('displayStyleCodeBadge');
+            const icon = document.getElementById('displayStyleIcon');
+
+            toggle.checked = !toggle.checked;
+
+            if (toggle.checked) {
+                switchBg.className = 'w-8 h-4 bg-blue-600 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0';
+                knob.className = 'w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-4 flex items-center justify-center';
+                btn.className = 'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition shadow-2xs font-medium cursor-pointer active:scale-95';
+                labelText.className = 'font-semibold text-slate-800 text-[11px]';
+                codeBadge.className = 'text-[9px] text-blue-600 font-mono bg-white px-1 py-0.2 rounded border border-blue-200';
+                if (icon) icon.className = 'fa-solid fa-check text-[7px] text-blue-600';
+            } else {
+                switchBg.className = 'w-8 h-4 bg-slate-300 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0';
+                knob.className = 'w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-0 flex items-center justify-center';
+                btn.className = 'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition shadow-2xs font-medium cursor-pointer active:scale-95';
+                labelText.className = 'font-semibold text-slate-500 text-[11px]';
+                codeBadge.className = 'text-[9px] text-slate-400 font-mono bg-slate-100 px-1 py-0.2 rounded border border-slate-200';
+                if (icon) icon.className = 'fa-solid fa-xmark text-[7px] text-slate-400';
+            }
+
+            renderEquation();
+        }
+
+        function handleLineBreakInsert() {
+            insertSnippet('\\\\ \n');
+        }
+
+        function clearEquationEditor() {
+            if (latexInput.value.trim() === '') return;
+            latexInput.value = '';
+            saveHistorySnapshot('');
+            renderEquation();
+            showToast('Equation cleared');
+        }
+
+        function insertSnippet(snippet) {
+            latexInput.focus();
+            const start = latexInput.selectionStart;
+            const end = latexInput.selectionEnd;
+            const currentVal = latexInput.value;
+            const selectedText = currentVal.substring(start, end);
+
+            let newText = snippet;
+            let cursorOffset = snippet.length;
+
+            const firstEmptyBraces = snippet.indexOf('{}');
+            const firstEmptyParens = snippet.indexOf('()');
+
+            if (selectedText.length > 0 && firstEmptyBraces !== -1) {
+                newText = snippet.substring(0, firstEmptyBraces + 1) + selectedText + snippet.substring(firstEmptyBraces + 1);
+                cursorOffset = firstEmptyBraces + 1 + selectedText.length + 1;
+            } else if (firstEmptyBraces !== -1) {
+                cursorOffset = firstEmptyBraces + 1;
+            } else if (firstEmptyParens !== -1) {
+                cursorOffset = firstEmptyParens + 1;
+            }
+
+            latexInput.value = currentVal.substring(0, start) + newText + currentVal.substring(end);
+            const newCursorPos = start + cursorOffset;
+            latexInput.setSelectionRange(newCursorPos, newCursorPos);
+
+            saveHistorySnapshot(latexInput.value);
+            renderEquation();
+        }
+
+        function wrapSelection(prefix, suffix) {
+            latexInput.focus();
+            const start = latexInput.selectionStart;
+            const end = latexInput.selectionEnd;
+            const val = latexInput.value;
+            const selected = val.substring(start, end) || 'x';
+
+            const replacement = prefix + selected + suffix;
+            latexInput.value = val.substring(0, start) + replacement + val.substring(end);
+            latexInput.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+
+            saveHistorySnapshot(latexInput.value);
+            renderEquation();
+        }
+
+        function saveHistorySnapshot(val) {
+            if (historyStack[historyIndex] === val) return;
+            historyStack = historyStack.slice(0, historyIndex + 1);
+            historyStack.push(val);
+            if (historyStack.length > 50) historyStack.shift();
+            else historyIndex++;
+            updateHistoryButtons();
+        }
+
+        function undoEdit() {
+            if (historyIndex > 0) {
+                isApplyingHistory = true;
+                historyIndex--;
+                latexInput.value = historyStack[historyIndex];
+                updateHistoryButtons();
+                renderEquation();
+                isApplyingHistory = false;
+            }
+        }
+
+        function redoEdit() {
+            if (historyIndex < historyStack.length - 1) {
+                isApplyingHistory = true;
+                historyIndex++;
+                latexInput.value = historyStack[historyIndex];
+                updateHistoryButtons();
+                renderEquation();
+                isApplyingHistory = false;
+            }
+        }
+
+        function updateHistoryButtons() {
+            document.getElementById('undoBtn').disabled = historyIndex <= 0;
+            document.getElementById('redoBtn').disabled = historyIndex >= historyStack.length - 1;
+        }
+
+        function removeLineBreaks() {
+            latexInput.value = latexInput.value.replace(/\r?\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
+            saveHistorySnapshot(latexInput.value);
+            renderEquation();
+            showToast('Line breaks flattened');
+        }
+
+        function loadPresetExample(key) {
+            if (!key || !PRESET_EXAMPLES[key]) return;
+            latexInput.value = PRESET_EXAMPLES[key];
+            saveHistorySnapshot(latexInput.value);
+            renderEquation();
+            showToast('Loaded preset formula');
+        }
+
+        function syncFontSize(val) {
+            const clamped = Math.max(10, Math.min(120, parseInt(val, 10) || 30));
+            document.getElementById('fontSizeSlider').value = clamped;
+            document.getElementById('fontSizeNumber').value = clamped;
+            renderEquation();
+        }
+
+        function setExportScale(scale) {
+            exportDensity = scale;
+            [1, 2, 3, 4].forEach(s => {
+                const btn = document.getElementById(`scaleBtn${s}`);
+                if (s === scale) {
+                    btn.className = 'px-2.5 py-0.5 rounded text-[12.5px] font-semibold bg-blue-600 text-white shadow-2xs transition';
+                } else {
+                    btn.className = 'px-2.5 py-0.5 rounded text-[12.5px] font-semibold text-slate-600 hover:text-blue-600 transition';
+                }
+            });
+            renderEquation();
+        }
+
+        function setBgMode(mode) {
+            bgMode = mode;
+            const btns = {
+                transparent: document.getElementById('bgBtnTransparent'),
+                white: document.getElementById('bgBtnWhite'),
+                custom: document.getElementById('bgBtnCustom')
+            };
+            Object.keys(btns).forEach(k => {
+                if (k === mode) {
+                    btns[k].className = 'px-1.5 py-1 rounded-md font-medium text-[11px] transition bg-white text-blue-700 shadow-2xs text-center flex items-center justify-center';
+                } else {
+                    btns[k].className = 'px-1.5 py-1 rounded-md font-medium text-[11px] transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center';
+                }
+            });
+
+            const customWrap = document.getElementById('customBgPickerWrap');
+            if (mode === 'custom') customWrap.classList.remove('hidden');
+            else customWrap.classList.add('hidden');
+
+            renderEquation();
+        }
+
+        function updateInkColor(hex) {
+            document.getElementById('fgColorPicker').value = hex;
+            const customTrigger = document.getElementById('customColorTriggerInput');
+            if (customTrigger) customTrigger.value = hex;
+            const indicator = document.getElementById('inkColorIndicator');
+            if (indicator) indicator.style.backgroundColor = hex;
+            renderEquation();
+        }
+
+        function setInkPreset(hex) {
+            updateInkColor(hex);
+            const popover = document.getElementById('inkPalettePopover');
+            if (popover) popover.classList.add('hidden');
+            showToast('Ink color set to ' + hex);
+        }
+
+        function toggleInkPalette(e) {
+            if (e) e.stopPropagation();
+            const popover = document.getElementById('inkPalettePopover');
+            if (popover) {
+                popover.classList.toggle('hidden');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const popover = document.getElementById('inkPalettePopover');
+            const wrapper = document.getElementById('inkPickerDropdownWrapper');
+            if (popover && !popover.classList.contains('hidden')) {
+                if (wrapper && !wrapper.contains(e.target)) {
+                    popover.classList.add('hidden');
+                }
+            }
+        });
+
+        function prepareLatexForRendering(latex) {
+            const trimmed = latex.trim();
+            if (!trimmed) return '';
+
+            const hasLineBreaks = /\\\\/.test(trimmed);
+            const hasEnvironment = /\\begin\{(aligned|align\*?|gather\*?|gathered|cases|matrix|pmatrix|bmatrix|vmatrix|Bmatrix|array)\}/.test(trimmed);
+
+            if (hasLineBreaks && !hasEnvironment) {
+                if (/&/.test(trimmed)) {
+                    return `\\begin{aligned} ${trimmed} \\end{aligned}`;
+                } else {
+                    return `\\begin{gathered} ${trimmed} \\end{gathered}`;
+                }
+            }
+
+            return trimmed;
+        }
+
+        async function renderEquation() {
+            if (!window.MathJax || !window.MathJax.tex2svgPromise) return;
+
+            const rawLatex = latexInput.value.trim();
+            const errorBox = document.getElementById('latexErrorBox');
+            const rasterImg = document.getElementById('rasterPreviewImage');
+            const dimBadge = document.getElementById('imageDimensionsBadge');
+
+            if (!rawLatex) {
+                errorBox.classList.add('hidden');
+                rasterImg.classList.add('hidden');
+                dimBadge.textContent = 'Empty formula';
+                return;
+            }
+
+            let preparedLatex = prepareLatexForRendering(rawLatex);
+            
+            const selectedFont = document.getElementById('fontFamilySelect') ? document.getElementById('fontFamilySelect').value : 'computer-modern';
+            if (selectedFont === 'arial') {
+                preparedLatex = `\\mathsf{${preparedLatex}}`;
+            } else if (selectedFont === 'mono') {
+                preparedLatex = `\\mathtt{${preparedLatex}}`;
+            } else if (selectedFont === 'euler') {
+                preparedLatex = `\\mathcal{${preparedLatex}}`;
+            } else if (selectedFont === 'blackboard') {
+                preparedLatex = `\\mathbb{${preparedLatex}}`;
+            }
+
+            const useDisplayStyle = document.getElementById('displayStyleToggle').checked;
+            const finalTex = useDisplayStyle ? `\\displaystyle ${preparedLatex}` : preparedLatex;
+
+            try {
+                const wrapper = await MathJax.tex2svgPromise(finalTex, { display: useDisplayStyle });
+                const svgEl = wrapper.querySelector('svg');
+
+                const merror = svgEl ? svgEl.querySelector('[data-mml-node="merror"]') : null;
+                if (merror) {
+                    errorBox.textContent = `LaTeX Syntax Notice: ${merror.textContent || 'Check brackets or command spelling'}`;
+                    errorBox.classList.remove('hidden');
+                } else {
+                    errorBox.classList.add('hidden');
+                }
+
+                if (!svgEl) return;
+
+                const fontSizePx = parseInt(document.getElementById('fontSizeNumber').value, 10) || 30;
+                const fgColor = document.getElementById('fgColorPicker').value || '#0f172a';
+                const paddingPx = parseInt(document.getElementById('paddingSelect').value, 10) ?? 4;
+
+                let fontFamilyCss = '"Computer Modern", "Latin Modern Math", serif';
+                if (selectedFont === 'arial') {
+                    fontFamilyCss = 'Arial, "Open Sans", -apple-system, sans-serif';
+                } else if (selectedFont === 'mono') {
+                    fontFamilyCss = '"JetBrains Mono", Courier, monospace';
+                } else if (selectedFont === 'euler') {
+                    fontFamilyCss = '"STIX Two Text", "AMS Euler", Georgia, serif';
+                } else if (selectedFont === 'blackboard') {
+                    fontFamilyCss = '"STIX Two Text", serif';
+                }
+
+                let viewBox = svgEl.getAttribute('viewBox');
+                let vbX = 0, vbY = 0, vbW = 0, vbH = 0;
+                if (viewBox) {
+                    const parts = viewBox.trim().split(/\s+/).map(Number);
+                    if (parts.length === 4) {
+                        [vbX, vbY, vbW, vbH] = parts;
+                    }
+                }
+
+                const widthEx = parseFloat(svgEl.getAttribute('width')) || (vbW ? vbW / 60 : 10);
+                const heightEx = parseFloat(svgEl.getAttribute('height')) || (vbH ? vbH / 60 : 3);
+                const exToPx = fontSizePx * 0.54;
+
+                let mathWidthPx = Math.max(12, Math.ceil(widthEx * exToPx));
+                let mathHeightPx = Math.max(12, Math.ceil(heightEx * exToPx));
+
+                if (vbW > 0 && vbH > 0) {
+                    const aspect = vbW / vbH;
+                    if (mathWidthPx / mathHeightPx < aspect * 0.95 || mathWidthPx / mathHeightPx > aspect * 1.05) {
+                        mathWidthPx = Math.ceil(mathHeightPx * aspect);
+                    }
+                }
+
+                const density = exportDensity || 3;
+                const rawPad = Math.round(16 * density);
+                const tempW = Math.round(mathWidthPx * density) + rawPad * 2;
+                const tempH = Math.round(mathHeightPx * density) + rawPad * 2;
+
+                const renderSvg = svgEl.cloneNode(true);
+                renderSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                renderSvg.setAttribute('width', `${Math.round(mathWidthPx * density)}px`);
+                renderSvg.setAttribute('height', `${Math.round(mathHeightPx * density)}px`);
+                renderSvg.style.color = fgColor;
+                renderSvg.style.fontFamily = fontFamilyCss;
+                renderSvg.style.overflow = 'visible';
+
+                const vectorSvg = svgEl.cloneNode(true);
+                vectorSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                vectorSvg.setAttribute('width', `${mathWidthPx}px`);
+                vectorSvg.setAttribute('height', `${mathHeightPx}px`);
+                vectorSvg.style.color = fgColor;
+                vectorSvg.style.fontFamily = fontFamilyCss;
+                currentSvgElement = vectorSvg;
+
+                const svgString = new XMLSerializer().serializeToString(renderSvg);
+                const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+                const img = new Image();
+                img.onload = () => {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = tempW;
+                    tempCanvas.height = tempH;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.imageSmoothingEnabled = true;
+                    tempCtx.imageSmoothingQuality = 'high';
+                    tempCtx.drawImage(img, rawPad, rawPad, Math.round(mathWidthPx * density), Math.round(mathHeightPx * density));
+
+                    const imgData = tempCtx.getImageData(0, 0, tempW, tempH).data;
+                    let minX = tempW, minY = tempH, maxX = 0, maxY = 0;
+                    let hasContent = false;
+
+                    for (let y = 0; y < tempH; y++) {
+                        for (let x = 0; x < tempW; x++) {
+                            const alpha = imgData[(y * tempW + x) * 4 + 3];
+                            if (alpha > 8) {
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                                hasContent = true;
+                            }
+                        }
+                    }
+
+                    if (!hasContent) {
+                        minX = 0; minY = 0; maxX = tempW; maxY = tempH;
+                    }
+
+                    const contentW = maxX - minX + 1;
+                    const contentH = maxY - minY + 1;
+                    const targetPad = Math.round(paddingPx * density);
+                    const finalW = contentW + targetPad * 2;
+                    const finalH = contentH + targetPad * 2;
+
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = finalW;
+                    finalCanvas.height = finalH;
+                    const ctx = finalCanvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+
+                    if (bgMode === 'white') {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, finalW, finalH);
+                    } else if (bgMode === 'custom') {
+                        ctx.fillStyle = document.getElementById('bgColorPicker').value || '#ffffff';
+                        ctx.fillRect(0, 0, finalW, finalH);
+                    } else {
+                        ctx.clearRect(0, 0, finalW, finalH);
+                    }
+
+                    ctx.drawImage(tempCanvas, minX, minY, contentW, contentH, targetPad, targetPad, contentW, contentH);
+                    currentCanvas = finalCanvas;
+
+                    const nominalW = Math.round(finalW / density);
+                    const nominalH = Math.round(finalH / density);
+                    rasterImg.src = finalCanvas.toDataURL('image/png');
+                    rasterImg.style.width = `${nominalW}px`;
+                    rasterImg.style.height = `${nominalH}px`;
+                    rasterImg.classList.remove('hidden');
+
+                    dimBadge.textContent = `${finalW} × ${finalH} px (${density}× Crisp HD)`;
+                };
+                img.src = svgDataUrl;
+
+            } catch (err) {
+                errorBox.textContent = `Render Error: ${err.message || err}`;
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        function downloadEquation(format) {
+            if (!currentCanvas || !currentSvgElement) {
+                showToast('Please enter an equation first!', true);
+                return;
+            }
+
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+            const filename = `equation-${timestamp}.${format}`;
+
+            if (format === 'png') {
+                const pngUrl = currentCanvas.toDataURL('image/png');
+                triggerDownload(pngUrl, filename);
+                showToast('Downloaded crisp .PNG equation!');
+            } else if (format === 'svg') {
+                const svgData = new XMLSerializer().serializeToString(currentSvgElement);
+                const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                triggerDownload(url, filename);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+                showToast('Downloaded vector .SVG equation!');
+            } else if (format === 'gif') {
+                const gifBlob = encodeCanvasToGifBlob(currentCanvas, bgMode === 'transparent');
+                const url = URL.createObjectURL(gifBlob);
+                triggerDownload(url, filename);
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+                showToast('Downloaded .GIF equation!');
+            }
+        }
+
+        function triggerDownload(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function copyImageToClipboard() {
+            if (!currentCanvas) return;
+
+            try {
+                const fullDataUrl = currentCanvas.toDataURL('image/png');
+                const blob = await new Promise(resolve => currentCanvas.toBlob(resolve, 'image/png'));
+
+                if (navigator.clipboard && window.ClipboardItem && blob) {
+                    const htmlBlob = new Blob(
+                        [`<img src="${fullDataUrl}" width="${currentCanvas.width}" height="${currentCanvas.height}" />`],
+                        { type: 'text/html' }
+                    );
+
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({
+                                'image/png': blob,
+                                'text/html': htmlBlob
+                            })
+                        ]);
+                        showToast('Full-size equation copied! Ready to paste into Google Docs.');
+                        return;
+                    } catch (clipErr) {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({
+                                'image/png': blob
+                            })
+                        ]);
+                        showToast('Full-size equation copied! Ready to paste into Google Docs.');
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('Clipboard API fallback triggered:', err);
+            }
+
+            try {
+                const fullDataUrl = currentCanvas.toDataURL('image/png');
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'fixed';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.top = '-9999px';
+                tempContainer.style.opacity = '0';
+                
+                const tempImg = document.createElement('img');
+                tempImg.src = fullDataUrl;
+                tempImg.width = currentCanvas.width;
+                tempImg.height = currentCanvas.height;
+                tempContainer.appendChild(tempImg);
+                document.body.appendChild(tempContainer);
+
+                const range = document.createRange();
+                range.selectNode(tempImg);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                
+                const success = document.execCommand('copy');
+                sel.removeAllRanges();
+                document.body.removeChild(tempContainer);
+
+                if (success) {
+                    showToast('Full-size equation copied to clipboard!');
+                } else {
+                    showToast('Right-click the equation above and choose "Copy Image"', false);
+                }
+            } catch (e) {
+                showToast('Right-click the equation above and choose "Copy Image"', false);
+            }
+        }
+
+        function encodeCanvasToGifBlob(canvas, isTransparent) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.getImageData(0, 0, width, height).data;
+
+            const fgHex = document.getElementById('fgColorPicker').value || '#0f172a';
+            const fgR = parseInt(fgHex.slice(1, 3), 16);
+            const fgG = parseInt(fgHex.slice(3, 5), 16);
+            const fgB = parseInt(fgHex.slice(5, 7), 16);
+
+            let bgR = 255, bgG = 255, bgB = 255;
+            if (bgMode === 'custom') {
+                const bgHex = document.getElementById('bgColorPicker').value || '#ffffff';
+                bgR = parseInt(bgHex.slice(1, 3), 16);
+                bgG = parseInt(bgHex.slice(3, 5), 16);
+                bgB = parseInt(bgHex.slice(5, 7), 16);
+            }
+
+            const palette = new Uint8Array(256 * 3);
+            for (let i = 0; i < 256; i++) {
+                const t = i / 255;
+                palette[i * 3]     = Math.round(bgR * (1 - t) + fgR * t);
+                palette[i * 3 + 1] = Math.round(bgG * (1 - t) + fgG * t);
+                palette[i * 3 + 2] = Math.round(bgB * (1 - t) + fgB * t);
+            }
+
+            const indexedPixels = new Uint8Array(width * height);
+            for (let i = 0, p = 0; i < imgData.length; i += 4, p++) {
+                const r = imgData[i];
+                const g = imgData[i + 1];
+                const b = imgData[i + 2];
+                const a = imgData[i + 3];
+
+                if (isTransparent) {
+                    if (a < 64) {
+                        indexedPixels[p] = 0;
+                    } else {
+                        const alphaNorm = Math.max(1, Math.min(255, a));
+                        indexedPixels[p] = alphaNorm;
+                    }
+                } else {
+                    const distBg = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+                    const distFg = Math.abs(r - fgR) + Math.abs(g - fgG) + Math.abs(b - fgB);
+                    const total = distBg + distFg || 1;
+                    const ratio = Math.min(255, Math.max(0, Math.round((distBg / total) * 255)));
+                    indexedPixels[p] = ratio;
+                }
+            }
+
+            const bytes = [];
+            const writeByte = b => bytes.push(b & 0xff);
+            const writeShort = s => { writeByte(s & 0xff); writeByte((s >> 8) & 0xff); };
+            const writeStr = str => { for (let i = 0; i < str.length; i++) writeByte(str.charCodeAt(i)); };
+
+            writeStr('GIF89a');
+            writeShort(width);
+            writeShort(height);
+            writeByte(0xf7);
+            writeByte(0);
+            writeByte(0);
+
+            for (let i = 0; i < palette.length; i++) {
+                writeByte(palette[i]);
+            }
+
+            writeByte(0x21);
+            writeByte(0xf9);
+            writeByte(4);
+            writeByte(isTransparent ? 0x01 : 0x00);
+            writeShort(0);
+            writeByte(0);
+            writeByte(0);
+
+            writeByte(0x2c);
+            writeShort(0);
+            writeShort(0);
+            writeShort(width);
+            writeShort(height);
+            writeByte(0x00);
+
+            const minCodeSize = 8;
+            writeByte(minCodeSize);
+
+            const lzwData = lzwEncodeGif(indexedPixels, minCodeSize);
+            let offset = 0;
+            while (offset < lzwData.length) {
+                const chunkLen = Math.min(255, lzwData.length - offset);
+                writeByte(chunkLen);
+                for (let i = 0; i < chunkLen; i++) {
+                    writeByte(lzwData[offset + i]);
+                }
+                offset += chunkLen;
+            }
+            writeByte(0x00);
+            writeByte(0x3b);
+
+            return new Blob([new Uint8Array(bytes)], { type: 'image/gif' });
+        }
+
+        function lzwEncodeGif(indexStream, minCodeSize) {
+            const clearCode = 1 << minCodeSize;
+            const endCode = clearCode + 1;
+            let codeSize = minCodeSize + 1;
+            let nextCode = endCode + 1;
+
+            const outBytes = [];
+            let curByte = 0;
+            let curBits = 0;
+
+            function emitCode(code) {
+                curByte |= (code << curBits);
+                curBits += codeSize;
+                while (curBits >= 8) {
+                    outBytes.push(curByte & 0xff);
+                    curByte >>= 8;
+                    curBits -= 8;
+                }
+            }
+
+            let dict = new Map();
+            emitCode(clearCode);
+
+            if (indexStream.length === 0) {
+                emitCode(endCode);
+                if (curBits > 0) outBytes.push(curByte & 0xff);
+                return outBytes;
+            }
+
+            let prefix = indexStream[0];
+            for (let i = 1; i < indexStream.length; i++) {
+                const k = indexStream[i];
+                const key = (prefix << 8) | k;
+                if (dict.has(key)) {
+                    prefix = dict.get(key);
+                } else {
+                    emitCode(prefix);
+                    if (nextCode < 4096) {
+                        dict.set(key, nextCode++);
+                        if (nextCode > (1 << codeSize) && codeSize < 12) {
+                            codeSize++;
+                        }
+                    } else {
+                        emitCode(clearCode);
+                        dict.clear();
+                        codeSize = minCodeSize + 1;
+                        nextCode = endCode + 1;
+                    }
+                    prefix = k;
+                }
+            }
+
+            emitCode(prefix);
+            emitCode(endCode);
+            if (curBits > 0) {
+                outBytes.push(curByte & 0xff);
+            }
+            return outBytes;
+        }
+
+        function openMatrixModal() {
+            document.getElementById('matrixModal').classList.remove('hidden');
+            buildMatrixInputs();
+        }
+
+        function closeMatrixModal() {
+            document.getElementById('matrixModal').classList.add('hidden');
+        }
+
+        function buildMatrixInputs() {
+            const type = document.getElementById('matrixBracketType').value;
+            const rows = Math.max(1, Math.min(8, parseInt(document.getElementById('matrixRows').value, 10) || 3));
+            const colsWrap = document.getElementById('matrixColsWrap');
+            let cols = Math.max(1, Math.min(8, parseInt(document.getElementById('matrixCols').value, 10) || 3));
+
+            if (type === 'cases') {
+                cols = 2;
+                colsWrap.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                colsWrap.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            const grid = document.getElementById('matrixCellGrid');
+            let html = '';
+            for (let r = 0; r < rows; r++) {
+                html += `<div class="flex items-center gap-2">`;
+                for (let c = 0; c < cols; c++) {
+                    const placeholder = type === 'cases' 
+                        ? (c === 0 ? `Expression ${r+1}` : `Condition ${r+1} (e.g. x > 0)`)
+                        : `a_{${r+1}${c+1}}`;
+                    html += `<input type="text" data-row="${r}" data-col="${c}" placeholder="${placeholder}"
+                        class="matrix-cell mono-font flex-1 min-w-[70px] px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">`;
+                }
+                html += `</div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function fillSampleMatrix() {
+            const type = document.getElementById('matrixBracketType').value;
+            const cells = document.querySelectorAll('.matrix-cell');
+            cells.forEach(input => {
+                const r = parseInt(input.getAttribute('data-row'), 10) + 1;
+                const c = parseInt(input.getAttribute('data-col'), 10) + 1;
+                if (type === 'cases') {
+                    input.value = c === 1 ? `x^${r}` : `\\text{if } x \\ge ${r - 1}`;
+                } else {
+                    input.value = `a_{${r}${c}}`;
+                }
+            });
+        }
+
+        function insertGeneratedMatrix() {
+            const type = document.getElementById('matrixBracketType').value;
+            const rows = Math.max(1, Math.min(8, parseInt(document.getElementById('matrixRows').value, 10) || 3));
+            const cols = type === 'cases' ? 2 : Math.max(1, Math.min(8, parseInt(document.getElementById('matrixCols').value, 10) || 3));
+
+            const rowStrings = [];
+            for (let r = 0; r < rows; r++) {
+                const colStrings = [];
+                for (let c = 0; c < cols; c++) {
+                    const input = document.querySelector(`.matrix-cell[data-row="${r}"][data-col="${c}"]`);
+                    const val = input && input.value.trim() !== '' ? input.value.trim() : (type === 'cases' ? '' : '0');
+                    colStrings.push(val);
+                }
+                rowStrings.push('  ' + colStrings.join(' & '));
+            }
+
+            const latexBlock = `\\begin{${type}}\n${rowStrings.join(' \\\\\n')}\n\\end{${type}}`;
+            closeMatrixModal();
+            insertSnippet(latexBlock);
+            showToast(`Inserted ${type} into equation!`);
+        }
+
+        let toastTimeout;
+        function showToast(msg, isError = false) {
+            const banner = document.getElementById('toastBanner');
+            const icon = document.getElementById('toastIcon');
+            const text = document.getElementById('toastMessage');
+
+            text.textContent = msg;
+            icon.className = isError 
+                ? 'fa-solid fa-triangle-exclamation text-amber-400' 
+                : 'fa-solid fa-circle-check text-emerald-400';
+
+            banner.classList.remove('opacity-0', 'translate-y-2');
+            banner.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.add('opacity-0', 'translate-y-2');
+                banner.classList.remove('opacity-100', 'translate-y-0');
+            }, 2800);
+        }
+    </script>
+</body>
+</html>
