@@ -451,28 +451,28 @@
             <div id="metric-mass" class="text-cyan-700 font-mono font-bold text-base mt-0.5">10.0 kg</div>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <div class="text-slate-500 text-[11px]">Applied Force</div>
-            <div id="metric-fapp" class="text-blue-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
+            <div class="text-slate-500 text-[11px]">Max Static</div>
+            <div id="metric-fsmax" class="text-amber-600 font-mono font-bold text-base mt-0.5">78.5 N</div>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
             <div class="text-slate-500 text-[11px]">Friction</div>
             <div id="metric-ffric" class="text-rose-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <div class="text-slate-500 text-[11px]">Max Static</div>
-            <div id="metric-fsmax" class="text-amber-600 font-mono font-bold text-base mt-0.5">78.5 N</div>
+            <div class="text-slate-500 text-[11px]">Applied Force</div>
+            <div id="metric-fapp" class="text-blue-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <div class="text-slate-500 text-[11px]">Kinetic</div>
-            <div id="metric-fk" class="text-emerald-600 font-mono font-bold text-base mt-0.5">58.9 N</div>
+            <div class="text-slate-500 text-[11px]">Net Force</div>
+            <div id="metric-fnet" class="text-blue-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
             <div class="text-slate-500 text-[11px]">Acceleration</div>
             <div id="metric-accel" class="text-violet-600 font-mono font-bold text-base mt-0.5">0.00 m/s²</div>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <div class="text-slate-500 text-[11px]">Net Force</div>
-            <div id="metric-fnet" class="text-blue-600 font-mono font-bold text-base mt-0.5">0.0 N</div>
+            <div class="text-slate-500 text-[11px]">Velocity</div>
+            <div id="metric-vel" class="text-emerald-600 font-mono font-bold text-base mt-0.5">0.00 m/s</div>
           </div>
       </div>
     </div>
@@ -764,7 +764,7 @@
     const metricFapp = document.getElementById('metric-fapp');
     const metricFfric = document.getElementById('metric-ffric');
     const metricFsmax = document.getElementById('metric-fsmax');
-    const metricFk = document.getElementById('metric-fk');
+    const metricVel = document.getElementById('metric-vel');
     const metricNormal = document.getElementById('val-norm-force');
     const motionBadge = document.getElementById('motion-state');
     const metricFnet = document.getElementById('metric-fnet');
@@ -834,7 +834,7 @@
 
       metricNormal.textContent = `${N.toFixed(1)} N`;
       metricFsmax.textContent = `${fsMax.toFixed(1)} N`;
-      metricFk.textContent = `${fk.toFixed(1)} N`;
+      metricVel.textContent = `${state.blockV.toFixed(2)} m/s`;
       metricFapp.textContent = `${state.appliedForce.toFixed(1)} N`;
       metricFfric.textContent = `${state.frictionForce.toFixed(1)} N`;
 
