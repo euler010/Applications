@@ -273,7 +273,17 @@
     .graph-box { aspect-ratio: 1.86 / 1; }
     .hint-center { top: calc(50% - 50px); left: 50%; transform: translate(-50%, -50%); white-space: nowrap; } /* centred, raised 50px to clear the block */
     /* compact padding keeps it the same height as the regime badge */
-    .panel-head { min-height: 28px; } /* both top headers match the segmented control height */
+    .panel-head { min-height: 28px; }
+    /* "Clear" as its own small rounded button, same height as the segmented control */
+    .clear-btn {
+      font-size: 14px; line-height: 1rem; font-weight: 600; padding: 0.3125rem 0.75rem;
+      border-radius: 0.5rem; border: 1px solid #e2e8f0; background-color: #ffffff; color: #475569;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      transition: background-color 150ms, color 150ms, border-color 150ms;
+    }
+    .clear-btn:hover { background-color: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+    .clear-btn:active { transform: scale(0.97); }
+    .clear-btn:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; } /* both top headers match the segmented control height */
     .seg-ctl {
       display: inline-flex; gap: 2px; padding: 2px; border-radius: 0.5rem;
       background-color: #f1f5f9; border: 1px solid #e2e8f0; white-space: nowrap;
@@ -402,7 +412,7 @@
                   <span class="w-3 h-0.5 bg-rose-500 inline-block rounded"></span>
                   <span class="inline-flex items-baseline">F<sub class="text-[10px] font-bold ml-[1px]">f</sub></span>
                 </span>
-                <button id="btn-clear-graph" class="hover:text-slate-700 text-slate-400 text-xs underline decoration-dotted font-mono">Clear</button>
+                <button id="btn-clear-graph" type="button" class="clear-btn">Clear</button>
                 </div>
               </div>
             </div>
