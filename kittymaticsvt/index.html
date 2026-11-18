@@ -10,17 +10,17 @@
 <style>
 :root{
   --bg:#eef1f5; --surface:#ffffff; --ink:#17202b; --muted:#5a6575; --line:#d8dde5; --grid:#e8ebf0; --axis:#1f2630;
-  --x:#2861a6; --v:#7b3fbf; --a:#2b8653; --pos:#b9d7f7; --neg:#f7bcbc; --accent:#17202b; --accent-ink:#ffffff;
+  --x:#2861a6; --v:#7b3fbf; --a:#2b8653; --pos:#b9d7f7; --neg:#f7bcbc; --posT:#1d4f8c; --negT:#a12a2a; --accent:#17202b; --accent-ink:#ffffff;
   --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body:"Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
   --mono:"Inter", "Helvetica Neue", Arial, system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#dde3ea;
-  --x:#73aaf0; --v:#b48cf0; --a:#5fc78d; --pos:#34506f; --neg:#6e3a3e; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}}
+  --x:#73aaf0; --v:#b48cf0; --a:#5fc78d; --pos:#34506f; --neg:#6e3a3e; --posT:#bcd8fb; --negT:#f8c4c4; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#dde3ea;
-  --x:#73aaf0; --v:#b48cf0; --a:#5fc78d; --pos:#34506f; --neg:#6e3a3e; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}
+  --x:#73aaf0; --v:#b48cf0; --a:#5fc78d; --pos:#34506f; --neg:#6e3a3e; --posT:#bcd8fb; --negT:#f8c4c4; --accent:#e6ebf1; --accent-ink:#11151b; color-scheme:dark}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
 .wrap{max-width:1040px;margin:0 auto;padding-block:26px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
 header{display:grid;gap:4px}
@@ -45,6 +45,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .side .seg{display:flex}.side .seg button{flex:1;padding:0 6px}
 .side .row{display:flex;gap:8px}.side .row button{flex:1}
 .side .check{padding:2px 0}
+.legend .check.sm{font-family:var(--body);font-size:12px;font-weight:500;color:var(--ink);gap:7px;margin-left:4px}.check.sm input{width:30px;height:18px}.check.sm input::after{top:2px;left:2px;width:14px;height:14px}.check.sm input:checked::after{transform:translateX(12px)}
 .check.off{opacity:.45;cursor:not-allowed}.check.off input{cursor:not-allowed}
 .ctl{display:grid;gap:4px;min-width:150px}.ctl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.ctl label{font-weight:600;font-size:13px}.ctl output{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;color:var(--x)}.ctl .unit{color:var(--muted);font-size:12px}
 input[type=range]{width:100%;margin:0;accent-color:var(--x);height:22px}
@@ -63,7 +64,7 @@ figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;align-items
 figcaption .sp1{font-family:var(--body)}
 figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
-.legend{display:flex;gap:14px;font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 .legend b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 #gv{display:block;width:100%;height:300px;touch-action:none;cursor:default}
 #gx{display:block;width:100%;height:170px}
@@ -93,6 +94,7 @@ figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:va
       <span class="legend">
         <span><span class="sw" style="background:var(--pos)"></span>area above <b id="aPos">+0.00 m</b></span>
         <span><span class="sw" style="background:var(--neg)"></span>area below <b id="aNeg">−0.00 m</b></span>
+        <label class="check sm"><input type="checkbox" role="switch" id="showd"> Displacements</label>
       </span>
     </figcaption>
     <canvas id="gv" aria-label="Velocity versus time graph. Click to add points, drag a point to move it."></canvas>
@@ -206,6 +208,13 @@ function areas(tt){let P=0,N=0;
   const add=(s,va,e,vb)=>{if(e<=s)return;if(va>=0&&vb>=0)P+=(e-s)*(va+vb)/2;else if(va<=0&&vb<=0)N+=(e-s)*(va+vb)/2;else{const tc=s+(e-s)*va/(va-vb),A1=(tc-s)*va/2,A2=(e-tc)*vb/2;if(va>0){P+=A1;N+=A2}else{N+=A1;P+=A2}}};
   for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];if(a.t>=tt)break;const e=Math.min(b.t,tt),ve=a.v+(b.v-a.v)*(e-a.t)/(b.t-a.t);add(a.t,a.v,e,ve)}
   return {P,N}}
+function regions(){const out=[];if(pts.length<2)return out;const B=[0];
+  for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(a.v*b.v<0)B.push(a.t+(b.t-a.t)*a.v/(a.v-b.v));if(Math.abs(b.v)<1e-9&&i<pts.length-1)B.push(b.t)}
+  if(Math.abs(pts[0].v)<1e-9&&B.length>1&&B[1]===0)B.splice(1,1);B.push(tEnd);
+  for(let k=0;k<B.length-1;k++){const ta=B[k],tb=B[k+1];if(tb-ta<1e-9)continue;const A=pos(tb)-pos(ta);if(Math.abs(A)<0.005)continue;
+    let sw=0,st=0,sv=0;const N=80;for(let j=0;j<N;j++){const tt=ta+(tb-ta)*(j+0.5)/N,v=vel(tt),w=Math.abs(v);sw+=w;st+=tt*w;sv+=v*w/2}
+    out.push({ta,tb,A,tc:st/sw,vc:sv/sw})}
+  return out}
 function turnTimes(){const out=[];let last=0,zt=null;
   const visit=(tt,v)=>{const s=v>1e-9?1:v<-1e-9?-1:0;if(s===0){if(zt===null)zt=tt;return}if(last&&s!==last&&zt!==null)out.push(zt);last=s;zt=null};
   for(let i=0;i<pts.length;i++){if(i>0){const a=pts[i-1],b=pts[i];if(a.v*b.v<0)visit(a.t+(b.t-a.t)*a.v/(a.v-b.v),0)}visit(pts[i].t,pts[i].v)}
@@ -335,7 +344,7 @@ const gv=$('gv'),cv=gv.getContext('2d'),gx=$('gx'),cx=gx.getContext('2d');
 function geom(c){const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}return {w,h,dpr,L:46,Rr:w-14,T:12,B:h-26}}
 const tpx=(g,tt)=>g.L+tt/TMAX*(g.Rr-g.L), vpy=(g,v)=>g.B-(v+VMAX)/(2*VMAX)*(g.B-g.T);
 const pxT=(g,x)=>(x-g.L)/(g.Rr-g.L)*TMAX, pyV=(g,y)=>(g.B-y)/(g.B-g.T)*2*VMAX-VMAX;
-function colors(){const cs=getComputedStyle(document.documentElement),C=k=>cs.getPropertyValue('--'+k).trim();return {grid:C('grid'),line:C('line'),muted:C('muted'),ink:C('ink'),axis:C('axis'),v:C('v'),x:C('x'),pos:C('pos'),neg:C('neg'),surface:C('surface')}}
+function colors(){const cs=getComputedStyle(document.documentElement),C=k=>cs.getPropertyValue('--'+k).trim();return {grid:C('grid'),line:C('line'),muted:C('muted'),ink:C('ink'),axis:C('axis'),v:C('v'),x:C('x'),pos:C('pos'),neg:C('neg'),posT:C('posT'),negT:C('negT'),surface:C('surface')}}
 function seg(c,x1,y1,x2,y2){c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke()}
 function frameAxes(c,g,col,y0,y1,step,dec){
   c.font='11px "Inter", system-ui, sans-serif';c.lineWidth=1;
@@ -384,6 +393,10 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
   // vertices
   const small=n>12;
   pts.forEach((p,i)=>{const hot=(hover&&hover.onPt===i)||(drag&&drag.i===i);const r=hot?6.5:small?2.5:4.5;c.beginPath();c.arc(px(p.t),py(p.v),r,0,Math.PI*2);c.fillStyle=hot?col.v:col.surface;c.fill();c.lineWidth=2;c.strokeStyle=col.v;c.stroke()});
+  // region displacement labels
+  if($('showd').checked&&n>1&&t>0){c.font='600 12px "Inter", system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';
+    for(const R of regions()){if(t<R.tb-1e-9)continue;const X=px(R.tc),Y=py(R.vc),txt=(R.A>0?'+':'−')+Math.abs(R.A).toFixed(2)+' m';
+      c.lineWidth=3;c.strokeStyle=col.surface;c.lineJoin='round';c.strokeText(txt,X,Y);c.fillStyle=R.A>0?col.posT:col.negT;c.fillText(txt,X,Y)}}
   // time cursor
   if(n>1&&(t>0||running)){const X=px(t);c.strokeStyle=col.ink;c.globalAlpha=.5;c.lineWidth=1;seg(c,X,g.T,X,g.B);c.globalAlpha=1;c.fillStyle=col.v;c.beginPath();c.arc(X,py(vel(t)),5,0,Math.PI*2);c.fill()}
   // empty hint
@@ -462,6 +475,7 @@ document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&
 $('play').addEventListener('click',()=>{if(pts.length<2)return;if(ended)resetPlay();running=!running;setButtons();status()});
 $('reset').addEventListener('click',resetPlay);
 document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{simSpeed=parseFloat(b.dataset.s);document.querySelectorAll('[data-s]').forEach(o=>o.setAttribute('aria-pressed',o===b?'true':'false'))}));
+$('showd').addEventListener('change',()=>{dirty=true});
 $('showx').addEventListener('change',e=>{$('xfig').classList.toggle('hide',!e.target.checked);dirty=true});
 window.addEventListener('resize',()=>{dirty=true});
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{dirty=true})}catch(e){}
