@@ -398,7 +398,7 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
     const H=14,PAD=3,placed=turnBoxes.slice();
     const ext=(t0,t1)=>{t0=Math.max(0,t0);t1=Math.min(tEnd,t1);if(t1<=t0)return null;let lo=Math.min(py(vel(t0)),py(vel(t1))),hi=Math.max(py(vel(t0)),py(vel(t1)));for(const q of pts)if(q.t>t0&&q.t<t1){const y=py(q.v);if(y<lo)lo=y;if(y>hi)hi=y}return {lo,hi}};
     const hit=(x0,x1,y0b,y1b)=>placed.some(r=>x0<r[1]&&x1>r[0]&&y0b<r[3]&&y1b>r[2]);
-    const clear=(x0,x1,y0b,y1b)=>{const e=ext(pxT(g,x0-PAD),pxT(g,x1+PAD));return !e||y1b+PAD<e.lo||y0b-PAD>e.hi};
+    const GAP=5,clear=(x0,x1,y0b,y1b)=>{const e=ext(pxT(g,x0-PAD),pxT(g,x1+PAD));return !e||y1b+GAP-0.5<=e.lo||y0b-GAP+0.5>=e.hi};
     for(const R of regions()){if(t<R.tb-1e-9)continue;
       const txt=(R.A>0?'+':'−')+Math.abs(R.A).toFixed(2)+' m',w=c.measureText(txt).width,up=R.A>0;let pos=null;
       const cands=[R.tc];for(let k=1;k<=10;k++)cands.push(R.ta+(R.tb-R.ta)*k/11);
@@ -409,8 +409,8 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
       if(!pos){const X0=px(R.tc),sides=up?[-1,1]:[1,-1];
         outer:for(const sd of sides)for(const dx of [0,-0.6,0.6,-1.2,1.2]){
           const X=Math.min(g.Rr-w/2-2,Math.max(g.L+w/2+2,X0+dx*w)),x0=X-w/2,x1=X+w/2,e=ext(pxT(g,x0-PAD),pxT(g,x1+PAD))||{lo:y0,hi:y0};
-          let Y=sd<0?Math.min(e.lo,y0)-PAD-H/2:Math.max(e.hi,y0)+PAD+H/2;
-          for(let k=0;k<4;k++){if(Y-H/2<g.T||Y+H/2>g.B)break;if(clear(x0,x1,Y-H/2,Y+H/2)&&!hit(x0,x1,Y-H/2,Y+H/2)){pos=[X,Y];break outer}Y+=sd*(H+2)}}
+          let Y=sd<0?Math.min(e.lo,y0)-GAP-H/2:Math.max(e.hi,y0)+GAP+H/2;
+          for(let k=0;k<8;k++){if(Y-H/2<g.T||Y+H/2>g.B)break;if(clear(x0,x1,Y-H/2,Y+H/2)&&!hit(x0,x1,Y-H/2,Y+H/2)){pos=[X,Y];break outer}Y+=sd*(H/2+1)}}
         if(!pos){const X=Math.min(g.Rr-w/2-2,Math.max(g.L+w/2+2,X0)),e=ext(pxT(g,X-w/2-PAD),pxT(g,X+w/2+PAD))||{lo:y0,hi:y0};pos=[X,up?Math.max(g.T+H/2,e.lo-PAD-H/2):Math.min(g.B-H/2,e.hi+PAD+H/2)]}}
       placed.push([pos[0]-w/2-2,pos[0]+w/2+2,pos[1]-H/2-1,pos[1]+H/2+1]);
       c.lineWidth=3;c.strokeStyle=col.surface;c.lineJoin='round';c.strokeText(txt,pos[0],pos[1]);c.fillStyle=up?col.posT:col.negT;c.fillText(txt,pos[0],pos[1])}}
