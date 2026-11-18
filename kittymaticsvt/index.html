@@ -377,8 +377,8 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
   const cand=hover&&!drag&&!stroke&&mode==='line'&&!hover.onPt?candidate(hover.t,hover.v):null;
   if(cand&&!cand.ok&&n){c.fillStyle=col.muted;c.globalAlpha=.08;c.fillRect(g.L,g.T,px(pts[n-1].t)-g.L,g.B-g.T);c.globalAlpha=1}
   // turnaround markers
-  let lastLab=-1e9;for(const tz of turnTimes()){const X=px(tz);c.strokeStyle=col.muted;c.setLineDash([3,4]);seg(c,X,g.T,X,g.B);c.setLineDash([]);
-    if(t>=tz&&X-lastLab>92){lastLab=X;c.fillStyle=col.muted;c.font='11px "Inter", system-ui, sans-serif';c.textBaseline='top';c.textAlign=X>g.Rr-90?'right':'left';c.fillText('turns around',X+(c.textAlign==='left'?5:-5),g.T+4)}}
+  const turnBoxes=[];let lastLab=-1e9;for(const tz of turnTimes()){const X=px(tz);c.strokeStyle=col.muted;c.setLineDash([3,4]);seg(c,X,g.T,X,g.B);c.setLineDash([]);
+    if(t>=tz&&X-lastLab>92){lastLab=X;c.fillStyle=col.muted;c.font='11px "Inter", system-ui, sans-serif';c.textBaseline='top';c.textAlign=X>g.Rr-90?'right':'left';const tw=c.measureText('turns around').width,tx0=c.textAlign==='left'?X+5:X-5-tw;turnBoxes.push([tx0-2,tx0+tw+2,g.T+2,g.T+18]);c.fillText('turns around',X+(c.textAlign==='left'?5:-5),g.T+4)}}
   // the curve
   if(n>1){c.strokeStyle=col.v;c.lineWidth=2.5;c.lineJoin='round';c.beginPath();pts.forEach((p,i)=>i?c.lineTo(px(p.t),py(p.v)):c.moveTo(px(p.t),py(p.v)));c.stroke()}
   // preview
@@ -393,10 +393,27 @@ function drawVT(col){const g=geom(gv),c=cv;c.setTransform(g.dpr,0,0,g.dpr,0,0);c
   // vertices
   const small=n>12;
   pts.forEach((p,i)=>{const hot=(hover&&hover.onPt===i)||(drag&&drag.i===i);const r=hot?6.5:small?2.5:4.5;c.beginPath();c.arc(px(p.t),py(p.v),r,0,Math.PI*2);c.fillStyle=hot?col.v:col.surface;c.fill();c.lineWidth=2;c.strokeStyle=col.v;c.stroke()});
-  // region displacement labels
+  // region displacement labels: inside the region if the box fits, otherwise just outside the curve
   if($('showd').checked&&n>1&&t>0){c.font='600 12px "Inter", system-ui, sans-serif';c.textAlign='center';c.textBaseline='middle';
-    for(const R of regions()){if(t<R.tb-1e-9)continue;const X=px(R.tc),Y=py(R.vc),txt=(R.A>0?'+':'−')+Math.abs(R.A).toFixed(2)+' m';
-      c.lineWidth=3;c.strokeStyle=col.surface;c.lineJoin='round';c.strokeText(txt,X,Y);c.fillStyle=R.A>0?col.posT:col.negT;c.fillText(txt,X,Y)}}
+    const H=14,PAD=3,placed=turnBoxes.slice();
+    const ext=(t0,t1)=>{t0=Math.max(0,t0);t1=Math.min(tEnd,t1);if(t1<=t0)return null;let lo=Math.min(py(vel(t0)),py(vel(t1))),hi=Math.max(py(vel(t0)),py(vel(t1)));for(const q of pts)if(q.t>t0&&q.t<t1){const y=py(q.v);if(y<lo)lo=y;if(y>hi)hi=y}return {lo,hi}};
+    const hit=(x0,x1,y0b,y1b)=>placed.some(r=>x0<r[1]&&x1>r[0]&&y0b<r[3]&&y1b>r[2]);
+    const clear=(x0,x1,y0b,y1b)=>{const e=ext(pxT(g,x0-PAD),pxT(g,x1+PAD));return !e||y1b+PAD<e.lo||y0b-PAD>e.hi};
+    for(const R of regions()){if(t<R.tb-1e-9)continue;
+      const txt=(R.A>0?'+':'−')+Math.abs(R.A).toFixed(2)+' m',w=c.measureText(txt).width,up=R.A>0;let pos=null;
+      const cands=[R.tc];for(let k=1;k<=10;k++)cands.push(R.ta+(R.tb-R.ta)*k/11);
+      for(const tc of cands){const X=px(tc),x0=X-w/2,x1=X+w/2;if(pxT(g,x0-PAD)<R.ta||pxT(g,x1+PAD)>R.tb)continue;
+        const e=ext(pxT(g,x0-PAD),pxT(g,x1+PAD));if(!e)continue;
+        const Y=up?(e.hi+y0)/2:(e.lo+y0)/2,yt=Y-H/2,yb=Y+H/2;
+        if(up?(e.hi<yt-PAD&&yb<y0-1):(e.lo>yb+PAD&&yt>y0+1)){if(!hit(x0,x1,yt,yb)){pos=[X,Y];break}}}
+      if(!pos){const X0=px(R.tc),sides=up?[-1,1]:[1,-1];
+        outer:for(const sd of sides)for(const dx of [0,-0.6,0.6,-1.2,1.2]){
+          const X=Math.min(g.Rr-w/2-2,Math.max(g.L+w/2+2,X0+dx*w)),x0=X-w/2,x1=X+w/2,e=ext(pxT(g,x0-PAD),pxT(g,x1+PAD))||{lo:y0,hi:y0};
+          let Y=sd<0?Math.min(e.lo,y0)-PAD-H/2:Math.max(e.hi,y0)+PAD+H/2;
+          for(let k=0;k<4;k++){if(Y-H/2<g.T||Y+H/2>g.B)break;if(clear(x0,x1,Y-H/2,Y+H/2)&&!hit(x0,x1,Y-H/2,Y+H/2)){pos=[X,Y];break outer}Y+=sd*(H+2)}}
+        if(!pos){const X=Math.min(g.Rr-w/2-2,Math.max(g.L+w/2+2,X0)),e=ext(pxT(g,X-w/2-PAD),pxT(g,X+w/2+PAD))||{lo:y0,hi:y0};pos=[X,up?Math.max(g.T+H/2,e.lo-PAD-H/2):Math.min(g.B-H/2,e.hi+PAD+H/2)]}}
+      placed.push([pos[0]-w/2-2,pos[0]+w/2+2,pos[1]-H/2-1,pos[1]+H/2+1]);
+      c.lineWidth=3;c.strokeStyle=col.surface;c.lineJoin='round';c.strokeText(txt,pos[0],pos[1]);c.fillStyle=up?col.posT:col.negT;c.fillText(txt,pos[0],pos[1])}}
   // time cursor
   if(n>1&&(t>0||running)){const X=px(t);c.strokeStyle=col.ink;c.globalAlpha=.5;c.lineWidth=1;seg(c,X,g.T,X,g.B);c.globalAlpha=1;c.fillStyle=col.v;c.beginPath();c.arc(X,py(vel(t)),5,0,Math.PI*2);c.fill()}
   // empty hint
