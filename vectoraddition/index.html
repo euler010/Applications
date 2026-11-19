@@ -947,6 +947,7 @@
 
       // X component: (tailX, tailY) -> (headX, tailY)
       drawArrow(v.tailX, v.tailY, headX, v.tailY, COMPONENT_COLOR, true, COMPONENT_WIDTH, COMPONENT_HEAD, COMPONENT_DASH);
+      addSegmentObstacle(v.tailX, v.tailY, headX, v.tailY, 3);
 
       // Y component: (headX, tailY) -> (headX, headY). The tip stops just short of the
       // vector's drag circle so its arrowhead isn't hidden underneath it.
@@ -956,6 +957,33 @@
         ? headY + Math.sign(v.tailY - headY) * HANDLE_CLEARANCE
         : headY;
       drawArrow(headX, v.tailY, headX, yEndY, COMPONENT_COLOR, true, COMPONENT_WIDTH, COMPONENT_HEAD, COMPONENT_DASH);
+      addSegmentObstacle(headX, v.tailY, headX, headY, 3);
+    }
+
+    // ---------- Label layout ----------
+    // Angle and length labels are queued while the scene is drawn, then placed last.
+    // Each label tries a list of candidate spots (closest first) and takes the first one
+    // that doesn't touch any arrow, component line, arc, drag circle or other label.
+    const LABEL_FONT = '600 15px "Fira Code", monospace';
+    const LABEL_HEIGHT = 15;
+    const sceneLayout = { segs: [], discs: [], labels: [] };
+
+    function addSegmentObstacle(x1, y1, x2, y2, pad) {
+      sceneLayout.segs.push({ x1, y1, x2, y2, pad });
+    }
+
+    function addDiscObstacle(x, y, r) {
+      sceneLayout.discs.push({ x, y, r });
+    }
+
+    function getArcRadius(v, idx) {
+      // Each vector gets its own arc radius when tails are shared, so arcs nest
+      let nestLevel = 0;
+      for (let j = 0; j < idx; j++) {
+        const o = state.vectors[j];
+        if (Math.abs(o.tailX - v.tailX) < 1 && Math.abs(o.tailY - v.tailY) < 1) nestLevel++;
+      }
+      return Math.min(18 + nestLevel * 9, Math.hypot(v.dx, v.dy) * 0.6);
     }
 
     function drawAngleArc(v, idx) {
@@ -963,14 +991,7 @@
       const lengthPx = Math.hypot(v.dx, v.dy);
       if (lengthPx < 25) return;
 
-      // FIX: each vector gets its own arc radius, so arcs sharing a tail (all vectors at
-      // the origin) nest instead of piling on top of each other.
-      let nestLevel = 0;
-      for (let j = 0; j < idx; j++) {
-        const o = state.vectors[j];
-        if (Math.abs(o.tailX - v.tailX) < 1 && Math.abs(o.tailY - v.tailY) < 1) nestLevel++;
-      }
-      const arcRadius = Math.min(18 + nestLevel * 9, lengthPx * 0.6);
+      const arcRadius = getArcRadius(v, idx);
       let angleRad = Math.atan2(v.dy, v.dx); // standard cartesian
       if (angleRad < 0) angleRad += 2 * Math.PI;
       const isReflex = angleRad > Math.PI;
@@ -991,27 +1012,133 @@
         ctx.fill();
         ctx.globalAlpha = 1.0;
       } else {
-        // FIX: angles over 180° get an outline arc only, instead of a near-full shaded
-        // disc that hid the origin and the other vectors.
+        // Angles over 180° get an outline arc only
         ctx.arc(v.tailX, v.tailY, arcRadius, 0, -angleRad, true);
       }
       ctx.stroke();
+      ctx.restore();
 
-      // Angle text, coloured like its vector so it is clear which arc it belongs to
+      addDiscObstacle(v.tailX, v.tailY, arcRadius + 2);
+
+      // Candidate spots: around the arc (middle of the sweep first), then just outside
+      // the sweep on either side, stepping further out from the tail each round.
+      const fractions = [0.5, 0.35, 0.65, 0.2, 0.8, 0.05, 0.95];
+      const outside = [-0.25, -0.5, -0.8, 0.25, 0.5, 0.8]; // radians beyond each end
+      const candidates = [];
+      for (let d = arcRadius + 14; d <= arcRadius + 150; d += 8) {
+        fractions.forEach(f => candidates.push(polarPoint(v.tailX, v.tailY, angleRad * f, d)));
+        outside.forEach(o => {
+          const a = o < 0 ? o : angleRad + o;
+          candidates.push(polarPoint(v.tailX, v.tailY, a, d));
+        });
+      }
       const deg = normalizedAngleDeg(v.dx, v.dy, 0);
-      const textAngle = -angleRad / 2;
-      const textDist = arcRadius + 18;
-      const tx = v.tailX + Math.cos(textAngle) * textDist;
-      const ty = v.tailY + Math.sin(textAngle) * textDist;
+      queueLabel(`${deg}°`, v.color, candidates);
+    }
 
-      ctx.font = '600 13px "Fira Code", monospace';
+    // Point at math angle a (counter-clockwise from +x) and distance d from (x, y)
+    function polarPoint(x, y, a, d) {
+      return { x: x + Math.cos(a) * d, y: y - Math.sin(a) * d };
+    }
+
+    // Length label for a vector, placed beside it (middle first, then along it, both sides)
+    function drawLengthLabel(tailX, tailY, dx, dy, color) {
+      if (!state.showAngles) return;
+      const lengthPx = Math.hypot(dx, dy);
+      if (lengthPx < 25) return;
+      const units = (lengthPx / state.pixelsPerGridUnit).toFixed(1);
+      // Unit direction and normal in canvas coordinates
+      const ux = dx / lengthPx;
+      const uy = -dy / lengthPx;
+      const nx = -uy;
+      const ny = ux;
+      const ts = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8];
+      const candidates = [];
+      for (let off = 14; off <= 120; off += 7) {
+        ts.forEach(t => {
+          [1, -1].forEach(side => {
+            candidates.push({
+              x: tailX + ux * lengthPx * t + nx * off * side,
+              y: tailY + uy * lengthPx * t + ny * off * side
+            });
+          });
+        });
+      }
+      queueLabel(units, color, candidates);
+    }
+
+    function queueLabel(text, color, candidates) {
+      sceneLayout.labels.push({ text, color, candidates });
+    }
+
+    // Does segment (x1,y1)-(x2,y2) cross the rectangle? (Liang–Barsky clipping)
+    function segmentHitsRect(x1, y1, x2, y2, r) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      let t0 = 0;
+      let t1 = 1;
+      const p = [-dx, dx, -dy, dy];
+      const q = [x1 - r.x0, r.x1 - x1, y1 - r.y0, r.y1 - y1];
+      for (let i = 0; i < 4; i++) {
+        if (p[i] === 0) {
+          if (q[i] < 0) return false;
+        } else {
+          const t = q[i] / p[i];
+          if (p[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+          else { if (t < t0) return false; if (t < t1) t1 = t; }
+        }
+      }
+      return true;
+    }
+
+    function discHitsRect(c, r) {
+      const cx = Math.max(r.x0, Math.min(c.x, r.x1));
+      const cy = Math.max(r.y0, Math.min(c.y, r.y1));
+      return Math.hypot(c.x - cx, c.y - cy) < c.r;
+    }
+
+    function rectsOverlap(a, b) {
+      return a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+    }
+
+    function placeLabels(w, h) {
+      if (sceneLayout.labels.length === 0) return;
+      ctx.save();
+      ctx.font = LABEL_FONT;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      drawLabelWithHalo(`${deg}°`, tx, ty, v.color);
+      const placed = [];
+      const GAP = 3; // breathing room around each label
+
+      sceneLayout.labels.forEach(label => {
+        const halfW = ctx.measureText(label.text).width / 2 + GAP;
+        const halfH = LABEL_HEIGHT / 2 + GAP;
+        let best = null;
+        let bestCost = Infinity;
+
+        for (const c of label.candidates) {
+          const r = { x0: c.x - halfW, x1: c.x + halfW, y0: c.y - halfH, y1: c.y + halfH };
+          let cost = 0;
+          if (r.x0 < 2 || r.y0 < 2 || r.x1 > w - 2 || r.y1 > h - 2) cost += 5;
+          for (const s of sceneLayout.segs) {
+            const pr = { x0: r.x0 - s.pad, x1: r.x1 + s.pad, y0: r.y0 - s.pad, y1: r.y1 + s.pad };
+            if (segmentHitsRect(s.x1, s.y1, s.x2, s.y2, pr)) cost += 1;
+          }
+          for (const d of sceneLayout.discs) if (discHitsRect(d, r)) cost += 1;
+          for (const p of placed) if (rectsOverlap(p, r)) cost += 2;
+          if (cost < bestCost) { bestCost = cost; best = { c, r }; }
+          if (cost === 0) break; // candidates are ordered nearest-first
+        }
+
+        if (best) {
+          placed.push(best.r);
+          drawLabelWithHalo(label.text, best.c.x, best.c.y, label.color);
+        }
+      });
       ctx.restore();
     }
 
-    // Text with a white outline so labels stay readable over grid lines and arrows
+    // Text with a white outline so labels stay readable over grid lines
     function drawLabelWithHalo(text, x, y, color) {
       ctx.save();
       ctx.lineWidth = 4;
@@ -1020,25 +1147,6 @@
       ctx.strokeText(text, x, y);
       ctx.fillStyle = color;
       ctx.fillText(text, x, y);
-      ctx.restore();
-    }
-
-    // FIX: "Angles & Lengths" now also draws each vector's length (in units) beside it
-    function drawLengthLabel(tailX, tailY, dx, dy, color) {
-      if (!state.showAngles) return;
-      const lengthPx = Math.hypot(dx, dy);
-      if (lengthPx < 25) return;
-      const units = (lengthPx / state.pixelsPerGridUnit).toFixed(1);
-      // Midpoint of the arrow on canvas, nudged out along the left-hand normal
-      const midX = tailX + dx / 2;
-      const midY = tailY - dy / 2;
-      const nx = -dy / lengthPx;
-      const ny = -dx / lengthPx;
-      ctx.save();
-      ctx.font = '600 13px "Fira Code", monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      drawLabelWithHalo(`${units}`, midX + nx * 15, midY + ny * 15, color);
       ctx.restore();
     }
 
@@ -1080,6 +1188,9 @@
       const h = rect.height;
 
       ctx.clearRect(0, 0, w, h);
+      sceneLayout.segs.length = 0;
+      sceneLayout.discs.length = 0;
+      sceneLayout.labels.length = 0;
 
       // Background Grid
       drawGrid(w, h);
@@ -1099,11 +1210,13 @@
 
         // Vector Stem & Arrow
         drawArrow(v.tailX, v.tailY, headX, headY, v.color, false, isHovered || isDragging ? 4.5 : 3.5);
+        addSegmentObstacle(v.tailX, v.tailY, headX, headY, 3);
         drawLengthLabel(v.tailX, v.tailY, v.dx, v.dy, v.color);
 
         // Draggable Arrowhead Handle (only active if not actively animating)
         if (!state.isAnimating) {
           drawDraggableHead(headX, headY, v.color, isHovered, isDragging);
+          addDiscObstacle(headX, headY, 10);
         }
       });
 
@@ -1123,12 +1236,16 @@
 
         // Red Resultant Arrow (drawn with same thickness as other vectors)
         drawArrow(startX, startY, endX, endY, RESULTANT_STYLE.stroke, false, 3.5);
+        addSegmentObstacle(startX, startY, endX, endY, 3);
         if (animProgress >= 1) {
           // Resultant components, in red, when "Components" is on
           drawVectorComponents({ tailX: startX, tailY: startY, dx: res.dx, dy: res.dy, color: RESULTANT_STYLE.stroke });
           drawLengthLabel(startX, startY, res.dx, res.dy, RESULTANT_STYLE.stroke);
         }
       }
+
+      // Angle & length labels go last, in spots clear of everything drawn above
+      placeLabels(w, h);
     }
 
     function getCanvasCoordinates(evt) {
