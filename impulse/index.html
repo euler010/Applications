@@ -43,7 +43,8 @@
   button{font:inherit;font-size:.95rem;font-weight:600;padding:9px 18px;border-radius:9px;cursor:pointer;
          border:1px solid var(--line);background:#fff;color:var(--ink);transition:background .15s,border-color .15s}
   button:hover{border-color:#b9c0cc}
-  #play{width:116px;text-align:center}   /* fixed width so Play / Pause / Replay don't resize */
+  .controls button{padding:7px 16px}   /* top four buttons: 2 px less padding */
+  #play{width:112px;text-align:center}   /* fixed width so Play / Pause / Replay don't resize */
   button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
   button.primary:hover{background:#1d4fd0}
   #avg[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#fff}
