@@ -445,6 +445,7 @@
     let releaseH = 4.0; 
     let timeScale = 1.00;
     let audioEnabled = true;
+    const IMPACT_TIME = 0.05; // ground contact time for each bounce (s)
 
     // Web Audio Synthesizer for ground impact thud
     let audioCtx = null;
@@ -827,17 +828,40 @@
           state.displayFn = mass * g;
           state.radialAccel = 0;
           if (Math.abs(state.vy) > 0.4) playImpactThud();
-          state.vy = -state.vy * 0.25; state.vx *= 0.7;
-          if (Math.abs(state.vy) < 0.3) {
+          // Begin ground contact: over IMPACT_TIME the ground reverses the vertical velocity
+          // (coefficient of restitution 0.25) and friction removes 30% of the horizontal velocity.
+          const vIn = state.vy, vOut = -state.vy * 0.25;
+          state.impact = { t: 0, vIn, vOut, dv: vOut - vIn, vx0: state.vx, vx1: state.vx * 0.7 };
+          state.phase = 'IMPACT';
+        } else {
+          state.normalForce = 0; state.displayFn = 0; state.radialAccel = 0;
+        }
+      }
+      else if (state.phase === 'IMPACT') {
+        const imp = state.impact;
+        imp.t = Math.min(IMPACT_TIME, imp.t + dt);
+        const f = imp.t / IMPACT_TIME;
+        state.y = 0; state.surfaceAngle = 0; state.radialAccel = 0;
+        state.vx = imp.vx0 + (imp.vx1 - imp.vx0) * f;
+        state.x += state.vx * dt;
+        // Half-sine contact pulse: vy goes smoothly from vIn to vOut.
+        state.vy = imp.vIn + imp.dv * (1 - Math.cos(Math.PI * f)) / 2;
+        state.v = Math.hypot(state.vx, state.vy);
+        // Newton's second law, vertical: N - mg = m dvy/dt. The pulse's area is m*dv (the impulse).
+        state.normalForce = mass * g + mass * imp.dv * (Math.PI / (2 * IMPACT_TIME)) * Math.sin(Math.PI * f);
+        state.displayFn = state.normalForce;
+        if (f >= 1) {
+          if (imp.vOut < 0.3) {
             state.vy = 0; state.vx = 0; state.v = 0;
             state.phase = 'STOPPED'; state.isRunning = false;
             state.normalForce = mass * g;
             state.displayFn = mass * g;
             labelPlay.textContent = 'Replay'; setIcon(iconPlay, 'replay');
             updateStatusUI('Crashed', 'bg-rose-50 border-rose-300 text-rose-800', 'bg-rose-600');
+          } else {
+            state.vy = imp.vOut; state.vx = imp.vx1; state.v = Math.hypot(state.vx, state.vy);
+            state.phase = 'PROJECTILE';
           }
-        } else {
-          state.normalForce = 0; state.displayFn = 0; state.radialAccel = 0;
         }
       }
       else if (state.phase === 'FLAT_OUT') {
@@ -851,7 +875,7 @@
         }
       }
 
-      state.displayFn += (state.normalForce - state.displayFn) * 12 * dt;
+      if (state.phase !== 'IMPACT') state.displayFn += (state.normalForce - state.displayFn) * 12 * dt;
       if (state.t % 0.03 < dt) {
         state.trail.push({ x: state.x, y: state.y, phase: state.phase });
         if (state.trail.length > 300) state.trail.shift();
@@ -868,7 +892,7 @@
 
     function updateTelemetry() {
       document.getElementById('telemetryTime').textContent = `${state.t.toFixed(2)} s`;
-      const phaseLabels = { READY: 'Ready', RAMP_FLAT: 'On Track', LOOP: 'In Loop', PROJECTILE: 'Free Fall', FLAT_OUT: 'Exiting', STOPPED: 'Stopped' };
+      const phaseLabels = { READY: 'Ready', RAMP_FLAT: 'On Track', LOOP: 'In Loop', PROJECTILE: 'Free Fall', IMPACT: 'Ground Contact', FLAT_OUT: 'Exiting', STOPPED: 'Stopped' };
       document.getElementById('telemetryPhase').textContent = phaseLabels[state.phase] || state.phase;
       document.getElementById('gaugeHeight').textContent = state.y.toFixed(2);
       document.getElementById('gaugeSpeed').textContent = state.v.toFixed(2);
@@ -936,7 +960,7 @@
           const p0 = state.trail[i - 1]; const p1 = state.trail[i];
           const alpha = (i / state.trail.length) * 0.75;
           ctx.beginPath(); ctx.moveTo(toScreenX(p0.x), toScreenY(p0.y)); ctx.lineTo(toScreenX(p1.x), toScreenY(p1.y));
-          if (p1.phase === 'PROJECTILE') { ctx.strokeStyle = `rgba(225, 29, 72, ${alpha})`; ctx.lineWidth = 3; ctx.setLineDash([4, 4]); } 
+          if (p1.phase === 'PROJECTILE' || p1.phase === 'IMPACT') { ctx.strokeStyle = `rgba(225, 29, 72, ${alpha})`; ctx.lineWidth = 3; ctx.setLineDash([4, 4]); } 
           else { ctx.strokeStyle = `rgba(37, 99, 235, ${alpha})`; ctx.lineWidth = 2.5; ctx.setLineDash([]); }
           ctx.stroke();
         }
@@ -964,7 +988,7 @@
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(-blockW / 2, -blockH, blockW, blockH, 3);
       else ctx.rect(-blockW / 2, -blockH, blockW, blockH);
-      ctx.fillStyle = state.phase === 'PROJECTILE' ? '#ef4444' : '#2563eb'; ctx.fill();
+      ctx.fillStyle = (state.phase === 'PROJECTILE' || state.phase === 'IMPACT') ? '#ef4444' : '#2563eb'; ctx.fill();
       ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px Inter, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('m', 0, -blockH / 2);
       ctx.restore();
@@ -974,9 +998,27 @@
         const nx = -Math.sin(state.surfaceAngle); const ny = -Math.cos(state.surfaceAngle);
         const cmX = bx + nx * (blockH / 2); const cmY = by + ny * (blockH / 2);
 
+        // Direction of the normal force
+        let unx = 0, uny = -1;
+        if (state.phase === 'READY' || state.phase === 'RAMP_FLAT') { unx = nx; uny = ny; }
+        else if (state.phase === 'LOOP') {
+          const dxC = toScreenX(world.loopCenterX_m) - bx, dyC = toScreenY(R) - by, dC = Math.hypot(dxC, dyC);
+          if (dC > 0.1) { unx = dxC / dC; uny = dyC / dC; }
+        }
+
+        // All forces share one scale (81 px = 9.8 N). If the normal force is too long to fit on the
+        // canvas (e.g. at the peak of a bounce), the scale shrinks for every force so lengths stay in proportion.
+        let forceScale = 81 / (mass * 9.80);
+        if (state.displayFn > 0.1) {
+          const room = roomAlong(bx, by, unx, uny, w, h, 14, 84); // keep clear of the readout cards
+          if (state.displayFn * forceScale > room) forceScale = room / state.displayFn;
+        }
+
         // Gravity Vector (F_g)
-        const forceScale = 81 / (mass * 9.80);
-        drawDoubleSizeVectorLabel(cmX, cmY, cmX, cmY + (mass * g * forceScale), '#e11d48', 'F', 'g', 'center-left'); 
+        const fgLen = mass * g * forceScale;
+        // A short F_g arrow puts its label beside the tip, on the side away from the velocity arrow
+        const fgLabel = fgLen < 30 && state.vx < -0.05 ? 'bottom-right' : 'center-left';
+        drawDoubleSizeVectorLabel(cmX, cmY, cmX, cmY + fgLen, '#e11d48', 'F', 'g', fgLabel); 
 
         // Velocity Vector (v)
         if (state.v > 0.05) {
@@ -986,19 +1028,18 @@
         
         // Normal Force Vector (F_N)
         if (state.displayFn > 0.1) {
-          let vnx = 0, vny = 0;
-          if (state.phase === 'READY' || state.phase === 'RAMP_FLAT') {
-            vnx = nx * state.displayFn * forceScale; vny = ny * state.displayFn * forceScale;
-          } else if (state.phase === 'LOOP') {
-            const dxC = toScreenX(world.loopCenterX_m) - bx; const dyC = toScreenY(R) - by; 
-            const dist = Math.hypot(dxC, dyC);
-            if (dist > 0.1) { vnx = (dxC / dist) * state.displayFn * forceScale; vny = (dyC / dist) * state.displayFn * forceScale; }
-          } else {
-            vny = -state.displayFn * forceScale;
-          }
+          const vnx = unx * state.displayFn * forceScale, vny = uny * state.displayFn * forceScale;
           drawDoubleSizeVectorLabel(bx, by, bx + vnx, by + vny, '#059669', 'F', 'N', 'perp-left');
         }
       }
+    }
+
+    // Longest distance from (x, y) along unit vector (ux, uy) that stays inside the canvas (pad px from the sides and bottom, padTop px from the top)
+    function roomAlong(x, y, ux, uy, w, h, pad, padTop) {
+      let t = Infinity;
+      if (ux > 1e-6) t = Math.min(t, (w - pad - x) / ux); else if (ux < -1e-6) t = Math.min(t, (pad - x) / ux);
+      if (uy > 1e-6) t = Math.min(t, (h - pad - y) / uy); else if (uy < -1e-6) t = Math.min(t, (padTop - y) / uy);
+      return Math.max(20, t);
     }
 
     function drawDoubleSizeVectorLabel(x0, y0, x1, y1, color, mainTxt, subTxt, labelPlacementStrategy) {
