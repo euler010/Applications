@@ -323,7 +323,7 @@
         <div class="bg-slate-50 border-t border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-4 text-slate-600 font-medium">
             <span>Time: <strong id="telemetryTime" class="mono text-slate-900">0.00 s</strong></span>
-            <span>Phase: <strong id="telemetryPhase" class="mono text-blue-700">READY</strong></span>
+            <span>Phase: <strong id="telemetryPhase" class="mono text-blue-700">Ready</strong></span>
           </div>
           <div class="flex items-center gap-2">
             <span class="text-slate-500 font-medium">Track Condition:</span>
@@ -847,13 +847,14 @@
       state.phase = 'PROJECTILE'; state.lossContactX = state.x; state.lossContactY = state.y;
       state.normalForce = 0; state.displayFn = 0;
       detachmentAngleDisplay.innerHTML = `<span class="text-rose-700 font-bold">Lost Contact</span>`;
-      updateStatusUI('DETACHED! Free-Fall', 'bg-rose-100 border-rose-400 text-rose-900', 'bg-rose-600 animate-ping');
+      updateStatusUI('Detached: Free Fall', 'bg-rose-100 border-rose-400 text-rose-900', 'bg-rose-600 animate-ping');
       updateTelemetry();
     }
 
     function updateTelemetry() {
       document.getElementById('telemetryTime').textContent = `${state.t.toFixed(2)} s`;
-      document.getElementById('telemetryPhase').textContent = state.phase;
+      const phaseLabels = { READY: 'Ready', RAMP_FLAT: 'On Track', LOOP: 'In Loop', PROJECTILE: 'Free Fall', FLAT_OUT: 'Exiting', STOPPED: 'Stopped' };
+      document.getElementById('telemetryPhase').textContent = phaseLabels[state.phase] || state.phase;
       document.getElementById('gaugeHeight').textContent = state.y.toFixed(2);
       document.getElementById('gaugeSpeed').textContent = state.v.toFixed(2);
       document.getElementById('gaugeNormal').textContent = Math.max(0, state.displayFn).toFixed(2);
