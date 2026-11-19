@@ -495,9 +495,15 @@
       const maxY = h - margin;
 
       // Adjust average vector lengths based on vector count
-      const minUnits = count <= 2 ? 2.5 : (count === 3 ? 2.0 : 1.6);
-      const maxUnits = count <= 2 ? 5.0 : (count === 3 ? 3.8 : 3.0);
-      const minResultantUnits = 1.3;
+      // Vector lengths scale with the room available around the origin, so larger
+      // vector counts still fill the screen instead of clustering in the middle.
+      // reach = distance from the origin to the nearest usable edge.
+      const reach = Math.max(80, Math.min(originX - minX, maxX - originX, originY - minY, maxY - originY));
+      const LENGTH_RANGE = { 2: [0.45, 0.80], 3: [0.42, 0.70], 4: [0.40, 0.66], 5: [0.38, 0.60] };
+      const [minFrac, maxFrac] = LENGTH_RANGE[Math.min(Math.max(count, 2), 5)];
+      const minLenPx = Math.max(40, reach * minFrac);
+      const maxLenPx = Math.max(minLenPx + 10, reach * maxFrac);
+      const minResultantPx = Math.max(50, reach * 0.3);
 
       // Minimum angular separation between vectors radiating from origin (in radians)
       // Ensures vectors never overlap or cluster too closely together
@@ -545,8 +551,7 @@
           }
           candidateAngles.push(angle);
 
-          const lengthUnits = minUnits + Math.random() * (maxUnits - minUnits);
-          const lengthPx = lengthUnits * state.pixelsPerGridUnit;
+          const lengthPx = minLenPx + Math.random() * (maxLenPx - minLenPx);
           const dx = Math.cos(angle) * lengthPx;
           const dy = Math.sin(angle) * lengthPx; // Math coordinate (+y upwards)
 
@@ -589,7 +594,7 @@
         }
 
         if (valid) {
-          const resultantMagUnits = Math.hypot(sumDx, sumDy) / state.pixelsPerGridUnit;
+          const resultantMagPx = Math.hypot(sumDx, sumDy);
           const resultantTipX = originX + sumDx;
           const resultantTipY = originY - sumDy;
 
@@ -597,7 +602,7 @@
           const resultantInBounds = (resultantTipX >= minX && resultantTipX <= maxX &&
                                      resultantTipY >= minY && resultantTipY <= maxY);
 
-          if (resultantInBounds && resultantMagUnits >= minResultantUnits) {
+          if (resultantInBounds && resultantMagPx >= minResultantPx) {
             return candidateVectors;
           }
         }
