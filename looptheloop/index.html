@@ -9,7 +9,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Utility stylesheet (replaces the Tailwind CDN; defines every class used in this page) -->
   <style>
@@ -17,7 +17,7 @@
     *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
     html {
       line-height: 1.5; -webkit-text-size-adjust: 100%; -moz-tab-size: 4; tab-size: 4;
-      font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      font-family: 'Inter', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
     body { margin: 0; line-height: inherit; }
@@ -164,7 +164,6 @@
     .font-medium { font-weight: 500; }
     .font-semibold { font-weight: 600; }
     .font-bold { font-weight: 700; }
-    .uppercase { text-transform: uppercase; }
     .tracking-tight { letter-spacing: -0.025em; }
     .tracking-wide { letter-spacing: 0.025em; }
     .tracking-wider { letter-spacing: 0.05em; }
@@ -243,7 +242,7 @@
 
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
+    .mono { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #ffffff; }
     ::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 4px; }
@@ -289,7 +288,7 @@
         <div class="absolute top-3 right-3 z-10 flex flex-wrap justify-end gap-2 pointer-events-none">
           <!-- Velocity -->
           <div class="bg-white/95 backdrop-blur-md border border-slate-200 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 pointer-events-auto">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Velocity (v):</span>
+            <span class="text-[11px] font-bold text-slate-500">Velocity (v):</span>
             <div class="flex items-baseline gap-0.5">
               <span id="gaugeSpeed" class="text-base font-bold mono text-purple-600">0.00</span>
               <span class="text-[10px] font-medium text-slate-500">m/s</span>
@@ -297,7 +296,7 @@
           </div>
           <!-- Height -->
           <div class="bg-white/95 backdrop-blur-md border border-slate-200 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 pointer-events-auto">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Height (y):</span>
+            <span class="text-[11px] font-bold text-slate-500">Height (y):</span>
             <div class="flex items-baseline gap-0.5">
               <span id="gaugeHeight" class="text-base font-bold mono text-slate-900">4.00</span>
               <span class="text-[10px] font-medium text-slate-500">m</span>
@@ -305,7 +304,7 @@
           </div>
           <!-- Normal Force -->
           <div id="normalForceCard" class="bg-white/95 backdrop-blur-md border border-slate-200 px-3 py-2 rounded-xl shadow-sm flex items-center gap-2 pointer-events-auto transition-colors duration-200">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+            <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
               Normal Force (F<sub>N</sub>) <span id="normIcon" class="w-2 h-2 rounded-full bg-emerald-500"></span>:
             </span>
             <div class="flex items-baseline gap-0.5">
@@ -337,7 +336,7 @@
     <!-- RIGHT COLUMN: Control Sidebar -->
     <div class="flex flex-col gap-4 w-full">
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col gap-3">
-        <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-100">
+        <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 pb-2 border-b border-slate-100">
           <i class="fa-solid fa-sliders text-blue-600"></i> Simulation Controls
         </h2>
 
@@ -390,7 +389,7 @@
 
         <div class="grid grid-cols-2 gap-2">
           <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-            <label class="text-slate-600 font-semibold block text-xs uppercase tracking-wider">Time Rate</label>
+            <label class="text-slate-600 font-semibold block text-xs">Time Rate</label>
             <select id="selectSpeed" class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg p-1 text-xs font-medium outline-none">
               <option value="1.00" selected>100%</option>
               <option value="0.50">50%</option>
@@ -398,7 +397,7 @@
             </select>
           </div>
           <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex flex-col justify-between items-center">
-            <span class="text-slate-600 font-semibold text-xs uppercase tracking-wider">Impact Audio</span>
+            <span class="text-slate-600 font-semibold text-xs">Impact Audio</span>
             <button id="btnSoundToggle" class="mt-1 w-full py-1 rounded border border-slate-300 bg-white text-slate-500 hover:bg-slate-100 transition flex justify-center items-center gap-1.5">
               <i id="soundIcon" class="fa-solid fa-volume-high text-blue-600"></i>
               <span id="soundLabel" class="font-bold text-blue-600 text-xs">On</span>
@@ -407,7 +406,7 @@
         </div>
 
         <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-          <span class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5">Overlays</span>
+          <span class="text-xs font-bold text-slate-600 block mb-1.5">Overlays</span>
           <div class="grid grid-cols-2 gap-2">
             <label class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition cursor-pointer select-none">
               <span class="text-xs font-semibold text-slate-700">Vectors</span>
@@ -647,7 +646,6 @@
       state.dir = 1;
       state.t = 0; state.v = 0; state.vx = 0; state.vy = 0; state.theta = 0;
       state.lossContactX = null; state.lossContactY = null; state.trail = [];
-      state.restOnLoop = false;
       
       state.x = getStartXFromHeight(releaseH);
       const geom = getTrackGeom(state.x);
@@ -807,37 +805,6 @@
         state.x += state.vx * dt; state.vy -= g * dt; state.y += state.vy * dt;
         state.v = Math.sqrt(state.vx * state.vx + state.vy * state.vy);
 
-        // Collision with the inside of the loop (contact can only be lost from inside it)
-        const dxL = state.x - world.loopCenterX_m, dyL = state.y - R;
-        const distL = Math.hypot(dxL, dyL);
-        if (distL >= R) {
-          const nx = -dxL / distL, ny = -dyL / distL;   // track normal, pointing toward the loop centre
-          const vn = state.vx * nx + state.vy * ny;      // negative = moving into the track
-          if (vn < 0) {
-            state.x = world.loopCenterX_m - nx * R; state.y = R - ny * R;
-            const tx = -ny, ty = nx;
-            const vt = state.vx * tx + state.vy * ty;
-            const hardHit = -vn > 0.3;
-            if (-vn > 0.4) playImpactThud();
-            const vnOut = -vn * 0.25;
-            const vtOut = hardHit ? vt * 0.7 : vt;
-            if (vnOut < 0.3 && state.y < 0.08 * R) {
-              // Comes to rest in the bottom of the loop
-              let th = Math.atan2(-nx, ny); if (th < 0) th += 2 * Math.PI;
-              state.theta = th; state.surfaceAngle = th; state.restOnLoop = true;
-              state.vx = 0; state.vy = 0; state.v = 0; state.radialAccel = 0;
-              state.normalForce = mass * g * Math.max(0, ny);
-              state.displayFn = state.normalForce;
-              state.phase = 'STOPPED'; state.isRunning = false;
-              labelPlay.textContent = 'Replay'; iconPlay.className = 'fa-solid fa-rotate-right';
-              updateStatusUI('Crashed', 'bg-rose-50 border-rose-300 text-rose-800', 'bg-rose-600');
-              return;
-            }
-            state.vx = vnOut * nx + vtOut * tx; state.vy = vnOut * ny + vtOut * ty;
-            state.v = Math.hypot(state.vx, state.vy);
-          }
-        }
-
         if (state.y <= 0) {
           state.y = 0;
           state.surfaceAngle = 0;
@@ -982,7 +949,7 @@
       if (ctx.roundRect) ctx.roundRect(-blockW / 2, -blockH, blockW, blockH, 3);
       else ctx.rect(-blockW / 2, -blockH, blockW, blockH);
       ctx.fillStyle = state.phase === 'PROJECTILE' ? '#ef4444' : '#2563eb'; ctx.fill();
-      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px JetBrains Mono, monospace';
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 10px Inter, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('m', 0, -blockH / 2);
       ctx.restore();
 
@@ -1006,7 +973,7 @@
           let vnx = 0, vny = 0;
           if (state.phase === 'READY' || state.phase === 'RAMP_FLAT') {
             vnx = nx * state.displayFn * forceScale; vny = ny * state.displayFn * forceScale;
-          } else if (state.phase === 'LOOP' || state.restOnLoop) {
+          } else if (state.phase === 'LOOP') {
             const dxC = toScreenX(world.loopCenterX_m) - bx; const dyC = toScreenY(R) - by; 
             const dist = Math.hypot(dxC, dyC);
             if (dist > 0.1) { vnx = (dxC / dist) * state.displayFn * forceScale; vny = (dyC / dist) * state.displayFn * forceScale; }
