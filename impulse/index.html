@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impulse and Momentum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1d2433; --muted:#5d6678; --line:#dde1e8;
+    --blue:#2563eb; --blueFill:rgba(37,99,235,.16);
+    --orange:#ea7a12; --orangeFill:rgba(234,122,18,.16);
+    --red:#d63c3c; --green:#16a34a; --ball:#ef5b4c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"Inter",system-ui,sans-serif;}
+  header{max-width:1200px;margin:0 auto;padding:16px 20px 4px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+  h1{margin:0;font-size:18px;letter-spacing:.2px}
+  main{max-width:1200px;margin:0 auto;padding:10px 20px 24px}
+  .panels{margin-bottom:14px}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:820px){.panels{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+        box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .card-h{display:flex;justify-content:space-between;align-items:center;gap:8px;
+          padding:9px 14px;border-bottom:1px solid var(--line);font-weight:600;font-size:.95rem}
+  button.mini{font-size:.82rem;padding:3px 12px;border-radius:999px}
+  #velBtn[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+  .card-h{min-height:42px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .speed{display:flex;align-items:center;gap:8px}
+  .speed-lbl{font-size:.82rem;font-weight:500;color:var(--muted)}
+  .seg button{width:46px;text-align:center;border:0;border-radius:0;padding:3px 0;font-size:.82rem;font-weight:600;background:#fff;color:var(--muted)}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--ink);color:#fff}
+  .pill{font-weight:500;font-size:.78rem;color:var(--muted);background:#eef1f6;border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .cv{position:relative;width:100%;aspect-ratio:4/3}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .controls{display:flex;flex-wrap:wrap;gap:10px}
+  button{font:inherit;font-size:.95rem;font-weight:600;padding:9px 18px;border-radius:9px;cursor:pointer;
+         border:1px solid var(--line);background:#fff;color:var(--ink);transition:background .15s,border-color .15s}
+  button:hover{border-color:#b9c0cc}
+  #play{width:116px;text-align:center}   /* fixed width so Play / Pause / Replay don't resize */
+  button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  button.primary:hover{background:#1d4fd0}
+  #avg[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#fff}
+  .readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+  .ro{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .ro .k{font-size:14px;color:var(--muted)}
+  .ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;margin-top:2px}
+  .ro .s{font-size:.82rem;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+  .ro.area .v{color:var(--blue)}
+  .ro.avg{border-color:var(--orange)} .ro.avg .v{color:var(--orange)}
+  .hidden{display:none}
+  .note{color:var(--muted);font-size:.85rem;margin-top:12px;line-height:1.45}
+</style>
+</head>
+<body>
+<header>
+  <h1>Impulse and Momentum</h1>
+  <div class="controls">
+    <button id="reset">↺ Reset</button>
+    <button id="play" class="primary">▶ Play</button>
+    <button id="avg" aria-pressed="false">Average Force</button>
+    <button id="slow">Slow Collision</button>
+  </div>
+</header>
+
+<main>
+  <div class="panels">
+    <section class="card">
+      <div class="card-h"><span id="gTitle">Force of the wall on the ball vs. time</span><button id="velBtn" class="mini" aria-pressed="false">Velocity</button></div>
+      <div class="cv"><canvas id="graph"></canvas></div>
+    </section>
+    <section class="card">
+      <div class="card-h">Ball and wall
+        <div class="speed"><span class="speed-lbl">Slow rate:</span><div class="seg" id="speedSel" role="group" aria-label="Slow rate">
+          <button data-x="1" title="Real time">1×</button><button data-x="5" class="on" title="5× slower than real time">5×</button><button data-x="10" title="10× slower than real time">10×</button><button data-x="40" title="40× slower than real time">40×</button>
+        </div></div></div>
+      <div class="cv"><canvas id="scene"></canvas></div>
+    </section>
+  </div>
+
+  <div class="readouts">
+    <div class="ro"><div class="k">Time of Contact</div><div class="v" id="rT">0.0 ms</div></div>
+    <div class="ro"><div class="k">Force on Ball</div><div class="v" id="rF">0 N</div></div>
+    <div class="ro"><div class="k">Initial Momentum</div><div class="v" id="rPi"></div></div>
+    <div class="ro"><div class="k">Momentum</div><div class="v" id="rP"></div></div>
+    <div class="ro"><div class="k">Change in Momentum</div><div class="v" id="rDP"></div></div>
+    <div class="ro area"><div class="k">Impulse (Area)</div><div class="v" id="rA"></div></div>
+  </div>
+
+</main>
+
+<script>
+(() => {
+  // ---------- Physics ----------
+  const m  = 0.50;      // kg
+  const vi = 6.0;       // m/s (toward wall, +x)
+  const vf = -4.8;      // m/s (away from wall)
+  const DT = 0.040;     // s, contact time
+  const tc = DT / 2;    // peak time
+  const sig = DT / 6;   // Gaussian width (contact spans ±3σ)
+  const Jmag = m * (vi - vf);       // 5.40 N·s (impulse points left)
+
+  // Tabulate a truncated Gaussian and its running integral, then scale so area = |J| exactly.
+  const N = 4000, g = new Float64Array(N + 1), C = new Float64Array(N + 1);
+  const G0 = Math.exp(-((DT / 2) ** 2) / (2 * sig * sig));   // Gaussian height at the edges
+  const bell = t => (Math.exp(-((t - tc) ** 2) / (2 * sig * sig)) - G0) / (1 - G0);   // 1 at peak, 0 at edges
+  for (let k = 0; k <= N; k++) g[k] = bell(k * DT / N);
+  for (let k = 1; k <= N; k++) C[k] = C[k - 1] + 0.5 * (g[k] + g[k - 1]) * (DT / N);
+  const Fpk  = Jmag / C[N];          // peak force, N
+  const Favg = Jmag / DT;            // average force, N
+
+  const F = t => (t < 0 || t > DT) ? 0 : Fpk * bell(t);
+  const area = t => { // ∫F dt from 0 to t
+    if (t <= 0) return 0; if (t >= DT) return Jmag;
+    const u = t / DT * N, k = Math.floor(u), f = u - k;
+    return Fpk * (C[k] + f * (C[Math.min(k + 1, N)] - C[k]));
+  };
+  const avgSoFar = t => t <= 0 ? 0 : area(t) / Math.min(t, DT);   // average force from first contact to t
+  const vel = t => t < 0 ? vi : t > DT ? vf : vi - area(t) / m;   // speed toward the wall (internal)
+  // The wall is drawn on the LEFT and +x points right, so the ball's actual velocity is the negative
+  // of the toward-the-wall value: it starts at −6.0 m/s and leaves at +4.8 m/s. The force is +x.
+  const vx = t => -vel(t);
+
+  // ---------- Scene geometry (meters) ----------
+  const W_WORLD = 1.6, WALL = 1.5, R = 0.25;
+  const X_CONTACT = WALL - R;
+  const X_START = 0.35;
+  const T_START = -(X_CONTACT - X_START) / vi;
+  const T_END_NORMAL = DT + (X_CONTACT - X_START) / Math.abs(vf);
+  let T_END = T_END_NORMAL;
+
+  // Smooth compression: the ball's centre keeps moving with a velocity that matches vᵢ at first
+  // contact and v_f at release, so there is no sudden stop or start. D[k] = how far the centre
+  // has moved toward the wall (the compression) during contact; it returns to 0 at release.
+  const S = (() => { let a = 0; for (let k = 1; k <= N; k++) { const t1 = k * DT / N, t0 = t1 - DT / N; a += 0.5 * (vel(t0) + vel(t1)) * DT / N; } return a; })();
+  const vVis = t => vel(t) - S * F(t) / Jmag;
+  const D = new Float64Array(N + 1);
+  for (let k = 1; k <= N; k++) { const t1 = k * DT / N, t0 = t1 - DT / N; D[k] = D[k - 1] + 0.5 * (vVis(t0) + vVis(t1)) * DT / N; }
+  const DMAX = Math.max(...D);
+  const comp = t => { if (t <= 0 || t >= DT) return 0; const u = t / DT * N, k = Math.floor(u), f = u - k; return D[k] + f * (D[Math.min(k + 1, N)] - D[k]); };
+
+  function ballState(T) {
+    const Fn = F(T), f = Fn / Fpk;
+    if (T < 0)  return { x: X_CONTACT + vi * T, rx: R, ry: R, v: vi, F: 0 };
+    if (T > DT) return { x: X_CONTACT + vf * (T - DT), rx: R, ry: R, v: vf, F: 0 };
+    // Ball flattens against the wall; the rest of it bulges only slightly.
+    const d = comp(T), q = d / DMAX;
+    return { x: X_CONTACT + d, rx: R * (1 + 0.03 * q), ry: R * (1 + 0.06 * q), v: vel(T), F: Fn };
+  }
+
+  // Playback rate (sim seconds per real second): slow near and during the collision.
+  let speedChoice = 5, speedNow = 5;   // "N×" = N times slower than real time
+  let slowMode = false;
+  const rate = () => 1 / speedNow;
+  const SLOW_GAP_PX = 50;   // Slow Collision starts the ball this many pixels from the wall
+
+  // ---------- State ----------
+  let T = T_START, playing = false, last = null, showAvg = false, showVel = false;
+
+  // ---------- Canvas setup ----------
+  const gC = document.getElementById('graph'), sC = document.getElementById('scene');
+  const gx = gC.getContext('2d'), sx = sC.getContext('2d');
+  function fit(c, ctx) {
+    const dpr = window.devicePixelRatio || 1, r = c.getBoundingClientRect();
+    c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w: r.width, h: r.height };
+  }
+  let gS = { w: 0, h: 0 }, sS = { w: 0, h: 0 };
+  function resize() { gS = fit(gC, gx); sS = fit(sC, sx); draw(); }
+  new ResizeObserver(resize).observe(gC.parentElement);
+  new ResizeObserver(resize).observe(sC.parentElement);
+
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { blue: css('--blue'), blueFill: css('--blueFill'), orange: css('--orange'), orangeFill: css('--orangeFill'),
+                red: css('--red'), green: css('--green'), ink: css('--ink'), muted: css('--muted'), line: css('--line'), ball: css('--ball') };
+
+  // ---------- Graph ----------
+  const tMin = -0.005, tMax = 0.045, FMAX = 350;
+  const L = 58, Rm = 16;
+  function drawGraph() {
+    const { w, h } = gS, c = gx; if (!w) return;
+    c.clearRect(0, 0, w, h);
+    if (!showVel) { forcePlot(20, h - 20 - 46, true); return; }
+    const gap = 30, ph = (h - 16 - 46 - gap) / 2;      // two plots sharing the time axis
+    forcePlot(16, ph, false);
+    velPlot(16 + ph + gap, ph);
+  }
+
+  function forcePlot(Tm, ph, xTitle) {
+    const { w } = gS, c = gx, pw = w - L - Rm;
+    const X = t => L + (t - tMin) / (tMax - tMin) * pw;
+    const Y = f => Tm + ph - f / FMAX * ph;
+    const fs = Math.max(11, Math.min(13, w / 42));
+
+    // grid + ticks
+    c.font = '14px Inter, sans-serif'; c.lineWidth = 1;   // axis numbers
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    const fStep = ph < 220 ? 100 : 50;   // fewer labels when the graph is short
+    for (let f = 0; f <= FMAX; f += 50) {
+      c.strokeStyle = f === 0 ? COL.ink : '#eceff3';
+      c.beginPath(); c.moveTo(L, Y(f)); c.lineTo(L + pw, Y(f)); c.stroke();
+      if (f % fStep === 0) { c.fillStyle = COL.muted; c.fillText(f, L - 7, Y(f)); }
+    }
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let ms = -5; ms <= 45; ms += 5) {
+      const x = X(ms / 1000);
+      c.strokeStyle = ms === 0 ? '#c9ced8' : '#f1f3f6';
+      c.beginPath(); c.moveTo(x, Tm); c.lineTo(x, Tm + ph); c.stroke();
+      if (ms % 10 === 0) { c.fillStyle = COL.muted; c.fillText(ms, x, Tm + ph + 6); }
+    }
+    c.strokeStyle = COL.ink; c.beginPath(); c.moveTo(X(0), Tm); c.lineTo(X(0), Tm + ph); c.stroke();   // vertical axis at t = 0
+
+    // axis titles
+    c.fillStyle = COL.ink; c.font = '600 14px Inter, sans-serif';   // axis titles
+    if (xTitle) c.fillText('Time, t (ms)', L + pw / 2, Tm + ph + 24);
+    c.save(); c.translate(15, Tm + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'middle';
+    c.fillText('Force on ball, F (N)', 0, 0); c.restore();
+
+    // average-force rectangle (behind curve)
+    // Average force so far: a rectangle from first contact to now, with the same area as the
+    // curve so far. It grows in width (time) and changes in height as the collision goes on.
+    let avgLbl = null;   // where the F-bar label sits, so the F label can avoid it
+    if (showAvg && T > 0) {
+      const tR = Math.min(T, DT), fa = avgSoFar(T);
+      c.fillStyle = COL.orangeFill;
+      c.fillRect(X(0), Y(fa), X(tR) - X(0), Y(0) - Y(fa));
+      c.strokeStyle = COL.orange; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(X(0), Y(fa)); c.lineTo(X(tR), Y(fa)); c.stroke();   // top edge only
+      c.setLineDash([]);
+      c.fillStyle = COL.orange; c.font = `700 ${fs}px Inter, sans-serif`;
+      c.textAlign = 'left'; c.textBaseline = 'bottom';
+      // label: F with a bar over it (average force)
+      const rest = ` = ${fa.toFixed(0)} N`, fw = c.measureText('F').width, tw = fw + c.measureText(rest).width;
+      const lx = T >= DT ? X(0.0312) : Math.min(X(tR) + 8, L + pw - tw - 4), ly = Y(fa) - 5;
+      c.fillText('F', lx, ly); c.fillText(rest, lx + fw, ly);
+      avgLbl = { x: lx, y: ly, w: tw };
+      c.lineWidth = 1.6; c.beginPath(); c.moveTo(lx + 0.5, ly - fs * 1.08); c.lineTo(lx + fw + 0.5, ly - fs * 1.08); c.stroke();
+    }
+
+    // shaded area under the curve so far
+    const tA = Math.min(T, DT);
+    if (tA > 0) {
+      c.fillStyle = COL.blueFill; c.beginPath(); c.moveTo(X(0), Y(0));
+      const n = 240; for (let i = 0; i <= n; i++) { const t = tA * i / n; c.lineTo(X(t), Y(F(t))); }
+      c.lineTo(X(tA), Y(0)); c.closePath(); c.fill();
+    }
+
+    // force curve drawn up to current time
+    const tC = Math.min(T, tMax);
+    if (tC > tMin) {
+      c.strokeStyle = COL.blue; c.lineWidth = 2.6; c.lineJoin = 'round'; c.beginPath();
+      const n = 400; for (let i = 0; i <= n; i++) {
+        const t = tMin + (tC - tMin) * i / n; const x = X(t), y = Y(F(t));
+        i ? c.lineTo(x, y) : c.moveTo(x, y);
+      }
+      c.stroke();
+    }
+
+    // current-time cursor
+    if (T >= tMin && T <= tMax) {
+      c.strokeStyle = 'rgba(29,36,51,.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+      c.beginPath(); c.moveTo(X(T), Tm); c.lineTo(X(T), Tm + ph); c.stroke(); c.setLineDash([]);
+      c.fillStyle = COL.blue; c.beginPath(); c.arc(X(T), Y(F(T)), 5, 0, 2 * Math.PI); c.fill();
+      c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke();
+
+      // blue "F = ... N" label that rides along with the curve
+      c.font = `700 ${fs}px Inter, sans-serif`; c.textBaseline = 'bottom'; c.textAlign = 'left';
+      const txt = `F = ${F(T).toFixed(0)} N`, tw = c.measureText(txt).width;
+      let lx = X(T) + 8, ly = Y(F(T)) - 7;
+      if (avgLbl && lx < avgLbl.x + avgLbl.w && lx + tw > avgLbl.x && Math.abs(ly - avgLbl.y) < fs + 4) {
+        ly = F(T) >= avgSoFar(T) ? avgLbl.y - fs - 6 : avgLbl.y + fs + 6;   // step around the F-bar label
+      }
+      ly = Math.max(ly, Tm + fs + 2);
+      // fade out as the label nears the right edge of the graph
+      const fade = Math.max(0, Math.min(1, (L + pw - 2 - (lx + tw)) / 70));
+      if (fade > 0) {
+        c.save(); c.globalAlpha = fade;
+        c.lineWidth = 4; c.lineJoin = 'round'; c.strokeStyle = 'rgba(255,255,255,.85)'; c.strokeText(txt, lx, ly);
+        c.fillStyle = COL.blue; c.fillText(txt, lx, ly);
+        c.restore();
+      }
+    }
+
+    // once the curve is fully drawn, leave a blue "F" above the end of the curve
+    if (T > tMax) {
+      c.fillStyle = COL.blue; c.font = `700 ${fs + 2}px Inter, sans-serif`;
+      c.textAlign = 'right'; c.textBaseline = 'bottom';
+      c.fillText('F', L + pw - 4, Y(0) - 6);
+    }
+
+    // area label once the collision is over
+    if (T > DT) {
+      c.fillStyle = COL.blue; c.font = `700 ${fs}px Inter, sans-serif`;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('Impulse', X(tc), Y(Fpk * 0.66));
+      c.fillText(`${Jmag.toFixed(2)} N·s`, X(tc), Y(Fpk * 0.66) + fs + 4);
+    }
+  }
+
+  // Velocity vs. time, on the same time axis as the force graph
+  const VMIN = -8, VMAX = 6;
+  function velPlot(Tm, ph) {
+    const { w } = gS, c = gx, pw = w - L - Rm;
+    const X = t => L + (t - tMin) / (tMax - tMin) * pw;
+    const Y = v => Tm + ph - (v - VMIN) / (VMAX - VMIN) * ph;
+    c.font = '14px Inter, sans-serif'; c.lineWidth = 1;
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    for (let v = VMIN; v <= VMAX; v += 2) {
+      c.strokeStyle = v === 0 ? COL.ink : '#eceff3';
+      c.beginPath(); c.moveTo(L, Y(v)); c.lineTo(L + pw, Y(v)); c.stroke();
+      c.fillStyle = COL.muted; c.fillText(v > 0 ? '+' + v : v < 0 ? '−' + (-v) : '0', L - 7, Y(v));
+    }
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let ms = -5; ms <= 45; ms += 5) {
+      const x = X(ms / 1000);
+      c.strokeStyle = ms === 0 ? '#c9ced8' : '#f1f3f6';
+      c.beginPath(); c.moveTo(x, Tm); c.lineTo(x, Tm + ph); c.stroke();
+      if (ms % 10 === 0) { c.fillStyle = COL.muted; c.fillText(ms, x, Tm + ph + 6); }
+    }
+    c.strokeStyle = COL.ink; c.beginPath(); c.moveTo(X(0), Tm); c.lineTo(X(0), Tm + ph); c.stroke();   // vertical axis at t = 0
+    c.fillStyle = COL.ink; c.font = '600 14px Inter, sans-serif';
+    c.fillText('Time, t (ms)', L + pw / 2, Tm + ph + 24);
+    c.save(); c.translate(15, Tm + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'middle';
+    c.fillText('Velocity, v (m/s)', 0, 0); c.restore();
+
+    const tC = Math.min(T, tMax);
+    if (tC > tMin) {
+      c.strokeStyle = COL.green; c.lineWidth = 2.6; c.lineJoin = 'round'; c.beginPath();
+      const n = 400; for (let i = 0; i <= n; i++) {
+        const t = tMin + (tC - tMin) * i / n; const x = X(t), y = Y(vx(t));
+        i ? c.lineTo(x, y) : c.moveTo(x, y);
+      }
+      c.stroke();
+    }
+    if (T >= tMin && T <= tMax) {
+      c.strokeStyle = 'rgba(29,36,51,.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+      c.beginPath(); c.moveTo(X(T), Tm); c.lineTo(X(T), Tm + ph); c.stroke(); c.setLineDash([]);
+      c.fillStyle = COL.green; c.beginPath(); c.arc(X(T), Y(vx(T)), 5, 0, 2 * Math.PI); c.fill();
+      c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke();
+
+      // green "v = ... m/s" label that rides along with the curve, fading near the right edge
+      const fs = Math.max(11, Math.min(13, w / 42));
+      c.font = `700 ${fs}px Inter, sans-serif`; c.textBaseline = 'bottom'; c.textAlign = 'left';
+      const v = vx(T), txt = `v = ${v > 0.005 ? '+' : v < -0.005 ? '−' : ''}${Math.abs(v).toFixed(1)} m/s`, tw = c.measureText(txt).width;
+      const lx = X(T) + 8, ly = Math.max(Y(v) - 7, Tm + fs + 2);
+      const fade = Math.max(0, Math.min(1, (L + pw - 2 - (lx + tw)) / 70));
+      if (fade > 0) {
+        c.save(); c.globalAlpha = fade;
+        c.lineWidth = 4; c.lineJoin = 'round'; c.strokeStyle = 'rgba(255,255,255,.85)'; c.strokeText(txt, lx, ly);
+        c.fillStyle = COL.green; c.fillText(txt, lx, ly);
+        c.restore();
+      }
+    }
+
+    // once the curve is fully drawn, leave a green "v" above the end of the curve
+    if (T > tMax) {
+      const fs = Math.max(11, Math.min(13, w / 42));
+      c.fillStyle = COL.green; c.font = `700 ${fs + 2}px Inter, sans-serif`;
+      c.textAlign = 'right'; c.textBaseline = 'bottom';
+      c.fillText('v', L + pw - 4, Y(-vf) - 6);
+    }
+  }
+
+  // ---------- Scene ----------
+  function arrow(c, x1, y1, x2, y2, col, lw) {
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy); if (len < 2) return;
+    const ux = dx / len, uy = dy / len, hl = Math.min(13, len * 0.6), hw = hl * 0.55;
+    c.strokeStyle = col; c.fillStyle = col; c.lineWidth = lw; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - ux * hl * 0.8, y2 - uy * hl * 0.8); c.stroke();
+    c.beginPath(); c.moveTo(x2, y2);
+    c.lineTo(x2 - ux * hl - uy * hw, y2 - uy * hl + ux * hw);
+    c.lineTo(x2 - ux * hl + uy * hw, y2 - uy * hl - ux * hw); c.closePath(); c.fill();
+  }
+
+  // Outline of a ball pressed against a wall at x = wallX. The part that would reach past the
+  // wall is pressed flat (with rounded edges), and that squeezed material bulges out just around
+  // the edge of the contact patch, so the ball looks squashed rather than cut off.
+  function ballPath(c, cx, cy, Rp, wallX, dp) {
+    c.beginPath();
+    if (dp < 0.05) { c.arc(cx, cy, Rp, 0, 2 * Math.PI); return; }
+    const d  = Math.min(dp, Rp * 0.7);
+    const a  = wallX - cx;                                   // centre-to-wall distance
+    const phi = Math.acos(Math.min(1, a / Rp));              // half-angle of the contact patch
+    const lost = Rp * Rp * phi - a * Math.sqrt(Math.max(0, Rp * Rp - a * a));   // area pressed flat
+    const wd = 1.3;                                         // width of the bulge (radians)
+    const beta = 1.15 * lost / (Rp * Rp * 2 * wd * Math.sqrt(Math.PI));       // bulge that keeps area ~constant
+    const k = Math.max(2, 0.8 * d);                          // roundness of the face's edges
+    const smin = (u, v) => { const hh = Math.max(k - Math.abs(u - v), 0) / k; return Math.min(u, v) - hh * hh * k / 4; };
+    const n = 360, pts = [];
+    for (let i = 0; i <= n; i++) {
+      const th = -Math.PI + 2 * Math.PI * i / n, cs = Math.cos(th), sn = Math.sin(th);
+      const bump = Math.exp(-(((Math.abs(th) - phi) / wd) ** 2));
+      let r = Rp * (1 + beta * bump);
+      if (cs > 0.02) r = smin(r, a / cs);
+      pts.push([cx + r * cs, cy + r * sn]);
+    }
+    const shift = wallX - Math.max(...pts.map(p => p[0]));   // keep the flat face touching the wall
+    pts.forEach(([x, y], i) => i ? c.lineTo(x + shift, y) : c.moveTo(x + shift, y));
+    c.closePath();
+  }
+
+  function drawScene() {
+    const { w, h } = sS, c = sx; if (!w) return;
+    c.clearRect(0, 0, w, h);
+    const s = w / W_WORLD, cy = h * 0.52, gy = h, fs = Math.max(11, Math.min(14, w / 38));
+    // The motion is computed as "toward a wall on the right"; M() mirrors it so the wall is on the left.
+    const M = x => w - x;
+
+    // wall (left side, full height)
+    const wx = WALL * s, ww = w - wx;          // ww = wall thickness in px
+    c.fillStyle = '#c7ccd6'; c.fillRect(0, 0, ww, gy);
+    c.save(); c.beginPath(); c.rect(0, 0, ww, gy); c.clip();
+    c.strokeStyle = '#a9b0bd'; c.lineWidth = 1.5;
+    for (let y = -w; y < gy + w; y += 12) { c.beginPath(); c.moveTo(0, y); c.lineTo(ww, y - ww); c.stroke(); }
+    c.restore();
+    c.strokeStyle = '#7d8696'; c.lineWidth = 2; c.beginPath(); c.moveTo(ww, 0); c.lineTo(ww, gy); c.stroke();
+
+    // ball
+    const b = ballState(T), bx = b.x * s, by = cy, Rp = R * s, mx = M(bx);
+    if (mx - Rp < w + 5) {
+      const dp = Math.max(0, bx + Rp - wx);     // how far the undeformed ball would reach past the wall
+      c.save(); c.translate(w, 0); c.scale(-1, 1);   // draw the shape mirrored
+      const gr = c.createRadialGradient(bx + Rp * 0.35, by - Rp * 0.4, Rp * 0.1, bx, by, Rp * 1.1);   // highlight ends up upper-left
+      gr.addColorStop(0, '#ff9c8f'); gr.addColorStop(1, COL.ball);
+      c.fillStyle = gr; ballPath(c, bx, by, Rp, wx, dp); c.fill();
+      c.strokeStyle = 'rgba(0,0,0,.22)'; c.lineWidth = 1.2; c.stroke();
+      c.restore();
+
+      // velocity arrow above the ball
+      const v = -b.v, ay = by - Rp * 1.12 - 22, k = w * 0.02;
+      c.font = `700 ${fs}px Inter, sans-serif`; c.textBaseline = 'bottom'; c.textAlign = 'center';
+      if (Math.abs(v) > 0.05) arrow(c, mx, ay, mx + v * k, ay, COL.green, 3);
+      c.fillStyle = COL.green;
+      const vtxt = Math.abs(v) < 0.05 ? 'v = 0' : `v = ${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} m/s`;
+      c.fillText(vtxt, Math.max(Math.min(mx + v * k / 2, w - 60), ww + 62), ay - 6);
+
+      // force of wall on ball (points right, +x)
+      if (b.F > 1) {
+        const len = b.F / Fpk * w * 0.30;
+        const x0 = mx + Rp + 6;                // start just right of the ball so it doesn't cover it
+        arrow(c, x0, by, x0 + len, by, COL.red, 4);
+        c.fillStyle = COL.red; c.textAlign = 'left'; c.textBaseline = 'bottom';
+        c.fillText(`F = ${b.F.toFixed(0)} N`, Math.min(x0 + len, w - 80), by - 8);
+      }
+    }
+
+    // labels (top-right and bottom-right, away from the wall)
+    c.fillStyle = COL.muted; c.font = `${fs}px Inter, sans-serif`; c.textAlign = 'right'; c.textBaseline = 'top';
+    c.fillText(`m = ${m.toFixed(2)} kg`, w - 12, 10);
+    c.fillStyle = COL.ink; c.textBaseline = 'bottom';
+    c.fillText('+x →', w - 12, h - 10);
+  }
+
+  // ---------- Readouts ----------
+  const $ = id => document.getElementById(id);
+  const sgn = (x, d) => (x > 0.0005 ? '+' : x < -0.0005 ? '−' : '') + Math.abs(x).toFixed(d);
+  function updateReadouts() {
+    const v = vx(T), p = m * v, pI = -m * vi, dp = p - pI;
+    const tc = Math.max(0, Math.min(T, DT));          // time in contact so far
+    $('rT').textContent = `${(tc * 1000).toFixed(1)} ms`;
+    $('rF').textContent = `${F(T).toFixed(0)} N`;
+    $('rPi').textContent = `${sgn(pI, 2)} kg·m/s`;
+    $('rP').textContent = `${sgn(p, 2)} kg·m/s`;
+    $('rDP').textContent = `${sgn(dp, 2)} kg·m/s`;
+    $('rA').textContent = `${area(T).toFixed(2)} N·s`;
+    document.querySelectorAll('#speedSel button').forEach(b => b.classList.toggle('on', +b.dataset.x === speedNow));
+  }
+
+  function draw() { drawGraph(); drawScene(); updateReadouts(); }
+
+  // ---------- Loop & controls ----------
+  const playBtn = $('play');
+  function setPlaying(p) { playing = p; last = null; playBtn.textContent = p ? '❚❚ Pause' : (T >= T_END ? '▶ Replay' : '▶ Play'); draw(); }
+  function frame(ts) {
+    if (playing) {
+      if (last !== null) {
+        const dt = Math.min((ts - last) / 1000, 0.05);
+        T += dt * rate(T);
+        if (T >= T_END) { T = T_END; setPlaying(false); }
+      }
+      last = ts; draw();
+    }
+    requestAnimationFrame(frame);
+  }
+  function normalStart() { slowMode = false; speedNow = speedChoice; T_END = T_END_NORMAL; T = T_START; }
+  document.querySelectorAll('#speedSel button').forEach(b => b.addEventListener('click', () => {
+    speedChoice = speedNow = +b.dataset.x; draw();
+  }));
+  playBtn.addEventListener('click', () => { if (T >= T_END) normalStart(); setPlaying(!playing); });
+  $('reset').addEventListener('click', () => { normalStart(); setPlaying(false); });
+  $('slow').addEventListener('click', () => {
+    const gap = SLOW_GAP_PX / (sS.w / W_WORLD);        // 50 px in meters
+    slowMode = true; speedNow = 40;                      // Slow Collision always runs at 40×
+    T = -gap / vi;                                     // ball is 50 px from the wall, heading toward it
+    T_END = DT + gap / Math.abs(vf);                   // stop once it is 50 px away again
+    setPlaying(true);
+  });
+  const velBtn = $('velBtn');
+  velBtn.addEventListener('click', () => {
+    showVel = !showVel; velBtn.setAttribute('aria-pressed', showVel);
+    $('gTitle').textContent = showVel ? 'Force and velocity vs. time' : 'Force of the wall on the ball vs. time';
+    draw();
+  });
+  const avgBtn = $('avg');
+  avgBtn.addEventListener('click', () => { showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg); draw(); });
+
+  resize();
+  if (document.fonts) document.fonts.ready.then(draw);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
