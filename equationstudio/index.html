@@ -583,15 +583,15 @@ img,video{max-width:100%;height:auto}
                             <label class="font-semibold text-slate-700 block mb-1">Image Background</label>
                             <div class="grid grid-cols-3 gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
                                 <button type="button" id="bgBtnTransparent" onclick="setBgMode('transparent')" 
-                                    class="px-1.5 py-1 rounded-md font-medium text-[11px] transition bg-white text-blue-700 shadow-2xs text-center flex items-center justify-center">
+                                    class="px-1.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-2xs text-center flex items-center justify-center">
                                     Transparent
                                 </button>
                                 <button type="button" id="bgBtnWhite" onclick="setBgMode('white')" 
-                                    class="px-1.5 py-1 rounded-md font-medium text-[11px] transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center">
+                                    class="px-1.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center">
                                     White
                                 </button>
                                 <button type="button" id="bgBtnCustom" onclick="setBgMode('custom')" 
-                                    class="px-1.5 py-1 rounded-md font-medium text-[11px] transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center">
+                                    class="px-1.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center">
                                     Custom
                                 </button>
                             </div>
@@ -604,9 +604,9 @@ img,video{max-width:100%;height:auto}
                                 <!-- Ink Popover Trigger -->
                                 <div class="relative" id="inkPickerDropdownWrapper">
                                     <button type="button" id="inkTriggerBtn" onclick="toggleInkPalette(event)" class="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg transition active:scale-95 shadow-2xs" title="Choose equation color or preset">
-                                        <span class="text-[11px] text-slate-500 font-medium">Ink:</span>
+                                        <span class="text-xs text-slate-500 font-medium">Ink:</span>
                                         <span id="inkColorIndicator" class="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-inner inline-block" style="background-color: #0f172a;"></span>
-                                        <i class="fa-solid fa-chevron-down text-[8px] text-slate-400"></i>
+                                        <svg aria-hidden="true" class="text-slate-400" viewBox="0 0 12 12" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
                                     </button>
 
                                     <input type="color" id="fgColorPicker" value="#0f172a" class="hidden" onchange="updateInkColor(this.value)">
@@ -634,12 +634,12 @@ img,video{max-width:100%;height:auto}
                                 </div>
 
                                 <div id="customBgPickerWrap" class="hidden flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg" title="Custom Background Color">
-                                    <span class="text-[11px] text-slate-500">BG:</span>
+                                    <span class="text-xs text-slate-500">BG:</span>
                                     <input type="color" id="bgColorPicker" value="#fef9c3" onchange="renderEquation()" class="w-4 h-4 rounded cursor-pointer border-0 bg-transparent">
                                 </div>
 
                                 <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg flex-1" title="Border Padding around exported image">
-                                    <span class="text-[11px] text-slate-500">Pad:</span>
+                                    <span class="text-xs text-slate-500">Pad:</span>
                                     <select id="paddingSelect" onchange="renderEquation()" class="bg-transparent font-medium text-slate-700 focus:outline-none w-full">
                                         <option value="1">Tight (1px)</option>
                                         <option value="4" selected>Snug (4px)</option>
@@ -664,7 +664,7 @@ img,video{max-width:100%;height:auto}
                                 <svg aria-hidden="true" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
                             </button>
                         </div>
-                        <button onclick="clearEquationEditor()" id="clearBtn" title="Clear Equation" class="px-2 py-1 text-[11px] font-medium text-red-400 hover:text-red-500 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
+                        <button onclick="clearEquationEditor()" id="clearBtn" title="Clear Equation" class="px-2 py-1 text-xs font-medium text-red-400 hover:text-red-500 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
                             <svg aria-hidden="true" viewBox="0 0 448 512" width="9" height="10" fill="currentColor" class="text-red-300 shrink-0"><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> Clear
                         </button>
                     </div>
@@ -679,14 +679,14 @@ img,video{max-width:100%;height:auto}
                             </div>
                         </div>
                         <span class="flex items-center gap-1 select-none">
-                            <span id="displayStyleLabelText" class="font-semibold text-slate-800 text-[11px]">Display Style</span>
+                            <span id="displayStyleLabelText" class="font-semibold text-slate-800 text-xs">Display Style</span>
                             <code id="displayStyleCodeBadge" class="text-[9px] text-blue-600 font-mono bg-white px-1 py-0.2 rounded border border-blue-200">\displaystyle</code>
                         </span>
                     </button>
                     <input type="checkbox" id="displayStyleToggle" checked class="hidden" onchange="renderEquation()">
 
                     <!-- Right: Flatten Tool -->
-                    <button onclick="removeLineBreaks()" title="Remove Line Breaks" class="px-2 py-1 text-[11px] text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
+                    <button onclick="removeLineBreaks()" title="Remove Line Breaks" class="px-2 py-1 text-xs text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
                         <i class="fa-solid fa-compress text-[10px]"></i> Flatten
                     </button>
                 </div>
@@ -760,7 +760,7 @@ img,video{max-width:100%;height:auto}
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden animate-fadeIn">
             <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
                 <h3 class="font-bold text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-table-cells text-blue-400"></i> Matrix, Vector &amp; Piecewise Builder
+                    <svg aria-hidden="true" class="text-blue-400" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix, Vector &amp; Piecewise Builder
                 </h3>
                 <button onclick="closeMatrixModal()" class="text-slate-400 hover:text-white">
                     <i class="fa-solid fa-xmark"></i>
@@ -1250,7 +1250,7 @@ img,video{max-width:100%;height:auto}
             matrixWrapper.innerHTML = `
                 <div title="Matrix & Vector Wizard" class="px-2 py-1 min-w-[82px] bg-gradient-to-b from-white to-slate-50/90 group-hover:from-slate-50 group-hover:to-slate-100 border border-slate-200/90 group-hover:border-slate-400 group-hover:shadow-sm rounded-xl cursor-pointer transition-all duration-150 flex items-center justify-center min-h-[40px] shadow-2xs select-none relative">
                     <div class="flex items-center gap-1.5 text-slate-800 group-hover:text-slate-900 font-semibold text-xs px-1">
-                        <i class="fa-solid fa-table-cells text-slate-700 group-hover:text-slate-900 text-[11px]"></i>
+                        <svg aria-hidden="true" class="text-slate-700 group-hover:text-slate-900" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg>
                         <span>Matrix</span>
                     </div>
                     <div class="corner-triangle absolute bottom-1 right-1 group-hover:border-b-slate-900 group-hover:border-r-slate-900"></div>
@@ -1259,7 +1259,7 @@ img,video{max-width:100%;height:auto}
                 <div class="ribbon-popover right-0 absolute top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
                     <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
                         <span class="text-[11px] font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1">
-                            <i class="fa-solid fa-table-cells text-[10px]"></i> Matrix &amp; Cases
+                            <svg aria-hidden="true" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix &amp; Cases
                         </span>
                         <span class="text-[10px] text-slate-500">Presets &amp; Custom</span>
                     </div>
@@ -1374,14 +1374,14 @@ img,video{max-width:100%;height:auto}
                 switchBg.className = 'w-8 h-4 bg-blue-600 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0';
                 knob.className = 'w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-4 flex items-center justify-center';
                 btn.className = 'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition shadow-2xs font-medium cursor-pointer active:scale-95';
-                labelText.className = 'font-semibold text-slate-800 text-[11px]';
+                labelText.className = 'font-semibold text-slate-800 text-xs';
                 codeBadge.className = 'text-[9px] text-blue-600 font-mono bg-white px-1 py-0.2 rounded border border-blue-200';
                 if (icon) icon.className = 'fa-solid fa-check text-[7px] text-blue-600';
             } else {
                 switchBg.className = 'w-8 h-4 bg-slate-300 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0';
                 knob.className = 'w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-0 flex items-center justify-center';
                 btn.className = 'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition shadow-2xs font-medium cursor-pointer active:scale-95';
-                labelText.className = 'font-semibold text-slate-500 text-[11px]';
+                labelText.className = 'font-semibold text-slate-500 text-xs';
                 codeBadge.className = 'text-[9px] text-slate-400 font-mono bg-slate-100 px-1 py-0.2 rounded border border-slate-200';
                 if (icon) icon.className = 'fa-solid fa-xmark text-[7px] text-slate-400';
             }
@@ -1526,9 +1526,9 @@ img,video{max-width:100%;height:auto}
             };
             Object.keys(btns).forEach(k => {
                 if (k === mode) {
-                    btns[k].className = 'px-1.5 py-1 rounded-md font-medium text-[11px] transition bg-white text-blue-700 shadow-2xs text-center flex items-center justify-center';
+                    btns[k].className = 'px-1.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-2xs text-center flex items-center justify-center';
                 } else {
-                    btns[k].className = 'px-1.5 py-1 rounded-md font-medium text-[11px] transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center';
+                    btns[k].className = 'px-1.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900 text-center flex items-center justify-center';
                 }
             });
 
