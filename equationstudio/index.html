@@ -299,8 +299,6 @@ img,video{max-width:100%;height:auto}
   .lg\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}
 }
     </style>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&family=Open+Sans:ital,wght@0,400..700;1,400..700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
@@ -626,7 +624,7 @@ img,video{max-width:100%;height:auto}
                                         <div class="pt-2 flex items-center justify-between">
                                             <span class="text-[11px] font-medium text-slate-600">Custom Picker:</span>
                                             <label for="customColorTriggerInput" class="px-2 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 rounded-md text-[10px] font-semibold text-slate-700 cursor-pointer flex items-center gap-1 transition">
-                                                <i class="fa-solid fa-eye-dropper text-[9px]"></i> More...
+                                                <svg aria-hidden="true" class="text-[9px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg> More...
                                                 <input type="color" id="customColorTriggerInput" value="#0f172a" oninput="updateInkColor(this.value)" class="sr-only">
                                             </label>
                                         </div>
@@ -675,7 +673,7 @@ img,video{max-width:100%;height:auto}
                         title="Toggle between Display Style and Inline Style">
                         <div id="displayStyleSwitch" class="w-8 h-4 bg-blue-600 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0">
                             <div id="displayStyleKnob" class="w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-4 flex items-center justify-center">
-                                <i id="displayStyleIcon" class="fa-solid fa-check text-[7px] text-blue-600"></i>
+                                <span id="displayStyleIcon" class="text-[7px] text-blue-600" style="display:inline-flex"><svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M20 6 9 17l-5-5"/></svg></span>
                             </div>
                         </div>
                         <span class="flex items-center gap-1 select-none">
@@ -687,7 +685,7 @@ img,video{max-width:100%;height:auto}
 
                     <!-- Right: Flatten Tool -->
                     <button onclick="removeLineBreaks()" title="Remove Line Breaks" class="px-2 py-1 text-xs text-slate-600 hover:text-blue-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition flex items-center gap-1 shadow-2xs">
-                        <i class="fa-solid fa-compress text-[10px]"></i> Flatten
+                        <svg aria-hidden="true" class="text-[10px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg> Flatten
                     </button>
                 </div>
             </div>
@@ -711,7 +709,7 @@ img,video{max-width:100%;height:auto}
                     <div class="lg:flex-[1_0_auto] bg-white px-5 py-2.5 rounded-xl border border-blue-100 flex flex-col items-center justify-center text-center gap-1.5 shadow-2xs">
                         <div class="flex flex-col items-center text-center">
                             <span class="font-bold text-slate-700 text-[11px] flex items-center justify-center gap-1.5 whitespace-nowrap">
-                                <i class="fa-solid fa-wand-magic-sparkles text-blue-600"></i> Export Crispness / Density:
+                                <svg aria-hidden="true" class="text-blue-600" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg> Export Crispness / Density:
                             </span>
                         </div>
                         <div class="flex items-center justify-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200">
@@ -725,7 +723,7 @@ img,video{max-width:100%;height:auto}
                     <!-- Middle: Live Rendered Output Status & Dimensions -->
                     <div class="lg:flex-[1_0_auto] bg-white px-5 py-2.5 rounded-xl border border-slate-200 flex flex-col items-center justify-center text-center gap-1.5 shadow-2xs">
                         <span class="text-[11px] font-semibold text-slate-700 flex items-center justify-center gap-1.5 whitespace-nowrap">
-                            <i class="fa-solid fa-eye text-blue-600 text-[10px]"></i> Live Rendered Output
+                            <svg aria-hidden="true" class="text-blue-600 text-[10px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg> Live Rendered Output
                         </span>
                         <span id="imageDimensionsBadge" class="text-[12.5px] font-semibold font-mono bg-slate-100 text-slate-700 px-3 py-0.5 rounded-md border border-slate-200 whitespace-nowrap">
                             Rendering...
@@ -736,16 +734,16 @@ img,video{max-width:100%;height:auto}
                     <div class="lg:flex-[1_0_auto] bg-white px-5 py-2.5 rounded-xl border border-slate-200 flex flex-col items-center justify-center text-center shadow-2xs">
                         <div class="flex flex-wrap sm:flex-nowrap items-center justify-center gap-2.5">
                             <button onclick="copyImageToClipboard()" class="py-2.5 px-[32.5px] bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Copy image directly to clipboard">
-                                <i class="fa-solid fa-paste text-[11px]"></i> Copy
+                                <svg aria-hidden="true" class="text-[11px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Copy
                             </button>
                             <button onclick="downloadEquation('png')" class="py-2.5 px-[32.5px] bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Download PNG">
-                                <i class="fa-solid fa-download text-[11px]"></i> .PNG
+                                <svg aria-hidden="true" class="text-[11px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg> .PNG
                             </button>
                             <button onclick="downloadEquation('gif')" class="py-2.5 px-[32.5px] bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Download GIF">
-                                <i class="fa-solid fa-file-image text-[11px]"></i> .GIF
+                                <svg aria-hidden="true" class="text-[11px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="2"/><path d="m20 17-1.3-1.3a2.4 2.4 0 0 0-3.4 0L9 22"/></svg> .GIF
                             </button>
                             <button onclick="downloadEquation('svg')" class="py-2.5 px-[32.5px] bg-slate-800 hover:bg-slate-900 active:scale-[0.99] text-white font-semibold text-xs rounded-lg shadow-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Download SVG">
-                                <i class="fa-solid fa-bezier-curve text-[11px]"></i> .SVG
+                                <svg aria-hidden="true" class="text-[11px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.59 7.59"/><circle cx="11" cy="11" r="2"/></svg> .SVG
                             </button>
                         </div>
                     </div>
@@ -763,7 +761,7 @@ img,video{max-width:100%;height:auto}
                     <svg aria-hidden="true" class="text-blue-400" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix, Vector &amp; Piecewise Builder
                 </h3>
                 <button onclick="closeMatrixModal()" class="text-slate-400 hover:text-white">
-                    <i class="fa-solid fa-xmark"></i>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
             </div>
 
@@ -813,13 +811,20 @@ img,video{max-width:100%;height:auto}
     <!-- Toast Notification Banner -->
     <div id="toastBanner" class="fixed bottom-5 right-5 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200">
         <div class="bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2">
-            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastIcon" class="text-emerald-400" style="display:inline-flex"><svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span>
             <span id="toastMessage">Action completed!</span>
         </div>
     </div>
 
     <!-- Application Script -->
     <script>
+        const ICON_SVG = {
+            check: '<svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M20 6 9 17l-5-5"/></svg>',
+            xmark: '<svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+            success: '<svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+            warning: '<svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+        };
+
         const SYMBOL_CATEGORIES = [
             {
                 id: 'structures',
@@ -1289,7 +1294,7 @@ img,video{max-width:100%;height:auto}
 
                     <button type="button" onclick="openMatrixModal()" 
                         class="w-full py-1.5 px-3 bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-semibold rounded-lg shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-sliders text-[10px]"></i>
+                        <svg aria-hidden="true" class="text-[10px]" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></svg>
                         <span>Custom Dimension Wizard...</span>
                     </button>
                 </div>
@@ -1376,14 +1381,14 @@ img,video{max-width:100%;height:auto}
                 btn.className = 'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition shadow-2xs font-medium cursor-pointer active:scale-95';
                 labelText.className = 'font-semibold text-slate-800 text-xs';
                 codeBadge.className = 'text-[9px] text-blue-600 font-mono bg-white px-1 py-0.2 rounded border border-blue-200';
-                if (icon) icon.className = 'fa-solid fa-check text-[7px] text-blue-600';
+                if (icon) { icon.className = 'text-[7px] text-blue-600'; icon.innerHTML = ICON_SVG.check; }
             } else {
                 switchBg.className = 'w-8 h-4 bg-slate-300 rounded-full relative p-0.5 transition-colors duration-200 flex items-center shrink-0';
                 knob.className = 'w-3 h-3 bg-white rounded-full shadow-md transition-transform duration-200 translate-x-0 flex items-center justify-center';
                 btn.className = 'inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition shadow-2xs font-medium cursor-pointer active:scale-95';
                 labelText.className = 'font-semibold text-slate-500 text-xs';
                 codeBadge.className = 'text-[9px] text-slate-400 font-mono bg-slate-100 px-1 py-0.2 rounded border border-slate-200';
-                if (icon) icon.className = 'fa-solid fa-xmark text-[7px] text-slate-400';
+                if (icon) { icon.className = 'text-[7px] text-slate-400'; icon.innerHTML = ICON_SVG.xmark; }
             }
 
             renderEquation();
@@ -2122,9 +2127,8 @@ img,video{max-width:100%;height:auto}
             const text = document.getElementById('toastMessage');
 
             text.textContent = msg;
-            icon.className = isError 
-                ? 'fa-solid fa-triangle-exclamation text-amber-400' 
-                : 'fa-solid fa-circle-check text-emerald-400';
+            icon.className = isError ? 'text-amber-400' : 'text-emerald-400';
+            icon.innerHTML = isError ? ICON_SVG.warning : ICON_SVG.success;
 
             banner.classList.remove('opacity-0', 'translate-y-2');
             banner.classList.add('opacity-100', 'translate-y-0');
