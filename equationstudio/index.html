@@ -8,12 +8,12 @@
     <style>
 /* Base reset */
 *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}
-html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji"}
+html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:"Inter",ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji"}
 body{margin:0;line-height:inherit}
 h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit;margin:0}
 p{margin:0}
 b,strong{font-weight:bolder}
-code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em}
+code,kbd,samp,pre{font-family:"Inter",ui-sans-serif,system-ui,sans-serif;font-size:1em}
 button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}
 button,select{text-transform:none}
 button,[type=button],[type=reset],[type=submit]{-webkit-appearance:button;background-color:transparent;background-image:none}
@@ -77,7 +77,7 @@ img,video{max-width:100%;height:auto}
 .flex-wrap{flex-wrap:wrap}
 .font-bold{font-weight:700}
 .font-medium{font-weight:500}
-.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+.font-mono{font-family:"Inter",ui-sans-serif,system-ui,sans-serif}
 .font-semibold{font-weight:600}
 .font-serif{font-family:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif}
 .from-white{--g-from:#ffffff}
@@ -515,7 +515,7 @@ img,video{max-width:100%;height:auto}
 
                         <!-- Font & Text Formatting Tools -->
                         <button onclick="wrapSelection('\\mathbf{', '}')" title="Bold Math" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md font-bold text-slate-700 shadow-2xs transition text-[12.5px]">B</button>
-                        <button onclick="wrapSelection('\\mathit{', '}')" title="Italic Math" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md italic font-serif text-slate-700 shadow-2xs transition text-[12.5px]">I</button>
+                        <button onclick="wrapSelection('\\mathit{', '}')" title="Italic Math" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md italic text-slate-700 shadow-2xs transition text-[12.5px]">I</button>
                         <button onclick="wrapSelection('\\underline{', '}')" title="Underline" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md underline text-slate-700 shadow-2xs transition text-[12.5px]">U</button>
                         <button onclick="wrapSelection('\\text{', '}')" title="Plain Text inside Formula" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md text-slate-700 shadow-2xs transition text-[12.5px]">Text</button>
                         <button onclick="wrapSelection('\\mathbb{', '}')" title="Blackboard Bold (e.g. R, N, Z)" class="px-2.5 py-1 bg-white hover:bg-blue-50 border border-slate-300 rounded-md font-serif text-slate-700 shadow-2xs transition text-[12.5px]">&#8477;</button>
@@ -2072,7 +2072,7 @@ img,video{max-width:100%;height:auto}
                         ? (c === 0 ? `Expression ${r+1}` : `Condition ${r+1} (e.g. x > 0)`)
                         : `a_{${r+1}${c+1}}`;
                     html += `<input type="text" data-row="${r}" data-col="${c}" placeholder="${placeholder}"
-                        class="matrix-cell mono-font flex-1 min-w-[70px] px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">`;
+                        class="matrix-cell flex-1 min-w-[70px] px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">`;
                 }
                 html += `</div>`;
             }
