@@ -34,7 +34,9 @@
            background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:10px;padding:7px 12px 4px;
            display:flex;flex-direction:column;gap:2px}
   .eslider label{font-size:14px;color:var(--muted);text-align:center} .eslider b{color:var(--ink);font-variant-numeric:tabular-nums}
-  .eslider input{width:100%;accent-color:var(--ink);margin:4px 0 2px}
+  .eslider input{flex:1;min-width:0;accent-color:var(--ink);margin:4px 0 2px}
+  .erow{display:flex;align-items:center;gap:8px}
+  .estep{width:26px;height:26px;padding:0;border-radius:50%;font-size:17px;line-height:1;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
   .about{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.55;color:var(--ink)}
   .about h2{font-size:15px;margin:0 0 4px}
   .about p{margin:0}
@@ -92,7 +94,7 @@
       <div class="cv"><canvas id="scene"></canvas>
         <div class="eslider">
           <label for="eRange">Coefficient of restitution: <b>e = <span id="eVal">0.80</span></b></label>
-          <input type="range" id="eRange" min="0.35" max="1" step="0.01" value="0.80">
+          <div class="erow"><button id="eMinus" class="estep" aria-label="Decrease e">−</button><input type="range" id="eRange" min="0.35" max="1" step="0.01" value="0.80"><button id="ePlus" class="estep" aria-label="Increase e">+</button></div>
         </div>
       </div>
     </section>
@@ -559,6 +561,9 @@
     if (done) { if (slowMode) T_END = DT + (X_CONTACT - (X_CONTACT + vi * T_START_SLOW)) / Math.abs(vf); else T_END = T_END_NORMAL; T = T_END; setPlaying(false); }
     else { normalStart(); setPlaying(false); }
   });
+  const stepE = d => { eRange.value = Math.min(1, Math.max(0.35, Math.round((+eRange.value + d) * 100) / 100)); eRange.dispatchEvent(new Event('input')); };
+  $('eMinus').addEventListener('click', () => stepE(-0.01));
+  $('ePlus').addEventListener('click', () => stepE(0.01));
   const avgBtn = $('avg');
   avgBtn.addEventListener('click', () => { showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg); draw(); });
 
