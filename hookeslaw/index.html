@@ -116,7 +116,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter
 #pageSpring { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
 #pageSpring > .lower { display: contents; }
 #pageSpring .rd { grid-column: 1 / -1; display: grid; gap: 14px 28px; align-items: start; }
-#pageSpring .rd .eq { margin: 0; padding: 0; border: 0; font-size: clamp(0.9rem, 2.16vw, 1.215rem); line-height: 1.5; color: var(--ink); }
+#pageSpring .rd .eq { margin: 0; padding: 0; border: 0; font-size: clamp(0.9rem, 2.16vw, 16px); line-height: 1.5; color: var(--ink); }
 #pageSpring .rd .eq .fres { color: var(--force); }
 #pageSpring .rd .eq .uline { color: var(--energy); }
 #pageSpring .rd .eq .uline.off { display: none; }
@@ -361,13 +361,14 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
     // Ruler: ticks every 0.1 m, limits marked
     const rulerY = floorY + 14;
-    ctx.font = '12.1px ' + css('--font-data'); ctx.textAlign = 'center'; ctx.fillStyle = C.axis;
+    ctx.font = '12px ' + css('--font-data'); ctx.textAlign = 'center'; ctx.fillStyle = C.axis;   // axis numbers: 12 px
     for (let i = -5; i <= 5; i++) {
       const px = cx + (i / 10) * G.ppm, major = i % 5 === 0;
       ctx.strokeStyle = major ? C.muted : C.line; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(px, rulerY); ctx.lineTo(px, rulerY + (major ? 9 : 5)); ctx.stroke();
       if (major || w > 560) ctx.fillText((i / 10).toFixed(1), px, rulerY + 22);
     }
+    ctx.font = '12.1px ' + css('--font-data');
     ctx.fillText('x (m)', Math.min(w - 22, cx + rangePx + 44), rulerY + 22);
 
     // Equilibrium line
@@ -417,12 +418,12 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
   function drawFunctions() {
     const { w, h } = gSize, ctx = gctx;
-    const pad = { l: 52, r: 30, t: 8, b: 34 };
-    const pw = w - pad.l - pad.r, total = h - pad.t - pad.b, gap = 10;
+    const pad = { l: 62, r: 30, t: 12, b: 34 };
+    const pw = w - pad.l - pad.r, total = h - pad.t - pad.b, gap = 24;   // room for the axis numbers between panels
     const t1 = Math.max(WIN, simT), t0 = t1 - WIN;
     const T = t => pad.l + ((t - t0) / WIN) * pw;
     ctx.clearRect(0, 0, w, h);
-    ctx.font = '11.55px ' + css('--font-data'); ctx.lineWidth = 1;
+    ctx.font = '12px ' + css('--font-data'); ctx.lineWidth = 1;   // axis numbers: 12 px
 
     const on = SERIES.filter(s => s.on);
     if (!on.length) {
@@ -440,10 +441,10 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
       [M, 0, -M].forEach(val => {
         ctx.strokeStyle = val === 0 ? C.muted : C.line; ctx.globalAlpha = val === 0 ? 1 : 0.6;
         ctx.beginPath(); ctx.moveTo(pad.l, Y(val)); ctx.lineTo(pad.l + pw, Y(val)); ctx.stroke(); ctx.globalAlpha = 1;
-        ctx.fillText(val === 0 ? '0' : (val > 0 ? '+' : '−') + fmt(Math.abs(val)), pad.l - 6, Y(val) + 3.5);
+        ctx.fillText(val === 0 ? '0' : (val > 0 ? '+' : '−') + fmt(Math.abs(val)), pad.l - 6, Y(val) + 5);
       });
       ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(pad.l, top); ctx.lineTo(pad.l, top + hp); ctx.stroke();
-      ctx.save(); ctx.translate(10, mid); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText(s.title, 0, 0); ctx.restore();
+      ctx.save(); ctx.font = '11.55px ' + css('--font-data'); ctx.translate(10, mid); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText(s.title, 0, 0); ctx.restore();
 
       // Trace
       ctx.save(); ctx.beginPath(); ctx.rect(pad.l, top - 2, pw, hp + 4); ctx.clip();
@@ -479,9 +480,10 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
       if (px >= xL - 0.5 && px <= xR + 0.5) {
         ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(px, base); ctx.lineTo(px, base + 4); ctx.stroke();
       }
-      ctx.fillText(String(s), px, base + 15);
+      ctx.fillText(String(s), px, base + 17);
     }
     ctx.globalAlpha = 1;
+    ctx.font = '11.55px ' + css('--font-data');
     ctx.fillText('t (s)', pad.l + pw / 2, h - 3);
   }
 
@@ -489,13 +491,13 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
   function drawForce() {
     const { w, h } = gSize, ctx = gctx;
-    const pad = { l: 42, r: 14, t: 10, b: 34 };
+    const pad = { l: 42, r: 14, t: 14, b: 34 };
     const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
     const yMax = niceMax(state.k * X_MAX);
     const X = x => pad.l + ((x + X_MAX) / (2 * X_MAX)) * pw;
     const Y = f => pad.t + ph - (f / yMax) * ph;
     ctx.clearRect(0, 0, w, h);
-    ctx.font = '11.55px ' + css('--font-data'); ctx.fillStyle = C.axis; ctx.lineWidth = 1;
+    ctx.font = '12px ' + css('--font-data'); ctx.fillStyle = C.axis; ctx.lineWidth = 1;   // axis numbers: 12 px
 
     // Grid + ticks
     const yStep = yMax / 5;
@@ -503,15 +505,16 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     for (let f = 0; f <= yMax + 1e-9; f += yStep) {
       ctx.strokeStyle = C.line; ctx.globalAlpha = f === 0 ? 1 : 0.6;
       ctx.beginPath(); ctx.moveTo(pad.l, Y(f)); ctx.lineTo(pad.l + pw, Y(f)); ctx.stroke(); ctx.globalAlpha = 1;
-      ctx.fillText(f.toFixed(yStep < 2 ? 1 : 0), pad.l - 6, Y(f) + 3.5);
+      ctx.fillText(f.toFixed(yStep < 2 ? 1 : 0), pad.l - 6, Y(f) + 5);
     }
     ctx.textAlign = 'center';
     for (let i = -5; i <= 5; i++) {
       const x = i / 10;
       ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(X(x), pad.t + ph); ctx.lineTo(X(x), pad.t + ph + 4); ctx.stroke();
-      if (i % 5 === 0 || pw > 280) ctx.fillText(x.toFixed(1), X(x), pad.t + ph + 15);
+      if (i % 5 === 0 || pw > 340) ctx.fillText(x.toFixed(1), X(x), pad.t + ph + 17);
     }
     ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(X(0), pad.t); ctx.lineTo(X(0), pad.t + ph); ctx.stroke();
+    ctx.font = '11.55px ' + css('--font-data');
     ctx.fillText('x (m)', pad.l + pw / 2, h - 3);
     ctx.save(); ctx.translate(11, pad.t + ph / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('|Fs| (N)', 0, 0); ctx.restore();
 
@@ -922,13 +925,14 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
     // Ruler in metres
     const rulerY = floorY + 14;
-    ctx.font = '12.1px ' + FD; ctx.textAlign = 'center'; ctx.fillStyle = C.axis;
+    ctx.font = '12px ' + FD; ctx.textAlign = 'center'; ctx.fillStyle = C.axis;   // axis numbers: 12 px
     for (let i = -5; i <= 5; i++) {
       const rx = cx + (i / 10) * ppm, major = i % 5 === 0;
       ctx.strokeStyle = major ? C.muted : C.line; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(rx, rulerY); ctx.lineTo(rx, rulerY + (major ? 9 : 5)); ctx.stroke();
-      if (major || 0.1 * ppm >= 36) ctx.fillText((i / 10).toFixed(1), rx, rulerY + 22);
+      if (major || 0.1 * ppm >= 40) ctx.fillText((i / 10).toFixed(1), rx, rulerY + 22);
     }
+    ctx.font = '12.1px ' + FD;
     ctx.fillText('x (m)', Math.min(w - 22, cx + 0.5 * ppm + 46), rulerY + 22);
   }
 
