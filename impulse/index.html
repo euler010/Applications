@@ -568,7 +568,7 @@
   const avgBtn = $('avg');
   avgBtn.addEventListener('click', () => {
     showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg);
-    if (!playing) { normalStart(); setPlaying(false); }   // when stopped, also reset so the graph starts empty
+    normalStart(); setPlaying(false);                      // always reset so the graph starts empty
     draw();
   });
 
