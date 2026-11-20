@@ -36,7 +36,8 @@
   .eslider label{font-size:14px;color:var(--muted);text-align:center} .eslider b{color:var(--ink);font-variant-numeric:tabular-nums}
   .eslider input{flex:1;min-width:0;accent-color:var(--ink);margin:4px 0 2px}
   .erow{display:flex;align-items:center;gap:8px}
-  .estep{width:26px;height:26px;padding:0;border-radius:50%;font-size:17px;line-height:1;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+  .estep{width:26px;height:26px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink)}
+  .estep svg{display:block}
   .about{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.55;color:var(--ink)}
   .about h2{font-size:15px;margin:0 0 4px}
   .about p{margin:0}
@@ -94,7 +95,7 @@
       <div class="cv"><canvas id="scene"></canvas>
         <div class="eslider">
           <label for="eRange">Coefficient of restitution: <b>e = <span id="eVal">0.80</span></b></label>
-          <div class="erow"><button id="eMinus" class="estep" aria-label="Decrease e">−</button><input type="range" id="eRange" min="0.35" max="1" step="0.01" value="0.80"><button id="ePlus" class="estep" aria-label="Increase e">+</button></div>
+          <div class="erow"><button id="eMinus" class="estep" aria-label="Decrease e"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><input type="range" id="eRange" min="0.35" max="1" step="0.01" value="0.80"><button id="ePlus" class="estep" aria-label="Increase e"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6h9M6 1.5v9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
         </div>
       </div>
     </section>
