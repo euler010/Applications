@@ -30,6 +30,14 @@
   button.mini{font-size:.82rem;padding:3px 12px;border-radius:999px}
   #velBtn[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
   .card-h{min-height:42px}
+.eslider{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(62%,330px);
+           background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:10px;padding:7px 12px 4px;
+           display:flex;flex-direction:column;gap:2px}
+  .eslider label{font-size:14px;color:var(--muted);text-align:center} .eslider b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .eslider input{width:100%;accent-color:var(--ink);margin:4px 0 2px}
+  .about{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.55;color:var(--ink)}
+  .about h2{font-size:15px;margin:0 0 4px}
+  .about p{margin:0}
   .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
   .speed{display:flex;align-items:center;gap:8px}
   .speed-lbl{font-size:.82rem;font-weight:500;color:var(--muted)}
@@ -81,7 +89,12 @@
         <div class="speed"><span class="speed-lbl">Slow rate:</span><div class="seg" id="speedSel" role="group" aria-label="Slow rate">
           <button data-x="1" title="Real time">1×</button><button data-x="5" class="on" title="5× slower than real time">5×</button><button data-x="10" title="10× slower than real time">10×</button><button data-x="40" title="40× slower than real time">40×</button>
         </div></div></div>
-      <div class="cv"><canvas id="scene"></canvas></div>
+      <div class="cv"><canvas id="scene"></canvas>
+        <div class="eslider">
+          <label for="eRange">Coefficient of restitution: <b>e = <span id="eVal">0.80</span></b></label>
+          <input type="range" id="eRange" min="0.35" max="1" step="0.01" value="0.80">
+        </div>
+      </div>
     </section>
   </div>
 
@@ -94,6 +107,15 @@
     <div class="ro area"><div class="k">Impulse (Area)</div><div class="v" id="rA"></div></div>
   </div>
 
+  <section class="about">
+    <h2>What is the coefficient of restitution?</h2>
+    <p>The coefficient of restitution, <i>e</i>, measures how bouncy a collision is. For a ball hitting a wall, it is the
+    rebound speed divided by the speed it hit with: <i>e</i> = |<i>v</i><sub>f</sub>| ÷ |<i>v</i><sub>i</sub>|.
+    When <i>e</i> = 1, the ball leaves as fast as it arrived and no kinetic energy is lost (perfectly elastic).
+    Smaller values mean a slower rebound, with energy turned into heat, sound and deformation; the fraction of kinetic
+    energy kept is <i>e</i>². A bouncier ball changes its momentum more, so it needs a larger impulse from the wall.</p>
+  </section>
+
 </main>
 
 <script>
@@ -101,11 +123,12 @@
   // ---------- Physics ----------
   const m  = 0.50;      // kg
   const vi = 6.0;       // m/s (toward wall, +x)
-  const vf = -4.8;      // m/s (away from wall)
+  let e = 0.80;         // coefficient of restitution (slider)
+  let vf = -e * vi;     // m/s (away from wall)
   const DT = 0.040;     // s, contact time
   const tc = DT / 2;    // peak time
   const sig = DT / 6;   // Gaussian width (contact spans ±3σ)
-  const Jmag = m * (vi - vf);       // 5.40 N·s (impulse points left)
+  let Jmag = m * (vi - vf);         // impulse size (5.40 N·s when e = 0.80)
 
   // Tabulate a truncated Gaussian and its running integral, then scale so area = |J| exactly.
   const N = 4000, g = new Float64Array(N + 1), C = new Float64Array(N + 1);
@@ -113,8 +136,8 @@
   const bell = t => (Math.exp(-((t - tc) ** 2) / (2 * sig * sig)) - G0) / (1 - G0);   // 1 at peak, 0 at edges
   for (let k = 0; k <= N; k++) g[k] = bell(k * DT / N);
   for (let k = 1; k <= N; k++) C[k] = C[k - 1] + 0.5 * (g[k] + g[k - 1]) * (DT / N);
-  const Fpk  = Jmag / C[N];          // peak force, N
-  const Favg = Jmag / DT;            // average force, N
+  let Fpk  = Jmag / C[N];            // peak force, N
+  let Favg = Jmag / DT;              // average force, N
 
   const F = t => (t < 0 || t > DT) ? 0 : Fpk * bell(t);
   const area = t => { // ∫F dt from 0 to t
@@ -133,17 +156,30 @@
   const X_CONTACT = WALL - R;
   const X_START = 0.35;
   const T_START = -(X_CONTACT - X_START) / vi;
-  const T_END_NORMAL = DT + (X_CONTACT - X_START) / Math.abs(vf);
+  let T_END_NORMAL = DT + (X_CONTACT - X_START) / Math.abs(vf);
   let T_END = T_END_NORMAL;
 
   // Smooth compression: the ball's centre keeps moving with a velocity that matches vᵢ at first
   // contact and v_f at release, so there is no sudden stop or start. D[k] = how far the centre
   // has moved toward the wall (the compression) during contact; it returns to 0 at release.
-  const S = (() => { let a = 0; for (let k = 1; k <= N; k++) { const t1 = k * DT / N, t0 = t1 - DT / N; a += 0.5 * (vel(t0) + vel(t1)) * DT / N; } return a; })();
-  const vVis = t => vel(t) - S * F(t) / Jmag;
+  let S = 0, DMAX = 1;
   const D = new Float64Array(N + 1);
-  for (let k = 1; k <= N; k++) { const t1 = k * DT / N, t0 = t1 - DT / N; D[k] = D[k - 1] + 0.5 * (vVis(t0) + vVis(t1)) * DT / N; }
-  const DMAX = Math.max(...D);
+  function buildCompression() {
+    S = 0; for (let k = 1; k <= N; k++) { const t1 = k * DT / N, t0 = t1 - DT / N; S += 0.5 * (vel(t0) + vel(t1)) * DT / N; }
+    const vVis = t => vel(t) - S * F(t) / Jmag;
+    for (let k = 1; k <= N; k++) { const t1 = k * DT / N, t0 = t1 - DT / N; D[k] = D[k - 1] + 0.5 * (vVis(t0) + vVis(t1)) * DT / N; }
+    DMAX = Math.max(...D);
+  }
+  buildCompression();
+
+  // Recompute everything that depends on e. The force curve keeps its shape and contact time;
+  // only its height changes, so its area equals the new impulse m(vᵢ + e·vᵢ).
+  function setE(newE) {
+    e = newE; vf = -e * vi; Jmag = m * (vi - vf);
+    Fpk = Jmag / C[N]; Favg = Jmag / DT;
+    T_END_NORMAL = DT + (X_CONTACT - X_START) / Math.abs(vf);
+    buildCompression();
+  }
   const comp = t => { if (t <= 0 || t >= DT) return 0; const u = t / DT * N, k = Math.floor(u), f = u - k; return D[k] + f * (D[Math.min(k + 1, N)] - D[k]); };
 
   function ballState(T) {
@@ -157,7 +193,7 @@
 
   // Playback rate (sim seconds per real second): slow near and during the collision.
   let speedChoice = 5, speedNow = 5;   // "N×" = N times slower than real time
-  let slowMode = false;
+  let slowMode = false, T_START_SLOW = 0;
   const rate = () => 1 / speedNow;
   const SLOW_GAP_PX = 50;   // Slow Collision starts the ball this many pixels from the wall
 
@@ -183,7 +219,8 @@
                 red: css('--red'), green: css('--green'), ink: css('--ink'), muted: css('--muted'), line: css('--line'), ball: css('--ball') };
 
   // ---------- Graph ----------
-  const tMin = -0.005, tMax = 0.045, FMAX = 350;
+  const tMin = -0.005, tMax = 0.045;
+  const fmax = () => Math.max(350, Math.ceil(Fpk * 1.08 / 50) * 50);   // 350 N unless the peak needs more room
   const L = 58, Rm = 16;
   function drawGraph() {
     const { w, h } = gS, c = gx; if (!w) return;
@@ -197,6 +234,7 @@
   function forcePlot(Tm, ph, xTitle) {
     const { w } = gS, c = gx, pw = w - L - Rm;
     const X = t => L + (t - tMin) / (tMax - tMin) * pw;
+    const FMAX = fmax();
     const Y = f => Tm + ph - f / FMAX * ph;
     const fs = Math.max(11, Math.min(13, w / 42));
 
@@ -306,10 +344,11 @@
   }
 
   // Velocity vs. time, on the same time axis as the force graph
-  const VMIN = -8, VMAX = 6;
+  const VMIN = -8;
   function velPlot(Tm, ph) {
     const { w } = gS, c = gx, pw = w - L - Rm;
     const X = t => L + (t - tMin) / (tMax - tMin) * pw;
+    const VMAX = e * vi > 5.2 ? 8 : 6;   // more headroom when the rebound is fast
     const Y = v => Tm + ph - (v - VMIN) / (VMAX - VMIN) * ph;
     c.font = '14px Inter, sans-serif'; c.lineWidth = 1;
     c.textAlign = 'right'; c.textBaseline = 'middle';
@@ -500,6 +539,7 @@
     const gap = SLOW_GAP_PX / (sS.w / W_WORLD);        // 50 px in meters
     slowMode = true; speedNow = 40;                      // Slow Collision always runs at 40×
     T = -gap / vi;                                     // ball is 50 px from the wall, heading toward it
+    T_START_SLOW = T;
     T_END = DT + gap / Math.abs(vf);                   // stop once it is 50 px away again
     setPlaying(true);
   });
@@ -508,6 +548,16 @@
     showVel = !showVel; velBtn.setAttribute('aria-pressed', showVel);
     $('gTitle').textContent = showVel ? 'Force and velocity vs. time' : 'Force of the wall on the ball vs. time';
     draw();
+  });
+  // Coefficient of restitution slider. Mid-run it restarts from the beginning; after a run it
+  // shows the finished graphs for the new e, so values are easy to compare.
+  const eRange = $('eRange');
+  eRange.addEventListener('input', () => {
+    const done = T >= T_END;
+    setE(+eRange.value);
+    $('eVal').textContent = e.toFixed(2);
+    if (done) { if (slowMode) T_END = DT + (X_CONTACT - (X_CONTACT + vi * T_START_SLOW)) / Math.abs(vf); else T_END = T_END_NORMAL; T = T_END; setPlaying(false); }
+    else { normalStart(); setPlaying(false); }
   });
   const avgBtn = $('avg');
   avgBtn.addEventListener('click', () => { showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg); draw(); });
