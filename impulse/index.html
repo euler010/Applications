@@ -565,7 +565,11 @@
   $('eMinus').addEventListener('click', () => stepE(-0.01));
   $('ePlus').addEventListener('click', () => stepE(0.01));
   const avgBtn = $('avg');
-  avgBtn.addEventListener('click', () => { showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg); draw(); });
+  avgBtn.addEventListener('click', () => {
+    showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg);
+    if (!playing) { normalStart(); setPlaying(false); }   // when stopped, also reset so the graph starts empty
+    draw();
+  });
 
   resize();
   if (document.fonts) document.fonts.ready.then(draw);
