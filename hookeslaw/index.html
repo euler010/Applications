@@ -116,9 +116,15 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter
 #pageSpring { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
 #pageSpring > .lower { display: contents; }
 #pageSpring .rd { grid-column: 1 / -1; display: grid; gap: 14px 28px; align-items: start; }
-#pageSpring .rd .eq { margin: 0; padding: 0; border: 0; font-size: clamp(0.9rem, 2.16vw, 16px); line-height: 1.5; color: var(--ink); }
+#pageSpring .rd .eq { margin: 0; padding: 0; border: 0; font-size: clamp(15.4px, calc(2.16vw + 1px), 17px); line-height: 1.5; color: var(--ink); }
 #pageSpring .rd .eq .fres { color: var(--force); }
-#pageSpring .rd .eq .uline { color: var(--energy); }
+/* One line when it fits; otherwise the numbers wrap as a unit onto the next line */
+#pageSpring .rd .eq { white-space: normal; }
+#pageSpring .rd .eq .eqp { white-space: nowrap; }
+#pageSpring .rd .eq .uline { display: block; white-space: nowrap; color: var(--energy); }
+/* Stacked fraction (½ written as 1 over 2) */
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; font-size: 0.7em; line-height: 1.1; margin: 0 2px 0 1px; position: relative; top: -0.08em; }
+.frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 2px; }
 #pageSpring .rd .eq .uline.off { display: none; }
 #pageSpring .rd .kctl { margin: 0; padding: 0; border: 0; }
 /* Return to Equilibrium sits in the bottom-right corner of the spring workspace */
@@ -223,8 +229,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
       <canvas id="graph" role="tabpanel" aria-label="Graph of spring force magnitude versus displacement"></canvas>
     </div>
     <div class="card rd">
-      <div class="eq" id="eq" aria-live="off">|F<sub>s</sub>| = k|x|
-= (20 N/m)(0.000 m) = 0.00 N</div>
+      <div class="eq" id="eq" aria-live="off"><span class="eqp">|F<sub>s</sub>| = k|x|</span> <span class="eqp">= (20 N/m)(0.000 m) = 0.00 N</span></div>
       <div class="controls kctl">
         <label for="k">Spring constant k <output id="kOut">20 N/m</output></label>
         <div class="krow">
@@ -554,8 +559,8 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     // Spring force equation with live numbers; the stored-energy line appears only when switched on
     const U = 0.5 * state.k * x * x;
     document.getElementById('eq').innerHTML =
-      `|F<sub>s</sub>| = k|x|\n= (${state.k} N/m)(${Math.abs(x).toFixed(3)} m) = <span class="fres">${F.toFixed(2)} N</span>` +
-      `<span class="uline${showEnergy ? '' : ' off'}">\nU = ½kx² = ${U.toFixed(2)} J</span>`;
+      `<span class="eqp">|F<sub>s</sub>| = k|x|</span> <span class="eqp">= (${state.k} N/m)(${Math.abs(x).toFixed(3)} m) = <span class="fres">${F.toFixed(2)} N</span></span>` +
+      `<span class="uline${showEnergy ? '' : ' off'}">U = <span class="frac" aria-label="one half"><span>1</span><span>2</span></span>kx² = ${U.toFixed(2)} J</span>`;
     document.getElementById('kOut').textContent = state.k + ' N/m';
     document.getElementById('kDown').disabled = state.k <= +kInput.min;
     document.getElementById('kUp').disabled = state.k >= +kInput.max;
