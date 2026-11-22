@@ -310,10 +310,16 @@ function chestR(y) {
   }
   return P[P.length - 1][0];
 }
+// Flatter front across the bust (seen from above): each horizontal slice follows |x/r|^n + |z/r|^n = 1,
+// round (n = 2) away from the bust and flatter across the front at bust height (n = 3.6).
+const FLAT = 3.6;
+function flatN(y) { return 2 + (FLAT - 2) * Math.exp(-Math.pow((y - 1.32) / 0.065, 2)); }
+function frontCurve(sinPhi, y) { const n = flatN(y); return Math.pow(Math.max(0, 1 - Math.pow(Math.abs(sinPhi), n)), 1 / n); }
 function onChest(y, phi, out = 0.003) {   // a point on the bodice surface (phi = 0 is the front)
   const r = chestR(y) + out, cz = Math.cos(phi);
   const zf = 0.7 * (cz > 0 ? chestZ(r * Math.sin(phi), y) : 1);
-  return new THREE.Vector3(r * Math.sin(phi), y, r * cz * zf);
+  const front = cz > 0 ? frontCurve(Math.sin(phi), y) : cz;
+  return new THREE.Vector3(r * Math.sin(phi), y, r * front * zf);
 }
 const PELVIS_Z = 0.85, CHEST_Z = 0.7;
 const pelvis = shade(new THREE.Mesh(lathe([
@@ -328,7 +334,8 @@ chest.scale.z = CHEST_Z; skater.add(chest);
   for (let i = 0; i < p.count; i++) {
     const y = p.getY(i), z = p.getZ(i);
     if (z <= 0) continue;
-    p.setZ(i, z * chestZ(p.getX(i), y));
+    const x = p.getX(i), r = Math.hypot(x, z);
+    p.setZ(i, r * frontCurve(r > 0 ? x / r : 0, y) * chestZ(x, y));
   }
   chest.geometry.computeVertexNormals();
 }
