@@ -143,7 +143,7 @@
   </div>
 
   <div class="sec">
-    <label class="chk"><input type="checkbox" id="chkTrail" checked> Trace the path of the hand and skate tip</label>
+    <label class="chk"><input type="checkbox" id="chkTrail" checked> Trace the path of the hand and toe</label>
     <label class="chk"><input type="checkbox" id="chkFric"> Include blade–ice friction</label>
     <label class="chk"><input type="checkbox" id="chkVec"> Show <span style="color:var(--L)">L</span> and <span style="color:var(--w)">ω</span> vectors</label>
   </div>
@@ -1093,7 +1093,8 @@ function pointI(obj, mass) {
   return mass * (A.x * A.x + A.z * A.z);
 }
 // helper end-markers
-const footTip = new THREE.Object3D(); footTip.position.set(0, -0.06, 0.12); ankleF.add(footTip);
+// tip of her toe, inside the front of the boot (the boot is scaled by SKATE_SCALE and FOOT_LENGTH)
+const footTip = new THREE.Object3D(); footTip.position.set(0, -0.045 * SKATE_SCALE, 0.168 * SKATE_SCALE * FOOT_LENGTH); ankleF.add(footTip);
 const footTipS = new THREE.Object3D(); footTipS.position.set(0, -0.06, 0.12); legS.end.add(footTipS);
 const handL = new THREE.Object3D(); handL.position.y = -0.04; armL.end.add(handL);
 const handR = new THREE.Object3D(); handR.position.y = -0.04; armR.end.add(handR);
