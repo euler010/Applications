@@ -28,6 +28,10 @@
   .lab{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
   .lab b{color:var(--text);font-weight:600}
   .row{display:flex;gap:6px;flex-wrap:wrap}
+  /* stacked (vertical) fractions */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.72em;line-height:1;margin:0 1px}
+  .frac > span:first-child{border-bottom:1px solid currentColor;padding:0 1px 1px}
+  .frac > span:last-child{padding:1px 1px 0}
   button{flex:1;min-width:0;background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line);
     border-radius:8px;padding:8px 6px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .15s}
   button:hover{background:rgba(255,255,255,.16)}
@@ -94,7 +98,7 @@
     <span class="k"><span class="sw" style="background:var(--w)"></span>Angular velocity, ω</span><span class="v" id="vW">—</span>
     <span class="k"></span><span class="v" id="vRev" style="color:var(--muted)">—</span>
     <span class="k"><span class="sw" style="background:var(--L)"></span>Angular momentum, L</span><span class="v" id="vL">—</span>
-    <span class="k"><span class="sw" style="background:var(--K)"></span>Rotational KE, ½Iω²</span><span class="v" id="vK">—</span>
+    <span class="k"><span class="sw" style="background:var(--K)"></span>Rotational KE, <span class="frac"><span>1</span><span>2</span></span>Iω²</span><span class="v" id="vK">—</span>
     <span class="k"><span class="sw" style="background:#e8d39a"></span>Braid angle from vertical</span><span class="v" id="vB">—</span>
   </div>
   <div class="hint" id="kNote">Skater mass 50 kg. I is computed from her body segments in their current positions.</div>
@@ -127,9 +131,9 @@
   <div class="sec">
     <div class="row" id="speedRow">
       <button data-s="1" class="on">1×</button>
-      <button data-s="0.5">½×</button>
-      <button data-s="0.25">¼×</button>
-      <button data-s="0.1">⅒×</button>
+      <button data-s="0.5"><span class="frac"><span>1</span><span>2</span></span>×</button>
+      <button data-s="0.25"><span class="frac"><span>1</span><span>4</span></span>×</button>
+      <button data-s="0.1"><span class="frac"><span>1</span><span>10</span></span>×</button>
     </div>
   </div>
 
