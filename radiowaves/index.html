@@ -1429,8 +1429,10 @@
       const targetGain = Math.min(0.05, (STATE.rxPeak || 0) * 0.05);
       STATE.gainNode.gain.setTargetAtTime(targetGain, STATE.audioCtx.currentTime, 0.08);
       
-      // Audible pitch for the on-screen carrier: 250 Hz at the default 1.0 Hz (138–530 Hz across the slider).
-      const targetFreq = 110 + STATE.frequency * 140;
+      // Audible pitch for the frequency of the wave reaching the phone: 250 Hz for a 1.0 Hz wave
+      // (138–530 Hz across the slider range; faster hand wiggles go higher).
+      const heardFreq = STATE.rxFreq || STATE.frequency;
+      const targetFreq = 110 + heardFreq * 140;
       STATE.carrierOsc.frequency.setTargetAtTime(targetFreq, STATE.audioCtx.currentTime, 0.05);
     }
 
@@ -1678,6 +1680,48 @@
       let peak = 0;
       for (let k = 0; k < 16; k++) peak = Math.max(peak, Math.abs(sampleHistory(retardedTime - k * period / 16)));
       STATE.rxPeak = peak * distanceFactor;
+
+      // Frequency of the wave reaching the phone (used for the tone's pitch).
+      // Time the zero crossings of the received signal over the last few seconds; a crossing
+      // only counts once the wave has swung well away from zero, so noise and wobbles near
+      // zero are ignored. Two half-cycles are averaged for a steady reading.
+      const RX_WINDOW = 6, RX_STEP = 0.02;
+      const n = Math.round(RX_WINDOW / RX_STEP);
+      let maxAbs = 0;
+      const vals = new Array(n + 1);
+      for (let k = 0; k <= n; k++) {
+        const v = sampleHistory(retardedTime - RX_WINDOW + k * RX_STEP);
+        vals[k] = v;
+        if (Math.abs(v) > maxAbs) maxAbs = Math.abs(v);
+      }
+      if (maxAbs > 0.002) {
+        const th = 0.2 * maxAbs;
+        const crossings = [];
+        let armedSign = 0; // sign of the last big swing
+        for (let k = 1; k <= n; k++) {
+          const a = vals[k - 1], b = vals[k];
+          if (Math.abs(b) > th) {
+            const sgn = Math.sign(b);
+            if (armedSign && sgn !== armedSign) {
+              // find the zero crossing between the previous big swing and this one
+              let j = k;
+              while (j > 0 && Math.sign(vals[j - 1]) === sgn) j--;
+              const y0 = vals[j - 1], y1 = vals[j];
+              const frac = (y1 !== y0) ? y0 / (y0 - y1) : 0.5;
+              crossings.push((j - 1 + frac) * RX_STEP);
+            }
+            armedSign = sgn;
+          }
+        }
+        const m = crossings.length;
+        if (m >= 3) {
+          const half = (crossings[m - 1] - crossings[m - 3]) / 2;   // average of the last two half-cycles
+          if (half > 0) STATE.rxFreq = Math.max(0.1, Math.min(6, 1 / (2 * half)));
+        } else if (m === 2) {
+          const half = crossings[1] - crossings[0];
+          if (half > 0) STATE.rxFreq = Math.max(0.1, Math.min(6, 1 / (2 * half)));
+        }
+      }
       
       // Signal presence uses a decaying peak of the received field, so the phone no longer
       // drops to "no signal" every time the sine wave crosses zero.
