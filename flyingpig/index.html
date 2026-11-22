@@ -229,8 +229,7 @@
     .inset-0 { inset: 0; }
     .inset-x-0 { left: 0; right: 0; }
     .top-4 { top: 1rem; }
-    .top-6 { top: 1.5rem; }
-    .top-20 { top: 5rem; }
+    .top-\[54px\] { top: 54px; }
     .left-4 { left: 1rem; }
     .right-4 { right: 1rem; }
     .z-0 { z-index: 0; }
@@ -254,7 +253,7 @@
     .h-8 { height: 2rem; }
     .h-full { height: 100%; }
     .h-screen { height: 100vh; height: 100dvh; }
-    .max-h-\[calc\(100vh-100px\)\] { max-height: calc(100vh - 100px); }
+    .max-h-\[calc\(100vh-70px\)\] { max-height: calc(100vh - 70px); }
 
     /* ===== Flex & Grid ===== */
     .flex-1 { flex: 1 1 0%; }
@@ -477,13 +476,13 @@
   <div id="webgl-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
 
   <!-- Top App Navigation / Header Bar (Hidden on mobile phones <768px for clean view) -->
-  <header class="hidden md:block absolute top-6 left-4 z-20 pointer-events-none">
+  <header class="hidden md:block absolute top-4 left-4 z-20 pointer-events-none">
     <h1 class="text-xl font-bold tracking-tight text-slate-900 px-1 title-float">Conical Pendulum Lab</h1>
   </header>
 
   <!-- Left Floating Analytics & Free Body Diagram Card (Desktop/Laptop: Visible; Mobile <768px: hidden) -->
-  <aside id="desktop-panel-left" class="hidden md:block absolute top-20 left-4 z-20 w-[272px] max-w-[calc(100vw-2rem)] pointer-events-none">
-    <div class="glass-card rounded-2xl p-4 pointer-events-auto max-h-[calc(100vh-100px)] overflow-y-auto space-y-4">
+  <aside id="desktop-panel-left" class="hidden md:block absolute top-[54px] left-4 z-20 w-[272px] max-w-[calc(100vw-2rem)] pointer-events-none">
+    <div class="glass-card rounded-2xl p-4 pointer-events-auto max-h-[calc(100vh-70px)] overflow-y-auto space-y-4">
       <!-- Camera View Presets -->
       <div class="border-b border-slate-200/80 pb-3">
         <div class="flex items-center justify-between mb-2">
