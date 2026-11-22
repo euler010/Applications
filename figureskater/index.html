@@ -333,12 +333,12 @@ chest.scale.z = CHEST_Z; skater.add(chest);
   chest.geometry.computeVertexNormals();
 }
 const shoulders = shade(new THREE.Mesh(new THREE.SphereGeometry(0.16, 72, 40), mat.dress));
-shoulders.scale.set(1.0, 0.35, 0.6); shoulders.position.y = 1.41; skater.add(shoulders);
+shoulders.scale.set(1.16, 0.4, 0.6); shoulders.position.y = 1.41; skater.add(shoulders);
 { // trim the front of the shoulders the same way, so the upper chest slopes back
   const p = shoulders.geometry.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const z = p.getZ(i); if (z <= 0) continue;
-    p.setZ(i, z * upperTrim(1.41 + p.getY(i) * 0.35));
+    p.setZ(i, z * upperTrim(1.41 + p.getY(i) * 0.4));
   }
   shoulders.geometry.computeVertexNormals();
 }
@@ -442,6 +442,7 @@ belt.rotation.x = Math.PI / 2; belt.scale.y = 0.77; belt.position.y = 1.065; ska
     return deep.clone().convertLinearToSRGB().lerp(ice.clone().convertLinearToSRGB(), t * t * (3 - 2 * t)).convertSRGBToLinear();
   };
   const ombreMat = mat.dress.clone(); ombreMat.vertexColors = true; ombreMat.color.set(0xffffff);
+  ombreMat.roughness = 0.6; ombreMat.metalness = 0.1;   // satin
   for (const mesh of [chest, shoulders, pelvis]) {
     mesh.updateMatrixWorld(true);
     const p = mesh.geometry.attributes.position, col = new Float32Array(p.count * 3), v = new THREE.Vector3();
@@ -452,7 +453,7 @@ belt.rotation.x = Math.PI / 2; belt.scale.y = 0.77; belt.position.y = 1.065; ska
     mesh.geometry.setAttribute('color', new THREE.BufferAttribute(col, 3));
     mesh.material = ombreMat;
   }
-  mat.band = new THREE.MeshStandardMaterial({ color: 0x2f6db5, roughness: 0.3, metalness: 0.35 });
+  mat.band = new THREE.MeshStandardMaterial({ color: 0x2f6db5, roughness: 0.6, metalness: 0.1 });
   const crystalMat = new THREE.MeshStandardMaterial({ color: 0xeaf6ff, metalness: 0.7, roughness: 0.05, emissive: 0xbfe2ff, emissiveIntensity: 0.4 });
   let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let k = 0; k < 45; k++) {
@@ -590,14 +591,61 @@ function makeLimb(len1, len2, r1, r2, m1, m2, sleeve) {
   return { root, joint, end, len1, len2 };
 }
 
+// A shaped limb segment hanging along -y, with rounded ends centred on the joints.
+// r = [top, middle, bottom radius, where the middle sits (0 top … 1 bottom)], back = extra fullness at the back (calf, triceps…)
+function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material) {
+  const ss = t => t * t * (3 - 2 * t);
+  const rad = s => s < mid ? r0 + (rm - r0) * ss(s / mid) : rm + (r1 - rm) * ss((s - mid) / (1 - mid));
+  const pts = [];
+  for (let k = 0; k <= 8; k++) { const a = -Math.PI / 2 + (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r1 * Math.cos(a), -len + r1 * Math.sin(a))); }
+  for (let k = 1; k < 40; k++) { const sv = 1 - k / 40; pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
+  for (let k = 0; k <= 8; k++) { const a = (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r0 * Math.cos(a), r0 * Math.sin(a))); }
+  const geo = new THREE.LatheGeometry(pts, 32);
+  if (back) {
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const z = p.getZ(i); if (z >= 0) continue;
+      const sv = -p.getY(i) / len, bump = Math.exp(-Math.pow((sv - mid) / 0.2, 2));
+      p.setZ(i, z * (1 + back * bump));
+    }
+  }
+  geo.computeVertexNormals();
+  return shade(new THREE.Mesh(geo, material));
+}
+function makeShapedLimb(len1, len2, S, m1, m2, sleeve) {
+  const root = new THREE.Group();
+  root.add(shapedSeg(len1, S.a, S.aBack, m1));
+  const joint = new THREE.Group(); joint.position.y = -len1; root.add(joint);
+  joint.add(shapedSeg(len2, S.b, S.bBack, m2));
+  if (sleeve) {   // sheer sleeve following the shape of the arm
+    const plus = r => [r[0] + 0.008, r[1] + 0.008, r[2] + 0.008, r[3]];
+    const o1 = shapedSeg(len1, plus(S.a), S.aBack, sleeve); o1.castShadow = false; root.add(o1);
+    const o2 = shapedSeg(len2 - 0.02, plus(S.b), S.bBack, sleeve); o2.castShadow = false; joint.add(o2);
+  }
+  if (S.kneecap) {
+    const k = shade(new THREE.Mesh(new THREE.SphereGeometry(S.a[2] * 0.62, 16, 12), m1));
+    k.scale.set(1, 1.15, 0.7); k.position.set(0, 0.005, S.a[2] * 0.62); joint.add(k);
+  }
+  const end = new THREE.Group(); end.position.y = -len2; joint.add(end);
+  return { root, joint, end, len1, len2 };
+}
+// arm: rounded shoulder, defined back of the upper arm and forearm; leg: tapered thigh, full calf, kneecap, slim ankle
+const ARM_SHAPE = { a: [0.043, 0.039, 0.028, 0.3], aBack: 0.28, b: [0.031, 0.035, 0.02, 0.22], bBack: 0.25 };
+const LEG_SHAPE = { a: [0.07, 0.06, 0.045, 0.3], aBack: 0.08, b: [0.043, 0.057, 0.032, 0.28], bBack: 0.45, kneecap: true };
+
 const ARM1 = 0.29, ARM2 = 0.27, LEG1 = 0.44, LEG2 = 0.42;
 const SH_Y = 1.40, SH_X = 0.185, HIP_Y = 0.95, HIP_X = 0.085;
 
-const armL = makeLimb(ARM1, ARM2, 0.038, 0.032, mat.skin, mat.skin, mat.sleeve);
+const armL = makeShapedLimb(ARM1, ARM2, ARM_SHAPE, mat.skin, mat.skin, mat.sleeve);
 armL.root.position.set(SH_X, SH_Y, 0); skater.add(armL.root);
-const armR = makeLimb(ARM1, ARM2, 0.038, 0.032, mat.skin, mat.skin, mat.sleeve);
+const armR = makeShapedLimb(ARM1, ARM2, ARM_SHAPE, mat.skin, mat.skin, mat.sleeve);
 armR.root.position.set(-SH_X, SH_Y, 0); skater.add(armR.root);
 for (const a of [armL, armR]) {
+  // rounded shoulder muscle at the top of the arm, overlapping the torso so there is no step
+  const cap = shade(new THREE.Mesh(new THREE.SphereGeometry(0.048, 24, 16), mat.skin));
+  cap.scale.set(1, 1.5, 0.92); cap.position.y = -0.02; a.root.add(cap);
+  const capS = new THREE.Mesh(new THREE.SphereGeometry(0.056, 24, 16), mat.sleeve);
+  capS.scale.copy(cap.scale); capS.position.copy(cap.position); a.root.add(capS);
   const hand = shade(new THREE.Mesh(new THREE.SphereGeometry(0.036, 12, 10), mat.skin));
   hand.scale.set(0.7, 1.3, 1.0); hand.position.y = -0.03; a.end.add(hand);
 }
@@ -707,17 +755,17 @@ function makeSkate() {
 }
 
 // Standing (right) leg: from hip down to the ball of the foot on the spin axis
-const legS = makeLimb(LEG1, LEG2, 0.062, 0.042, mat.tights, mat.tights);
+const legS = makeShapedLimb(LEG1, LEG2, LEG_SHAPE, mat.tights, mat.tights);
 legS.root.position.set(-HIP_X, HIP_Y, 0); skater.add(legS.root);
 const skateS = makeSkate(); legS.end.add(skateS);
 const ankleS = new THREE.Group(); ankleS.position.y = -LEG2; legS.joint.add(ankleS);   // shin-aligned
 ankleS.add(makeCuff());
 // Free (left) leg
-const legF = makeLimb(LEG1, LEG2, 0.062, 0.042, mat.tights, mat.tights);
+const legF = makeShapedLimb(LEG1, LEG2, LEG_SHAPE, mat.tights, mat.tights);
 legF.root.position.set(HIP_X, HIP_Y, 0); skater.add(legF.root);
 // leotard leg openings: the dress fabric wraps the top of each thigh and moves with it
 for (const l of [legS, legF]) {
-  const cuff = shade(new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.066, 0.08, 20), mat.band));
+  const cuff = shade(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.08, 24), mat.band));
   cuff.position.y = -0.05; l.root.add(cuff);
 }
 const ankleF = new THREE.Group(); legF.end.add(ankleF);
