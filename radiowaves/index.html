@@ -403,7 +403,7 @@
       <div>
         <h1 class="font-bold text-lg text-slate-900 leading-tight tracking-tight flex items-center gap-2">
           Radio Waves and Cellular Transmission
-          <span class="text-xs font-mono bg-cyan-50 text-cyan-700 border border-cyan-200 px-2 py-0.5 rounded-full">Interactive Simulation</span>
+          <span class="text-xs bg-cyan-50 text-cyan-700 border border-cyan-200 px-2 py-0.5 rounded-full">Interactive Simulation</span>
         </h1>
       </div>
     </div>
@@ -489,7 +489,7 @@
       <div class="md:col-span-4 bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm flex flex-col items-center">
         <div class="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between w-full">
           <span>Smartphone Receiver</span>
-          <span class="text-[12px] font-mono text-cyan-700 px-1.5 py-0.5 bg-cyan-50 rounded border border-cyan-200">5G / LTE Demodulator</span>
+          <span class="text-[12px] text-cyan-700 px-1.5 py-0.5 bg-cyan-50 rounded border border-cyan-200">5G / LTE Demodulator</span>
         </div>
 
         <!-- Phone chassis (Compact modern design) -->
@@ -503,7 +503,7 @@
           <div class="flex-1 bg-white rounded-2xl p-2.5 flex flex-col justify-between border border-slate-200 text-xs overflow-hidden relative shadow-inner">
             <!-- Screen Top Status Bar -->
             <div class="flex justify-between items-center text-[12px] text-slate-500 border-b border-slate-100 pb-1">
-              <span class="font-mono">12:42</span>
+              <span class="">12:42</span>
               <div class="flex items-center gap-1.5">
                 <span id="phoneBars" class="signal-bars text-slate-300" data-level="0" aria-label="Signal strength"><i></i><i></i><i></i><i></i></span>
                 <span class="font-bold text-cyan-700">5G</span>
@@ -514,7 +514,7 @@
             <!-- Main App Content (Second Animation Demodulator Canvas) -->
             <div class="flex-1 py-1 flex flex-col justify-center">
               <div class="text-center mb-1">
-                <span class="text-[11px] font-mono text-slate-500">Demodulated Signal (V(t))</span>
+                <span class="text-[11px] text-slate-500">Demodulated Signal (V(t))</span>
                 <h4 id="phoneDecodedTitle" class="text-xs font-bold text-slate-800">Transmitter Idle</h4>
               </div>
 
@@ -545,7 +545,7 @@
             <!-- Receiver Antenna Internal Indicator -->
             <div class="bg-cyan-50 rounded-lg p-1 border border-cyan-200 flex items-center justify-between gap-2 text-[11px] text-cyan-800">
               <span>Internal Antenna (λ/4):</span>
-              <span id="antennaOscStatus" class="font-mono text-slate-500 font-semibold">Idle</span>
+              <span id="antennaOscStatus" class="text-slate-500 font-semibold">Idle</span>
             </div>
           </div>
 
@@ -586,10 +586,10 @@
         <div class="flex flex-col gap-1">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-700">Carrier Frequency (f):</span>
-            <span id="lblFreq" class="font-mono text-cyan-700 font-bold">1.00 Hz</span>
+            <span id="lblFreq" class="text-cyan-700 font-bold">1.00 Hz</span>
           </div>
           <input type="range" id="slFreq" min="0.2" max="3.0" step="0.05" value="1.0" class="custom-slider w-full">
-          <div class="flex justify-between text-[12px] text-slate-500 font-mono">
+          <div class="flex justify-between text-[12px] text-slate-500 ">
             <span>0.2 Hz</span>
             <span>Wavelength λ ∝ 1/f</span>
             <span>3.0 Hz</span>
@@ -600,7 +600,7 @@
         <div class="flex flex-col gap-1">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-700">Transmitter Power / Amplitude (E₀):</span>
-            <span id="lblAmp" class="font-mono text-cyan-700 font-bold">80 %</span>
+            <span id="lblAmp" class="text-cyan-700 font-bold">80 %</span>
           </div>
           <input type="range" id="slAmp" min="0" max="100" step="1" value="80" class="custom-slider w-full">
         </div>
@@ -609,7 +609,7 @@
         <div class="flex flex-col gap-1">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-700">Tower-to-Phone Distance (r):</span>
-            <span id="lblDist" class="font-mono text-emerald-700 font-bold">1200 m</span>
+            <span id="lblDist" class="text-emerald-700 font-bold">1200 m</span>
           </div>
           <input type="range" id="slDist" min="400" max="2200" step="50" value="1200" class="custom-slider w-full">
           <div class="text-[12px] text-slate-500">
@@ -621,7 +621,7 @@
         <div class="flex flex-col gap-1">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-700">Simulation Speed:</span>
-            <span id="lblSpeed" class="font-mono text-purple-700 font-bold">1.0x Real-Sim</span>
+            <span id="lblSpeed" class="text-purple-700 font-bold">1.0x Real-Sim</span>
           </div>
           <input type="range" id="slSpeed" min="0.1" max="2.0" step="0.1" value="1.0" class="custom-slider w-full">
         </div>
@@ -1779,7 +1779,7 @@
         document.getElementById('phoneBitstream').textContent = '00000000 00000000 00000000';
         document.getElementById('phonePayload').textContent = STATE.txPowered ? 'Waiting for wave arrival...' : 'Turn on transmitter to send RF data';
         document.getElementById('antennaOscStatus').textContent = 'Idle';
-        document.getElementById('antennaOscStatus').className = 'font-mono text-slate-400 font-semibold';
+        document.getElementById('antennaOscStatus').className = 'text-slate-400 font-semibold';
         return;
       }
 
@@ -1817,7 +1817,7 @@
       }
 
       document.getElementById('antennaOscStatus').textContent = 'Resonating (Induced EMF)';
-      document.getElementById('antennaOscStatus').className = 'font-mono text-emerald-600 font-bold';
+      document.getElementById('antennaOscStatus').className = 'text-emerald-600 font-bold';
     }
 
     function drawSimulation() {
@@ -1946,7 +1946,7 @@
       simCtx.setLineDash([]);
 
       simCtx.fillStyle = '#0284c7';
-      simCtx.font = 'bold 12px "JetBrains Mono", ui-monospace, monospace';
+      simCtx.font = 'bold 12px "Inter", sans-serif';
       simCtx.textAlign = 'left';
       simCtx.fillText('Omnidirectional Radiation (Spreading in all directions at speed c)', srcX + 28, srcY + 16);
 
@@ -2106,7 +2106,7 @@
       }
 
       // Labels positioned clearly above the waves to prevent any overlap
-      simCtx.font = 'bold 12px "JetBrains Mono", ui-monospace, monospace';
+      simCtx.font = 'bold 12px "Inter", sans-serif';
       simCtx.textAlign = 'left';
       simCtx.textBaseline = 'middle';
       const labelY = startY - 48;
