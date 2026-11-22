@@ -383,7 +383,7 @@ const headGeo = new THREE.SphereGeometry(0.095, 64, 40);
 }
 const head = shade(new THREE.Mesh(headGeo, mat.skin));
 // head, hair and face sit in one group, scaled about the base of the head (HEAD_SIZE 1 = original)
-const HEAD_SIZE = 1.1 * 1.04, HEAD_PIVOT_Y = 1.49;   // 14.4% larger than the original head
+const HEAD_SIZE = 1.1 * 1.04 * 0.98, HEAD_PIVOT_Y = 1.49;   // about 12% larger than the original head
 const headScaler = new THREE.Group(); headScaler.position.y = HEAD_PIVOT_Y; headScaler.scale.setScalar(HEAD_SIZE); skater.add(headScaler);
 const headParts = new THREE.Group(); headParts.position.y = -HEAD_PIVOT_Y; headScaler.add(headParts);
 head.scale.copy(HEAD_SCALE); head.position.y = 1.585; headParts.add(head);
