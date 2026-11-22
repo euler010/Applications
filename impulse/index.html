@@ -587,8 +587,10 @@
   const avgBtn = $('avg');
   avgBtn.addEventListener('click', () => {
     showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg);
-    setPlaying(false);                                     // stop now; the reset happens mid-fade
-    fade = { t0: performance.now(), reset: false };
+    setPlaying(false);
+    const atStart = Math.abs(ballState(T).x - X_START) < 1e-6;   // ball already where a reset would put it
+    if (atStart) { fade = null; normalStart(); setPlaying(false); }   // just clear the graph, no fade
+    else fade = { t0: performance.now(), reset: false };           // fade out, reset mid-fade, fade in
   });
 
   resize();
