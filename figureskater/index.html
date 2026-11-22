@@ -234,9 +234,9 @@ function makeIceTexture() {
     g.beginPath(); g.arc(x, y, r, a0, a0 + da); g.stroke();
   }
   // rink markings: a centre circle and a centre line (helps you see the spin)
-  g.strokeStyle = 'rgba(200,40,60,0.55)'; g.lineWidth = 6;
+  g.strokeStyle = 'rgba(40,90,200,0.35)'; g.lineWidth = 6;      // same blue as the lines on the ice
   g.beginPath(); g.arc(512, 512, 150, 0, Math.PI * 2); g.stroke();
-  g.fillStyle = 'rgba(200,40,60,0.55)';
+  g.fillStyle = 'rgba(40,90,200,0.35)';
   g.beginPath(); g.arc(512, 512, 9, 0, Math.PI * 2); g.fill();
   g.strokeStyle = 'rgba(40,90,200,0.35)'; g.lineWidth = 10;
   g.beginPath(); g.moveTo(0, 820); g.lineTo(1024, 820); g.stroke();
