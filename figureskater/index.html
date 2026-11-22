@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Spinning Skater: Conservation of Angular Momentum</title>
+<title>Figure Skater and Angular Momentum</title>
 <style>
   :root{
     --panel: rgba(14,24,40,0.82);
@@ -17,16 +17,16 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden;background:#0b1626;color:var(--text);
-    font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+    font-family: "Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   #scene{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block}
   .panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,.35)}
-  #controls{top:12px;left:12px;width:290px;padding:14px 14px 12px;max-height:calc(100% - 24px);overflow:auto}
+  #controls{top:12px;right:12px;width:290px;padding:14px 14px 12px;max-height:calc(100% - 24px);overflow:auto}
   h1{font-size:16px;margin:0 0 2px;letter-spacing:.2px}
   .sub{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.35}
   .sec{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
-  .lab{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
-  .lab b{color:var(--text);font-weight:600;text-transform:none;letter-spacing:0}
+  .lab{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+  .lab b{color:var(--text);font-weight:600}
   .row{display:flex;gap:6px;flex-wrap:wrap}
   button{flex:1;min-width:0;background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line);
     border-radius:8px;padding:8px 6px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .15s}
@@ -37,20 +37,24 @@
   label.chk{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin:6px 0;cursor:pointer;line-height:1.3}
   label.chk input{margin-top:2px}
   .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}
-  #readout{top:12px;right:12px;width:270px;padding:12px 14px}
+  #leftCol{position:fixed;top:12px;left:12px;width:270px;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+  #leftCol .panel{position:relative;pointer-events:auto}
+  #titleBox{padding:12px 14px}
+  #titleBox h1{margin:0}
+  #readout{padding:12px 14px}
   .eq{font-variant-numeric:tabular-nums;font-size:15px;text-align:center;padding:8px 4px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
   .eq .t{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
   .meas{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:13px;font-variant-numeric:tabular-nums;align-items:baseline}
   .meas .k{color:var(--muted)}
   .meas .v{text-align:right}
   .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
-  #graphBox{right:12px;bottom:12px;width:330px;padding:8px 10px 6px}
+  #graphBox{left:12px;bottom:12px;width:330px;padding:8px 10px 6px}
   #graph{width:100%;height:190px;display:block}
-  .gtitle{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:flex;justify-content:space-between}
-  #toggleUI{position:fixed;left:12px;bottom:12px;display:none;flex:none;width:auto;padding:8px 12px}
+  #toggleUI{position:fixed;right:12px;bottom:12px;display:none;flex:none;width:auto;padding:8px 12px}
   @media (max-width: 760px){
-    #controls{width:calc(100% - 24px);max-height:46%;}
-    #readout{top:auto;bottom:12px;right:12px;width:200px;padding:8px 10px}
+    #controls{top:auto;bottom:12px;right:12px;width:calc(100% - 24px);max-height:46%;}
+    #leftCol{width:200px}
+    #readout{padding:8px 10px}
     #graphBox{display:none}
     .eq{font-size:13px}
     .meas{font-size:12px}
@@ -59,6 +63,9 @@
   }
   #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--muted)}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -70,11 +77,24 @@
 <canvas id="scene"></canvas>
 <div id="err">The 3D view could not start in this browser (WebGL is needed).</div>
 
-<div id="controls" class="panel">
-  <h1>The Spinning Skater</h1>
-  <p class="sub">Pull the arms and free leg in or push them out. With no external torque, <i>L = Iω</i> stays constant, so when <i>I</i> drops, <i>ω</i> rises.</p>
+<div id="leftCol">
+  <div id="titleBox" class="panel"><h1>Figure Skater and Angular Momentum</h1></div>
+  <div id="readout" class="panel">
+  <div class="eq"><span class="t">L = I × ω</span><span id="eqLine">—</span></div>
+  <div class="meas">
+    <span class="k"><span class="sw" style="background:var(--I)"></span>Moment of inertia, I</span><span class="v" id="vI">—</span>
+    <span class="k"><span class="sw" style="background:var(--w)"></span>Angular velocity, ω</span><span class="v" id="vW">—</span>
+    <span class="k"></span><span class="v" id="vRev" style="color:var(--muted)">—</span>
+    <span class="k"><span class="sw" style="background:var(--L)"></span>Angular momentum, L</span><span class="v" id="vL">—</span>
+    <span class="k"><span class="sw" style="background:var(--K)"></span>Rotational KE, ½Iω²</span><span class="v" id="vK">—</span>
+    <span class="k"><span class="sw" style="background:#e8d39a"></span>Braid angle from vertical</span><span class="v" id="vB">—</span>
+  </div>
+  <div class="hint" id="kNote">Skater mass 50 kg. I is computed from her body segments in their current positions.</div>
+</div>
+</div>
 
-  <div class="lab">Arms &amp; free leg</div>
+<div id="controls" class="panel">
+
   <div class="row">
     <button id="btnOut" class="big on">Out</button>
     <button id="btnIn" class="big">In</button>
@@ -95,7 +115,6 @@
   </div>
 
   <div class="sec">
-    <div class="lab">Playback speed</div>
     <div class="row" id="speedRow">
       <button data-s="1" class="on">1×</button>
       <button data-s="0.5">½×</button>
@@ -105,9 +124,8 @@
   </div>
 
   <div class="sec">
-    <div class="lab">Camera</div>
     <div class="row" id="viewRow">
-      <button data-v="angle">Angled</button>
+      <button data-v="angle" class="on">Angled</button>
       <button data-v="front">Side</button>
       <button data-v="top">Top</button>
     </div>
@@ -121,21 +139,7 @@
   </div>
 </div>
 
-<div id="readout" class="panel">
-  <div class="eq"><span class="t">L = I × ω</span><span id="eqLine">—</span></div>
-  <div class="meas">
-    <span class="k"><span class="sw" style="background:var(--I)"></span>Moment of inertia, I</span><span class="v" id="vI">—</span>
-    <span class="k"><span class="sw" style="background:var(--w)"></span>Angular velocity, ω</span><span class="v" id="vW">—</span>
-    <span class="k"></span><span class="v" id="vRev" style="color:var(--muted)">—</span>
-    <span class="k"><span class="sw" style="background:var(--L)"></span>Angular momentum, L</span><span class="v" id="vL">—</span>
-    <span class="k"><span class="sw" style="background:var(--K)"></span>Rotational KE, ½Iω²</span><span class="v" id="vK">—</span>
-    <span class="k"><span class="sw" style="background:#e8d39a"></span>Braid angle from vertical</span><span class="v" id="vB">—</span>
-  </div>
-  <div class="hint" id="kNote">Skater mass 50 kg. I is computed from her body segments in their current positions.</div>
-</div>
-
 <div id="graphBox" class="panel">
-  <div class="gtitle"><span>Last 12 seconds</span><span>each graph starts at 0</span></div>
   <canvas id="graph"></canvas>
 </div>
 
@@ -173,12 +177,24 @@ controls.maxDistance = 16;
 controls.maxPolarAngle = Math.PI * 0.495;
 
 // ---------- Lights ----------
-scene.add(new THREE.HemisphereLight(0xdfefff, 0x7d8ea3, 1.1));   // lighter "ground" colour lifts the undersides
+// light from below: white ice reflects a lot of light back up, so the "ground" half of the sky light is bright
+scene.add(new THREE.HemisphereLight(0xdfefff, 0xc9d8e8, 1.15));
+// two low rink-side lights aimed upward at her from near ice level (no shadows), so her chin, jaw and
+// the undersides of her arms are lit as well as the top of her head
+// a soft light from below the viewer, aimed up: whatever side you look from, her chin and jaw are lit
+const underFill = new THREE.DirectionalLight(0xfff6ee, 0.9);
+underFill.position.set(0, -1, 0.2); underFill.target.position.set(0, 0.35, -1);
+camera.add(underFill); camera.add(underFill.target);
+for (const [x, z] of [[3.2, 2.6], [-2.8, -3.0]]) {
+  const low = new THREE.DirectionalLight(0xf2f7ff, 1.1);
+  low.position.set(x, 0.15, z); low.target.position.set(0, 1.6, 0);
+  scene.add(low); scene.add(low.target);
+}
 // soft fill light that moves with the camera, so whatever side you look from is lit
 const camFill = new THREE.DirectionalLight(0xfff4ec, 0.7);
 camFill.position.set(0.3, 0.4, 0); camFill.target.position.set(0, -0.1, -1);
 camera.add(camFill); camera.add(camFill.target);
-const key = new THREE.DirectionalLight(0xffffff, 2.0);
+const key = new THREE.DirectionalLight(0xffffff, 1.7);   // overhead light, a little softer so it doesn't dominate
 key.position.set(3.5, 7, 4);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
@@ -807,10 +823,16 @@ function computeI() {
 function makeLabel(text, color) {
   const c = document.createElement('canvas'); c.width = 128; c.height = 128;
   const g = c.getContext('2d');
-  g.font = 'italic bold 84px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.lineWidth = 10; g.strokeStyle = 'rgba(10,20,35,0.85)'; g.strokeText(text, 64, 68);
-  g.fillStyle = color; g.fillText(text, 64, 68);
+  const draw = () => {
+    g.clearRect(0, 0, 128, 128);
+    g.font = 'italic 700 84px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = 10; g.strokeStyle = 'rgba(10,20,35,0.85)'; g.strokeText(text, 64, 68);
+    g.fillStyle = color; g.fillText(text, 64, 68);
+  };
+  draw();
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  // redraw once Inter has loaded
+  if (document.fonts) document.fonts.load('italic 700 84px Inter').then(() => { draw(); t.needsUpdate = true; }).catch(() => {});
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false }));
   s.scale.set(0.16, 0.16, 1); s.renderOrder = 10;
   return s;
@@ -876,7 +898,7 @@ function clearTrails() { trailHand.userData.pts.length = 0; trailFoot.userData.p
 
 // ---------- State ----------
 const state = {
-  s: 0, target: 0, transition: 0.9, // seconds (simulated) for full in/out
+  s: 0, target: 0, transition: 1.5, // seconds (simulated) for full in/out
   angle: 0, L: 0, I: 1, w: 0, running: true, timeScale: 1, friction: false, tauF: 0.8,
   t: 0, hist: [], dragging: false,
 };
@@ -942,7 +964,11 @@ function goView(name, instant) {
   if (instant) { camera.position.copy(to); controls.target.copy(tt); controls.update(); return; }
   glide = { from: camera.position.clone(), ft: controls.target.clone(), to, tt, k: 0 };
 }
-document.querySelectorAll('#viewRow button').forEach(b => b.onclick = () => goView(b.dataset.v));
+const viewBtns = document.querySelectorAll('#viewRow button');
+const markView = name => viewBtns.forEach(x => x.classList.toggle('on', x.dataset.v === name));
+viewBtns.forEach(b => b.onclick = () => { goView(b.dataset.v); markView(b.dataset.v); });
+// once the viewer drags, pinches or scrolls the view themselves, no preset is highlighted
+controls.addEventListener('start', () => { glide = null; markView(null); });
 goView('angle', true);
 
 // ---------- Readouts & graph ----------
@@ -978,12 +1004,12 @@ function drawGraph() {
   const maxL = Math.max(1, ...h.map(p => p.L)) * 1.25;
   rows[1].max = maxW; rows[2].max = maxL;
   const left = 26, right = 4, gap = 6, rh = (H - gap * 2) / 3;
-  gx.font = '11px system-ui, sans-serif';
+  gx.font = '11px Inter, system-ui, sans-serif';
   rows.forEach((r, i) => {
     const y0 = i * (rh + gap);
     gx.fillStyle = 'rgba(255,255,255,0.04)'; gx.fillRect(left, y0, W - left - right, rh);
     gx.strokeStyle = 'rgba(255,255,255,0.12)'; gx.beginPath(); gx.moveTo(left, y0 + rh); gx.lineTo(W - right, y0 + rh); gx.stroke();
-    gx.fillStyle = r.color; gx.font = 'italic bold 14px Georgia, serif';
+    gx.fillStyle = r.color; gx.font = 'italic 700 14px Inter, system-ui, sans-serif';
     gx.fillText(r.label, 6, y0 + rh / 2 + 5);
     if (h.length > 1) {
       const tNow = h[h.length - 1].t;
