@@ -323,7 +323,7 @@ function onChest(y, phi, out = 0.003) {   // a point on the bodice surface (phi 
 }
 const PELVIS_Z = 0.85, CHEST_Z = 0.7;
 const pelvis = shade(new THREE.Mesh(lathe([
-  [0.16, 0.86], [0.159, 0.9], [0.156, 0.94], [0.148, 0.98], [0.134, 1.02], [0.118, 1.055], [0.108, 1.08],
+  [0.168, 0.82], [0.174, 0.85], [0.175, 0.88], [0.172, 0.91], [0.166, 0.94], [0.157, 0.97], [0.144, 1.0], [0.128, 1.03], [0.115, 1.06], [0.108, 1.08],
 ]), mat.dress));
 pelvis.scale.z = PELVIS_Z; skater.add(pelvis);
 const chest = shade(new THREE.Mesh(lathe(CHEST_PROFILE), mat.dress));
@@ -533,23 +533,37 @@ belt.rotation.x = Math.PI / 2; belt.scale.y = 0.77; belt.position.y = 1.065; ska
   face.add(onFace(arc(0.021, 0.0027, 1.4, F.lip, -Math.PI / 2), 0, -0.05, 0.001));
 }
 
-// Skirt — flares outward slightly as the spin rate increases
-// The skirt is a cone hanging from the waist. Each slice around the waist can tilt outward
-// on its own, so the side above the free leg lifts to rest on the thigh.
+// ---------- Skirt: flexible fabric ----------
+// The skirt fabric starts at her waist (under the belt) and lies on her hips down to just above the hip
+// joints. Below that it hangs freely. Each vertical strip is treated as a hanging chain in her rotating
+// frame: each piece feels gravity m·g (down) and centrifugal force m·ω²·r (outward), so it hangs at
+//     tan θ = ω² Σ(m r) / (g Σ m)       (sums over the fabric below; wider fabric farther out, so m ∝ r)
+// At low ω it hangs and drapes over her legs; as ω grows it bells out, and at high ω it flies nearly flat.
 const skirtPivot = new THREE.Group(); skirtPivot.position.y = 0.96; skater.add(skirtPivot);
-const SKIRT_TOP_A = 0.152 * 0.97, SKIRT_TOP_B = 0.152 * PELVIS_Z * 0.97, SKIRT_LEN = 0.25, SKIRT_ALPHA0 = 0.58;   // slant length (m), resting tilt (rad)
-// the skirt's waistline follows the oval of the bodice, just inside its surface
-function waistR(phi) {
-  const sx = Math.sin(phi) / SKIRT_TOP_A, cz = Math.cos(phi) / SKIRT_TOP_B;
-  return 1 / Math.sqrt(sx * sx + cz * cz);
+const SKIRT_LEN = 0.25, TOP_Y = 0.1, SEAM_Y = -0.02, SK_R = 144, SK_H = 30, SKIRT_K = 12, SKIRT_NS = 60;
+const PELVIS_PTS = [[0.168, 0.82], [0.174, 0.85], [0.175, 0.88], [0.172, 0.91], [0.166, 0.94], [0.157, 0.97], [0.144, 1.0], [0.128, 1.03], [0.115, 1.06], [0.108, 1.08]];
+function hipClear(phi, y) {        // radius of the outside of her hips (an oval) at height y below the skirt pivot, + 4 mm
+  const wy = y + 0.96; if (wy < PELVIS_PTS[0][1]) return 0;
+  let pr = PELVIS_PTS[PELVIS_PTS.length - 1][0];
+  for (let k = 0; k < PELVIS_PTS.length - 1; k++) if (wy >= PELVIS_PTS[k][1] && wy <= PELVIS_PTS[k + 1][1]) {
+    const u = (wy - PELVIS_PTS[k][1]) / (PELVIS_PTS[k + 1][1] - PELVIS_PTS[k][1]);
+    pr = PELVIS_PTS[k][0] + (PELVIS_PTS[k + 1][0] - PELVIS_PTS[k][0]) * u; break;
+  }
+  return 1 / Math.sqrt((Math.sin(phi) / pr) ** 2 + (Math.cos(phi) / (pr * PELVIS_Z)) ** 2) + 0.004;
 }
-function makeDrape(t0, t1, material, out) {
-  const geo = new THREE.CylinderGeometry(1, 1, 1, 96, 14, true);
-  const p = geo.attributes.position, n = p.count;
-  const phi = new Float32Array(n), t = new Float32Array(n);
-  for (let i = 0; i < n; i++) {
-    phi[i] = Math.atan2(p.getX(i), p.getZ(i));
-    t[i] = t0 + (0.5 - p.getY(i)) * (t1 - t0);
+function makeDrape(t0, t1, material, out, ombre) {
+  const geo = new THREE.CylinderGeometry(1, 1, 1, SK_R, SK_H, true), p = geo.attributes.position;
+  const phi = new Float32Array(p.count), t = new Float32Array(p.count);
+  for (let i = 0; i < p.count; i++) { phi[i] = Math.atan2(p.getX(i), p.getZ(i)); t[i] = t0 + (0.5 - p.getY(i)) * (t1 - t0); }
+  if (ombre) {   // deep blue where the skirt starts hanging, fading to pale ice at the hem
+    const deep = new THREE.Color(0x2f6db5).convertLinearToSRGB(), pale = new THREE.Color(0xcfe9fb).convertLinearToSRGB();
+    const fit = TOP_Y - SEAM_Y, col = new Float32Array(p.count * 3);
+    for (let i = 0; i < p.count; i++) {
+      const sk = Math.max(0, (t[i] * (fit + SKIRT_LEN) - fit) / SKIRT_LEN), u = Math.min(1, sk / 0.85), e = u * u * (3 - 2 * u);
+      const c = deep.clone().lerp(pale, e).convertSRGBToLinear();
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
   }
   const mesh = shade(new THREE.Mesh(geo, material));
   mesh.frustumCulled = false;
@@ -557,71 +571,110 @@ function makeDrape(t0, t1, material, out) {
   skirtPivot.add(mesh);
   return mesh;
 }
-const skirt = makeDrape(0, 1, mat.dress2, 0);
+const skirtMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide });
+const skirt = makeDrape(0, 1, skirtMat, 0, true);
 const hemBand = makeDrape(0.93, 1.0, mat.accent, 0.003);
-const _hip = new THREE.Vector3(), _knee = new THREE.Vector3();
-// ---------- Skirt as flexible fabric ----------
-// Each vertical strip of the skirt is treated like a hanging chain of K pieces. In her rotating frame each
-// piece feels gravity (down) and centrifugal force m·ω²·r (outward), so piece k hangs at
-//     tan θₖ = ω² Σ(mⱼ rⱼ) / (g Σ mⱼ)        (sums over the fabric below piece k)
-// Fabric farther out is wider, so mⱼ ∝ rⱼ. At low ω the skirt hangs nearly straight down and drapes over
-// her hips and thighs; as ω grows it bells out, and at high ω it flies out nearly horizontally.
-const SKIRT_K = 12;
 const skirtTheta = new Float32Array(SKIRT_K).fill(0.15);
-function skirtClear(phi) {         // how far out the fabric must stay to clear her hips and thighs
-  const s = Math.abs(Math.sin(phi)), c = Math.abs(Math.cos(phi));
-  const hips = 1 / Math.sqrt((s / 0.165) ** 2 + (c / (0.165 * PELVIS_Z)) ** 2);
-  return Math.max(hips, 0.085 * s + 0.1 * (0.6 + 0.4 * s));
+const _hip = new THREE.Vector3(), _knee = new THREE.Vector3(), _P = new THREE.Vector3(), _Q = new THREE.Vector3(), _D = new THREE.Vector3();
+const stripR = new Float32Array(SKIRT_NS + 1), stripY = new Float32Array(SKIRT_NS + 1);
+let legSegs = [];
+function thighProfile(u) {          // thigh radius (leotard surface) a fraction u of the way from hip to knee
+  const [r0, rm, r1, mid] = LEG_SHAPE.a, ss = x => x * x * (3 - 2 * x);
+  const bulge = Math.max(LEG_SHAPE.aBack, LEG_SHAPE.aFront.amt);
+  return (u < mid ? r0 + (rm - r0) * ss(u / mid) : rm + (r1 - rm) * ss((u - mid) / (1 - mid)))
+         * (1 + bulge * Math.exp(-Math.pow((u - 0.45) / 0.25, 2))) + 0.004;
+}
+function legGap(x, y, z, extra) {   // how far inside a thigh this point is (≤ 0 means outside)
+  _P.set(x, y, z); let worst = 0;
+  for (const sg of legSegs) {
+    _D.subVectors(sg.k, sg.h); const L2 = _D.lengthSq();
+    const u = Math.min(1, Math.max(0, _Q.subVectors(_P, sg.h).dot(_D) / L2));
+    worst = Math.max(worst, thighProfile(u) + extra - _Q.copy(sg.h).addScaledVector(_D, u).distanceTo(_P));
+  }
+  return worst;
 }
 function updateSkirt(omega, dt = 1) {
-  const g = 9.8, K = SKIRT_K, ds = SKIRT_LEN / K;
-  // 1) the hanging shape (same for every strip), solved a few times so the radii and angles agree
+  const g = 9.8, K = SKIRT_K, NS = SKIRT_NS;
+  // 1) hanging angles (the same for every strip), solved a few times so radii and angles agree
   const target = new Float32Array(K); target.set(skirtTheta);
   for (let iter = 0; iter < 4; iter++) {
-    const r = new Float32Array(K); let rr = 0.15;
-    for (let k = 0; k < K; k++) { rr += ds * Math.sin(target[k]); r[k] = rr; }
+    const r = new Float32Array(K); let rr = 0.17;
+    for (let k = 0; k < K; k++) { rr += (SKIRT_LEN / K) * Math.sin(target[k]); r[k] = rr; }
     for (let k = 0; k < K; k++) {
-      let mr = 0, ms = 0;
-      for (let j = k; j < K; j++) { mr += r[j] * r[j]; ms += r[j]; }    // m ∝ r
+      let mr = 0, ms = 0; for (let j = k; j < K; j++) { mr += r[j] * r[j]; ms += r[j]; }
       target[k] = Math.min(1.5, Math.atan2(omega * omega * mr, g * ms));
     }
   }
-  const kk = 1 - Math.exp(-dt / 0.18);                                     // fabric takes a moment to respond
+  const kk = 1 - Math.exp(-dt / 0.18);                       // fabric takes a moment to respond
   for (let k = 0; k < K; k++) skirtTheta[k] += (target[k] - skirtTheta[k]) * kk;
-
-  // 2) the free leg pushes the fabric above it outward
-  legF.root.getWorldPosition(_hip); legF.joint.getWorldPosition(_knee);
-  skirtPivot.worldToLocal(_hip); skirtPivot.worldToLocal(_knee);
-  const d = _knee.sub(_hip).normalize();
-  const legPhi = Math.atan2(d.x, d.z);
-  const legTheta = Math.acos(Math.min(1, Math.max(-1, -d.y)));
-  const Wd = 1.15;
-  // 3) soft folds around the skirt; they pull taut as she spins faster
-  const foldAmp = 0.014 / (1 + Math.pow(omega / 9, 2));
-  const foldPhase = 0.25 * Math.sin((state.t || 0) * 1.7);
-
-  for (const m of [skirt, hemBand]) {
-    const { phi, t, out } = m.userData, p = m.geometry.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const ph = phi[i];
-      let dp = Math.abs(ph - legPhi); if (dp > Math.PI) dp = 2 * Math.PI - dp;
-      const w = dp < Wd ? Math.pow(Math.cos(dp / Wd * Math.PI / 2), 2) : 0;
-      const legMin = (legTheta + 0.42) * w;
-      const clear = skirtClear(ph);
-      // walk down this strip to fraction t of the skirt's length
-      let r = waistR(ph), y = 0, left = t[i] * SKIRT_LEN;
-      for (let k = 0; k < K && left > 1e-6; k++) {
-        const step = Math.min(ds, left); left -= step;
-        const th = Math.max(skirtTheta[k], legMin);
-        r += step * Math.sin(th); y -= step * Math.cos(th);
-        if (r < clear) r += (clear - r) * Math.min(1, (t[i] * SKIRT_LEN - left) / 0.05);   // drape over hips / thighs
+  // 2) where her thighs are, in the skirt's frame
+  legSegs = [legS, legF].map(l => {
+    l.root.getWorldPosition(_hip); l.joint.getWorldPosition(_knee);
+    return { h: skirtPivot.worldToLocal(_hip.clone()), k: skirtPivot.worldToLocal(_knee.clone()) };
+  });
+  const foldAmp = 0.014 / (1 + Math.pow(omega / 9, 2)), foldPhase = 0.25 * Math.sin((state.t || 0) * 1.7);
+  const fit = TOP_Y - SEAM_Y, total = fit + SKIRT_LEN, NF = Math.round(NS * fit / total), NH = NS - NF, st = SKIRT_LEN / NH;
+  const C = SK_R + 1, R0 = new Float32Array(skirt.geometry.attributes.position.count), Y = new Float32Array(R0.length);
+  const PUSH = new Float32Array(R0.length);
+  const tS = skirt.userData.t, tB = hemBand.userData.t, Rb = new Float32Array(R0.length), Yb = new Float32Array(R0.length);
+  for (let col = 0; col <= SK_R; col++) {
+    const ph = skirt.userData.phi[col];
+    // fitted part: lies on her hips (2 mm off the surface)
+    for (let j = 0; j <= NF; j++) { const yy = TOP_Y - fit * j / NF; stripR[j] = hipClear(ph, yy) - 0.002; stripY[j] = yy; }
+    // hanging part: near the seam it follows the hips and curves out to its hanging angle over 6 cm;
+    // if a step would go into a leg, that piece tilts outward until it slides over the leg (draping)
+    let r = stripR[NF], y = stripY[NF];
+    for (let j = NF + 1; j <= NS; j++) {
+      const done = (j - NF) * st, k = Math.min(K - 1, Math.floor((done - st / 2) / (SKIRT_LEN / K)));
+      const u = Math.min(1, done / 0.06), e = u * u * (3 - 2 * u);
+      let a = 0.12 + (skirtTheta[k] - 0.12) * e, nr, ny;
+      for (let tries = 0; tries < 45; tries++) {
+        nr = r + st * Math.sin(a); ny = y - st * Math.cos(a);
+        nr = Math.max(nr, hipClear(ph, ny));
+        if (legGap(nr * Math.sin(ph), ny, nr * Math.cos(ph), 0.004) <= 0 || a >= 1.65) break;
+        a += 0.04;
       }
-      r += foldAmp * Math.pow(t[i], 1.5) * Math.sin(9 * ph + foldPhase) + out;
-      p.setXYZ(i, r * Math.sin(ph), y, r * Math.cos(ph));
+      r = nr; y = ny; stripR[j] = r; stripY[j] = y;
     }
-    p.needsUpdate = true;
-    m.geometry.computeVertexNormals();
+    // place both meshes' vertices in this column along the strip
+    for (const [tt, RR, YY, isSkirt] of [[tS, R0, Y, true], [tB, Rb, Yb, false]]) {
+      for (let row = 0; row <= SK_H; row++) {
+        const i = row * C + col, f = tt[i] * NS, j0 = Math.min(NS - 1, Math.floor(f)), w = f - j0;
+        let rr = stripR[j0] + (stripR[j0 + 1] - stripR[j0]) * w;
+        const yy = stripY[j0] + (stripY[j0 + 1] - stripY[j0]) * w;
+        const skt = Math.max(0, (tt[i] * total - fit) / SKIRT_LEN);
+        rr += foldAmp * Math.pow(skt, 1.5) * Math.sin(9 * ph + foldPhase);
+        RR[i] = rr; YY[i] = yy;
+        if (isSkirt) {   // safety net: how far a point is still inside a leg (only below the fitted part)
+          const gap = skt > 0.03 ? legGap(rr * Math.sin(ph), yy, rr * Math.cos(ph), 0.006) : 0;
+          PUSH[i] = Math.max(0, gap);
+        }
+      }
+    }
   }
+  // spread any safety pushes smoothly to the surrounding fabric
+  const rows = SK_H + 1, idx = (row, col) => row * C + ((col % SK_R) + SK_R) % SK_R;
+  if (PUSH.some(v => v > 0)) for (let pass = 0; pass < 8; pass++) {
+    const nxt = PUSH.slice();
+    for (let row = 0; row < rows; row++) for (let col = 0; col < SK_R; col++) {
+      const i = idx(row, col);
+      let best = Math.max(PUSH[i], PUSH[idx(row, col - 1)] * 0.8, PUSH[idx(row, col + 1)] * 0.8);
+      if (row > 0) best = Math.max(best, PUSH[idx(row - 1, col)] * 0.7);
+      if (row < rows - 1) best = Math.max(best, PUSH[idx(row + 1, col)] * 0.6);
+      nxt[i] = best;
+    }
+    PUSH.set(nxt);
+  }
+  for (let row = 0; row < rows; row++) PUSH[row * C + SK_R] = PUSH[row * C];
+  const ps = skirt.geometry.attributes.position, pb = hemBand.geometry.attributes.position, phiA = skirt.userData.phi;
+  for (let i = 0; i < ps.count; i++) {
+    const r = R0[i] + PUSH[i], ph = phiA[i];
+    ps.setXYZ(i, r * Math.sin(ph), Y[i], r * Math.cos(ph));
+    const rb = Rb[i] + PUSH[SK_H * C + (i % C)] + 0.003;      // hem band follows the skirt's bottom edge
+    pb.setXYZ(i, rb * Math.sin(ph), Yb[i], rb * Math.cos(ph));
+  }
+  ps.needsUpdate = true; pb.needsUpdate = true;
+  skirt.geometry.computeVertexNormals(); hemBand.geometry.computeVertexNormals();
 }
 
 // Generic two-segment limb that hangs along local -y
@@ -641,12 +694,17 @@ function makeLimb(len1, len2, r1, r2, m1, m2, sleeve) {
 // A shaped limb segment hanging along -y, with rounded ends centred on the joints.
 // r = [top, middle, bottom radius, where the middle sits (0 top … 1 bottom)], back = extra fullness at the back (calf, triceps…)
 // front = { amt, at }: extra fullness at the front (quadriceps), centred at fraction `at` down the segment
-function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material, front) {
+// sMax: build only the top part of the segment (0 … sMax of its length), e.g. a leotard leg over the thigh
+function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material, front, sMax) {
   const ss = t => t * t * (3 - 2 * t);
   const rad = s => s < mid ? r0 + (rm - r0) * ss(s / mid) : rm + (r1 - rm) * ss((s - mid) / (1 - mid));
   const pts = [];
-  for (let k = 0; k <= 8; k++) { const a = -Math.PI / 2 + (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r1 * Math.cos(a), -len + r1 * Math.sin(a))); }
-  for (let k = 1; k < 40; k++) { const sv = 1 - k / 40; pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
+  if (sMax) {
+    for (let k = 0; k < 40; k++) { const sv = sMax * (1 - k / 40); pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
+  } else {
+    for (let k = 0; k <= 8; k++) { const a = -Math.PI / 2 + (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r1 * Math.cos(a), -len + r1 * Math.sin(a))); }
+    for (let k = 1; k < 40; k++) { const sv = 1 - k / 40; pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
+  }
   for (let k = 0; k <= 8; k++) { const a = (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r0 * Math.cos(a), r0 * Math.sin(a))); }
   const geo = new THREE.LatheGeometry(pts, 32);
   if (back || front) {
@@ -683,11 +741,11 @@ function makeShapedLimb(len1, len2, S, m1, m2, sleeve) {
 }
 // arm: rounded shoulder, defined back of the upper arm and forearm; leg: tapered thigh, full calf, kneecap, slim ankle
 const ARM_SHAPE = { a: [0.043, 0.039, 0.028, 0.3], aBack: 0.28, b: [0.031, 0.035, 0.02, 0.22], bBack: 0.25 };
-const LEG_SHAPE = { a: [0.078 * 1.04, 0.086 * 1.04, 0.047, 0.22], aBack: 0.16, aFront: { amt: 0.16, at: 0.55 },
+const LEG_SHAPE = { a: [0.07, 0.086 * 1.04, 0.047, 0.22], aBack: 0.16, aFront: { amt: 0.16, at: 0.55 },
   b: [0.047, 0.057, 0.032, 0.3], bBack: 0.45, kneecap: true };
 
 const ARM1 = 0.29, ARM2 = 0.27, LEG1 = 0.44, LEG2 = 0.42;
-const SH_Y = 1.40, SH_X = 0.185, HIP_Y = 0.95, HIP_X = 0.085;
+const SH_Y = 1.40, SH_X = 0.185, HIP_Y = 0.95, HIP_X = 0.08;
 
 const armL = makeShapedLimb(ARM1, ARM2, ARM_SHAPE, mat.skin, mat.skin, mat.sleeve);
 armL.root.position.set(SH_X, SH_Y, 0); skater.add(armL.root);
@@ -859,10 +917,10 @@ ankleS.add(makeCuff());
 // Free (left) leg
 const legF = makeShapedLimb(LEG1, LEG2, LEG_SHAPE, mat.tights, mat.tights);
 legF.root.position.set(HIP_X, HIP_Y, 0); skater.add(legF.root);
-// leotard leg openings: the dress fabric wraps the top of each thigh and moves with it
+// leotard legs: the same shape as the thigh (muscles included), 4 mm larger, from the hip 18 cm down
 for (const l of [legS, legF]) {
-  const cuff = shade(new THREE.Mesh(new THREE.CylinderGeometry(0.094, 0.094, 0.08, 24), mat.band));
-  cuff.position.y = -0.05; l.root.add(cuff);
+  const A = LEG_SHAPE.a, plus = [A[0] + 0.004, A[1] + 0.004, A[2] + 0.004, A[3]];
+  l.root.add(shapedSeg(LEG1, plus, LEG_SHAPE.aBack, mat.band, LEG_SHAPE.aFront, 0.18 / LEG1));
 }
 const ankleF = new THREE.Group(); legF.end.add(ankleF);
 const skateF = makeSkate(); ankleF.add(skateF);
