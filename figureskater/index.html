@@ -39,8 +39,12 @@
   .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}
   #leftCol{position:fixed;top:12px;left:12px;width:290px;max-height:calc(100% - 24px);overflow:auto;display:flex;flex-direction:column;gap:10px;pointer-events:none}
   #leftCol .panel{position:relative;pointer-events:auto}
-  #titleBox{padding:12px 14px}
-  #titleBox h1{margin:0}
+  #titleBox{padding:2px 2px 0;pointer-events:none}
+  /* title floats over the scene as text, shaded from the light blue of the ice to the blue of the selected buttons */
+  #titleBox h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.2px;line-height:1.2;
+    background:linear-gradient(90deg,#e4f0fa 0%,#a9d2f3 35%,#5b95f0 70%,#2a6fdb 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 2px rgba(5,12,24,.6))}
   #readout{padding:12px 14px}
   .eq{font-variant-numeric:tabular-nums;font-size:15px;text-align:center;padding:8px 4px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
   .eq .t{display:block;margin-bottom:4px}
@@ -78,7 +82,7 @@
 <div id="err">The 3D view could not start in this browser (WebGL is needed).</div>
 
 <div id="leftCol">
-  <div id="titleBox" class="panel"><h1>Figure Skater and Angular Momentum</h1></div>
+  <div id="titleBox"><h1>Figure Skater and Angular Momentum</h1></div>
   <div id="readout" class="panel">
   <div class="eq"><span class="t"><span style="color:var(--L)">L</span> = <span style="color:var(--I)">I</span> × <span style="color:var(--w)">ω</span></span><span id="eqLine">—</span></div>
   <div class="meas">
