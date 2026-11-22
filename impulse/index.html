@@ -273,7 +273,7 @@
 
     // axis titles
     c.fillStyle = COL.ink; c.font = '600 14px Inter, sans-serif';   // axis titles
-    if (xTitle) c.fillText('Time, t (ms)', L + pw / 2, Tm + ph + 24);
+    if (xTitle) c.fillText('Time (ms)', L + pw / 2, Tm + ph + 24);
     c.save(); c.translate(15, Tm + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'middle';
     c.fillText('Force on ball (N)', 0, 0); c.restore();
 
@@ -383,7 +383,7 @@
     }
     c.strokeStyle = COL.ink; c.beginPath(); c.moveTo(X(0), Tm); c.lineTo(X(0), Tm + ph); c.stroke();   // vertical axis at t = 0
     c.fillStyle = COL.ink; c.font = '600 14px Inter, sans-serif';
-    c.fillText('Time, t (ms)', L + pw / 2, Tm + ph + 24);
+    c.fillText('Time (ms)', L + pw / 2, Tm + ph + 24);
     c.save(); c.translate(15, Tm + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'middle';
     c.fillText('Velocity (m/s)', 0, 0); c.restore();
     c.save(); c.globalAlpha = graphAlpha();   // plotted data fades during an Average Force reset
