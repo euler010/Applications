@@ -202,8 +202,8 @@
 
   // ---------- State ----------
   let T = T_START, playing = false, last = null, showAvg = false, showVel = false;
-  // Quick fade when Average Force sends the ball back to the start: 0.1 s out, jump, 0.1 s in.
-  const FADE_HALF = 0.1;
+  // Quick fade when Average Force sends the ball back to the start: 0.05 s out, jump, 0.05 s in.
+  const FADE_HALF = 0.05;
   let fade = null;   // { t0, reset }
   const ballAlpha = () => {
     if (!fade) return 1;
