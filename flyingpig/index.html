@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Conical Pendulum 3D Simulation</title>
+  <title>Conical Pendulum Lab</title>
   <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <!-- OrbitControls CDN -->
@@ -21,6 +21,9 @@
       -webkit-user-select: none;
     }
     /* Readouts use Inter with equal-width digits, so numbers don't jiggle as they change */
+    .title-float {
+      text-shadow: 0 0 6px rgba(248, 250, 252, 0.95), 0 1px 2px rgba(248, 250, 252, 0.9);
+    }
     .font-numeric {
       font-family: 'Inter', sans-serif;
       font-variant-numeric: tabular-nums;
@@ -226,6 +229,7 @@
     .inset-0 { inset: 0; }
     .inset-x-0 { left: 0; right: 0; }
     .top-4 { top: 1rem; }
+    .top-6 { top: 1.5rem; }
     .top-20 { top: 5rem; }
     .left-4 { left: 1rem; }
     .right-4 { right: 1rem; }
@@ -299,6 +303,7 @@
     .p-3 { padding: 0.75rem; }
     .p-3\.5 { padding: 0.875rem; }
     .p-4 { padding: 1rem; }
+    .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
     .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
     .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
     .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
@@ -357,6 +362,7 @@
     .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
     .text-base { font-size: 1rem; line-height: 1.5rem; }
     .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
     .font-medium { font-weight: 500; }
     .font-semibold { font-weight: 600; }
     .font-bold { font-weight: 700; }
@@ -471,21 +477,8 @@
   <div id="webgl-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
 
   <!-- Top App Navigation / Header Bar (Hidden on mobile phones <768px for clean view) -->
-  <header class="hidden md:flex absolute top-4 left-4 z-20 flex-wrap items-center gap-3 pointer-events-none">
-    <div class="glass-card px-4 py-2.5 rounded-2xl flex items-center gap-3 pointer-events-auto">
-      <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="9" stroke-width="2"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v9l5 5"/>
-        </svg>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-sm font-bold tracking-tight text-slate-900 leading-tight">Conical Pendulum Lab</h1>
-        </div>
-        <p class="text-[11px] text-slate-500 font-medium">3D Mechanics of Flying Pigs</p>
-      </div>
-    </div>
+  <header class="hidden md:block absolute top-6 left-4 z-20 pointer-events-none">
+    <h1 class="text-xl font-bold tracking-tight text-slate-900 px-1 title-float">Conical Pendulum Lab</h1>
   </header>
 
   <!-- Left Floating Analytics & Free Body Diagram Card (Desktop/Laptop: Visible; Mobile <768px: hidden) -->
@@ -713,10 +706,7 @@
   <aside id="mobile-drawer" class="mobile-drawer-sheet md:hidden">
     <!-- Drawer Handle / Drag Header -->
     <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200">
-      <div class="flex items-center gap-2">
-        <div class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></div>
-        <span class="text-sm font-bold text-slate-700">Conical Pendulum Lab</span>
-      </div>
+      <span class="text-sm font-bold text-slate-700">Conical Pendulum Lab</span>
       <button id="btn-close-drawer" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 active:bg-slate-100" aria-label="Close Drawer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
