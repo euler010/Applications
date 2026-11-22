@@ -156,9 +156,6 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { Line2 } from 'three/addons/lines/Line2.js';
-import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
-import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 
 const canvas = document.getElementById('scene');
 let renderer;
@@ -1166,17 +1163,14 @@ const VEC_BASE = 1.78;
 
 // ---------- Trails ----------
 const TRAIL_N = 160;
-const TRAIL_WIDTH = 2;   // pixels
-const trailMats = [];
 function makeTrail(color) {
-  // thick (2 px) line; the tail fades into the colour of the ice
-  const pos = new Float32Array(TRAIL_N * 3), col = new Float32Array(TRAIL_N * 3);
-  const c = new THREE.Color(color), ice = new THREE.Color(0xdbe9f6), tmp = new THREE.Color();
-  for (let i = 0; i < TRAIL_N; i++) { tmp.copy(c).lerp(ice, i / TRAIL_N); col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b; }
-  const geo = new LineGeometry(); geo.setPositions(pos); geo.setColors(col);
-  const mat = new LineMaterial({ linewidth: TRAIL_WIDTH, vertexColors: true, worldUnits: false });
-  mat.resolution.set(window.innerWidth, window.innerHeight); trailMats.push(mat);
-  const line = new Line2(geo, mat);
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(TRAIL_N * 3), col = new Float32Array(TRAIL_N * 4);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
+  const c = new THREE.Color(color);
+  for (let i = 0; i < TRAIL_N; i++) { col[i * 4] = c.r; col[i * 4 + 1] = c.g; col[i * 4 + 2] = c.b; col[i * 4 + 3] = 1 - i / TRAIL_N; }
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
   line.frustumCulled = false;
   line.userData = { pts: [], pos };
   scene.add(line);
@@ -1193,7 +1187,7 @@ function pushTrail(tr, obj) {
     const q = pts[Math.min(i, pts.length - 1)];
     pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z;
   }
-  tr.geometry.setPositions(pos);
+  tr.geometry.attributes.position.needsUpdate = true;
 }
 function clearTrails() { trailHand.userData.pts.length = 0; trailFoot.userData.pts.length = 0; }
 
@@ -1355,7 +1349,6 @@ function resize() {
   resize.w = w; resize.h = h;
   renderer.setSize(w, h, false);
   camera.aspect = w / h; camera.updateProjectionMatrix();
-  for (const m of trailMats) m.resolution.set(w, h);
 }
 window.addEventListener('resize', resize); resize();
 // make the bottom of the graphs box line up with the bottom of the controls box
