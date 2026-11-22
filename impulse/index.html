@@ -202,6 +202,14 @@
 
   // ---------- State ----------
   let T = T_START, playing = false, last = null, showAvg = false, showVel = false;
+  // Quick fade when Average Force sends the ball back to the start: 0.1 s out, jump, 0.1 s in.
+  const FADE_HALF = 0.1;
+  let fade = null;   // { t0, reset }
+  const ballAlpha = () => {
+    if (!fade) return 1;
+    const el = (performance.now() - fade.t0) / 1000;
+    return el < FADE_HALF ? 1 - el / FADE_HALF : Math.min(1, (el - FADE_HALF) / FADE_HALF);
+  };
 
   // ---------- Canvas setup ----------
   const gC = document.getElementById('graph'), sC = document.getElementById('scene');
@@ -465,7 +473,8 @@
     c.restore();
     c.strokeStyle = '#7d8696'; c.lineWidth = 2; c.beginPath(); c.moveTo(ww, 0); c.lineTo(ww, gy); c.stroke();
 
-    // ball
+    // ball (and its arrows and labels), faded during the Average Force reset
+    c.save(); c.globalAlpha = ballAlpha();
     const b = ballState(T), bx = b.x * s, by = cy, Rp = R * s, mx = M(bx);
     if (mx - Rp < w + 5) {
       const dp = Math.max(0, bx + Rp - wx);     // how far the undeformed ball would reach past the wall
@@ -493,6 +502,8 @@
         c.fillText(`F = ${b.F.toFixed(0)} N`, Math.min(x0 + len, w - 80), by - 8);
       }
     }
+
+    c.restore();
 
     // labels (top-right and bottom-right, away from the wall)
     c.fillStyle = COL.muted; c.font = `${fs}px Inter, sans-serif`; c.textAlign = 'right'; c.textBaseline = 'top';
@@ -530,16 +541,24 @@
       }
       last = ts; draw();
     }
+    if (fade) {
+      const el = (performance.now() - fade.t0) / 1000;
+      if (el >= FADE_HALF && !fade.reset) { fade.reset = true; normalStart(); setPlaying(false); }   // jump while invisible
+      if (el >= 2 * FADE_HALF) fade = null;
+      draw();
+    }
     requestAnimationFrame(frame);
   }
+  function endFade() { if (fade && !fade.reset) normalStart(); fade = null; }
   function normalStart() { slowMode = false; speedNow = speedChoice; T_END = T_END_NORMAL; T = T_START; }
   document.querySelectorAll('#speedSel button').forEach(b => b.addEventListener('click', () => {
     speedChoice = speedNow = +b.dataset.x; draw();
   }));
-  playBtn.addEventListener('click', () => { if (T >= T_END) normalStart(); setPlaying(!playing); });
-  $('reset').addEventListener('click', () => { normalStart(); setPlaying(false); });
+  playBtn.addEventListener('click', () => { endFade(); if (T >= T_END) normalStart(); setPlaying(!playing); });
+  $('reset').addEventListener('click', () => { fade = null; normalStart(); setPlaying(false); });
   $('slow').addEventListener('click', () => {
     const gap = SLOW_GAP_PX / (sS.w / W_WORLD);        // 50 px in meters
+    fade = null;
     slowMode = true; speedNow = 40;                      // Slow Collision always runs at 40×
     T = -gap / vi;                                     // ball is 50 px from the wall, heading toward it
     T_START_SLOW = T;
@@ -568,8 +587,8 @@
   const avgBtn = $('avg');
   avgBtn.addEventListener('click', () => {
     showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg);
-    normalStart(); setPlaying(false);                      // always reset so the graph starts empty
-    draw();
+    setPlaying(false);                                     // stop now; the reset happens mid-fade
+    fade = { t0: performance.now(), reset: false };
   });
 
   resize();
