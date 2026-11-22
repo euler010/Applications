@@ -43,7 +43,7 @@
   #titleBox h1{margin:0}
   #readout{padding:12px 14px}
   .eq{font-variant-numeric:tabular-nums;font-size:15px;text-align:center;padding:8px 4px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
-  .eq .t{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
+  .eq .t{display:block;margin-bottom:4px}
   .meas{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:13px;font-variant-numeric:tabular-nums;align-items:baseline}
   .meas .k{color:var(--muted)}
   .meas .v{text-align:right}
@@ -80,7 +80,7 @@
 <div id="leftCol">
   <div id="titleBox" class="panel"><h1>Figure Skater and Angular Momentum</h1></div>
   <div id="readout" class="panel">
-  <div class="eq"><span class="t">L = I × ω</span><span id="eqLine">—</span></div>
+  <div class="eq"><span class="t"><span style="color:var(--L)">L</span> = <span style="color:var(--I)">I</span> × <span style="color:var(--w)">ω</span></span><span id="eqLine">—</span></div>
   <div class="meas">
     <span class="k"><span class="sw" style="background:var(--I)"></span>Moment of inertia, I</span><span class="v" id="vI">—</span>
     <span class="k"><span class="sw" style="background:var(--w)"></span>Angular velocity, ω</span><span class="v" id="vW">—</span>
@@ -101,22 +101,20 @@
   <div class="row">
     <button id="btnOut" class="big on">Out</button>
     <button id="btnIn" class="big">In</button>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <button id="btnPlay" class="big">Pause</button>
     <button id="btnResetAll" class="big">Reset</button>
   </div>
-  <div style="margin-top:8px">
+  <div style="margin-top:12px">
     <div class="lab">Position <b id="posVal">0% in</b></div>
     <input id="pos" type="range" min="0" max="100" value="0">
   </div>
-  <div class="hint">Shortcut: press <b>Space</b> to switch between Out and In.</div>
-
-  <div class="sec">
+  <div style="margin-top:8px">
     <div class="lab">Starting spin (arms out) <b id="w0Val">1.0 rev/s</b></div>
     <input id="w0" type="range" min="0.2" max="2" step="0.1" value="1.0">
-    <div class="row" style="margin-top:6px">
-      <button id="btnPlay">Pause</button>
-      <button id="btnReset">Restart spin</button>
-    </div>
   </div>
+  <div class="hint">Shortcut: press <b>Space</b> to switch between Out and In.</div>
 
   <div class="sec">
     <div class="row" id="speedRow">
@@ -1222,7 +1220,6 @@ pos.oninput = () => {
 pos.onpointerdown = () => state.dragging = true;
 window.addEventListener('pointerup', () => state.dragging = false);
 w0.oninput = () => { w0Val.textContent = parseFloat(w0.value).toFixed(1) + ' rev/s'; restart(); };
-$('btnReset').onclick = restart;
 const btnPlay = $('btnPlay');
 btnPlay.onclick = () => { state.running = !state.running; btnPlay.textContent = state.running ? 'Pause' : 'Play'; };
 document.querySelectorAll('#speedRow button').forEach(b => b.onclick = () => {
@@ -1299,7 +1296,7 @@ function updateReadout() {
   vB.textContent = Math.round((state.braidAngle || 0) * 180 / Math.PI) + '°';
   eqLine.innerHTML = `<span style="color:var(--L)">${fmt(L, 1)}</span> = <span style="color:var(--I)">${fmt(I)}</span> × <span style="color:var(--w)">${fmt(w)}</span>`;
   posVal.textContent = Math.round(state.s * 100) + '% in';
-  if (!state.dragging) pos.value = Math.round(state.target * 100);
+  if (!state.dragging) pos.value = Math.round(state.s * 100);   // the slider shows the transition as it happens
 }
 function drawGraph() {
   const dpr = Math.min(window.devicePixelRatio, 2);
