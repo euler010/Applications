@@ -568,7 +568,7 @@ function updateSkirt(omega) {
   const legPhi = Math.atan2(d.x, d.z);
   const legTheta = Math.acos(Math.min(1, Math.max(-1, -d.y)));       // angle from straight down
   const base = SKIRT_ALPHA0 + 0.22 * Math.min(omega / 30, 1);         // flares a little with spin rate
-  const need = Math.max(0, legTheta + 0.32 - base);                    // extra tilt to clear the thigh
+  const need = Math.max(0, legTheta + 0.42 - base);                    // extra tilt to clear the thigh
   const W = 1.15;                                                      // how far around the lift spreads (rad)
   for (const m of [skirt, hemBand]) {
     const { phi, t, out } = m.userData, p = m.geometry.attributes.position;
@@ -600,7 +600,8 @@ function makeLimb(len1, len2, r1, r2, m1, m2, sleeve) {
 
 // A shaped limb segment hanging along -y, with rounded ends centred on the joints.
 // r = [top, middle, bottom radius, where the middle sits (0 top … 1 bottom)], back = extra fullness at the back (calf, triceps…)
-function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material) {
+// front = { amt, at }: extra fullness at the front (quadriceps), centred at fraction `at` down the segment
+function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material, front) {
   const ss = t => t * t * (3 - 2 * t);
   const rad = s => s < mid ? r0 + (rm - r0) * ss(s / mid) : rm + (r1 - rm) * ss((s - mid) / (1 - mid));
   const pts = [];
@@ -608,12 +609,15 @@ function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material) {
   for (let k = 1; k < 40; k++) { const sv = 1 - k / 40; pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
   for (let k = 0; k <= 8; k++) { const a = (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r0 * Math.cos(a), r0 * Math.sin(a))); }
   const geo = new THREE.LatheGeometry(pts, 32);
-  if (back) {
+  if (back || front) {
     const p = geo.attributes.position;
     for (let i = 0; i < p.count; i++) {
-      const z = p.getZ(i); if (z >= 0) continue;
-      const sv = -p.getY(i) / len, bump = Math.exp(-Math.pow((sv - mid) / 0.2, 2));
-      p.setZ(i, z * (1 + back * bump));
+      const z = p.getZ(i), sv = -p.getY(i) / len;
+      // muscle shapes fade to nothing near each joint, so the two segments meet cleanly
+      const fade = Math.min(1, Math.max(0, sv / 0.18), Math.max(0, (1 - sv) / 0.18));
+      const f = fade * fade * (3 - 2 * fade);
+      if (z < 0 && back) p.setZ(i, z * (1 + back * f * Math.exp(-Math.pow((sv - mid) / 0.2, 2))));
+      if (z > 0 && front) p.setZ(i, z * (1 + front.amt * f * Math.exp(-Math.pow((sv - front.at) / 0.22, 2))));
     }
   }
   geo.computeVertexNormals();
@@ -621,7 +625,7 @@ function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material) {
 }
 function makeShapedLimb(len1, len2, S, m1, m2, sleeve) {
   const root = new THREE.Group();
-  root.add(shapedSeg(len1, S.a, S.aBack, m1));
+  root.add(shapedSeg(len1, S.a, S.aBack, m1, S.aFront));
   const joint = new THREE.Group(); joint.position.y = -len1; root.add(joint);
   joint.add(shapedSeg(len2, S.b, S.bBack, m2));
   if (sleeve) {   // sheer sleeve following the shape of the arm
@@ -629,16 +633,18 @@ function makeShapedLimb(len1, len2, S, m1, m2, sleeve) {
     const o1 = shapedSeg(len1, plus(S.a), S.aBack, sleeve); o1.castShadow = false; root.add(o1);
     const o2 = shapedSeg(len2 - 0.02, plus(S.b), S.bBack, sleeve); o2.castShadow = false; joint.add(o2);
   }
-  if (S.kneecap) {
-    const k = shade(new THREE.Mesh(new THREE.SphereGeometry(S.a[2] * 0.62, 16, 12), m1));
-    k.scale.set(1, 1.15, 0.7); k.position.set(0, 0.005, S.a[2] * 0.62); joint.add(k);
+  if (S.kneecap) {   // a subtle kneecap, flattened and sitting close to the surface
+    const kr = S.a[2] * 0.55;
+    const k = shade(new THREE.Mesh(new THREE.SphereGeometry(kr, 20, 14), m1));
+    k.scale.set(1, 1.2, 0.5); k.position.set(0, 0.006, S.a[2] - kr * 0.38); joint.add(k);
   }
   const end = new THREE.Group(); end.position.y = -len2; joint.add(end);
   return { root, joint, end, len1, len2 };
 }
 // arm: rounded shoulder, defined back of the upper arm and forearm; leg: tapered thigh, full calf, kneecap, slim ankle
 const ARM_SHAPE = { a: [0.043, 0.039, 0.028, 0.3], aBack: 0.28, b: [0.031, 0.035, 0.02, 0.22], bBack: 0.25 };
-const LEG_SHAPE = { a: [0.07, 0.06, 0.045, 0.3], aBack: 0.08, b: [0.043, 0.057, 0.032, 0.28], bBack: 0.45, kneecap: true };
+const LEG_SHAPE = { a: [0.078 * 1.04, 0.086 * 1.04, 0.047, 0.22], aBack: 0.16, aFront: { amt: 0.16, at: 0.55 },
+  b: [0.047, 0.057, 0.032, 0.3], bBack: 0.45, kneecap: true };
 
 const ARM1 = 0.29, ARM2 = 0.27, LEG1 = 0.44, LEG2 = 0.42;
 const SH_Y = 1.40, SH_X = 0.185, HIP_Y = 0.95, HIP_X = 0.085;
@@ -772,7 +778,7 @@ const legF = makeShapedLimb(LEG1, LEG2, LEG_SHAPE, mat.tights, mat.tights);
 legF.root.position.set(HIP_X, HIP_Y, 0); skater.add(legF.root);
 // leotard leg openings: the dress fabric wraps the top of each thigh and moves with it
 for (const l of [legS, legF]) {
-  const cuff = shade(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.08, 24), mat.band));
+  const cuff = shade(new THREE.Mesh(new THREE.CylinderGeometry(0.094, 0.094, 0.08, 24), mat.band));
   cuff.position.y = -0.05; l.root.add(cuff);
 }
 const ankleF = new THREE.Group(); legF.end.add(ankleF);
