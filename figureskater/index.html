@@ -37,7 +37,7 @@
   label.chk{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin:6px 0;cursor:pointer;line-height:1.3}
   label.chk input{margin-top:2px}
   .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}
-  #leftCol{position:fixed;top:12px;left:12px;width:270px;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+  #leftCol{position:fixed;top:12px;left:12px;width:290px;max-height:calc(100% - 24px);overflow:auto;display:flex;flex-direction:column;gap:10px;pointer-events:none}
   #leftCol .panel{position:relative;pointer-events:auto}
   #titleBox{padding:12px 14px}
   #titleBox h1{margin:0}
@@ -48,7 +48,7 @@
   .meas .k{color:var(--muted)}
   .meas .v{text-align:right}
   .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
-  #graphBox{left:12px;bottom:12px;width:330px;padding:8px 10px 6px}
+  #graphBox{padding:8px 10px 6px}
   #graph{width:100%;height:190px;display:block}
   #toggleUI{position:fixed;right:12px;bottom:12px;display:none;flex:none;width:auto;padding:8px 12px}
   @media (max-width: 760px){
@@ -90,6 +90,9 @@
     <span class="k"><span class="sw" style="background:#e8d39a"></span>Braid angle from vertical</span><span class="v" id="vB">—</span>
   </div>
   <div class="hint" id="kNote">Skater mass 50 kg. I is computed from her body segments in their current positions.</div>
+</div>
+  <div id="graphBox" class="panel">
+  <canvas id="graph"></canvas>
 </div>
 </div>
 
@@ -140,9 +143,7 @@
   </div>
 </div>
 
-<div id="graphBox" class="panel">
-  <canvas id="graph"></canvas>
-</div>
+
 
 <button id="toggleUI">Controls</button>
 
