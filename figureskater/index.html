@@ -311,8 +311,8 @@ function chestR(y) {
   return P[P.length - 1][0];
 }
 // Flatter front across the bust (seen from above): each horizontal slice follows |x/r|^n + |z/r|^n = 1,
-// round (n = 2) away from the bust and flatter across the front at bust height (n = 3.6).
-const FLAT = 3.6;
+// round (n = 2) away from the bust and a little flatter across the front at bust height (n = 2.8).
+const FLAT = 2.8;
 function flatN(y) { return 2 + (FLAT - 2) * Math.exp(-Math.pow((y - 1.32) / 0.065, 2)); }
 function frontCurve(sinPhi, y) { const n = flatN(y); return Math.pow(Math.max(0, 1 - Math.pow(Math.abs(sinPhi), n)), 1 / n); }
 function onChest(y, phi, out = 0.003) {   // a point on the bodice surface (phi = 0 is the front)
