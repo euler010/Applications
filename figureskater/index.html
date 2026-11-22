@@ -42,7 +42,11 @@
   #titleBox{position:fixed;top:12px;left:14px;pointer-events:none;white-space:nowrap}
   /* title floats over the scene as text, shaded from the light blue of the ice to the blue of the selected buttons */
   #titleBox h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.2px;line-height:1.2;
-    background:linear-gradient(90deg,#e4f0fa 0%,#a9d2f3 35%,#5b95f0 70%,#2a6fdb 100%);
+    /* diagonal streaks of blue, like light catching the ice */
+    background:linear-gradient(115deg,
+      #e4f0fa 0%, #9ccbf2 8%, #3f7fe0 17%, #2a6fdb 21%, #8ec4f0 30%, #eef6fc 37%,
+      #a9d2f3 45%, #5b95f0 53%, #2a6fdb 58%, #9ccbf2 67%, #e4f0fa 74%,
+      #7fb6ee 82%, #3a78dd 89%, #a9d2f3 96%, #e4f0fa 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
     filter:drop-shadow(0 1px 2px rgba(5,12,24,.6))}
   #readout{padding:12px 14px}
