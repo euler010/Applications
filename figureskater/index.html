@@ -143,9 +143,9 @@
   </div>
 
   <div class="sec">
-    <label class="chk"><input type="checkbox" id="chkVec"> Show <span style="color:var(--L)">L</span> and <span style="color:var(--w)">ω</span> vectors</label>
     <label class="chk"><input type="checkbox" id="chkTrail" checked> Trace the path of the hand and skate tip</label>
     <label class="chk"><input type="checkbox" id="chkFric"> Include blade–ice friction</label>
+    <label class="chk"><input type="checkbox" id="chkVec"> Show <span style="color:var(--L)">L</span> and <span style="color:var(--w)">ω</span> vectors</label>
   </div>
 </div>
 
@@ -1246,7 +1246,7 @@ window.addEventListener('keydown', e => {
 
 // camera views (with a short glide)
 const views = {
-  angle: { p: [3.2, 2.3, 4.0], t: [0, 0.95, 0] },
+  angle: { p: [2.88, 2.165, 3.6], t: [0, 0.95, 0] },   // 10% closer than before
   front: { p: [0, 1.1, 4.6], t: [0, 0.95, 0] },
   top:   { p: [0, 5.2, 0.001], t: [0, 0.6, 0] },
   low:   { p: [2.4, 0.25, 2.6], t: [0, 1.0, 0] },
