@@ -294,8 +294,13 @@ const lathe = pts => {        // resampled every 4 mm so the colour gradient on 
 // Multiplying only z (front) leaves her width and back unchanged.
 const CHEST_PROFILE = [[0.104, 1.04], [0.103, 1.08], [0.108, 1.13], [0.122, 1.19], [0.138, 1.25], [0.143, 1.29],
   [0.142, 1.33], [0.148, 1.37], [0.152, 1.4], [0.13, 1.435], [0.08, 1.455], [0.04, 1.46]];
+// above the bust the front slopes back toward the collarbones
+function upperTrim(y) {
+  const t = Math.min(Math.max((y - 1.345) / (1.44 - 1.345), 0), 1);
+  return 1 - 0.38 * t * t * (3 - 2 * t);
+}
 function chestZ(x, y) {
-  return 1 + 0.34 * Math.exp(-Math.pow((y - 1.29) / 0.075, 2)) + 0.2 * Math.exp(-Math.pow((y - 1.355) / 0.045, 2));
+  return (1 + 0.34 * Math.exp(-Math.pow((y - 1.29) / 0.075, 2)) + 0.2 * Math.exp(-Math.pow((y - 1.33) / 0.042, 2))) * upperTrim(y);
 }
 function chestR(y) {
   const P = CHEST_PROFILE;
@@ -329,6 +334,14 @@ chest.scale.z = CHEST_Z; skater.add(chest);
 }
 const shoulders = shade(new THREE.Mesh(new THREE.SphereGeometry(0.16, 72, 40), mat.dress));
 shoulders.scale.set(1.0, 0.35, 0.6); shoulders.position.y = 1.41; skater.add(shoulders);
+{ // trim the front of the shoulders the same way, so the upper chest slopes back
+  const p = shoulders.geometry.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const z = p.getZ(i); if (z <= 0) continue;
+    p.setZ(i, z * upperTrim(1.41 + p.getY(i) * 0.35));
+  }
+  shoulders.geometry.computeVertexNormals();
+}
 // neck: slim in the middle, flaring smoothly where it meets the shoulders and the underside of the head
 const neck = shade(new THREE.Mesh(new THREE.LatheGeometry([
   [0.058, 1.40], [0.05, 1.42], [0.044, 1.44], [0.041, 1.46], [0.042, 1.478], [0.046, 1.492],
