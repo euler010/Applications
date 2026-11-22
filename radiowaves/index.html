@@ -318,6 +318,14 @@
       #simStage { flex: none; height: 280px; }
     }
 
+    /* Scale-to-fit (large screens): the root is sized to the screen ÷ scale and enlarged. */
+    html.page-scaled, html.page-scaled body { height: 100%; overflow: hidden; }
+    html.page-scaled #appScale {
+      position: fixed; top: 0; left: 0;
+      min-height: 0; overflow-x: hidden; overflow-y: auto;
+      transform-origin: 0 0;
+    }
+
     /* CSS-drawn status icons (replace the old icon font) */
     .signal-bars { display: inline-flex; align-items: flex-end; gap: 1px; height: 10px; }
     .signal-bars i { display: block; width: 2px; border-radius: 1px; background: currentColor; opacity: 0.25; }
@@ -384,7 +392,10 @@
     }
   </style>
 </head>
-<body class="bg-white text-slate-900 min-h-screen flex flex-col overflow-x-hidden">
+<body class="bg-white text-slate-900 overflow-x-hidden">
+<!-- Scale-to-fit root: on screens larger than a 1920×1080 SmartBoard, the whole app is
+     laid out at SmartBoard size and enlarged to fill the screen (see applyPageScale). -->
+<div id="appScale" class="min-h-screen flex flex-col">
 
   <!-- Header -->
   <header class="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 shadow-xs">
@@ -660,6 +671,7 @@
       </button>
     </div>
   </div>
+</div><!-- /#appScale -->
 
   <script>
     /**
@@ -1422,18 +1434,54 @@
       STATE.carrierOsc.frequency.setTargetAtTime(targetFreq, STATE.audioCtx.currentTime, 0.05);
     }
 
+    // ---------------------------------------------------------------------------
+    // Scale-to-fit for large screens.
+    // The app is designed for a 1920×1080 SmartBoard. On a bigger screen (e.g. a 4K
+    // monitor) it is laid out exactly as on the SmartBoard and then enlarged as a whole,
+    // so text, controls and drawings keep the same proportions. On the SmartBoard and
+    // smaller screens nothing changes (scale stays 1 and the normal layout adapts).
+    // ---------------------------------------------------------------------------
+    const DESIGN_WIDTH = 1920;
+    const DESIGN_HEIGHT = 1080;
+    let PAGE_SCALE = 1;
+
+    function applyPageScale() {
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const scale = Math.max(1, Math.min(vw / DESIGN_WIDTH, vh / DESIGN_HEIGHT));
+      const root = document.getElementById('appScale');
+      PAGE_SCALE = scale;
+      if (scale > 1) {
+        // Lay out at the screen's shape but SmartBoard size, then enlarge to fill the screen.
+        document.documentElement.classList.add('page-scaled');
+        root.style.width = (vw / scale) + 'px';
+        root.style.height = (vh / scale) + 'px';
+        root.style.transform = 'scale(' + scale + ')';
+      } else {
+        document.documentElement.classList.remove('page-scaled');
+        root.style.width = root.style.height = root.style.transform = '';
+      }
+    }
+
+    // Size of an element in layout (unscaled) pixels — the units all drawing code uses.
+    function layoutSize(el) {
+      const r = el.getBoundingClientRect();
+      return { width: r.width / PAGE_SCALE, height: r.height / PAGE_SCALE };
+    }
+
     function resizeCanvases() {
-      const dpr = window.devicePixelRatio || 1;
-      
+      applyPageScale();
+      // Draw at the screen's real resolution so enlarged drawings stay sharp.
+      const dpr = (window.devicePixelRatio || 1) * PAGE_SCALE;
+
       // Main Canvas
-      const rect = simCanvas.getBoundingClientRect();
+      const rect = layoutSize(simCanvas);
       simCanvas.width = Math.round(rect.width * dpr);
       simCanvas.height = Math.round(rect.height * dpr);
       simCtx.resetTransform();
       simCtx.scale(dpr, dpr);
-      
+
       // Phone Canvas
-      const phoneRect = phoneCanvas.getBoundingClientRect();
+      const phoneRect = layoutSize(phoneCanvas);
       phoneCanvas.width = Math.round(phoneRect.width * dpr);
       phoneCanvas.height = Math.round(phoneRect.height * dpr);
       phoneCtx.resetTransform();
@@ -1450,7 +1498,7 @@
     }
 
     function updatePhoneXFromDistance() {
-      const rect = simCanvas.getBoundingClientRect();
+      const rect = layoutSize(simCanvas);
       // Keep clear of the tower, and reserve right clearance for the stacked controls panel
       // when there is room. On narrow screens shrink the gaps instead of letting the range
       // invert (which made the phone move left as distance increased).
@@ -1699,7 +1747,7 @@
     }
 
     function drawSimulation() {
-      const rect = simCanvas.getBoundingClientRect();
+      const rect = layoutSize(simCanvas);
       const w = rect.width;
       const h = rect.height;
 
@@ -2262,7 +2310,7 @@
     }
 
     function drawPhoneScreen() {
-      const phoneRect = phoneCanvas.getBoundingClientRect();
+      const phoneRect = layoutSize(phoneCanvas);
       const w = phoneRect.width;
       const h = phoneRect.height;
       const centerY = h / 2;
@@ -2461,9 +2509,10 @@
         const point = (e.touches && e.touches.length) ? e.touches[0] : e;
         const clientX = point.clientX;
         const clientY = point.clientY;
+        // Screen pixels -> layout pixels (the page may be enlarged on large screens).
         return {
-          x: clientX - rect.left,
-          y: clientY - rect.top
+          x: (clientX - rect.left) / PAGE_SCALE,
+          y: (clientY - rect.top) / PAGE_SCALE
         };
       }
 
