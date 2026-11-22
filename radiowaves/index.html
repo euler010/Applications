@@ -1569,10 +1569,26 @@
           currentAcc = 0;
         }
       } else if (STATE.mode === 'manual') {
-        currentY = STATE.chargePos;
-        currentVel = STATE.chargeVel;
-        currentAcc = 0;
+        // Radio waves come from ACCELERATION, not position: an electron at rest sends out
+        // nothing, wherever it sits. Track a smoothed version of the dragged motion (hand
+        // movements are jerky), take its acceleration, and transmit that.
+        const W = STATE.wiggle || (STATE.wiggle = { active: false });
+        const pos = STATE.chargePos;
+        if (!W.active) { W.active = true; W.x = pos; W.v = 0; W.a = 0; } // no jump when entering the mode
+        const k = 1 - Math.exp(-effectiveDt / 0.05);  // ~50 ms smoothing per stage
+        const prevX = W.x, prevV = W.v;
+        W.x += (pos - W.x) * k;
+        W.v += ((W.x - prevX) / effectiveDt - W.v) * k;
+        W.a += ((W.v - prevV) / effectiveDt - W.a) * k;
+        // Same scale and sign as Sine Wave mode: a full-height 1 Hz wiggle gives about the
+        // same wave as the 1 Hz sine. Faster or bigger wiggles give bigger waves (∝ f² × size),
+        // softly limited so the wave stays on screen.
+        const ONE_HZ = (2 * Math.PI) * (2 * Math.PI);
+        currentY = amp * Math.tanh(-W.a / ONE_HZ);
+        currentVel = W.v;
+        currentAcc = W.a;
       }
+      if (STATE.mode !== 'manual' && STATE.wiggle) STATE.wiggle.active = false;
 
       if (STATE.mode !== 'manual') {
         STATE.chargePos = currentY;
@@ -1582,7 +1598,10 @@
       // Record radiation history for retarded potentials: [t, y, v, a]
       STATE.history.unshift({
         t: STATE.time,
-        y: STATE.chargePos,
+        // The radiated signal. Equals the electron's position in Sine / Data / Pulse
+        // (where position and acceleration have the same shape); the smoothed
+        // acceleration in Manual Wiggle.
+        y: (STATE.txPowered && STATE.mode === 'manual') ? currentY : STATE.chargePos,
         v: STATE.chargeVel,
         a: currentAcc,
         // Position in the recorded voice carried by this moment of the wave (NaN when none).
