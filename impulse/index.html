@@ -205,6 +205,10 @@
   // Quick fade when Average Force sends the ball back to the start: 0.05 s out, jump, 0.05 s in.
   const FADE_HALF = 0.05;
   let fade = null;   // { t0, reset }
+  const graphAlpha = () => {
+    if (!fade || fade.reset) return 1;
+    return Math.max(0, 1 - (performance.now() - fade.t0) / 1000 / FADE_HALF);
+  };
   const ballAlpha = () => {
     if (!fade) return 1;
     const el = (performance.now() - fade.t0) / 1000;
@@ -231,7 +235,7 @@
 
   // ---------- Graph ----------
   const tMin = -0.005, tMax = 0.045;
-  const fmax = () => Math.max(350, Math.ceil(Fpk * 1.08 / 50) * 50);   // 350 N unless the peak needs more room
+  const fmax = () => Math.max(350, Math.ceil(Fpk * 1.02 / 50) * 50);   // 350 N unless the peak needs more room
   const L = 58, Rm = 16;
   function drawGraph() {
     const { w, h } = gS, c = gx; if (!w) return;
@@ -273,6 +277,7 @@
     c.save(); c.translate(15, Tm + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'middle';
     c.fillText('Force on ball (N)', 0, 0); c.restore();
 
+    c.save(); c.globalAlpha = graphAlpha();   // plotted data fades during an Average Force reset
     // average-force rectangle (behind curve)
     // Average force so far: a rectangle from first contact to now, with the same area as the
     // curve so far. It grows in width (time) and changes in height as the collision goes on.
@@ -352,6 +357,7 @@
       c.fillText('Impulse', X(tc), Y(Fpk * 0.66));
       c.fillText(`${Jmag.toFixed(2)} N·s`, X(tc), Y(Fpk * 0.66) + fs + 4);
     }
+    c.restore();
   }
 
   // Velocity vs. time, on the same time axis as the force graph
@@ -380,6 +386,7 @@
     c.fillText('Time, t (ms)', L + pw / 2, Tm + ph + 24);
     c.save(); c.translate(15, Tm + ph / 2); c.rotate(-Math.PI / 2); c.textBaseline = 'middle';
     c.fillText('Velocity (m/s)', 0, 0); c.restore();
+    c.save(); c.globalAlpha = graphAlpha();   // plotted data fades during an Average Force reset
 
     const tC = Math.min(T, tMax);
     if (tC > tMin) {
@@ -417,6 +424,7 @@
       c.textAlign = 'right'; c.textBaseline = 'bottom';
       c.fillText('v', L + pw - 4, Y(-vf) - 6);
     }
+    c.restore();
   }
 
   // ---------- Scene ----------
@@ -543,22 +551,22 @@
     }
     if (fade) {
       const el = (performance.now() - fade.t0) / 1000;
-      if (el >= FADE_HALF && !fade.reset) { fade.reset = true; normalStart(); setPlaying(false); }   // jump while invisible
+      if (el >= FADE_HALF && !fade.reset) { fade.reset = true; showAvg = fade.avg; normalStart(); setPlaying(false); }   // jump while invisible
       if (el >= 2 * FADE_HALF) fade = null;
       draw();
     }
     requestAnimationFrame(frame);
   }
-  function endFade() { if (fade && !fade.reset) normalStart(); fade = null; }
+  function endFade() { if (fade && !fade.reset) { showAvg = fade.avg; normalStart(); } fade = null; }
   function normalStart() { slowMode = false; speedNow = speedChoice; T_END = T_END_NORMAL; T = T_START; }
   document.querySelectorAll('#speedSel button').forEach(b => b.addEventListener('click', () => {
     speedChoice = speedNow = +b.dataset.x; draw();
   }));
   playBtn.addEventListener('click', () => { endFade(); if (T >= T_END) normalStart(); setPlaying(!playing); });
-  $('reset').addEventListener('click', () => { fade = null; normalStart(); setPlaying(false); });
+  $('reset').addEventListener('click', () => { if (fade && !fade.reset) showAvg = fade.avg; fade = null; normalStart(); setPlaying(false); });
   $('slow').addEventListener('click', () => {
     const gap = SLOW_GAP_PX / (sS.w / W_WORLD);        // 50 px in meters
-    fade = null;
+    if (fade && !fade.reset) showAvg = fade.avg; fade = null;
     slowMode = true; speedNow = 40;                      // Slow Collision always runs at 40×
     T = -gap / vi;                                     // ball is 50 px from the wall, heading toward it
     T_START_SLOW = T;
@@ -586,11 +594,11 @@
   $('ePlus').addEventListener('click', () => stepE(0.01));
   const avgBtn = $('avg');
   avgBtn.addEventListener('click', () => {
-    showAvg = !showAvg; avgBtn.setAttribute('aria-pressed', showAvg);
+    const newAvg = !showAvg; avgBtn.setAttribute('aria-pressed', newAvg);
     setPlaying(false);
     const atStart = Math.abs(ballState(T).x - X_START) < 1e-6;   // ball already where a reset would put it
-    if (atStart) { fade = null; normalStart(); setPlaying(false); }   // just clear the graph, no fade
-    else fade = { t0: performance.now(), reset: false };           // fade out, reset mid-fade, fade in
+    if (atStart) { showAvg = newAvg; fade = null; normalStart(); setPlaying(false); }   // just clear the graph, no fade
+    else fade = { t0: performance.now(), reset: false, avg: newAvg };   // fade out, reset mid-fade, fade in
   });
 
   resize();
