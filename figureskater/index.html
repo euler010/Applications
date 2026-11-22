@@ -388,33 +388,85 @@ const headScaler = new THREE.Group(); headScaler.position.y = HEAD_PIVOT_Y; head
 const headParts = new THREE.Group(); headParts.position.y = -HEAD_PIVOT_Y; headScaler.add(headParts);
 head.scale.copy(HEAD_SCALE); head.position.y = 1.585; headParts.add(head);
 head.receiveShadow = false; neck.receiveShadow = false;   // keep her face and neck evenly lit
-const hairCap = shade(new THREE.Mesh(new THREE.SphereGeometry(0.1, 40, 24, 0, Math.PI * 2, 0, Math.PI * 0.56), mat.hair));
+// ---------- Hair: full and textured, combed back and down to a low braid at the nape ----------
+// The hair is a cap over the head (tilted back). It has thickness that tapers to nothing at the hairline,
+// fine grooves that radiate from the nape (as if combed toward it), and strands in lighter and darker blonde.
+const HAIR_TH = Math.PI * 0.56, HAIR_THICK = 0.09, GROOVE = 0.0016, GROOVE_N = 46;
+const NAPE = new THREE.Vector3(0, -0.5, -0.87).normalize().applyAxisAngle(new THREE.Vector3(1, 0, 0), 0.62);   // in the cap's frame
+const NAPE_U = new THREE.Vector3(1, 0, 0), NAPE_W = new THREE.Vector3().crossVectors(NAPE, NAPE_U).normalize();
+const hairMat = new THREE.MeshStandardMaterial({ color: 0xe8d39a, roughness: 0.55, side: THREE.DoubleSide });
+const hairLight = new THREE.MeshStandardMaterial({ color: 0xf6e6b8, roughness: 0.5 });
+const hairDark = new THREE.MeshStandardMaterial({ color: 0xcbb07a, roughness: 0.6 });
+function capRadius(theta, phi) {
+  const inner = Math.min(1, Math.max(0, (HAIR_TH - theta) / 0.3)), body = inner * inner * (3 - 2 * inner);
+  const d = new THREE.Vector3(Math.sin(theta) * Math.cos(phi), Math.cos(theta), Math.sin(theta) * Math.sin(phi));
+  const ang = Math.atan2(d.dot(NAPE_W), d.dot(NAPE_U)), fade = Math.min(1, Math.max(0, (d.angleTo(NAPE) - 0.25) / 0.35));
+  return 0.1 * (1 + HAIR_THICK * body) + GROOVE * Math.pow(0.5 + 0.5 * Math.cos(GROOVE_N * ang), 2) * fade * body;
+}
+const hairCap = (() => {
+  const geo = new THREE.SphereGeometry(1, 160, 48, 0, Math.PI * 2, 0, HAIR_TH), p = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const theta = Math.acos(Math.max(-1, Math.min(1, v.y))), phi = Math.atan2(v.z, v.x);
+    v.multiplyScalar(capRadius(theta, phi)); p.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return shade(new THREE.Mesh(geo, hairMat));
+})();
 hairCap.scale.set(0.95, 1.08, 1.02); hairCap.position.set(0, 1.592, -0.01); hairCap.rotation.x = -0.62; headParts.add(hairCap);
+for (let k = 0; k < 70; k++) {   // strands from the hairline, back over the head and down to the nape
+  const phi = (k / 70) * Math.PI * 2 + 0.03 * Math.sin(k * 7.3), th0 = HAIR_TH - 0.03;
+  const start = new THREE.Vector3(Math.sin(th0) * Math.cos(phi), Math.cos(th0), Math.sin(th0) * Math.sin(phi));
+  if (start.angleTo(NAPE) < 0.6) continue;
+  const axis = new THREE.Vector3().crossVectors(start, NAPE).normalize(), total = start.angleTo(NAPE) - 0.22, pts = [];
+  for (let q = 0; q <= 16; q++) {
+    const d = start.clone().applyAxisAngle(axis, total * q / 16);
+    const th = Math.acos(Math.max(-1, Math.min(1, d.y))), ph = Math.atan2(d.z, d.x);
+    if (th > HAIR_TH) continue;
+    pts.push(d.multiplyScalar(capRadius(th, ph) + 0.0012));
+  }
+  if (pts.length < 4) continue;
+  hairCap.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, 0.0011 + 0.0006 * (k % 3), 5), k % 2 ? hairLight : hairDark));
+}
+// hair gathered at the nape into a soft bundle with a silver tie (the braid hangs from here)
+{
+  const bundle = shade(new THREE.Mesh(new THREE.SphereGeometry(0.024, 20, 14), hairMat));
+  bundle.scale.set(1.15, 0.9, 0.8); bundle.position.set(0, 1.536, -0.094); headParts.add(bundle);
+  const tie = shade(new THREE.Mesh(new THREE.TorusGeometry(0.014, 0.0038, 10, 20), mat.accent));
+  tie.rotation.x = Math.PI / 2 - 0.25; tie.position.set(0, 1.514, -0.104); headParts.add(tie);
+}
 // ---------- Braid: a hanging chain of links that swings outward as she spins ----------
 // In her rotating frame each bit of hair feels gravity m·g (down) and centrifugal force m·ω²·r (outward).
 // A flexible braid lines up with the total force on everything below each link, so link i hangs at
 //     tan θᵢ = ω² Σ(mⱼ rⱼ) / (g Σ mⱼ)     (sums over the hair below that link)
 // The hair's mass cancels: like a conical pendulum, the angle depends only on ω and how far out the hair is.
-const BRAID_N = 8, BRAID_SEG = 0.042, BRAID_REST = 0.166;   // links, link length (m, before head scaling), resting lean against her back (rad)
+const BRAID_N = 10, BRAID_SEG = 0.03, BRAID_REST = 0.06;    // sections, section length (m, before head scaling), resting lean (rad)
 const braid = { links: [], mass: [], theta: new Float32Array(BRAID_N).fill(BRAID_REST) };
 {
   let parent = headParts;
   for (let i = 0; i < BRAID_N; i++) {
     const link = new THREE.Group();
-    if (i === 0) link.position.set(0, 1.6, -0.105); else link.position.y = -BRAID_SEG;
+    if (i === 0) link.position.set(0, 1.5, -0.11); else link.position.y = -BRAID_SEG;
     parent.add(link); braid.links.push(link); parent = link;
-    const r = 0.03 - i * 0.002;
-    const b = shade(new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), mat.hair));
-    b.position.x = Math.sin(i * 1.6) * 0.006; b.scale.set(1, 1.25, 1); link.add(b);
+    // three-strand braid: two interlocking lobes per section, angled alternately
+    const r = 0.019 - i * 0.0009;
+    for (const side of [-1, 1]) {
+      const lobe = shade(new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), i % 2 ? hairMat : hairLight));
+      lobe.scale.set(0.95, 1.55, 0.9); lobe.rotation.z = side * 0.55;
+      lobe.position.set(side * r * 0.45 * (i % 2 ? 1 : -1) + side * r * 0.2, side * r * 0.35, -i * 0.002);
+      link.add(lobe);
+    }
     braid.mass.push(r * r * r);                       // mass ∝ volume of each section (only ratios matter)
   }
-  const band = shade(new THREE.Mesh(new THREE.TorusGeometry(0.016, 0.006, 8, 16), mat.accent));
-  band.rotation.x = Math.PI / 2; band.position.y = -0.03; parent.add(band);
+  const band = shade(new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.003, 8, 16), mat.accent));
+  band.rotation.x = Math.PI / 2; band.position.y = -0.018; parent.add(band);
+  const tuft = shade(new THREE.Mesh(new THREE.SphereGeometry(0.01, 12, 10), hairMat));
+  tuft.scale.set(0.9, 1.8, 0.9); tuft.position.y = -0.036; parent.add(tuft);
 }
 function updateBraid(omega, dt) {
   const g = 9.8, S = HEAD_SIZE, n = BRAID_N, th = braid.theta, m = braid.mass;
   // distance of the top of the braid from the spin axis (axis runs up through her centre)
-  const r0 = 0.105 * S;
+  const r0 = 0.11 * S;
   const target = new Float32Array(n);
   target.set(th);
   for (let iter = 0; iter < 4; iter++) {
