@@ -6,7 +6,7 @@
   <title>Rear-View Mirror and Acceleration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     /* =========================================================
@@ -66,7 +66,7 @@
 
       /* Type */
       --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --font-mono: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; /* numeric readouts: Inter with tabular figures */
 
       /* Effects */
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -118,14 +118,13 @@
     }
     canvas { display: block; }
     sub {
-      font-size: 10px;
+      font-size: 0.75em;
       line-height: 1;
       position: relative;
       vertical-align: baseline;
       bottom: -0.25em;
     }
-    .mono { font-family: var(--font-mono); }
-    .italic { font-style: italic; }
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
     /* =========================================================
        Top navigation bar
@@ -151,19 +150,9 @@
       align-items: center;
       gap: 8px;
       font-size: 18px;
-      line-height: 28px;
+      line-height: 1.2;
       font-weight: 700;
       color: var(--slate-900);
-    }
-    .badge {
-      font-size: 12px;
-      line-height: 16px;
-      font-weight: 600;
-      padding: 2px 10px;
-      border-radius: 9999px;
-      background: var(--sky-100);
-      color: var(--sky-700);
-      border: 1px solid var(--sky-200);
     }
     .topbar-meta {
       display: none;
@@ -244,7 +233,7 @@
       border-radius: 6px;
       font-family: var(--font-mono);
       font-weight: 700;
-      font-size: 11px;
+      font-size: 12px;
       box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
       display: none;
       pointer-events: none;
@@ -271,12 +260,13 @@
     }
     .hud-card {
       flex-shrink: 0;
+      gap: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 6px 12px;
-      font-size: 12px;
-      line-height: 16px;
+      font-size: 14px;
+      line-height: 20px;
       color: var(--slate-700);
       background: rgba(255, 255, 255, 0.95);
       -webkit-backdrop-filter: blur(8px);
@@ -286,8 +276,8 @@
       box-shadow: var(--shadow-md);
     }
     .hud-velocity { width: 245px; font-size: 14px; line-height: 20px; }
-    .hud-accel { width: 195px; }
-    .hud-angle { width: 145px; }
+    .hud-accel { width: 215px; }
+    .hud-angle { width: 155px; }
     .hud-key {
       color: var(--slate-500);
       font-weight: 500;
@@ -327,18 +317,16 @@
       justify-content: space-between;
       gap: 8px;
       padding: 12px;
-      font-size: 12px;
-      line-height: 16px;
+      font-size: 14px;
+      line-height: 20px;
       background: var(--white);
       border: 1px solid var(--slate-200);
       border-radius: 12px;
       box-shadow: var(--shadow-sm);
     }
     .presets-title {
-      font-size: 11px;
+      font-size: 16px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
       color: var(--slate-500);
     }
     .preset-list {
@@ -453,7 +441,7 @@
       display: flex;
       justify-content: space-between;
       margin-top: 4px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--slate-500);
     }
@@ -468,8 +456,8 @@
     .btn {
       padding: 8px 12px;
       border-radius: 12px;
-      font-size: 12px;
-      line-height: 16px;
+      font-size: 14px;
+      line-height: 20px;
       font-weight: 500;
       transition-property: var(--transition);
       transition-duration: 150ms;
@@ -496,8 +484,8 @@
     .panel-title {
       padding-bottom: 12px;
       border-bottom: 1px solid var(--slate-100);
-      font-size: 14px;
-      line-height: 20px;
+      font-size: 16px;
+      line-height: 24px;
       font-weight: 700;
       color: var(--slate-800);
     }
@@ -506,8 +494,8 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      font-size: 12px;
-      line-height: 16px;
+      font-size: 14px;
+      line-height: 20px;
       color: var(--slate-700);
     }
     .toggle {
@@ -563,7 +551,6 @@
     <div class="topbar-inner">
       <h1 class="app-title">
         Rear-View Mirror and Acceleration
-        <span class="badge">Physics Lab</span>
       </h1>
       <div class="topbar-meta">
         <span>Car Heading: <strong class="meta-accent">&rarr; Forward (+x)</strong></span>
@@ -632,7 +619,7 @@
           <div class="control-head">
             <label for="accelSlider" class="control-label">
               <span class="dot dot-amber"></span>
-              Acceleration (<span class="mono italic">a</span>):
+              <span>Acceleration (a):</span>
             </label>
             <span id="accelValDisplay" class="control-value mono value-amber">+0.0 m/s²</span>
           </div>
@@ -643,7 +630,7 @@
           <div class="control-head">
             <label for="velSlider" class="control-label">
               <span class="dot dot-sky"></span>
-              Velocity (<span class="mono italic">v</span>):
+              <span>Velocity (v):</span>
             </label>
             <span id="velValDisplay" class="control-value mono value-sky">0.0 m/s</span>
           </div>
@@ -660,7 +647,7 @@
             <span id="playPauseText">Pause</span>
           </button>
           <button id="btnZeroAccel" class="btn btn-secondary">
-            Zero <span class="italic">a</span>
+            Zero a
           </button>
           <button id="btnReset" class="btn btn-secondary">
             Reset
@@ -1335,7 +1322,7 @@
         const xText = px + Math.cos(angleRad) * (R - 20);
         const yText = py + Math.sin(angleRad) * (R - 20);
         ctx.fillStyle = '#334155';
-        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.font = 'bold 12px Inter, system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${deg}°`, xText, yText);
@@ -1374,7 +1361,7 @@
       const by = py + Math.sin(midA) * badgeDist;
       const degText = `${(absTheta * 180 / Math.PI).toFixed(1)}°`;
 
-      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.font = 'bold 12px Inter, system-ui, sans-serif';
       const txtWidth = ctx.measureText(degText).width;
       
       ctx.fillStyle = '#ffffff';
