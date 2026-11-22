@@ -244,7 +244,7 @@
     .w-8 { width: 2rem; }
     .w-full { width: 100%; }
     .w-screen { width: 100vw; }
-    .w-\[272px\] { width: 272px; }
+    .w-\[288px\] { width: 288px; }
     .max-w-\[calc\(100vw-2rem\)\] { max-width: calc(100vw - 2rem); }
     .h-2\.5 { height: 0.625rem; }
     .h-3 { height: 0.75rem; }
@@ -354,14 +354,9 @@
     .bg-rose-600 { background-color: #e11d48; }
 
     /* ===== Typography ===== */
-    .text-\[10px\] { font-size: 10px; }
-    .text-\[11px\] { font-size: 11px; }
-    .text-\[15px\] { font-size: 15px; }
     .text-xs { font-size: 0.75rem; line-height: 1rem; }
     .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-    .text-base { font-size: 1rem; line-height: 1.5rem; }
     .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
     .font-medium { font-weight: 500; }
     .font-semibold { font-weight: 600; }
     .font-bold { font-weight: 700; }
@@ -477,28 +472,28 @@
 
   <!-- Top App Navigation / Header Bar (Hidden on mobile phones <768px for clean view) -->
   <header class="hidden md:block absolute top-4 left-4 z-20 pointer-events-none">
-    <h1 class="text-xl font-bold tracking-tight text-slate-900 px-1 title-float">Conical Pendulum Lab</h1>
+    <h1 class="text-lg font-bold tracking-tight text-slate-900 px-1 title-float">Conical Pendulum Lab</h1>
   </header>
 
   <!-- Left Floating Analytics & Free Body Diagram Card (Desktop/Laptop: Visible; Mobile <768px: hidden) -->
-  <aside id="desktop-panel-left" class="hidden md:block absolute top-[54px] left-4 z-20 w-[272px] max-w-[calc(100vw-2rem)] pointer-events-none">
+  <aside id="desktop-panel-left" class="hidden md:block absolute top-[54px] left-4 z-20 w-[288px] max-w-[calc(100vw-2rem)] pointer-events-none">
     <div class="glass-card rounded-2xl p-4 pointer-events-auto max-h-[calc(100vh-70px)] overflow-y-auto space-y-4">
       <!-- Camera View Presets -->
       <div class="border-b border-slate-200/80 pb-3">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-slate-500">Camera View</span>
+          <span class="text-sm font-semibold text-slate-500">Camera View</span>
         </div>
         <div class="grid grid-cols-2 gap-1.5">
-          <button id="cam-orbit" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 shadow-xs text-center">
+          <button id="cam-orbit" class="glass-btn px-2.5 py-1.5 rounded-xl text-sm font-semibold text-blue-700 bg-blue-50 border-blue-200 shadow-xs text-center">
             3D Orbit
           </button>
-          <button id="cam-side" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center">
+          <button id="cam-side" class="glass-btn px-2.5 py-1.5 rounded-xl text-sm font-medium text-slate-600 text-center">
             Front (FBD)
           </button>
-          <button id="cam-top" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center">
+          <button id="cam-top" class="glass-btn px-2.5 py-1.5 rounded-xl text-sm font-medium text-slate-600 text-center">
             Top View
           </button>
-          <button id="cam-follow" class="glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center">
+          <button id="cam-follow" class="glass-btn px-2.5 py-1.5 rounded-xl text-sm font-medium text-slate-600 text-center">
             Follow Pig
           </button>
         </div>
@@ -507,27 +502,27 @@
       <!-- Live Dynamics Telemetry -->
       <div>
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-slate-500">Live Telemetry</span>
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+          <span class="text-sm font-semibold text-slate-500">Live Telemetry</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
             Real-time
           </span>
         </div>
         
-        <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="grid grid-cols-2 gap-2">
           <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Cone Angle</span>
+            <span class="text-slate-500 block text-xs">Cone Angle</span>
             <span id="stat-angle" class="text-lg font-bold font-numeric text-indigo-600">0.0°</span>
           </div>
           <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Pig Speed</span>
+            <span class="text-slate-500 block text-xs">Pig Speed</span>
             <span id="stat-speed" class="text-lg font-bold font-numeric text-teal-600">0.00 m/s</span>
           </div>
           <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Tension Force</span>
+            <span class="text-slate-500 block text-xs">Tension Force</span>
             <span id="stat-tension" class="text-lg font-bold font-numeric text-blue-600">0.0 N</span>
           </div>
           <div class="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100">
-            <span class="text-slate-400 block text-[10px]">Centripetal Force</span>
+            <span class="text-slate-500 block text-xs">Centripetal Force</span>
             <span id="stat-fc" class="text-lg font-bold font-numeric text-amber-600">0.0 N</span>
           </div>
         </div>
@@ -536,10 +531,10 @@
       <!-- Free Body Diagram (FBD) Legend -->
       <div id="fbd-panel-legend" class="border-t border-slate-200/80 pt-3">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold text-slate-500">Force Vector Legend</span>
+          <span class="text-sm font-semibold text-slate-500">Force Vector Legend</span>
         </div>
 
-        <div class="space-y-1.5 text-xs">
+        <div class="space-y-1.5 text-sm">
           <div id="legend-tension" class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100/60 transition-colors" style="opacity: 0.4;">
             <div class="flex items-center gap-2">
               <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-400/50"></span>
@@ -566,11 +561,11 @@
   </aside>
 
   <!-- Right Floating Control Panel (Desktop: Visible; Mobile <768px: hidden) -->
-  <aside id="desktop-panel-right" class="hidden md:block absolute top-4 right-4 z-20 w-[272px] max-w-[calc(100vw-2rem)] pointer-events-none">
-    <div class="glass-card rounded-2xl p-3.5 pointer-events-auto space-y-3 shadow-lg text-[15px]">
+  <aside id="desktop-panel-right" class="hidden md:block absolute top-4 right-4 z-20 w-[288px] max-w-[calc(100vw-2rem)] pointer-events-none">
+    <div class="glass-card rounded-2xl p-3.5 pointer-events-auto space-y-3 shadow-lg text-sm">
       <div class="flex items-center justify-between border-b border-slate-200/80 pb-2">
-        <span class="text-xs font-semibold text-slate-500">Simulation Controls</span>
-        <span id="badge-motion-status" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+        <span class="text-sm font-semibold text-slate-500">Simulation Controls</span>
+        <span id="badge-motion-status" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
           At Rest
         </span>
       </div>
@@ -627,13 +622,13 @@
       <div class="space-y-2.5 pt-2 border-t border-slate-200/80">
         <!-- Motor Angular Velocity ω -->
         <div class="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-1">
-          <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
+          <div class="flex justify-between items-baseline text-sm font-medium text-slate-700">
             <span>Rotation Speed (ω)</span>
           </div>
-          <div id="val-omega" class="font-numeric text-xs font-semibold text-blue-600">21.5 rpm (2.25 rad/s)</div>
+          <div id="val-omega" class="font-numeric text-sm font-semibold text-blue-600">21.5 rpm (2.25 rad/s)</div>
           <input type="range" id="input-omega" min="0" max="6.0" step="0.05" value="2.25"
             class="w-full">
-          <div class="flex justify-between text-[11px] text-slate-400">
+          <div class="flex justify-between text-xs text-slate-400">
             <span>0 rpm</span>
             <span>57.3 rpm</span>
           </div>
@@ -641,13 +636,13 @@
 
         <!-- Pendulum Cable Length L -->
         <div class="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-1">
-          <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
+          <div class="flex justify-between items-baseline text-sm font-medium text-slate-700">
             <span>String Length (L)</span>
-            <span id="val-length" class="font-numeric text-xs font-semibold text-slate-800">3.0 m</span>
+            <span id="val-length" class="font-numeric text-sm font-semibold text-slate-800">3.0 m</span>
           </div>
           <input type="range" id="input-length" min="1.5" max="3.5" step="0.1" value="3.0"
             class="w-full">
-          <div class="flex justify-between text-[11px] text-slate-400">
+          <div class="flex justify-between text-xs text-slate-400">
             <span>1.5 m</span>
             <span>3.5 m</span>
           </div>
@@ -655,13 +650,13 @@
 
         <!-- Flying Pig Mass m -->
         <div class="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-1">
-          <div class="flex justify-between items-baseline text-sm font-semibold text-slate-700">
+          <div class="flex justify-between items-baseline text-sm font-medium text-slate-700">
             <span>Pig Mass (m)</span>
-            <span id="val-mass" class="font-numeric text-xs font-semibold text-slate-800">25 kg</span>
+            <span id="val-mass" class="font-numeric text-sm font-semibold text-slate-800">25 kg</span>
           </div>
           <input type="range" id="input-mass" min="15" max="45" step="1" value="25"
             class="w-full">
-          <div class="flex justify-between text-[11px] text-slate-400">
+          <div class="flex justify-between text-xs text-slate-400">
             <span>15 kg</span>
             <span>45 kg</span>
           </div>
@@ -705,7 +700,7 @@
   <aside id="mobile-drawer" class="mobile-drawer-sheet md:hidden">
     <!-- Drawer Handle / Drag Header -->
     <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200">
-      <span class="text-sm font-bold text-slate-700">Conical Pendulum Lab</span>
+      <span class="text-lg font-bold tracking-tight text-slate-900">Conical Pendulum Lab</span>
       <button id="btn-close-drawer" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 active:bg-slate-100" aria-label="Close Drawer">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -717,34 +712,34 @@
     <div class="overflow-y-auto px-5 py-4 space-y-4">
       <!-- Camera View Presets on Mobile -->
       <div>
-        <span class="text-xs font-semibold text-slate-500 block mb-2">Camera Angle</span>
+        <span class="text-sm font-semibold text-slate-500 block mb-2">Camera View</span>
         <div class="grid grid-cols-4 gap-1.5">
-          <button id="m-cam-orbit" class="glass-btn px-2 py-2 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 text-center">Orbit</button>
-          <button id="m-cam-side" class="glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center">Front</button>
-          <button id="m-cam-top" class="glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center">Top</button>
-          <button id="m-cam-follow" class="glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center">Follow</button>
+          <button id="m-cam-orbit" class="glass-btn px-2 py-2 rounded-xl text-sm font-semibold text-blue-700 bg-blue-50 border-blue-200 text-center">Orbit</button>
+          <button id="m-cam-side" class="glass-btn px-2 py-2 rounded-xl text-sm font-medium text-slate-600 text-center">Front</button>
+          <button id="m-cam-top" class="glass-btn px-2 py-2 rounded-xl text-sm font-medium text-slate-600 text-center">Top</button>
+          <button id="m-cam-follow" class="glass-btn px-2 py-2 rounded-xl text-sm font-medium text-slate-600 text-center">Follow</button>
         </div>
       </div>
 
       <!-- Live Telemetry in Mobile Drawer -->
       <div>
-        <span class="text-xs font-semibold text-slate-500 block mb-2">Live Dynamics</span>
-        <div class="grid grid-cols-2 gap-2 text-xs">
+        <span class="text-sm font-semibold text-slate-500 block mb-2">Live Telemetry</span>
+        <div class="grid grid-cols-2 gap-2">
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <span class="text-slate-400 block text-[10px]">Cone Angle</span>
-            <span id="m-stat-angle" class="text-base font-bold font-numeric text-indigo-600">0.0°</span>
+            <span class="text-slate-500 block text-xs">Cone Angle</span>
+            <span id="m-stat-angle" class="text-lg font-bold font-numeric text-indigo-600">0.0°</span>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <span class="text-slate-400 block text-[10px]">Pig Speed</span>
-            <span id="m-stat-speed" class="text-base font-bold font-numeric text-teal-600">0.00 m/s</span>
+            <span class="text-slate-500 block text-xs">Pig Speed</span>
+            <span id="m-stat-speed" class="text-lg font-bold font-numeric text-teal-600">0.00 m/s</span>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <span class="text-slate-400 block text-[10px]">Tension Force</span>
-            <span id="m-stat-tension" class="text-base font-bold font-numeric text-blue-600">0.0 N</span>
+            <span class="text-slate-500 block text-xs">Tension Force</span>
+            <span id="m-stat-tension" class="text-lg font-bold font-numeric text-blue-600">0.0 N</span>
           </div>
           <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-            <span class="text-slate-400 block text-[10px]">Centripetal Force</span>
-            <span id="m-stat-fc" class="text-base font-bold font-numeric text-amber-600">0.0 N</span>
+            <span class="text-slate-500 block text-xs">Centripetal Force</span>
+            <span id="m-stat-fc" class="text-lg font-bold font-numeric text-amber-600">0.0 N</span>
           </div>
         </div>
       </div>
@@ -762,7 +757,7 @@
           <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 relative"></div>
         </label>
         <label class="flex items-center justify-between cursor-pointer">
-          <span class="font-medium text-slate-700">Centripetal Force (Fc)</span>
+          <span class="font-medium text-slate-700">Centripetal Force (<span class="font-numeric font-semibold text-amber-600">F<sub>c</sub></span>)</span>
           <input type="checkbox" id="m-chk-fc" class="sr-only peer">
           <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500 relative"></div>
         </label>
@@ -775,8 +770,8 @@
 
       <!-- Force Vector Legend in Mobile Drawer -->
       <div class="pt-2 border-t border-slate-200">
-        <span class="text-xs font-semibold text-slate-500 block mb-2">Force Vector Legend</span>
-        <div class="space-y-1.5 text-xs">
+        <span class="text-sm font-semibold text-slate-500 block mb-2">Force Vector Legend</span>
+        <div class="space-y-1.5 text-sm">
           <div id="m-legend-tension" class="flex items-center gap-2 p-1.5" style="opacity: 0.4;">
             <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-400/50"></span>
             <span class="font-medium text-slate-700">Tension (<span class="font-numeric font-semibold text-blue-600">F<sub>T</sub></span>)</span>
@@ -795,23 +790,23 @@
       <!-- Sliders inside Mobile Drawer -->
       <div class="space-y-3 pt-2 border-t border-slate-200">
         <div>
-          <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-            <span>Rotation Speed</span>
-            <span id="m-val-omega" class="font-numeric text-blue-600">21.5 rpm</span>
+          <div class="flex justify-between items-baseline text-sm font-medium text-slate-700 mb-1">
+            <span>Rotation Speed (ω)</span>
+            <span id="m-val-omega" class="font-numeric font-semibold text-blue-600">21.5 rpm</span>
           </div>
           <input type="range" id="m-input-omega" min="0" max="6.0" step="0.05" value="2.25" class="w-full">
         </div>
         <div>
-          <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-            <span>String Length</span>
-            <span id="m-val-length" class="font-numeric text-slate-800">3.0 m</span>
+          <div class="flex justify-between items-baseline text-sm font-medium text-slate-700 mb-1">
+            <span>String Length (L)</span>
+            <span id="m-val-length" class="font-numeric font-semibold text-slate-800">3.0 m</span>
           </div>
           <input type="range" id="m-input-length" min="1.5" max="3.5" step="0.1" value="3.0" class="w-full">
         </div>
         <div>
-          <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-            <span>Pig Mass</span>
-            <span id="m-val-mass" class="font-numeric text-slate-800">25 kg</span>
+          <div class="flex justify-between items-baseline text-sm font-medium text-slate-700 mb-1">
+            <span>Pig Mass (m)</span>
+            <span id="m-val-mass" class="font-numeric font-semibold text-slate-800">25 kg</span>
           </div>
           <input type="range" id="m-input-mass" min="15" max="45" step="1" value="25" class="w-full">
         </div>
@@ -1489,7 +1484,7 @@
       const badge = document.getElementById('badge-motion-status');
       if (!badge) return;
       currentBadge = key;
-      badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ' + BADGE_STYLES[key].cls;
+      badge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ' + BADGE_STYLES[key].cls;
       badge.innerText = BADGE_STYLES[key].text;
     }
 
@@ -1977,16 +1972,16 @@
         const mBtn = document.getElementById(`m-cam-${m}`);
         if (btn) {
           if (m === mode) {
-            btn.className = 'glass-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 shadow-xs text-center';
+            btn.className = 'glass-btn px-2.5 py-1.5 rounded-xl text-sm font-semibold text-blue-700 bg-blue-50 border-blue-200 shadow-xs text-center';
           } else {
-            btn.className = 'glass-btn px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 text-center';
+            btn.className = 'glass-btn px-2.5 py-1.5 rounded-xl text-sm font-medium text-slate-600 text-center';
           }
         }
         if (mBtn) {
           if (m === mode) {
-            mBtn.className = 'glass-btn px-2 py-2 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border-blue-200 text-center';
+            mBtn.className = 'glass-btn px-2 py-2 rounded-xl text-sm font-semibold text-blue-700 bg-blue-50 border-blue-200 text-center';
           } else {
-            mBtn.className = 'glass-btn px-2 py-2 rounded-xl text-xs font-medium text-slate-600 text-center';
+            mBtn.className = 'glass-btn px-2 py-2 rounded-xl text-sm font-medium text-slate-600 text-center';
           }
         }
       });
