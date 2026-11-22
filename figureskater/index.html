@@ -98,6 +98,7 @@
   <div class="row">
     <button id="btnOut" class="big on">Out</button>
     <button id="btnIn" class="big">In</button>
+    <button id="btnResetAll" class="big">Reset</button>
   </div>
   <div style="margin-top:8px">
     <div class="lab">Position <b id="posVal">0% in</b></div>
@@ -970,6 +971,30 @@ viewBtns.forEach(b => b.onclick = () => { goView(b.dataset.v); markView(b.datase
 // once the viewer drags, pinches or scrolls the view themselves, no preset is highlighted
 controls.addEventListener('start', () => { glide = null; markView(null); });
 goView('angle', true);
+
+// Reset: put everything back the way it is when the page first loads
+function resetAll() {
+  // pose: arms and leg fully out, immediately
+  state.s = 0; setTarget(0); pos.value = 0; applyPose(0);
+  // starting spin 1.0 rev/s, spin angle back to zero
+  w0.value = '1.0'; w0Val.textContent = '1.0 rev/s';
+  state.angle = 0; pivot.rotation.y = 0;
+  // playing at 1×
+  state.running = true; btnPlay.textContent = 'Pause';
+  state.timeScale = 1;
+  document.querySelectorAll('#speedRow button').forEach(x => x.classList.toggle('on', x.dataset.s === '1'));
+  // checkboxes: vectors off, traces on, friction off
+  $('chkVec').checked = false; vecGroup.visible = false;
+  $('chkTrail').checked = true; trailHand.visible = trailFoot.visible = true;
+  $('chkFric').checked = false; state.friction = false;
+  // braid hanging at rest, camera back to the Angled view
+  braid.theta.fill(BRAID_REST);
+  glide = null; goView('angle', true); markView('angle');
+  restart();                       // resets L, graphs and traces
+  state.I = computeI(); state.w = state.L / state.I;
+  updateSkirt(state.w);
+}
+$('btnResetAll').onclick = resetAll;
 
 // ---------- Readouts & graph ----------
 const vB = $('vB'), vI = $('vI'), vW = $('vW'), vRev = $('vRev'), vL = $('vL'), vK = $('vK'), eqLine = $('eqLine');
