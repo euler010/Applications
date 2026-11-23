@@ -453,15 +453,14 @@
     }
 
     // clock & info
-    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#111827';
-    ctx.font = `700 ${fs(14,20,50)}px Inter, system-ui, sans-serif`;
-    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, H - 10);
-    ctx.font = `${fs(11,13,80)}px Inter, system-ui, sans-serif`; ctx.fillStyle = '#6b7280';
-    ctx.fillText(`playback ${speed}×`, W - 14, H - 10 - fs(20,26,42));
-    ctx.textBaseline = 'top'; ctx.fillStyle = '#4b5563';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillStyle = '#4b5563';
     ctx.font = `500 ${fs(11,13,80)}px Inter, system-ui, sans-serif`;
+    const lh = fs(16,19,60);
     ctx.fillText(`Track length: ${TRACK.toFixed(1)} m`, W - 14, 10);
-    ctx.fillText(`Drop height: ${(TRACK*s).toFixed(2)} m`, W - 14, 10 + fs(16,19,60));
+    ctx.fillText(`Drop height: ${(TRACK*s).toFixed(2)} m`, W - 14, 10 + lh);
+    ctx.fillStyle = '#111827';
+    ctx.font = `700 ${fs(14,20,50)}px Inter, system-ui, sans-serif`;
+    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, 10 + 2*lh + 4);
   }
 
   // ---------- table ----------
