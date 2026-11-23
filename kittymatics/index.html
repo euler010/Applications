@@ -26,10 +26,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
 header{display:grid;gap:6px}
 h1{margin:0;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;text-wrap:balance}
-.lab{display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-rows:auto 1fr;gap:18px;align-items:start}
-.lab>header{grid-column:1;grid-row:1}
-.leftcol{grid-column:1;grid-row:2}
-.stagecol{grid-column:2;grid-row:1 / span 2}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.stagecol{grid-column:1;grid-row:1}
+.leftcol{grid-column:2;grid-row:1}
+.topbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 18px;min-height:30px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:16px;min-width:0}
 .ctl{display:grid;gap:6px}
 .ctl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -51,7 +51,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--x);outline-offs
 .stagecol,.leftcol{display:grid;gap:12px;min-width:0}
 .stage{background:#ffffff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .stage svg{display:block;width:100%;height:auto}
-.transport{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.transport{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-left:auto}
 .play{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);padding:9px 20px;font-weight:600;min-width:104px}
 .play:hover{border-color:var(--accent);opacity:.9}
 .transport>button,.transport>.play{box-sizing:border-box;height:30px;padding-top:0;padding-bottom:0;line-height:1}
@@ -80,7 +80,8 @@ figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:8
 figcaption small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
 figcaption .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:1px}
 canvas{display:block;width:100%;height:190px}
-@media (max-width:900px){.lab{grid-template-columns:1fr;grid-template-rows:none}.lab>header,.leftcol,.stagecol{grid-column:auto;grid-row:auto}.lab>header{order:0}.stagecol{order:1}.leftcol{order:2}}
+@media (max-width:900px){.lab{grid-template-columns:1fr}.leftcol,.stagecol{grid-column:auto;grid-row:auto}}
+@media (max-width:640px){.transport{justify-content:flex-start;margin-left:0}}
 @media (max-width:640px){.graphs{grid-template-columns:1fr}}
 @media (max-width:520px){.readouts{grid-template-columns:repeat(2,minmax(0,1fr))}.check{margin-left:0}}
 </style>
@@ -88,37 +89,10 @@ canvas{display:block;width:100%;height:190px}
 <body>
 <div class="wrap">
   <section class="lab">
-    <header>
-      <h1>Kittymatics</h1>
-    </header>
-    <div class="leftcol">
-      <div class="panel">
-      <div class="ctl" data-k="x0">
-        <div class="ctl-top"><label for="x0">Initial position <i>x₀</i></label><span><output id="x0o">−9.0</output> <span class="unit">m</span></span></div>
-        <div class="srow"><button type="button" class="step" data-t="x0" data-d="-1" aria-label="Decrease initial position">−</button><input type="range" id="x0" min="-9" max="9" step="0.5" value="-9"><button type="button" class="step" data-t="x0" data-d="1" aria-label="Increase initial position">+</button></div>
-      </div>
-      <div class="ctl" data-k="v0">
-        <div class="ctl-top"><label for="v0">Initial velocity <i>v₀</i></label><span><output id="v0o">0.0</output> <span class="unit">m/s</span></span></div>
-        <div class="srow"><button type="button" class="step" data-t="v0" data-d="-1" aria-label="Decrease initial velocity">−</button><input type="range" id="v0" min="-5" max="5" step="0.1" value="0"><button type="button" class="step" data-t="v0" data-d="1" aria-label="Increase initial velocity">+</button></div>
-      </div>
-      <div class="ctl" data-k="a">
-        <div class="ctl-top"><label for="a">Acceleration <i>a</i></label><span><output id="ao">0.60</output> <span class="unit">m/s²</span></span></div>
-        <div class="srow"><button type="button" class="step" data-t="a" data-d="-1" aria-label="Decrease acceleration">−</button><input type="range" id="a" min="-2" max="2" step="0.05" value="0.6"><button type="button" class="step" data-t="a" data-d="1" aria-label="Increase acceleration">+</button></div>
-      </div>
-      <div class="ctl">
-        <p class="sub">Try a scenario</p>
-        <div class="presets">
-          <button type="button" data-p="-9,0,0.6" class="sel">Speeding up</button>
-          <button type="button" data-p="-4,4,-0.8">Turnaround</button>
-          <button type="button" data-p="-8,2,0">Steady walk</button>
-          <button type="button" data-p="9,-2,-0.6">Leftward dash</button>
-          <button type="button" data-p="3,0,0" data-sleep="1">Sleeping</button>
-        </div>
-      </div>
-    </div>
-    </div>
 
     <div class="stagecol">
+      <div class="topbar">
+      <header><h1>Kittymatics</h1></header>
       <div class="transport">
         <button type="button" class="play" id="play">Play</button>
         <button type="button" id="reset">Reset</button>
@@ -128,6 +102,7 @@ canvas{display:block;width:100%;height:190px}
           <button type="button" data-s="2" aria-pressed="false">2×</button>
         </div>
         <label class="check"><input type="checkbox" role="switch" id="pred" checked> Show predicted curves</label>
+      </div>
       </div>
       <div class="stage">
         <svg viewBox="0 0 1000 205" role="img" aria-labelledby="stageT">
@@ -190,6 +165,32 @@ canvas{display:block;width:100%;height:190px}
         <div class="ro a"><span>Acceleration</span><strong id="ra">−1.20<em>m/s²</em></strong></div>
       </div>
       <p class="status" id="status" aria-live="polite"></p>
+    </div>
+    <div class="leftcol">
+      <div class="panel">
+      <div class="ctl" data-k="x0">
+        <div class="ctl-top"><label for="x0">Initial position <i>x₀</i></label><span><output id="x0o">−9.0</output> <span class="unit">m</span></span></div>
+        <div class="srow"><button type="button" class="step" data-t="x0" data-d="-1" aria-label="Decrease initial position">−</button><input type="range" id="x0" min="-9" max="9" step="0.5" value="-9"><button type="button" class="step" data-t="x0" data-d="1" aria-label="Increase initial position">+</button></div>
+      </div>
+      <div class="ctl" data-k="v0">
+        <div class="ctl-top"><label for="v0">Initial velocity <i>v₀</i></label><span><output id="v0o">0.0</output> <span class="unit">m/s</span></span></div>
+        <div class="srow"><button type="button" class="step" data-t="v0" data-d="-1" aria-label="Decrease initial velocity">−</button><input type="range" id="v0" min="-5" max="5" step="0.1" value="0"><button type="button" class="step" data-t="v0" data-d="1" aria-label="Increase initial velocity">+</button></div>
+      </div>
+      <div class="ctl" data-k="a">
+        <div class="ctl-top"><label for="a">Acceleration <i>a</i></label><span><output id="ao">0.60</output> <span class="unit">m/s²</span></span></div>
+        <div class="srow"><button type="button" class="step" data-t="a" data-d="-1" aria-label="Decrease acceleration">−</button><input type="range" id="a" min="-2" max="2" step="0.05" value="0.6"><button type="button" class="step" data-t="a" data-d="1" aria-label="Increase acceleration">+</button></div>
+      </div>
+      <div class="ctl">
+        <p class="sub">Try a scenario</p>
+        <div class="presets">
+          <button type="button" data-p="-9,0,0.6" class="sel">Speeding up</button>
+          <button type="button" data-p="-4,4,-0.8">Turnaround</button>
+          <button type="button" data-p="-8,2,0">Steady walk</button>
+          <button type="button" data-p="9,-2,-0.6">Leftward dash</button>
+          <button type="button" data-p="3,0,0" data-sleep="1">Sleeping</button>
+        </div>
+      </div>
+    </div>
     </div>
   </section>
 
