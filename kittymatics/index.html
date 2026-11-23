@@ -6,15 +6,15 @@
 <title>Kittymatics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: lab bench. Controls column beside a wide stage, three motion graphs in a row beneath. */
 :root{
   --bg:#eef1f5; --surface:#ffffff; --ink:#17202b; --muted:#5a6575; --line:#d8dde5; --grid:#e8ebf0; --axis:#3d4654;
   --x:#2861a6; --v:#cc2b2b; --a:#2b8653; --accent:#17202b; --accent-ink:#ffffff; --sel-bg:#dbeafc; --sel-line:#8fb8ec; --sel-ink:#123b6b;
-  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --body:"Public Sans", "Helvetica Neue", Arial, system-ui, sans-serif;
-  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --display:"Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --body:"Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --mono:"Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
@@ -22,7 +22,7 @@
 :root[data-theme="dark"]{
   --bg:#11151b; --surface:#1a2029; --ink:#e6ebf1; --muted:#97a2b2; --line:#2c3440; --grid:#232a34; --axis:#bcc5d1;
   --x:#73aaf0; --v:#f26d6d; --a:#5fc78d; --accent:#e6ebf1; --accent-ink:#11151b; --sel-bg:#1c3555; --sel-line:#4677b4; --sel-ink:#d6e6fb; color-scheme:dark}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-variant-numeric:tabular-nums;font-size:15px;line-height:1.55}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
 header{display:grid;gap:6px}
 h1{margin:0;font-family:var(--display);font-weight:700;font-size:24px;line-height:1.05;letter-spacing:-.01em;text-wrap:balance}
@@ -136,13 +136,13 @@ canvas{display:block;width:100%;height:190px}
           <g id="arrows">
             <path id="vLine" stroke="#cc2b2b" stroke-width="4" stroke-linecap="round" fill="none"/>
             <path id="vHead" fill="#cc2b2b"/>
-            <text id="vLab" fill="#cc2b2b" font-size="15" font-family="JetBrains Mono, monospace" text-anchor="middle">v</text>
+            <text id="vLab" fill="#cc2b2b" font-size="15" font-family="Inter, system-ui, sans-serif" text-anchor="middle">v</text>
             <path id="aLine" stroke="#2b8653" stroke-width="4" stroke-linecap="round" fill="none"/>
             <path id="aHead" fill="#2b8653"/>
-            <text id="aLab" fill="#2b8653" font-size="15" font-family="JetBrains Mono, monospace" text-anchor="middle">a</text>
+            <text id="aLab" fill="#2b8653" font-size="15" font-family="Inter, system-ui, sans-serif" text-anchor="middle">a</text>
           </g>
           <path id="marker" fill="#2861a6"/>
-          <g id="off" opacity="0"><path id="offArrow" fill="#2861a6"/><text id="offText" y="101" fill="#2861a6" font-size="15" font-family="JetBrains Mono, monospace"></text></g>
+          <g id="off" opacity="0"><path id="offArrow" fill="#2861a6"/><text id="offText" y="101" fill="#2861a6" font-size="15" font-family="Inter, system-ui, sans-serif"></text></g>
           <g id="cat"><g id="pitch">
             <g id="tw"><g id="tail"><path d="M82 96 C44 88 36 30 58 18 C70 12 76 26 66 30" stroke="#121214" stroke-width="9" fill="none" stroke-linecap="round"/></g></g>
             <g id="backL" stroke-linejoin="round" stroke-width="3"><g id="w0" fill="#0c0c0e" stroke="#0c0c0e"><path id="pl0"/><path id="pu0"/><circle id="ph0" r="16" stroke="none"/><circle id="pk0" r="5.5" stroke="none"/></g><g id="w2" fill="#08080a" stroke="#08080a"><path id="pl2"/><path id="pu2"/><circle id="ps2" r="10.5" stroke="none"/><circle id="pk2" r="6" stroke="none"/></g></g>
@@ -172,7 +172,7 @@ canvas{display:block;width:100%;height:190px}
             <g transform="translate(144,128) rotate(18) scale(0.85)"><g id="zhead"><polygon points="-22,-10 -19,-44 -4,-22" fill="#121214"/><polygon points="4,-22 19,-44 22,-10" fill="#121214"/><polygon points="-18,-15 -16,-35 -8,-22" fill="#8a5a50"/><polygon points="8,-22 16,-35 18,-15" fill="#8a5a50"/><path d="M-26 4 C-29 -6 -26 -15 -19 -19 C-13 -23 -6 -24 0 -24 C6 -24 13 -23 19 -19 C26 -15 29 -6 26 4 C22 15 12 21 0 21 C-12 21 -22 15 -26 4 Z" fill="#121214"/><path d="M-8 -19 Q0 -22 8 -19 Q0 -18 -8 -17 Z" fill="#2a2a31" opacity="0.6"/><path d="M-15 0 Q-10 4 -5 0" stroke="#6b6b74" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M5 0 Q10 4 15 0" stroke="#6b6b74" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M-3.5 8 L3.5 8 L0 11 Z" fill="#45454c"/><g stroke="#9a9aa2" stroke-width="0.7" fill="none" opacity="0.85"><path d="M5 12 Q20 9 36 11"/><path d="M5 14 Q20 15 34 20"/><path d="M-5 12 Q-20 9 -36 11"/><path d="M-5 14 Q-20 15 -34 20"/></g></g></g>
             <g id="zpaw"><ellipse cx="150" cy="122" rx="15" ry="7.5" transform="rotate(-24 150 122)" fill="#121214"/><path d="M140 120 Q150 114 162 118" stroke="#2c2c33" stroke-width="1.5" fill="none" opacity="0.8"/></g>
             <path id="ztail" d="M48 142 C46 162 140 164 170 146" stroke="#121214" stroke-width="12" fill="none" stroke-linecap="round"/>
-            <g fill="#8a8f98" font-family="Public Sans, Helvetica, Arial, sans-serif" font-size="15" font-weight="600"><text id="z0">z</text><text id="z1">z</text><text id="z2">z</text></g>
+            <g fill="#8a8f98" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600"><text id="z0">z</text><text id="z1">z</text><text id="z2">z</text></g>
           </g>
         </svg>
       </div>
@@ -210,8 +210,8 @@ function turnTime(){if(Math.abs(P.a)<1e-9)return null;const tt=-P.v0/P.a;return 
 /* number line */
 (function(){let s=`<line x1="${LX-12}" y1="${FLOOR}" x2="${RX+12}" y2="${FLOOR}" stroke="#b9ae9f" stroke-width="3" stroke-linecap="round"/>`;
 for(let m=-10;m<=10;m++){const X=LX+(m+10)*PPM,big=m%2===0;s+=`<line x1="${X}" y1="${FLOOR+1}" x2="${X}" y2="${FLOOR+(big?13:7)}" stroke="#a69a89" stroke-width="${m===0?2.5:1.5}"/>`;
-if(big)s+=`<text x="${X}" y="${FLOOR+32}" fill="#6f6556" font-size="${m===0?16:14}" font-family="JetBrains Mono, monospace" text-anchor="middle">${m<0?'−'+(-m):m}</text>`}
-s+=`<text x="${RX+6}" y="${FLOOR+52}" fill="#8a7f70" font-size="13" font-family="JetBrains Mono, monospace" text-anchor="end">x (m)</text>`;
+if(big)s+=`<text x="${X}" y="${FLOOR+32}" fill="#6f6556" font-size="${m===0?16:14}" font-family="Inter, system-ui, sans-serif" text-anchor="middle">${m<0?'−'+(-m):m}</text>`}
+s+=`<text x="${RX+6}" y="${FLOOR+52}" fill="#8a7f70" font-size="13" font-family="Inter, system-ui, sans-serif" text-anchor="end">x (m)</text>`;
 $('axis').innerHTML=s})();
 
 /* cat rig */
@@ -324,7 +324,7 @@ function drawGraphs(){const cs=getComputedStyle(document.documentElement);const 
   for(const g of graphs){const {w,h,dpr}=sizeCanvas(g.cv),c=g.ctx;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
     const color=cs.getPropertyValue('--'+g.key).trim();const [y0,y1]=R[g.key];const L=40,Rr=w-10,T=10,B=h-26;
     const px=tv=>L+tv/TMAX*(Rr-L),py=v=>B-(v-y0)/(y1-y0)*(B-T);
-    c.font='11px "JetBrains Mono", ui-monospace, monospace';c.textBaseline='middle';
+    c.font='11px Inter, system-ui, sans-serif';c.textBaseline='middle';
     c.lineWidth=1;c.strokeStyle=col.grid;
     for(let s=0;s<=TMAX;s++){c.beginPath();c.moveTo(px(s)+.5,T);c.lineTo(px(s)+.5,B);c.stroke()}
     const st=nice(y1-y0);c.fillStyle=col.axis;c.textAlign='right';
