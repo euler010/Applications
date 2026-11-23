@@ -8,7 +8,6 @@
     <style>
         body {
             font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            font-variant-numeric: tabular-nums;
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
             color: #0f172a;
             overflow-x: hidden;
@@ -93,7 +92,7 @@
         .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
         .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
         .gap-1 { gap: .25rem; } .gap-1\.5 { gap: .375rem; } .gap-2 { gap: .5rem; }
-        .gap-2\.5 { gap: .625rem; } .gap-3 { gap: .75rem; } .gap-4 { gap: 1rem; }
+        .gap-2\.5 { gap: .625rem; } .gap-3 { gap: .75rem; } .gap-4 { gap: 1rem; } .gap-x-4 { column-gap: 1rem; } .gap-y-1 { row-gap: .25rem; }
 
         /* ---------- Sizing ---------- */
         .w-full { width: 100%; } .w-2 { width: .5rem; } .w-2\.5 { width: .625rem; }
@@ -188,6 +187,12 @@
         .hover\:to-emerald-700:hover { --g-to: var(--emerald-700); }
         .active\:scale-95:active { transform: scale(.95); }
 
+        /* Font-size tiers: 18 title, 16 section titles, 14 smaller text, 12 History / Euler Spiral panel */
+        .fs-18 { font-size: 18px; line-height: 1.5rem; }
+        .fs-16 { font-size: 16px; line-height: 1.375rem; }
+        .fs-14 { font-size: 14px; line-height: 1.25rem; }
+        .fs-12 { font-size: 12px; line-height: 1.625; }
+
         /* Telemetry values: fixed line height, no wrapping, so boxes keep a constant size */
         .tel-val { height: 1.5rem; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums; }
         .tel-val > span { line-height: 1 !important; }
@@ -225,7 +230,7 @@
         <div class="glass-panel rounded-xl px-4 py-1.5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                <h1 class="text-lg md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-700 via-teal-600 to-emerald-700 bg-clip-text text-transparent">
+                <h1 class="fs-18 font-extrabold tracking-tight bg-gradient-to-r from-blue-700 via-teal-600 to-emerald-700 bg-clip-text text-transparent">
                     Roller Coaster Loop Physics: Circular vs. Clothoid
                 </h1>
             </div>
@@ -257,11 +262,11 @@
         <!-- 1. Left: True Clothoid Blend Slider -->
         <div class="md:col-span-6 lg:col-span-6 glass-panel rounded-xl p-3 flex flex-col justify-center gap-1.5">
             <div class="flex flex-wrap justify-between items-center gap-1">
-                <label for="sliderClothoid" class="text-xs font-bold tracking-wider text-emerald-700 flex items-center gap-1.5">
+                <label for="sliderClothoid" class="fs-16 font-bold tracking-wider text-emerald-700 flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
                     True Clothoid Blend (Euler Spiral): <span id="valClothoidPct" class="text-emerald-900 font-extrabold">100%</span>
                 </label>
-                <div class="mono text-xs font-semibold text-slate-600 flex items-center gap-2">
+                <div class="mono fs-14 font-semibold text-slate-600 flex items-center gap-2">
                     <span class="text-emerald-800 font-bold" id="lblRmin">Apex R: 7.4m</span>
                     <span class="text-slate-400 font-normal">(1% – 100%)</span>
                 </div>
@@ -271,12 +276,12 @@
 
         <!-- 2. Middle: Vertically Stacked Overlay Checkboxes -->
         <div class="md:col-span-2 lg:col-span-2 glass-panel rounded-xl px-3 py-2 flex flex-col justify-center gap-1.5 border-l-2 border-slate-200">
-            <span class="text-[10px] font-bold tracking-wider text-slate-400">Overlays</span>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 hover:text-slate-900 select-none">
+            <span class="fs-16 font-bold tracking-wider text-slate-400">Overlays</span>
+            <label class="flex items-center gap-2 cursor-pointer fs-14 font-medium text-slate-700 hover:text-slate-900 select-none">
                 <input type="checkbox" id="chkNormalForce" checked class="rounded accent-emerald-600 w-3.5 h-3.5">
                 <span>Normal Force</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700 hover:text-slate-900 select-none">
+            <label class="flex items-center gap-2 cursor-pointer fs-14 font-medium text-slate-700 hover:text-slate-900 select-none">
                 <input type="checkbox" id="chkShowRadii" class="rounded accent-emerald-600 w-3.5 h-3.5">
                 <span>Show Radii</span>
             </label>
@@ -284,26 +289,26 @@
 
         <!-- 3. Right: Simulation Speed & Action Buttons -->
         <div class="md:col-span-4 lg:col-span-4 glass-panel rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold tracking-wider text-slate-700">Simulation</span>
-                <div class="flex items-center gap-1 text-xs">
-                    <span class="text-slate-400 font-medium text-[11px]">Speed:</span>
-                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="0.5">0.5x</button>
-                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="1.0">1.0x</button>
-                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 transition" data-speed="3.0">3.0x</button>
-                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="5.0">5.0x</button>
+            <div class="flex flex-wrap items-center justify-between gap-1">
+                <span class="fs-16 font-bold tracking-wider text-slate-700">Simulation</span>
+                <div class="flex items-center gap-1 fs-14">
+                    <span class="text-slate-400 font-medium fs-14">Speed:</span>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold fs-14 bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="0.5">0.5x</button>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold fs-14 bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="1.0">1.0x</button>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold fs-14 bg-emerald-600 text-white hover:bg-emerald-700 transition" data-speed="3.0">3.0x</button>
+                    <button class="btn-speed px-1.5 py-0.5 rounded font-mono font-bold fs-14 bg-slate-100 text-slate-700 hover:bg-slate-200 transition" data-speed="5.0">5.0x</button>
                 </div>
             </div>
 
             <!-- Action Buttons Row -->
             <div class="flex items-center gap-1.5">
-                <button id="btnStart" class="flex-1 px-3 py-1.5 rounded-lg font-bold text-xs bg-gradient-to-r from-blue-600 via-teal-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
+                <button id="btnStart" class="flex-1 px-3 py-1.5 rounded-lg font-bold fs-14 bg-gradient-to-r from-blue-600 via-teal-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white shadow-sm active:scale-95 transition flex items-center justify-center gap-1.5">
                     <span id="btnStartIcon">
                         <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     </span>
                     <span id="btnStartText">Release Carts</span>
                 </button>
-                <button id="btnReset" class="px-2.5 py-1.5 rounded-lg font-semibold text-xs bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm active:scale-95 transition flex items-center justify-center gap-1">
+                <button id="btnReset" class="px-2.5 py-1.5 rounded-lg font-semibold fs-14 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm active:scale-95 transition flex items-center justify-center gap-1">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
                     <span>Reset</span>
                 </button>
@@ -317,29 +322,29 @@
         <!-- Circular Telemetry Strip -->
         <div class="glass-panel rounded-2xl p-3">
             <div class="flex items-center justify-between mb-2 px-1">
-                <span class="text-xs font-bold text-blue-700 tracking-wider">Circular Coaster Telemetry</span>
-                <span class="mono text-xs font-bold text-slate-600">Drop: 50.0m | Loop: 40.0m</span>
+                <span class="fs-16 font-bold text-blue-700 tracking-wider">Circular Coaster Telemetry</span>
+                <span class="mono fs-14 font-bold text-slate-600">Drop: 50.0m | Loop: 40.0m</span>
             </div>
             <div class="grid grid-cols-5 gap-2">
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Speed (v)</div>
-                    <div id="telCircSpeed" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">0.0 m/s</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Speed (v)</div>
+                    <div id="telCircSpeed" class="tel-val mono fs-14 font-bold text-slate-800 leading-tight mt-0.5">0.0 m/s</div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Height (y)</div>
-                    <div id="telCircHeight" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">50.0 m</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Height (y)</div>
+                    <div id="telCircHeight" class="tel-val mono fs-14 font-bold text-slate-800 leading-tight mt-0.5">50.0 m</div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Radius (R)</div>
-                    <div id="telCircRadius" class="tel-val mono text-xs md:text-sm font-bold text-blue-700 leading-tight mt-0.5">∞</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Radius (R)</div>
+                    <div id="telCircRadius" class="tel-val mono fs-14 font-bold text-blue-700 leading-tight mt-0.5">∞</div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Current G</div>
-                    <div id="telCircG" class="tel-val mono text-xs md:text-sm font-bold text-amber-600 leading-tight mt-0.5">1.00 G</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Current G</div>
+                    <div id="telCircG" class="tel-val mono fs-14 font-bold text-amber-600 leading-tight mt-0.5">1.00 G</div>
                 </div>
                 <div class="bg-blue-50/70 border border-blue-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-blue-700 font-semibold leading-tight">Peak G-Force</div>
-                    <div id="telCircPeakG" class="tel-val mono text-xs md:text-sm font-extrabold text-blue-800 leading-tight mt-0.5">1.00 G</div>
+                    <div class="fs-14 text-blue-700 font-semibold leading-tight">Peak G-Force</div>
+                    <div id="telCircPeakG" class="tel-val mono fs-14 font-extrabold text-blue-800 leading-tight mt-0.5">1.00 G</div>
                 </div>
             </div>
         </div>
@@ -347,29 +352,29 @@
         <!-- Clothoid Telemetry Strip -->
         <div class="glass-panel rounded-2xl p-3">
             <div class="flex items-center justify-between mb-2 px-1">
-                <span class="text-xs font-bold text-emerald-700 tracking-wider">Clothoid Coaster Telemetry</span>
-                <span class="mono text-xs font-bold text-slate-600">Drop: 50.0m | Loop: 40.0m</span>
+                <span class="fs-16 font-bold text-emerald-700 tracking-wider">Clothoid Coaster Telemetry</span>
+                <span class="mono fs-14 font-bold text-slate-600">Drop: 50.0m | Loop: 40.0m</span>
             </div>
             <div class="grid grid-cols-5 gap-2">
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Speed (v)</div>
-                    <div id="telClothSpeed" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">0.0 m/s</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Speed (v)</div>
+                    <div id="telClothSpeed" class="tel-val mono fs-14 font-bold text-slate-800 leading-tight mt-0.5">0.0 m/s</div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Height (y)</div>
-                    <div id="telClothHeight" class="tel-val mono text-xs md:text-sm font-bold text-slate-800 leading-tight mt-0.5">50.0 m</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Height (y)</div>
+                    <div id="telClothHeight" class="tel-val mono fs-14 font-bold text-slate-800 leading-tight mt-0.5">50.0 m</div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Radius (R)</div>
-                    <div id="telClothRadius" class="tel-val mono text-xs md:text-sm font-bold text-emerald-700 leading-tight mt-0.5">∞</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Radius (R)</div>
+                    <div id="telClothRadius" class="tel-val mono fs-14 font-bold text-emerald-700 leading-tight mt-0.5">∞</div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-slate-400 font-semibold leading-tight">Current G</div>
-                    <div id="telClothG" class="tel-val mono text-xs md:text-sm font-bold text-amber-600 leading-tight mt-0.5">1.00 G</div>
+                    <div class="fs-14 text-slate-400 font-semibold leading-tight">Current G</div>
+                    <div id="telClothG" class="tel-val mono fs-14 font-bold text-amber-600 leading-tight mt-0.5">1.00 G</div>
                 </div>
                 <div class="bg-emerald-50/70 border border-emerald-200 rounded-xl px-2 py-1.5 flex flex-col justify-center text-center shadow-sm">
-                    <div class="text-[10px] tracking-wider text-emerald-700 font-semibold leading-tight">Peak G-Force</div>
-                    <div id="telClothPeakG" class="tel-val mono text-xs md:text-sm font-extrabold text-emerald-800 leading-tight mt-0.5">1.00 G</div>
+                    <div class="fs-14 text-emerald-700 font-semibold leading-tight">Peak G-Force</div>
+                    <div id="telClothPeakG" class="tel-val mono fs-14 font-extrabold text-emerald-800 leading-tight mt-0.5">1.00 G</div>
                 </div>
             </div>
         </div>
@@ -379,15 +384,15 @@
     <footer class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-3">
         <div class="lg:col-span-8 glass-panel rounded-2xl p-4 flex flex-col">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <h3 class="text-xs font-bold tracking-wider text-slate-700">Rider Experienced G-Force Profile vs Track Progress</h3>
-                <div class="flex items-center gap-4 text-xs font-medium">
+                <h3 class="fs-16 font-bold tracking-wider text-slate-700">Rider Experienced G-Force Profile vs Track Progress</h3>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 fs-14 font-medium">
                     <span class="flex items-center gap-1.5 text-blue-700 font-semibold">
                         <span class="w-3 h-1.5 rounded bg-blue-600 inline-block"></span> Circular G
                     </span>
                     <span class="flex items-center gap-1.5 text-emerald-700 font-semibold">
                         <span class="w-3 h-1.5 rounded bg-emerald-600 inline-block"></span> Clothoid G
                     </span>
-                    <span class="text-slate-400 text-[11px]">(Dotted line = Full Theoretical Curve)</span>
+                    <span class="text-slate-400 fs-14">(Dotted line = Full Theoretical Curve)</span>
                 </div>
             </div>
             <div class="w-full h-graph bg-white rounded-xl border border-slate-200 overflow-hidden relative shadow-inner">
@@ -395,17 +400,17 @@
             </div>
         </div>
 
-        <div class="lg:col-span-4 glass-panel rounded-2xl p-4 flex flex-col text-xs text-slate-600 leading-relaxed">
+        <div class="lg:col-span-4 glass-panel rounded-2xl p-4 flex flex-col fs-12 text-slate-600 leading-relaxed">
             <!-- Tabs -->
             <div class="flex gap-2 mb-3 border-b border-slate-200 pb-2">
-                <button id="tabHistory" class="px-3 py-1.5 rounded-md font-bold text-xs bg-slate-200 text-slate-800 transition">History</button>
-                <button id="tabEuler" class="px-3 py-1.5 rounded-md font-bold text-xs bg-transparent hover:bg-slate-100 text-slate-500 transition">Euler Spiral</button>
+                <button id="tabHistory" class="px-3 py-1.5 rounded-md font-bold fs-12 bg-slate-200 text-slate-800 transition">History</button>
+                <button id="tabEuler" class="px-3 py-1.5 rounded-md font-bold fs-12 bg-transparent hover:bg-slate-100 text-slate-500 transition">Euler Spiral</button>
             </div>
             
             <!-- Content: History -->
             <div id="contentHistory" class="flex flex-col justify-between h-full">
                 <div>
-                    <h3 class="text-xs font-bold tracking-wider text-rose-700 mb-1 flex items-center gap-1.5">
+                    <h3 class="fs-12 font-bold tracking-wider text-rose-700 mb-1 flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-rose-600"></span>
                         Coney Island's Circular Loop (1895)
                     </h3>
@@ -416,7 +421,7 @@
                         While modern physics textbooks popularized a claim of <span class="text-rose-600 font-semibold">12 Gs</span>, that figure is physically unsupported by the ride's documented 40-to-45-foot structure. A mathematical analysis of the actual geometry yields an entry spike of roughly <strong class="text-rose-600 font-bold">~7.5 Gs</strong>. In an era of upright seating and rigid wooden cars without headrests, this instantaneous shock was more than enough to cause severe neck whiplash and blackouts, prompting engineers to shift to gradual, teardrop-shaped <strong class="text-emerald-700 font-semibold">clothoid loops</strong>.
                     </p>
                 </div>
-                <div class="pt-2 mt-2 border-t border-slate-200 flex items-center justify-between mono text-[11px]">
+                <div class="pt-2 mt-2 border-t border-slate-200 flex items-center justify-between mono fs-12">
                     <span class="text-slate-500">Flip Flap Force Peak:</span>
                     <strong class="text-rose-600 font-bold">~7.5 G (Injurious)</strong>
                 </div>
@@ -425,7 +430,7 @@
             <!-- Content: Euler -->
             <div id="contentEuler" class="hidden flex-col justify-between h-full">
                 <div>
-                    <h3 class="text-xs font-bold tracking-wider text-emerald-700 mb-1 flex items-center gap-1.5">
+                    <h3 class="fs-12 font-bold tracking-wider text-emerald-700 mb-1 flex items-center gap-1.5">
                         <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
                         The True Clothoid (Euler Spiral)
                     </h3>
@@ -898,7 +903,7 @@
             ctx.lineTo(axisX, tr.toScreenY(60));
             ctx.stroke();
 
-            ctx.font = 'bold 18px Inter, ui-sans-serif, system-ui, sans-serif';
+            ctx.font = 'bold 14px Inter, ui-sans-serif, system-ui, sans-serif';
             ctx.fillStyle = '#64748b';
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
@@ -1417,9 +1422,9 @@
         document.querySelectorAll('.btn-speed').forEach((btn) => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.btn-speed').forEach((b) => {
-                    b.className = 'btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+                    b.className = 'btn-speed px-1.5 py-0.5 rounded font-mono font-bold fs-14 bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
                 });
-                btn.className = 'btn-speed px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 transition';
+                btn.className = 'btn-speed px-1.5 py-0.5 rounded font-mono font-bold fs-14 bg-emerald-600 text-white hover:bg-emerald-700 transition';
                 state.simSpeed = parseFloat(btn.dataset.speed);
             });
         });
@@ -1449,16 +1454,16 @@
                 contentEuler.classList.add('hidden');
                 contentEuler.classList.remove('flex');
                 
-                tabHistory.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-slate-200 text-slate-800 transition';
-                tabEuler.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-transparent hover:bg-slate-100 text-slate-500 transition';
+                tabHistory.className = 'px-3 py-1.5 rounded-md font-bold fs-12 bg-slate-200 text-slate-800 transition';
+                tabEuler.className = 'px-3 py-1.5 rounded-md font-bold fs-12 bg-transparent hover:bg-slate-100 text-slate-500 transition';
             } else {
                 contentEuler.classList.remove('hidden');
                 contentEuler.classList.add('flex');
                 contentHistory.classList.add('hidden');
                 contentHistory.classList.remove('flex');
 
-                tabEuler.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-slate-200 text-slate-800 transition';
-                tabHistory.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-transparent hover:bg-slate-100 text-slate-500 transition';
+                tabEuler.className = 'px-3 py-1.5 rounded-md font-bold fs-12 bg-slate-200 text-slate-800 transition';
+                tabHistory.className = 'px-3 py-1.5 rounded-md font-bold fs-12 bg-transparent hover:bg-slate-100 text-slate-500 transition';
             }
         }
 
