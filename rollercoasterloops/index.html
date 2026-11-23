@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Circular vs. Clothoid Roller Coaster Loop Physics</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-variant-numeric: tabular-nums;
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
             color: #0f172a;
             overflow-x: hidden;
         }
         .mono {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-variant-numeric: tabular-nums;
         }
         /* Custom Range Slider Styling for Clean White Theme */
         input[type=range] {
@@ -115,8 +117,8 @@
         .mb-2\.5 { margin-bottom: .625rem; } .mb-3 { margin-bottom: .75rem; }
 
         /* ---------- Typography ---------- */
-        .font-sans { font-family: ui-sans-serif, system-ui, sans-serif; }
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .font-sans { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        .font-mono { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-variant-numeric: tabular-nums; }
         .text-\[10px\] { font-size: 10px; } .text-\[11px\] { font-size: 11px; }
         .text-xs { font-size: .75rem; line-height: 1rem; }
         .text-base { font-size: 1rem; line-height: 1.5rem; }
@@ -896,7 +898,7 @@
             ctx.lineTo(axisX, tr.toScreenY(60));
             ctx.stroke();
 
-            ctx.font = 'bold 18px "JetBrains Mono", monospace';
+            ctx.font = 'bold 18px Inter, ui-sans-serif, system-ui, sans-serif';
             ctx.fillStyle = '#64748b';
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
@@ -941,7 +943,7 @@
 
                 // Height Text Labels
                 ctx.setLineDash([]);
-                ctx.font = 'bold 20px "JetBrains Mono", monospace';
+                ctx.font = 'bold 20px Inter, ui-sans-serif, system-ui, sans-serif';
                 ctx.fillStyle = '#64748b';
                 ctx.fillText(`Release H = ${track.H_drop.toFixed(1)}m`, 60, syDrop - 8);
 
@@ -984,7 +986,7 @@
 
                     // Radius label placed clearly to the left of the loop
                     ctx.setLineDash([]);
-                    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+                    ctx.font = 'bold 20px Inter, ui-sans-serif, system-ui, sans-serif';
                     ctx.fillStyle = '#1d4ed8';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
@@ -1019,7 +1021,7 @@
 
                     // Render label to the left of the loop
                     ctx.setLineDash([]);
-                    ctx.font = 'bold 20px "JetBrains Mono", monospace';
+                    ctx.font = 'bold 20px Inter, ui-sans-serif, system-ui, sans-serif';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'middle';
                     ctx.fillStyle = '#059669';
@@ -1166,7 +1168,7 @@
 
             // Floating G-Force Live Label
             ctx.save();
-            ctx.font = 'bold 22px "JetBrains Mono", monospace';
+            ctx.font = 'bold 22px Inter, ui-sans-serif, system-ui, sans-serif';
             const labelColor = phys.gFelt > 5.0 ? '#e11d48' : phys.gFelt > 3.5 ? '#d97706' : isClothoid ? '#059669' : '#2563eb';
             const gText = `${phys.gFelt.toFixed(2)} G`;
 
@@ -1249,7 +1251,7 @@
                 ctx.lineTo(w - padRight, y);
                 ctx.stroke();
 
-                ctx.font = 'bold 18px "JetBrains Mono", monospace';
+                ctx.font = 'bold 18px Inter, ui-sans-serif, system-ui, sans-serif';
                 ctx.fillStyle = '#64748b';
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
