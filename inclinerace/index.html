@@ -92,10 +92,12 @@
         </div>
       </div>
       <div class="ctl checks">
+        <button id="arrowToggle" class="toggle on" role="switch" aria-checked="true">
+          <span class="track"><span class="knob"></span></span><span class="tlabel">Velocity arrows on</span>
+        </button>
         <button id="dataToggle" class="toggle" role="switch" aria-checked="false">
           <span class="track"><span class="knob"></span></span><span class="tlabel">Data hidden</span>
         </button>
-        <label><input id="arrows" type="checkbox" checked> Velocity arrows</label>
       </div>
       <span class="kbd">Space = play/pause<br>R = reset</span>
     </aside>
@@ -314,7 +316,7 @@
     const P3 = (x,y,z) => [ox + (x + z*K*CA)*sc, oy + (spanY - (y + z*K*SA))*sc];
     const Ps = (u,z) => P3(u*c, He - u*s, z);
     const allDone = t >= tMax - 1e-9;
-    const reveal = !predict || allDone;
+    const reveal = !predict;
     const fs = (a,b,d) => Math.max(a, Math.min(b, W/d));
 
     // floor
@@ -441,16 +443,16 @@
   const cells = objs.map(o => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><span class="swatch" style="background:${o.color}"></span><b>${o.name}</b></td>
-      <td>${MASS.toFixed(1)}</td><td>${o.type==='block' ? D.toFixed(2)+' across' : 'r = '+R.toFixed(2)}</td><td>${o.I}</td><td class="frac"></td><td class="acc"></td><td class="spd"></td><td class="tm"></td><td class="place"></td>
+      <td>${MASS.toFixed(1)}</td><td>${o.type==='block' ? D.toFixed(2)+' across' : 'r = '+R.toFixed(2)}</td><td class="inert"></td><td class="frac"></td><td class="acc"></td><td class="spd"></td><td class="tm"></td><td class="place"></td>
       <td><div class="bar"><div class="t"></div><div class="r"></div></div></td>`;
     tbody.appendChild(tr);
-    return {frac:tr.querySelector('.frac'), acc:tr.querySelector('.acc'), spd:tr.querySelector('.spd'),
+    return {inert:tr.querySelector('.inert'), frac:tr.querySelector('.frac'), acc:tr.querySelector('.acc'), spd:tr.querySelector('.spd'),
             tm:tr.querySelector('.tm'), place:tr.querySelector('.place'), bt:tr.querySelector('.t'), br:tr.querySelector('.r')};
   });
   const ord = n => n + (['th','st','nd','rd'][n] || 'th');
   function updateTable(){
     const allDone = t >= tMax - 1e-9;
-    const reveal = !predict || allDone;
+    const reveal = !predict;
     objs.forEach((o,i) => {
       const cl = cells[i];
       const tt = Math.min(t, o.tf);
@@ -458,12 +460,14 @@
       const f = ut / TRACK;
       cl.frac.innerHTML = reveal ? o.frac : '<span class="hidden-val">?</span>';
       cl.acc.innerHTML  = reveal ? o.a.toFixed(2) : '<span class="hidden-val">?</span>';
-      cl.spd.textContent = (o.a*tt).toFixed(2);
+      const H = '<span class="hidden-val">?</span>';
+      cl.inert.innerHTML = reveal ? o.I : H;
+      cl.spd.innerHTML = reveal ? (o.a*tt).toFixed(2) : H;
       const fin = t >= o.tf - 1e-9;
-      cl.tm.innerHTML = fin && reveal ? o.tf.toFixed(2) : (fin ? '<span class="hidden-val">done</span>' : '—');
-      cl.place.textContent = fin && reveal ? ord(o.place) : '';
-      cl.bt.style.width = (f/(1+o.k)*100) + '%';
-      cl.br.style.width = (f*o.k/(1+o.k)*100) + '%';
+      cl.tm.innerHTML = reveal ? (fin ? o.tf.toFixed(2) : '—') : H;
+      cl.place.innerHTML = reveal ? (fin ? ord(o.place) : '') : H;
+      cl.bt.style.width = reveal ? (f/(1+o.k)*100) + '%' : '0%';
+      cl.br.style.width = reveal ? (f*o.k/(1+o.k)*100) + '%' : '0%';
     });
   }
 
@@ -483,7 +487,13 @@
   segBtns.forEach(btn => btn.addEventListener('click', () => {
     segBtns.forEach(x => x.classList.toggle('on', x === btn)); speed = +btn.dataset.v;
   }));
-  document.getElementById('arrows').addEventListener('change', e => { showArrows = e.target.checked; });
+  const arrowToggle = document.getElementById('arrowToggle');
+  arrowToggle.addEventListener('click', () => {
+    showArrows = !showArrows;
+    arrowToggle.classList.toggle('on', showArrows);
+    arrowToggle.setAttribute('aria-checked', String(showArrows));
+    arrowToggle.querySelector('.tlabel').textContent = showArrows ? 'Velocity arrows on' : 'Velocity arrows off';
+  });
   const dataToggle = document.getElementById('dataToggle');
   dataToggle.addEventListener('click', () => {
     predict = !predict;
