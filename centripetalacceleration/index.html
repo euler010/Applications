@@ -29,7 +29,6 @@
     .fa-pause { --fa-w: 0.7500; --fa-i: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'><path fill='black' d='M48 32C21.5 32 0 53.5 0 80L0 432c0 26.5 21.5 48 48 48l64 0c26.5 0 48-21.5 48-48l0-352c0-26.5-21.5-48-48-48L48 32zm224 0c-26.5 0-48 21.5-48 48l0 352c0 26.5 21.5 48 48 48l64 0c26.5 0 48-21.5 48-48l0-352c0-26.5-21.5-48-48-48l-64 0z'/></svg>"); }
     .fa-play { --fa-w: 0.8750; --fa-i: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'><path fill='black' d='M91.2 36.9c-12.4-6.8-27.4-6.5-39.6 .7S32 57.9 32 72l0 368c0 14.1 7.5 27.2 19.6 34.4s27.2 7.5 39.6 .7l336-184c12.8-7 20.8-20.5 20.8-35.1s-8-28.1-20.8-35.1l-336-184z'/></svg>"); }
     .fa-rotate-left { --fa-w: 1.0000; --fa-i: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='black' d='M24 192l144 0c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-46.7-46.7c75.3-58.6 184.3-53.3 253.5 15.9 75 75 75 196.5 0 271.5s-196.5 75-271.5 0c-10.2-10.2-19-21.3-26.4-33-9.5-14.9-29.3-19.3-44.2-9.8s-19.3 29.3-9.8 44.2C49.7 408.7 61.4 423.5 75 437 175 537 337 537 437 437S537 175 437 75C342.8-19.3 193.3-24.7 92.7 58.8L41 7C34.1 .2 23.8-1.9 14.8 1.8S0 14.3 0 24L0 168c0 13.3 10.7 24 24 24z'/></svg>"); }
-    .fa-sliders { --fa-w: 1.0000; --fa-i: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='black' d='M32 64C14.3 64 0 78.3 0 96s14.3 32 32 32l86.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 128c17.7 0 32-14.3 32-32s-14.3-32-32-32L265.3 64C253 35.7 224.8 16 192 16s-61 19.7-73.3 48L32 64zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l246.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48l54.7 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-54.7 0c-12.3-28.3-40.5-48-73.3-48s-61 19.7-73.3 48L32 224zm0 160c-17.7 0-32 14.3-32 32s14.3 32 32 32l54.7 0c12.3 28.3 40.5 48 73.3 48s61-19.7 73.3-48L480 448c17.7 0 32-14.3 32-32s-14.3-32-32-32l-246.7 0c-12.3-28.3-40.5-48-73.3-48s-61 19.7-73.3 48L32 384z'/></svg>"); }
   </style>
   <!-- Utility stylesheet (replaces the Tailwind CDN): only the classes this app uses, same values as Tailwind v3 -->
   <style id="utility-css">
@@ -107,7 +106,6 @@
 
     /* ---- Typography ---- */
     .font-mono { font-family: "Inter", ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums; }
-    .text-\[10px\] { font-size: 10px; }
     .text-xs { font-size: 0.75rem; line-height: 1rem; }
     .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
     .text-base { font-size: 1rem; line-height: 1.5rem; }
@@ -272,14 +270,14 @@
 
     <!-- Quick Playback & View Controls -->
     <div class="flex items-center gap-2">
-      <button id="btnPlayPause" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-semibold text-sm rounded-lg shadow-sm transition flex items-center gap-2">
+      <button id="btnPlayPause" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-semibold text-base rounded-lg shadow-sm transition flex items-center gap-2">
         <i class="fa-solid fa-pause" id="playIcon"></i>
         <span id="playText">Pause</span>
       </button>
-      <button id="btnStep" class="px-3 py-2 bg-white hover:bg-sky-50 active:scale-95 text-slate-700 text-sm font-semibold rounded-lg border border-slate-300 transition flex items-center gap-1.5 shadow-sm" title="Step forward a tiny fraction">
+      <button id="btnStep" class="px-3 py-2 bg-white hover:bg-sky-50 active:scale-95 text-slate-700 text-base font-semibold rounded-lg border border-slate-300 transition flex items-center gap-1.5 shadow-sm" title="Step forward a tiny fraction">
         <i class="fa-solid fa-forward-step text-sky-600"></i> Step
       </button>
-      <button id="btnReset" class="px-3 py-2 bg-white hover:bg-sky-50 active:scale-95 text-slate-700 text-sm font-semibold rounded-lg border border-slate-300 transition flex items-center gap-1.5 shadow-sm" title="Reset all settings to default">
+      <button id="btnReset" class="px-3 py-2 bg-white hover:bg-sky-50 active:scale-95 text-slate-700 text-base font-semibold rounded-lg border border-slate-300 transition flex items-center gap-1.5 shadow-sm" title="Reset all settings to default">
         <i class="fa-solid fa-rotate-left text-sky-600"></i> Reset
       </button>
     </div>
@@ -293,40 +291,40 @@
       <div class="relative bg-white border border-sky-100 rounded-2xl overflow-hidden shadow-xl flex flex-col">
         
         <!-- Top toolbar over the canvas: Toggle button check boxes -->
-        <div class="bg-slate-50/95 border-b border-sky-100 px-4 py-2.5 flex flex-wrap items-center justify-end gap-3 text-xs shrink-0">
+        <div class="bg-slate-50/95 border-b border-sky-100 px-4 py-2.5 flex flex-wrap items-center justify-end gap-3 text-base shrink-0">
           <div class="flex items-center gap-2">
             <!-- 1. Toggle Button: Past Arc -->
             <button id="btnToggleGhost" type="button" aria-pressed="true"
-              class="px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
-              <i class="fa-solid fa-check text-[10px]"></i>
+              class="px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+              <i class="fa-solid fa-check text-xs"></i>
               <span>Past arc</span>
             </button>
 
             <!-- 2. Toggle Button: Show Δv at midpoint -->
             <button id="btnToggleCarDeltaV" type="button" aria-pressed="false"
-              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
-              <i class="fa-solid fa-check text-[10px] hidden"></i>
+              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+              <i class="fa-solid fa-check text-xs hidden"></i>
               <span>Δ<span class="vec-symbol"><svg class="vec-arrow" viewBox="0 0 12 6" fill="currentColor"><path d="M0 2.5h9.5v-2l2.5 2.5-2.5 2.5v-2H0z"/></svg><span>v</span></span> at midpoint</span>
             </button>
 
             <!-- 3. Toggle Button: Show a at midpoint -->
             <button id="btnToggleCarAcc" type="button" aria-pressed="false"
-              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
-              <i class="fa-solid fa-check text-[10px] hidden"></i>
+              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+              <i class="fa-solid fa-check text-xs hidden"></i>
               <span><span class="vec-symbol"><svg class="vec-arrow" viewBox="0 0 12 6" fill="currentColor"><path d="M0 2.5h9.5v-2l2.5 2.5-2.5 2.5v-2H0z"/></svg><span>a</span></span> at midpoint</span>
             </button>
 
             <!-- 4. Toggle Button: Show Vector Diagram -->
             <button id="btnToggleVectorDiag" type="button" aria-pressed="false"
-              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
-              <i class="fa-solid fa-check text-[10px] hidden"></i>
+              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+              <i class="fa-solid fa-check text-xs hidden"></i>
               <span>Vector diagram</span>
             </button>
 
             <!-- 5. Toggle Button: Rotate Diagram -->
             <button id="btnToggleRotate" type="button" aria-pressed="false"
-              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
-              <i class="fa-solid fa-check text-[10px] hidden"></i>
+              class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+              <i class="fa-solid fa-check text-xs hidden"></i>
               <span>Rotate diagram</span>
             </button>
           </div>
@@ -338,7 +336,7 @@
         </div>
 
         <!-- Bottom status bar over the canvas -->
-        <div class="bg-slate-50/95 border-t border-sky-100 px-4 py-3.5 flex items-center justify-center text-sm text-slate-600 shrink-0">
+        <div class="bg-slate-50/95 border-t border-sky-100 px-4 py-3.5 flex items-center justify-center text-base text-slate-600 shrink-0">
           <div class="flex flex-wrap items-center justify-center gap-6 md:gap-8 leading-normal">
             <span>Angle = <span class="text-sky-700 font-mono font-bold" id="valTheta">0.0°</span></span>
             <span>Speed <span class="mag-enclosure"><span class="vec-symbol"><svg class="vec-arrow" viewBox="0 0 12 6" fill="currentColor"><path d="M0 2.5h9.5v-2l2.5 2.5-2.5 2.5v-2H0z"/></svg><span>v</span></span></span> = <span class="text-slate-800 font-mono font-bold" id="valSpeedDisp">25.0 m/s</span></span>
@@ -354,16 +352,12 @@
       
       <!-- Interactive Sliders with + and - buttons -->
       <div class="bg-white border border-sky-100 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
-        <h2 class="text-sm font-bold text-slate-500 flex items-center justify-between">
-          <span>Simulation Parameters</span>
-          <i class="fa-solid fa-sliders text-sky-600 text-base"></i>
-        </h2>
 
         <!-- Speed Slider -->
         <div>
-          <div class="flex justify-between items-center text-sm mb-1.5">
+          <div class="flex justify-between items-center text-base mb-1.5">
             <span class="text-slate-700 font-semibold">Angular Velocity (<span class="font-mono text-sky-600">ω</span>)</span>
-            <span class="text-sky-700 font-mono font-bold text-sm" id="lblSpeed">1.00 rad/s</span>
+            <span class="text-sky-700 font-mono font-bold text-base" id="lblSpeed">1.00 rad/s</span>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnSpeedMinus" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-300 bg-white hover:bg-sky-50 text-slate-700 font-bold text-base shadow-xs transition active:scale-95" aria-label="Decrease speed">−</button>
@@ -374,16 +368,16 @@
 
         <!-- Delta t (Time lag) Slider -->
         <div>
-          <div class="flex justify-between items-center text-sm mb-1.5">
+          <div class="flex justify-between items-center text-base mb-1.5">
             <span class="text-slate-700 font-semibold">Time Interval (<span class="font-mono text-amber-600">Δt</span>)</span>
-            <span class="text-amber-700 font-mono font-bold text-sm" id="lblDt">0.60 s</span>
+            <span class="text-amber-700 font-mono font-bold text-base" id="lblDt">0.60 s</span>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnDtMinus" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-300 bg-white hover:bg-amber-50 text-slate-700 font-bold text-base shadow-xs transition active:scale-95" aria-label="Decrease delta t">−</button>
             <input type="range" id="sliderDt" min="0.00" max="1.50" step="0.05" value="0.60" class="flex-1 h-2 bg-slate-200 rounded-lg cursor-pointer">
             <button id="btnDtPlus" class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-300 bg-white hover:bg-amber-50 text-slate-700 font-bold text-base shadow-xs transition active:scale-95" aria-label="Increase delta t">+</button>
           </div>
-          <p class="text-xs text-slate-500 mt-1 leading-snug">
+          <p class="text-sm text-slate-500 mt-1 leading-snug">
             Shrink <span class="text-amber-600 font-mono font-bold">Δt</span> to watch <span class="text-indigo-600 font-mono font-bold">a</span> converge to the exact inward instantaneous centripetal acceleration vector!
           </p>
         </div>
@@ -391,9 +385,6 @@
 
       <!-- Vector Triangle & Acceleration Explainer Card -->
       <div class="bg-white border border-sky-100 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
-        <p class="text-slate-700 font-semibold text-sm">
-          Average acceleration between the two positions:
-        </p>
         <div class="py-3 px-4 font-mono text-base bg-slate-50/70 rounded-xl border border-sky-100 shadow-xs flex items-center justify-center gap-3">
           <!-- a -->
           <span class="text-indigo-700 font-bold flex items-center">
@@ -432,11 +423,11 @@
             </span>
           </div>
         </div>
-        <p class="text-slate-600 text-xs leading-relaxed">
+        <p class="text-slate-600 text-sm leading-relaxed">
           Head-to-tail vector subtraction attaches <span class="text-amber-600 font-mono font-semibold">−v₁</span> (vector <span class="font-mono">v₁</span> inverted 180°) to the tip of <span class="text-sky-600 font-mono font-semibold">v₂</span>. Dividing the resultant <span class="text-rose-600 font-mono font-bold">Δv</span> by scalar <span class="text-amber-600 font-mono font-bold">Δt</span> yields acceleration <span class="text-indigo-600 font-mono font-bold">a</span>.
         </p>
 
-        <div class="p-3 rounded-lg bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 flex gap-2 leading-relaxed">
+        <div class="p-3 rounded-lg bg-indigo-50 border border-indigo-100 text-sm text-indigo-900 flex gap-2 leading-relaxed">
           <i class="fa-solid fa-circle-info text-indigo-500 mt-0.5 text-sm"></i>
           <span>
             Observe that <span class="text-indigo-700 font-semibold">a</span> has the exact same direction as <span class="text-rose-600 font-semibold">Δv</span>, but scaled by <span class="font-mono text-amber-700">1/Δt</span>. As <span class="font-mono text-amber-700">Δt → 0</span>, <span class="text-indigo-700 font-semibold">a</span> points straight toward the center!
@@ -1240,10 +1231,10 @@
         }
         btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         if (active) {
-          btn.className = `px-2.5 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs ${activeClasses}`;
+          btn.className = `px-2.5 py-1.5 rounded-lg font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs ${activeClasses}`;
           if (icon) icon.classList.remove('hidden');
         } else {
-          btn.className = `px-2.5 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs ${inactiveClasses}`;
+          btn.className = `px-2.5 py-1.5 rounded-lg font-medium text-base flex items-center gap-1.5 transition active:scale-95 shadow-xs ${inactiveClasses}`;
           if (icon) icon.classList.add('hidden');
         }
       }
