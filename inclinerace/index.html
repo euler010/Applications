@@ -64,8 +64,8 @@
   .bar .t{background:var(--trans);height:100%}
   .bar .r{background:var(--rot);height:100%}
   .legend{display:flex;gap:14px;padding:8px 12px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line)}
-  .legend .info{margin-left:auto;color:var(--muted)}
-  .legend .info::before{display:none}
+  .legend{align-items:center}
+  .legend button.small{margin-left:auto;padding:6px 14px;font-size:.85rem}
   .legend>span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
   .fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;font-size:.88em;margin:0 1px}
   .fr>span{padding:0 2px}
@@ -126,7 +126,7 @@
       <div class="legend">
         <span style="--c:var(--trans)">Translational <span class="fr"><span>1</span><span>2</span></span>mv²</span>
         <span style="--c:var(--rot)">Rotational <span class="fr"><span>1</span><span>2</span></span>Iω²</span>
-        <span class="info" id="trackInfo"></span>
+        <button id="replay2" class="primary small">▶ Replay</button>
       </div>
     </div>
 
@@ -156,7 +156,6 @@
 
   const cv = document.getElementById('cv');
   const ctx = cv.getContext('2d');
-  const trackInfo = document.getElementById('trackInfo');
   let cw = 0, ch = 0;
 
   function recompute(){
@@ -459,7 +458,10 @@
     ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, H - 10);
     ctx.font = `${fs(11,13,80)}px Inter, system-ui, sans-serif`; ctx.fillStyle = '#6b7280';
     ctx.fillText(`playback ${speed}×`, W - 14, H - 10 - fs(20,26,42));
-    trackInfo.textContent = `Track length ${TRACK.toFixed(1)} m · height drop ${(TRACK*s).toFixed(2)} m`;
+    ctx.textBaseline = 'top'; ctx.fillStyle = '#4b5563';
+    ctx.font = `500 ${fs(11,13,80)}px Inter, system-ui, sans-serif`;
+    ctx.fillText(`Track length: ${TRACK.toFixed(1)} m`, W - 14, 10);
+    ctx.fillText(`Drop height: ${(TRACK*s).toFixed(2)} m`, W - 14, 10 + fs(16,19,60));
   }
 
   // ---------- table ----------
@@ -505,6 +507,7 @@
   function reset(){ t = 0; playing = false; setPlayLabel(); }
   playBtn.addEventListener('click', togglePlay);
   document.getElementById('reset').addEventListener('click', reset);
+  document.getElementById('replay2').addEventListener('click', () => { t = 0; playing = true; setPlayLabel(); });
   const angle = document.getElementById('angle'), angleVal = document.getElementById('angleVal');
   angle.addEventListener('input', () => { theta = +angle.value; angleVal.textContent = theta + '°'; recompute(); reset(); });
   const segBtns = document.querySelectorAll('#speed button');
