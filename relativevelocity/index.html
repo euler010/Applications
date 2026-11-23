@@ -81,8 +81,8 @@
     .max-w-\[1600px\] { max-width: 1600px; }
 
     /* ---------- Typography ---------- */
-    .text-\[10px\] { font-size: 10px; }
     .text-\[11px\] { font-size: 11px; }
+    .text-\[12px\] { font-size: 12px; }
     .text-xs { font-size: 0.75rem; line-height: 1rem; }
     .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
     .text-base { font-size: 1rem; line-height: 1.5rem; }
@@ -281,15 +281,15 @@
 
         <div class="flex flex-wrap items-center gap-2 sm:gap-3">
           <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-            <span class="text-slate-500 block text-[10px] font-medium">Shore Observer</span>
+            <span class="text-slate-500 block text-[11px] font-medium">Shore Observer</span>
             <span class="font-bold text-amber-700 mono text-xs sm:text-sm" id="observerRelativeSpeed">0 m/s (Rest)</span>
           </div>
           <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-            <span class="text-slate-500 block text-[10px] font-medium">Frog and River</span>
+            <span class="text-slate-500 block text-[11px] font-medium">Frog and River</span>
             <span class="font-bold text-cyan-700 mono text-xs sm:text-sm" id="riverRelativeSpeed">3 m/s east</span>
           </div>
           <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-            <span class="text-slate-500 block text-[10px] font-medium">Boat on Screen</span>
+            <span class="text-slate-500 block text-[11px] font-medium">Boat on Screen</span>
             <span class="font-bold text-indigo-700 mono text-xs sm:text-sm" id="boatRelativeSpeed">7 m/s west</span>
           </div>
         </div>
@@ -318,7 +318,7 @@
             <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             Velocity Controls
           </h2>
-          <span class="text-[10px] text-slate-400 mono font-medium">(rel. to Shore)</span>
+          <span class="text-[11px] text-slate-400 mono font-medium">(rel. to Shore)</span>
         </div>
 
         <!-- Slider 1: River Flow (Default 3 m/s east) -->
@@ -545,8 +545,8 @@
         btn.innerHTML = `
           <span class="text-base">${ent.emoji}</span>
           <div class="truncate">
-            <div class="text-[11px] font-semibold truncate leading-tight">${ent.name}</div>
-            <div class="text-[10px] ${isSelected ? 'text-blue-600 font-bold' : 'text-slate-500'} mono leading-none mt-0.5">${formatVelocityWithDirection(getRelativeVelocity(ent.id))}</div>
+            <div class="text-[12px] font-semibold truncate leading-tight">${ent.name}</div>
+            <div class="text-[11px] ${isSelected ? 'text-blue-600 font-bold' : 'text-slate-500'} mono leading-none mt-0.5">${formatVelocityWithDirection(getRelativeVelocity(ent.id))}</div>
           </div>
         `;
 
@@ -993,7 +993,7 @@
       ctx.textBaseline = 'middle';
       ctx.fillText('🧍', observerScreenX, observerY);
 
-      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.font = 'bold 12px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 3;
@@ -1075,7 +1075,7 @@
       ctx.fill();
       ctx.restore();
 
-      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.font = 'bold 12px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 3;
@@ -1121,7 +1121,7 @@
       ctx.textAlign = 'center';
       ctx.fillText('🐸', x - 2, y - 4);
 
-      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.font = 'bold 12px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 3;
@@ -1197,7 +1197,7 @@
       ctx.fill();
       ctx.restore();
 
-      ctx.font = 'bold 10px Inter, sans-serif';
+      ctx.font = 'bold 12px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 3;
@@ -1292,7 +1292,7 @@
 
       // Boat label & Vector
       const v_boat_rel = getRelativeVelocity('boat');
-      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.font = 'bold 13px Inter, sans-serif';
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 3;
