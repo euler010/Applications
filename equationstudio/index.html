@@ -599,7 +599,7 @@ img,video{max-width:100%;height:auto}
 
                         <!-- Colors (Equation Foreground + Custom BG) -->
                         <div>
-                            <label class="font-semibold text-slate-700 block mb-1">Colors &amp; Padding</label>
+                            <label class="font-semibold text-slate-700 block mb-1">Colors and Padding</label>
                             <div class="flex items-center gap-1.5">
                                 <!-- Ink Popover Trigger -->
                                 <div class="relative" id="inkPickerDropdownWrapper">
@@ -760,7 +760,7 @@ img,video{max-width:100%;height:auto}
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden animate-fadeIn">
             <div class="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
                 <h3 class="font-bold text-sm flex items-center gap-2">
-                    <svg aria-hidden="true" class="text-blue-400" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix, Vector &amp; Piecewise Builder
+                    <svg aria-hidden="true" class="text-blue-400" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix, Vector and Piecewise Builder
                 </h3>
                 <button onclick="closeMatrixModal()" class="text-slate-400 hover:text-white">
                     <svg aria-hidden="true" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;flex-shrink:0"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -830,7 +830,7 @@ img,video{max-width:100%;height:auto}
         const SYMBOL_CATEGORIES = [
             {
                 id: 'structures',
-                name: 'Fractions, Roots & Accents',
+                name: 'Fractions, Roots and Accents',
                 previewLatex: '\\frac{a}{b} \\; \\sqrt[n]{x} \\; \\vec{A}',
                 cols: 'grid-cols-5',
                 widthClass: 'w-80',
@@ -838,7 +838,7 @@ img,video{max-width:100%;height:auto}
                     { label: '\\frac{a}{b}', latex: '\\frac{}{}', name: 'Fraction' },
                     { label: 'x^{a}', latex: '^{}', name: 'Superscript / Power' },
                     { label: 'x_{a}', latex: '_{}', name: 'Subscript' },
-                    { label: 'x_{b}^{a}', latex: '_{}^{}', name: 'Subscript & Superscript' },
+                    { label: 'x_{b}^{a}', latex: '_{}^{}', name: 'Subscript and Superscript' },
                     { label: '\\sqrt{x}', latex: '\\sqrt{}', name: 'Square Root' },
                     { label: '\\sqrt[n]{x}', latex: '\\sqrt[]{}', name: 'Nth Root' },
                     { label: '\\vec{v}', latex: '\\vec{}', name: 'Vector Arrow' },
@@ -860,7 +860,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'calculus',
-                name: 'Calculus, Limits & Sums',
+                name: 'Calculus, Limits and Sums',
                 previewLatex: '\\int \\; \\sum \\; \\prod',
                 cols: 'grid-cols-5',
                 widthClass: 'w-80',
@@ -924,7 +924,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'greek_upper',
-                name: 'Greek Uppercase & Constants',
+                name: 'Greek Uppercase and Constants',
                 previewLatex: '\\Gamma \\; \\Delta \\; \\hbar',
                 cols: 'grid-cols-5',
                 widthClass: 'w-72',
@@ -948,7 +948,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'operators',
-                name: 'Operators & Relations',
+                name: 'Operators and Relations',
                 previewLatex: '\\times \\; \\leq \\; \\approx',
                 cols: 'grid-cols-6',
                 widthClass: 'w-80',
@@ -992,7 +992,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'sets_logic',
-                name: 'Sets, Logic & Number Systems',
+                name: 'Sets, Logic and Number Systems',
                 previewLatex: '\\in \\; \\cup \\; \\mathbb{R}',
                 cols: 'grid-cols-6',
                 widthClass: 'w-80',
@@ -1025,7 +1025,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'arrows',
-                name: 'Arrows & Reactions',
+                name: 'Arrows and Reactions',
                 previewLatex: '\\to \\; \\Rightarrow \\; \\Leftrightarrow',
                 cols: 'grid-cols-5',
                 widthClass: 'w-80',
@@ -1054,7 +1054,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'brackets',
-                name: 'Brackets, Matrices & Cases',
+                name: 'Brackets, Matrices and Cases',
                 previewLatex: '(x) \\; [x] \\; \\{x\\}',
                 cols: 'grid-cols-3',
                 widthClass: 'w-80',
@@ -1078,7 +1078,7 @@ img,video{max-width:100%;height:auto}
             },
             {
                 id: 'functions',
-                name: 'Trig, Logs & Limits',
+                name: 'Trig, Logs and Limits',
                 previewLatex: '\\sin \\; \\ln \\; \\lim',
                 cols: 'grid-cols-4',
                 widthClass: 'w-80',
@@ -1255,7 +1255,7 @@ img,video{max-width:100%;height:auto}
             matrixWrapper.className = 'ribbon-cluster group';
             matrixWrapper.setAttribute('onmouseenter', 'positionPopover(this)');
             matrixWrapper.innerHTML = `
-                <div title="Matrix & Vector Wizard" class="px-2 py-1 min-w-[82px] bg-gradient-to-b from-white to-slate-50/90 group-hover:from-slate-50 group-hover:to-slate-100 border border-slate-200/90 group-hover:border-slate-400 group-hover:shadow-sm rounded-xl cursor-pointer transition-all duration-150 flex items-center justify-center min-h-[40px] shadow-2xs select-none relative">
+                <div title="Matrix and Vector Wizard" class="px-2 py-1 min-w-[82px] bg-gradient-to-b from-white to-slate-50/90 group-hover:from-slate-50 group-hover:to-slate-100 border border-slate-200/90 group-hover:border-slate-400 group-hover:shadow-sm rounded-xl cursor-pointer transition-all duration-150 flex items-center justify-center min-h-[40px] shadow-2xs select-none relative">
                     <div class="flex items-center gap-1.5 text-slate-800 group-hover:text-slate-900 font-semibold text-xs px-1">
                         <svg aria-hidden="true" class="text-slate-700 group-hover:text-slate-900" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg>
                         <span>Matrix</span>
@@ -1266,9 +1266,9 @@ img,video{max-width:100%;height:auto}
                 <div class="ribbon-popover right-0 absolute top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50">
                     <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
                         <span class="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                            <svg aria-hidden="true" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix &amp; Cases
+                            <svg aria-hidden="true" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" style="display:inline-block;flex-shrink:0"><rect x="1.5" y="1.5" width="13" height="13" rx="2"/><path d="M1.5 6h13M1.5 10h13M6 1.5v13M10 1.5v13"/></svg> Matrix and Cases
                         </span>
-                        <span class="text-[10px] text-slate-500">Presets &amp; Custom</span>
+                        <span class="text-[10px] text-slate-500">Presets and Custom</span>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-1.5 mb-2.5">
