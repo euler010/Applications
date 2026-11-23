@@ -65,7 +65,7 @@
   .bar .r{background:var(--rot);height:100%}
   .legend{display:flex;gap:14px;padding:8px 12px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line)}
   .legend{align-items:center}
-  .legend button.small{margin-left:auto;padding:6px 14px;font-size:.85rem}
+  .legend #play2{margin-left:auto;min-width:105px;font-size:1rem}
   .legend>span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
   .fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;font-size:.88em;margin:0 1px}
   .fr>span{padding:0 2px}
@@ -126,7 +126,7 @@
       <div class="legend">
         <span style="--c:var(--trans)">Translational <span class="fr"><span>1</span><span>2</span></span>mv²</span>
         <span style="--c:var(--rot)">Rotational <span class="fr"><span>1</span><span>2</span></span>Iω²</span>
-        <button id="replay2" class="primary small">▶ Replay</button>
+        <button id="play2" class="primary">▶ Play</button>
       </div>
     </div>
 
@@ -506,7 +506,8 @@
 
   // ---------- controls ----------
   const playBtn = document.getElementById('play');
-  function setPlayLabel(){ playBtn.textContent = playing ? '❚❚ Pause' : (t >= tMax - 1e-9 ? '▶ Replay' : '▶ Play'); }
+  const play2 = document.getElementById('play2');
+  function setPlayLabel(){ playBtn.textContent = play2.textContent = playing ? '❚❚ Pause' : (t >= tMax - 1e-9 ? '▶ Replay' : '▶ Play'); }
   function togglePlay(){
     if(!playing && t >= tMax - 1e-9) t = 0;
     playing = !playing; setPlayLabel();
@@ -514,7 +515,7 @@
   function reset(){ t = 0; playing = false; setPlayLabel(); }
   playBtn.addEventListener('click', togglePlay);
   document.getElementById('reset').addEventListener('click', reset);
-  document.getElementById('replay2').addEventListener('click', () => { t = 0; playing = true; setPlayLabel(); });
+  document.getElementById('play2').addEventListener('click', togglePlay);
   const angle = document.getElementById('angle'), angleVal = document.getElementById('angleVal');
   angle.addEventListener('input', () => { theta = +angle.value; angleVal.textContent = theta + '°'; recompute(); reset(); });
   const segBtns = document.querySelectorAll('#speed button');
