@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rolling Race: Moment of Inertia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f5f1; --ink:#1c2230; --muted:#5d6574; --card:#ffffff; --line:#dedad0;
+    --accent:#2b5fd9; --trans:#2b5fd9; --rot:#e08a1e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Inter",system-ui,sans-serif;font-feature-settings:"tnum";background:var(--bg);color:var(--ink);line-height:1.4}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px}
+  header h1{font-size:1.4rem;margin:0 0 2px;letter-spacing:-.01em}
+  header p{margin:0 0 12px;color:var(--muted);font-size:.95rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  canvas{display:block;width:100%;background:#fbfaf7}
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) 250px}
+  .controls{display:flex;flex-direction:column;gap:18px;padding:16px;border-left:1px solid var(--line);background:#fdfcfa}
+  @media (max-width:820px){.stage{grid-template-columns:1fr}.controls{border-left:none;border-top:1px solid var(--line)}}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  button{font:inherit;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 12px;border-radius:8px;cursor:pointer}
+  button:hover{background:#f1efe9}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:#244fb8}
+  .ctl{display:flex;flex-direction:column;gap:8px}
+  .ctl-head{display:flex;justify-content:space-between;align-items:baseline;font-size:.92rem;font-weight:600}
+  .checks{gap:12px;padding-top:14px;border-top:1px solid var(--line)}
+  label{display:flex;align-items:flex-start;gap:8px;font-size:.92rem;color:var(--ink)}
+  label small{color:var(--muted);font-size:.8rem}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  select{font:inherit;padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:#fff;width:100%}
+  input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;margin:2px 0 0;flex:none}
+  .val{font-variant-numeric:tabular-nums;font-weight:700}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .tablewrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{font-size:.85rem;letter-spacing:0;color:var(--muted);font-weight:600;background:#faf9f6}
+  tr:last-child td{border-bottom:none}
+  .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+  .place{font-weight:800}
+  .bar{position:relative;width:120px;height:14px;background:#efece5;border-radius:4px;overflow:hidden;display:flex}
+  .bar .t{background:var(--trans);height:100%}
+  .bar .r{background:var(--rot);height:100%}
+  .legend{display:flex;gap:14px;padding:8px 12px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line)}
+  .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+  .why{padding:14px 16px;font-size:.92rem}
+  .why h2{font-size:1rem;margin:0 0 8px}
+  .why ul{margin:6px 0 0;padding-left:18px}
+  .why .eq{display:inline-block;margin:6px 10px 6px 0}
+  .why li{margin:4px 0}
+  .eq{font-family:"Inter",system-ui,sans-serif;font-size:1.05rem;background:#f4f2ec;border-radius:8px;padding:8px 10px;margin:8px 0;text-align:center}
+  .hidden-val{color:#a3a9b4}
+  .kbd{font-size:.8rem;color:var(--muted);margin-top:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Rolling Race: How Moment of Inertia Sets the Pace</h1>
+    <p>Five objects start from rest, one per lane. All four round objects have the same 20 cm diameter, and the block is a 20 cm cube. The solid disk and the hollow cylinder are both 10 cm wide. The block slides on a frictionless track. The other four roll without slipping: static friction makes them spin, but does no work, so no energy is lost.</p>
+  </header>
+
+  <div class="card stage">
+    <canvas id="cv" aria-label="Animation of five objects racing down identical ramps"></canvas>
+    <aside class="controls">
+      <div class="btns">
+        <button id="play" class="primary">▶ Play</button>
+        <button id="reset">↺ Reset</button>
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><span>Ramp angle</span><span class="val" id="angleVal">10°</span></div>
+        <input id="angle" type="range" min="5" max="25" step="1" value="10" aria-label="Ramp angle">
+      </div>
+      <div class="ctl">
+        <div class="ctl-head"><span>Playback rate</span></div>
+        <select id="speed" aria-label="Playback rate">
+          <option value="0.1">0.1× (slow motion)</option>
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1× (real time)</option>
+        </select>
+      </div>
+      <div class="ctl checks">
+        <label><input id="arrows" type="checkbox" checked> Velocity arrows</label>
+        <label><input id="predict" type="checkbox" checked><span>Prediction mode<br><small>Hide results until the end</small></span></label>
+      </div>
+      <span class="kbd">Space = play/pause<br>R = reset</span>
+    </aside>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Object</th><th>Mass (kg)</th><th>Radius / width (m)</th><th>I</th><th>a ÷ g sin θ</th><th>a (m/s²)</th><th>Speed (m/s)</th><th>Time (s)</th><th>Place</th><th>KE split</th></tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span style="--c:var(--trans)">Translational ½mv²</span>
+        <span style="--c:var(--rot)">Rotational ½Iω²</span>
+        <span style="margin-left:auto">Bar length = share of mgh released so far</span>
+      </div>
+    </div>
+
+    <div class="card why">
+      <h2>Why the order comes out this way</h2>
+      Every object drops the same height, so each releases the same energy per kilogram. At any point:
+      <div class="eq">mgh = ½mv² + ½Iω², &nbsp; with ω = v / r</div>
+      Writing I = k·mr² gives
+      <div class="eq">a = g sin θ / (1 + k)</div>
+      <ul>
+        <li>When more mass sits far from the axis, k is bigger, so more of the energy goes into spinning and less into moving forward.</li>
+        <li>Mass and radius cancel out. Only the <em>shape</em> (k) matters.</li>
+        <li>The block doesn't spin (k = 0), so all of its energy goes into moving forward.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const g = 9.8;            // m/s^2
+  const MASS = 1.0;         // kg, same for every object
+  const D = 0.20, R = D/2;  // diameter of rollers = side of block (m)
+  const TRACK = 1.8;        // distance from start to finish (m)
+  const U0 = R + 0.04;      // start position of contact point along ramp
+  const OFF = 1.45 * D;     // vertical spacing between lanes (m)
+
+  const objs = [
+    {type:'block', name:'Block (sliding)',  sub:'slides, frictionless', k:0,   I:'—  (no spin)', frac:'1',   color:'#c4873a'},
+    {type:'sdisk', name:'Solid disk',      sub:'solid cylinder',       k:0.5, I:'½ mr²',        frac:'2/3', color:'#2f6fd6'},
+    {type:'hcyl',  name:'Hollow cylinder', sub:'thin-walled',          k:1,   I:'mr²',          frac:'1/2', color:'#12968b'},
+    {type:'ssph',  name:'Solid sphere',    sub:'uniform',              k:0.4, I:'⅖ mr²',        frac:'5/7', color:'#d4473a'},
+    {type:'hsph',  name:'Hollow sphere',   sub:'thin shell',           k:2/3, I:'⅔ mr²',        frac:'3/5', color:'#8a4fc9'},
+  ];
+
+  // ---------- state ----------
+  let theta = 10, t = 0, playing = false, speed = 1, tMax = 0;
+  let showArrows = true, predict = true;
+
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  let cw = 0, ch = 0;
+
+  function recompute(){
+    const s = Math.sin(theta*Math.PI/180);
+    objs.forEach(o => { o.a = g*s/(1+o.k); o.tf = Math.sqrt(2*TRACK/o.a); });
+    const sorted = [...objs].sort((a,b)=>a.tf-b.tf);
+    sorted.forEach((o,i)=> o.place = i+1);
+    tMax = Math.max(...objs.map(o=>o.tf));
+  }
+
+  // ---------- color helpers ----------
+  function hexToRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+  function shade(h, amt){ // amt -1..1
+    const [r,g2,b] = hexToRgb(h);
+    const f = c => Math.round(amt<0 ? c*(1+amt) : c + (255-c)*amt);
+    return `rgb(${f(r)},${f(g2)},${f(b)})`;
+  }
+  function rgba(h,a){ const [r,g2,b]=hexToRgb(h); return `rgba(${r},${g2},${b},${a})`; }
+
+  // ---------- sizing ----------
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    cw = cv.clientWidth;
+    ch = Math.round(Math.min(Math.max(cw*0.5, 340), 620));
+    cv.style.height = ch + 'px';
+    cv.width = Math.round(cw*dpr); cv.height = Math.round(ch*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
+  function circle(x,y,r){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); }
+
+  // ---------- oblique "3D" projection ----------
+  const K = 0.8, ALPHA = 30*Math.PI/180, CA = Math.cos(ALPHA), SA = Math.sin(ALPHA);
+  const LW = 0.40, WD = LW*5, CYLW = 0.5*D;   // lane width, ramp depth, disk/cylinder width
+  const VIS = [K*CA, K*SA, -1];                // a face is visible if normal·VIS > 0
+  const dot3 = (a,b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const add3 = (...vs) => vs.reduce((p,v)=>[p[0]+v[0],p[1]+v[1],p[2]+v[2]],[0,0,0]);
+  const mul3 = (v,k) => [v[0]*k,v[1]*k,v[2]*k];
+
+  function poly(pts, fill, stroke, lw){
+    ctx.beginPath(); ctx.moveTo(...pts[0]); for(let i=1;i<pts.length;i++) ctx.lineTo(...pts[i]); ctx.closePath();
+    if(fill){ ctx.fillStyle = fill; ctx.fill(); }
+    if(stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw||1; ctx.lineJoin='round'; ctx.stroke(); }
+  }
+
+  // ---------- object renderers ----------
+  function drawCube(P3, C, t, n, r, th, col){
+    const z = [0,0,1];
+    const corner = (a,b,cz) => P3(...add3(C, mul3(t,a*R), mul3(n,b*R), mul3(z,cz*R)));
+    const faces = [
+      {nrm:mul3(z,-1), pts:[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1]], f:0.18, front:true},
+      {nrm:n,          pts:[[-1,1,-1],[1,1,-1],[1,1,1],[-1,1,1]],     f:0.38},
+      {nrm:t,          pts:[[1,-1,-1],[1,-1,1],[1,1,1],[1,1,-1]],     f:-0.22},
+      {nrm:mul3(t,-1), pts:[[-1,-1,-1],[-1,-1,1],[-1,1,1],[-1,1,-1]], f:-0.1},
+    ];
+    faces.forEach(F => {
+      if(dot3(F.nrm, VIS) <= 0) return;
+      poly(F.pts.map(q=>corner(...q)), shade(col, F.f), shade(col,-0.45), Math.max(1.2, r*0.05));
+      if(F.front){
+        const [fx,fy] = P3(...add3(C, mul3(z,-R)));
+        ctx.save(); ctx.translate(fx,fy); ctx.rotate(th);
+        ctx.strokeStyle='rgba(90,50,10,0.28)'; ctx.lineWidth=Math.max(1,r*0.04);
+        for(let k=-1;k<=1;k++){ const y=k*r*0.45; ctx.beginPath(); ctx.moveTo(-r*0.8,y);
+          ctx.bezierCurveTo(-r*0.3,y-r*0.12, r*0.3,y+r*0.12, r*0.8,y); ctx.stroke(); }
+        ctx.restore();
+      }
+    });
+  }
+  function cylinderBody(F, B, r, col){
+    const dx = B[0]-F[0], dy = B[1]-F[1], L = Math.hypot(dx,dy) || 1;
+    const px = -dy/L*r, py = dx/L*r;
+    const side = shade(col,-0.28), edge = shade(col,-0.5);
+    circle(B[0],B[1],r); ctx.fillStyle = side; ctx.fill();
+    ctx.lineWidth = Math.max(1.2,r*0.05); ctx.strokeStyle = edge; ctx.stroke();
+    poly([[F[0]+px,F[1]+py],[B[0]+px,B[1]+py],[B[0]-px,B[1]-py],[F[0]-px,F[1]-py]], side);
+    ctx.beginPath(); ctx.moveTo(F[0]+px,F[1]+py); ctx.lineTo(B[0]+px,B[1]+py);
+    ctx.moveTo(F[0]-px,F[1]-py); ctx.lineTo(B[0]-px,B[1]-py); ctx.stroke();
+  }
+  function drawSolidDisk(F, B, r, col, phi){
+    cylinderBody(F, B, r, col);
+    ctx.save(); ctx.translate(F[0],F[1]);
+    circle(0,0,r); ctx.fillStyle = shade(col,0.15); ctx.fill();
+    ctx.lineWidth = Math.max(1.5,r*0.06); ctx.strokeStyle = shade(col,-0.45); ctx.stroke();
+    circle(0,0,r*0.84); ctx.lineWidth = Math.max(1,r*0.04); ctx.strokeStyle = shade(col,0.45); ctx.stroke();
+    ctx.rotate(phi);
+    ctx.strokeStyle = shade(col,-0.35); ctx.lineWidth = Math.max(1.5,r*0.07); ctx.lineCap='round';
+    for(let k=0;k<2;k++){ const a=k*Math.PI/2;
+      ctx.beginPath(); ctx.moveTo(-Math.cos(a)*r*0.8,-Math.sin(a)*r*0.8); ctx.lineTo(Math.cos(a)*r*0.8,Math.sin(a)*r*0.8); ctx.stroke(); }
+    circle(r*0.62,0,r*0.11); ctx.fillStyle='#fff'; ctx.fill();
+    ctx.rotate(-phi); circle(0,0,r*0.12); ctx.fillStyle = shade(col,-0.5); ctx.fill();
+    ctx.restore();
+  }
+  function drawHollowCyl(F, B, r, col, phi){
+    cylinderBody(F, B, r, col);
+    const ri = r*0.86;
+    circle(F[0],F[1],r); ctx.fillStyle = shade(col,0.12); ctx.fill();
+    ctx.lineWidth = Math.max(1.5,r*0.06); ctx.strokeStyle = shade(col,-0.45); ctx.stroke();
+    ctx.save();
+    circle(F[0],F[1],ri); ctx.clip();
+    const gr = ctx.createRadialGradient(F[0],F[1],ri*0.2,F[0],F[1],ri);
+    gr.addColorStop(0, shade(col,-0.55)); gr.addColorStop(1, shade(col,-0.7));
+    ctx.fillStyle = gr; ctx.fillRect(F[0]-r,F[1]-r,2*r,2*r);         // inner wall of the tube
+    circle(B[0],B[1],ri); ctx.fillStyle = '#ddd5c4'; ctx.fill();       // looking through to the ramp
+    ctx.lineWidth = 1; ctx.strokeStyle = shade(col,-0.4); ctx.stroke();
+    ctx.restore();
+    circle(F[0],F[1],ri); ctx.lineWidth = Math.max(1,r*0.035); ctx.strokeStyle = shade(col,-0.5); ctx.stroke();
+    ctx.save(); ctx.translate(F[0],F[1]); ctx.rotate(phi);
+    circle(r*0.93,0,r*0.07); ctx.fillStyle='#fff'; ctx.fill();
+    ctx.fillStyle = shade(col,-0.5);
+    for(let k=1;k<4;k++){ const a=k*Math.PI/2; circle(Math.cos(a)*r*0.93,Math.sin(a)*r*0.93,r*0.045); ctx.fill(); }
+    ctx.restore();
+  }
+  function drawSolidSphere(r, col, phi){
+    const gr = ctx.createRadialGradient(-r*0.38,-r*0.42,r*0.08,0,0,r);
+    gr.addColorStop(0, shade(col,0.65)); gr.addColorStop(0.45, col); gr.addColorStop(1, shade(col,-0.5));
+    circle(0,0,r); ctx.fillStyle = gr; ctx.fill();
+    ctx.save(); ctx.rotate(phi);
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.96,r*0.32,0,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=Math.max(1.2,r*0.05); ctx.stroke();
+    circle(r*0.55,0,r*0.11); ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.fill();
+    ctx.restore();
+  }
+  function drawHollowSphere(r, col, phi){
+    const gr = ctx.createRadialGradient(0,0,0,0,0,r);
+    gr.addColorStop(0, rgba(col,0.10)); gr.addColorStop(0.72, rgba(col,0.25)); gr.addColorStop(0.95, rgba(col,0.85)); gr.addColorStop(1, rgba(col,0.95));
+    circle(0,0,r); ctx.fillStyle = '#ece6d9'; ctx.fill();
+    circle(0,0,r); ctx.fillStyle = gr; ctx.fill();
+    ctx.lineWidth = Math.max(1.5,r*0.07); ctx.strokeStyle = shade(col,-0.35); ctx.stroke();
+    ctx.save(); ctx.rotate(phi);
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.96,r*0.32,0,0,Math.PI*2);
+    ctx.setLineDash([r*0.14,r*0.1]); ctx.strokeStyle = rgba(col,0.7); ctx.lineWidth=Math.max(1,r*0.04); ctx.stroke(); ctx.setLineDash([]);
+    circle(r*0.92,0,r*0.1); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=1; ctx.strokeStyle=shade(col,-0.4); ctx.stroke();
+    ctx.restore();
+    ctx.beginPath(); ctx.ellipse(-r*0.4,-r*0.45,r*0.22,r*0.12,-0.6,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.fill();
+  }
+
+  function arrow(x1,y1,x2,y2,col,w){
+    const ang = Math.atan2(y2-y1,x2-x1), hl = Math.max(7, w*3.2);
+    const len = Math.hypot(x2-x1,y2-y1); if(len < hl*0.9) return;
+    ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=w; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2-Math.cos(ang)*hl*0.8,y2-Math.sin(ang)*hl*0.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-Math.cos(ang-0.42)*hl, y2-Math.sin(ang-0.42)*hl);
+    ctx.lineTo(x2-Math.cos(ang+0.42)*hl, y2-Math.sin(ang+0.42)*hl); ctx.closePath(); ctx.fill();
+  }
+
+  // ---------- main draw ----------
+  function draw(){
+    const W = cw, H = ch;
+    ctx.clearRect(0,0,W,H);
+    const th = theta*Math.PI/180, c = Math.cos(th), s = Math.sin(th);
+    const uEnd = U0 + TRACK + 0.75*D, uF = U0 + TRACK;
+    const Xe = uEnd*c, He = uEnd*s;
+    const dX = WD*K*CA, dY = WD*K*SA;
+    const labelPx = Math.min(190, Math.max(130, W*0.15));
+    const leftPx = 16, rightPx = 10, topPx = 52, botPx = 18;
+    const spanX = Xe + dX, spanY = He + dY + 1.25*D;
+    const sc = Math.min((W-leftPx-rightPx-labelPx)/spanX, (H-topPx-botPx)/spanY);
+    const ox = leftPx + ((W-leftPx-rightPx-labelPx) - spanX*sc)/2;
+    const oy = topPx + ((H-topPx-botPx) - spanY*sc)/2;
+    const P3 = (x,y,z) => [ox + (x + z*K*CA)*sc, oy + (spanY - (y + z*K*SA))*sc];
+    const Ps = (u,z) => P3(u*c, He - u*s, z);
+    const allDone = t >= tMax - 1e-9;
+    const reveal = !predict || allDone;
+    const fs = (a,b,d) => Math.max(a, Math.min(b, W/d));
+
+    // floor
+    const gR = Xe + labelPx/sc + 0.1;
+    poly([P3(-0.25,0,-0.35), P3(gR,0,-0.35), P3(gR,0,WD+0.25), P3(-0.25,0,WD+0.25)], '#ece8de');
+    // soft shadow of the wedge on the floor
+    poly([P3(0,0,0), P3(Xe+0.08,0,0), P3(Xe+0.08,0,WD), P3(0,0,WD)], 'rgba(60,50,30,0.10)');
+
+    // sloped top face + lanes
+    const face = [Ps(0,0), Ps(uEnd,0), Ps(uEnd,WD), Ps(0,WD)];
+    const fg = ctx.createLinearGradient(...Ps(0,0), ...Ps(uEnd,0));
+    fg.addColorStop(0,'#f3eee3'); fg.addColorStop(1,'#e4dccb');
+    poly(face, fg);
+    for(let j=0;j<5;j++){
+      poly([Ps(0,j*LW), Ps(uEnd,j*LW), Ps(uEnd,(j+1)*LW), Ps(0,(j+1)*LW)], rgba(objs[j].color, j===0 ? 0.16 : 0.11));
+      if(j>0){ ctx.beginPath(); ctx.moveTo(...Ps(0,j*LW)); ctx.lineTo(...Ps(uEnd,j*LW));
+        ctx.strokeStyle='rgba(80,70,50,0.30)'; ctx.lineWidth=1.2; ctx.stroke(); }
+    }
+    // frictionless sheen on the block's lane
+    ctx.save(); poly([Ps(0,0), Ps(uEnd,0), Ps(uEnd,LW), Ps(0,LW)]); ctx.clip();
+    ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=2;
+    for(let q=0.15;q<uEnd;q+=0.32){ ctx.beginPath(); ctx.moveTo(...Ps(q,LW*0.15)); ctx.lineTo(...Ps(q+0.12,LW*0.85)); ctx.stroke(); }
+    ctx.restore();
+    poly(face, null, '#7f7562', 1.6);
+
+    // front triangular face
+    const tri = [P3(0,0,0), P3(0,He,0), P3(Xe,0,0)];
+    const tg = ctx.createLinearGradient(...P3(0,He,0), ...P3(0,0,0));
+    tg.addColorStop(0,'#cfc3aa'); tg.addColorStop(1,'#bfb196');
+    poly(tri, tg, '#7f7562', 1.6);
+
+    // angle marker on the front face
+    const [ax, ay] = P3(Xe,0,0);
+    const ar = Math.max(26, Math.min(56, sc*0.3));
+    ctx.beginPath(); ctx.arc(ax, ay, ar, Math.PI, Math.PI + th);
+    ctx.strokeStyle = '#3f3a30'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#2f2b24'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.font = `600 ${fs(12,15,70)}px Inter, system-ui, sans-serif`;
+    ctx.fillText(`θ = ${theta}°`, ax - ar - 6, ay - 3);
+
+    // start line and checkered finish band across all lanes
+    const us = U0 - R - 0.02;
+    ctx.setLineDash([6,5]); ctx.strokeStyle='rgba(55,65,81,0.6)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(...Ps(us,0)); ctx.lineTo(...Ps(us,WD)); ctx.stroke(); ctx.setLineDash([]);
+    const cells = 24, bw = 0.03;
+    for(let m=0;m<2;m++) for(let k=0;k<cells;k++){
+      const z0 = k*WD/cells, z1 = (k+1)*WD/cells, u0 = uF + m*bw, u1 = uF + (m+1)*bw;
+      poly([Ps(u0,z0), Ps(u1,z0), Ps(u1,z1), Ps(u0,z1)], (k+m)%2 ? '#1f2328' : '#ffffff');
+    }
+    ctx.font = `700 ${fs(10,12,90)}px Inter, system-ui, sans-serif`; ctx.textBaseline='bottom'; ctx.textAlign='left';
+    let p = Ps(us, 0); ctx.fillStyle='#3f3a30'; ctx.textBaseline='top'; ctx.fillText('Start', p[0]+2, p[1]+6); ctx.textBaseline='bottom';
+    p = Ps(uF, WD);     ctx.fillStyle='#111827'; ctx.fillText('Finish', p[0]+4, p[1]-4);
+
+    // objects, far lane first so nearer ones overlap correctly
+    const r = R*sc;
+    const vmax = Math.sqrt(2*g*TRACK*s);
+    const tv = [c,-s,0], nv = [s,c,0];
+    const objScreen = [];
+    for(let j=4;j>=0;j--){
+      const o = objs[j];
+      const zc = (j+0.5)*LW;
+      const tt = Math.min(t, o.tf);
+      const ut = Math.min(0.5*o.a*tt*tt, TRACK);
+      const u = U0 + ut;
+      const base = [u*c, He-u*s, zc];
+      const C = add3(base, mul3(nv, R));
+      const [cx, cy] = P3(...C);
+      const phi = ut / R;
+      // contact shadow
+      const [sx, sy] = P3(...base);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(-Math.atan2(K*SA, K*CA)*0.0 + th);
+      ctx.beginPath(); ctx.ellipse(r*0.15, 0, r*0.85, r*0.22, 0, 0, Math.PI*2);
+      ctx.fillStyle='rgba(40,30,10,0.20)'; ctx.fill(); ctx.restore();
+
+      if(o.type==='block'){ drawCube(P3, C, tv, nv, r, th, o.color); }
+      else if(o.type==='sdisk' || o.type==='hcyl'){
+        const F = P3(...add3(C,[0,0,-CYLW/2])), B = P3(...add3(C,[0,0,CYLW/2]));
+        (o.type==='sdisk' ? drawSolidDisk : drawHollowCyl)(F, B, r, o.color, phi);
+      } else {
+        ctx.save(); ctx.translate(cx, cy);
+        (o.type==='ssph' ? drawSolidSphere : drawHollowSphere)(r, o.color, phi);
+        ctx.restore();
+      }
+      const v = o.a*tt;
+      if(showArrows && v > 0.001 && t < o.tf){
+        const [fx, fy] = P3(...add3(C, [0,0,-(o.type==='block'?R:o.type==='sdisk'||o.type==='hcyl'?CYLW/2:0)]));
+        const L = v / vmax * r * 4;
+        const x1 = fx + c*r*1.08, y1 = fy + s*r*1.08;
+        arrow(x1, y1, x1 + c*L, y1 + s*L, shade(o.color,-0.35), Math.max(2, r*0.09));
+      }
+    }
+
+    // lane labels on the floor at the bottom of each lane
+    for(let j=0;j<5;j++){
+      const o = objs[j];
+      const [lx, ly] = P3(Xe + 0.04, 0, (j+0.5)*LW);
+      const fin = t >= o.tf - 1e-9;
+      const br = fs(9,12,100);
+      const bx = lx + br + 4, by = ly + 2;
+      circle(bx, by, br);
+      if(fin && reveal){
+        ctx.fillStyle = o.place===1 ? '#e7b416' : o.place===2 ? '#b9c0c9' : o.place===3 ? '#cd8b4e' : '#ffffff';
+        ctx.fill(); ctx.lineWidth=1.3; ctx.strokeStyle='#374151'; ctx.stroke();
+        ctx.fillStyle='#111827'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font = `800 ${Math.round(br*1.1)}px Inter, system-ui, sans-serif`; ctx.fillText(o.place, bx, by+0.5);
+      } else { ctx.fillStyle = o.color; ctx.fill(); }
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillStyle = shade(o.color,-0.3); ctx.font = `700 ${fs(11,14,80)}px Inter, system-ui, sans-serif`;
+      ctx.fillText(o.name, bx + br + 6, by);
+    }
+
+    // clock & info
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillStyle = '#111827';
+    ctx.font = `700 ${fs(14,20,50)}px Inter, system-ui, sans-serif`;
+    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, 10);
+    ctx.font = `${fs(11,13,80)}px Inter, system-ui, sans-serif`; ctx.fillStyle = '#6b7280';
+    ctx.fillText(`playback ${speed}×`, W - 14, 10 + fs(18,24,42));
+    ctx.textAlign = 'left';
+    ctx.fillText(`Track length ${TRACK.toFixed(1)} m · height drop ${(TRACK*s).toFixed(2)} m`, 12, 12);
+  }
+
+  // ---------- table ----------
+  const tbody = document.getElementById('tbody');
+  const cells = objs.map(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><span class="swatch" style="background:${o.color}"></span><b>${o.name}</b></td>
+      <td>${MASS.toFixed(1)}</td><td>${o.type==='block' ? D.toFixed(2)+' across' : 'r = '+R.toFixed(2)}</td><td>${o.I}</td><td class="frac"></td><td class="acc"></td><td class="spd"></td><td class="tm"></td><td class="place"></td>
+      <td><div class="bar"><div class="t"></div><div class="r"></div></div></td>`;
+    tbody.appendChild(tr);
+    return {frac:tr.querySelector('.frac'), acc:tr.querySelector('.acc'), spd:tr.querySelector('.spd'),
+            tm:tr.querySelector('.tm'), place:tr.querySelector('.place'), bt:tr.querySelector('.t'), br:tr.querySelector('.r')};
+  });
+  const ord = n => n + (['th','st','nd','rd'][n] || 'th');
+  function updateTable(){
+    const allDone = t >= tMax - 1e-9;
+    const reveal = !predict || allDone;
+    objs.forEach((o,i) => {
+      const cl = cells[i];
+      const tt = Math.min(t, o.tf);
+      const ut = Math.min(0.5*o.a*tt*tt, TRACK);
+      const f = ut / TRACK;
+      cl.frac.innerHTML = reveal ? o.frac : '<span class="hidden-val">?</span>';
+      cl.acc.innerHTML  = reveal ? o.a.toFixed(2) : '<span class="hidden-val">?</span>';
+      cl.spd.textContent = (o.a*tt).toFixed(2);
+      const fin = t >= o.tf - 1e-9;
+      cl.tm.innerHTML = fin && reveal ? o.tf.toFixed(2) : (fin ? '<span class="hidden-val">done</span>' : '—');
+      cl.place.textContent = fin && reveal ? ord(o.place) : '';
+      cl.bt.style.width = (f/(1+o.k)*100) + '%';
+      cl.br.style.width = (f*o.k/(1+o.k)*100) + '%';
+    });
+  }
+
+  // ---------- controls ----------
+  const playBtn = document.getElementById('play');
+  function setPlayLabel(){ playBtn.textContent = playing ? '❚❚ Pause' : (t >= tMax - 1e-9 ? '▶ Replay' : '▶ Play'); }
+  function togglePlay(){
+    if(!playing && t >= tMax - 1e-9) t = 0;
+    playing = !playing; setPlayLabel();
+  }
+  function reset(){ t = 0; playing = false; setPlayLabel(); }
+  playBtn.addEventListener('click', togglePlay);
+  document.getElementById('reset').addEventListener('click', reset);
+  const angle = document.getElementById('angle'), angleVal = document.getElementById('angleVal');
+  angle.addEventListener('input', () => { theta = +angle.value; angleVal.textContent = theta + '°'; recompute(); reset(); });
+  document.getElementById('speed').addEventListener('change', e => { speed = +e.target.value; });
+  document.getElementById('arrows').addEventListener('change', e => { showArrows = e.target.checked; });
+  document.getElementById('predict').addEventListener('change', e => { predict = e.target.checked; });
+  window.addEventListener('keydown', e => {
+    if(e.target.tagName === 'INPUT' && e.target.type !== 'checkbox' && e.target.type !== 'range') return;
+    if(e.code === 'Space'){ e.preventDefault(); togglePlay(); }
+    else if(e.key === 'r' || e.key === 'R'){ reset(); }
+  });
+  window.addEventListener('resize', resize);
+
+  // ---------- loop ----------
+  let last = null;
+  function frame(ts){
+    if(last === null) last = ts;
+    const dt = Math.min((ts - last)/1000, 0.05); last = ts;
+    if(playing){
+      t += dt*speed;
+      if(t >= tMax){ t = tMax; playing = false; setPlayLabel(); }
+    }
+    draw(); updateTable();
+    requestAnimationFrame(frame);
+  }
+
+  recompute(); resize(); setPlayLabel();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
