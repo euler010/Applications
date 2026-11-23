@@ -379,7 +379,14 @@
     ctx.strokeStyle = '#3f3a30'; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.fillStyle = '#2f2b24'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
     ctx.font = `600 ${fs(12,15,70)}px Inter, system-ui, sans-serif`;
-    ctx.fillText(`θ = ${theta}°`, ax - ar - 6, ay - 3);
+    const angFs = fs(12,15,70);
+    const need = (angFs + 5) / Math.tan(th);        // distance from the corner where the label fits under the ramp
+    if(need <= ar + 36){
+      ctx.fillText(`θ = ${theta}°`, ax - Math.max(ar + 6, need), ay - 3);
+    } else {                                        // ramp too shallow: put the label below the floor line
+      ctx.textBaseline = 'top';
+      ctx.fillText(`θ = ${theta}°`, ax - 6, ay + 5);
+    }
 
     // start line and checkered finish band across all lanes
     const us = U0 - R - 0.02;
