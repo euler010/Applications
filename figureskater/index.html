@@ -18,8 +18,12 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden;background:#0b1626;color:var(--text);
     font-family: "Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  #scene{position:fixed;top:0;left:0;width:100vw;height:100vh;display:block}
-  .panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  /* The whole app lives on a fixed-size "stage" (the design size, 1600 × 900). On computers and large screens
+     the stage is scaled up or down to fit the window and centred (blank bands fill any leftover space).
+     On phones the stage simply fills the screen and the layout is rearranged (see body.phone below). */
+  #stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:#0e1c30}
+  #scene{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
+  .panel{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:12px;
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,.35)}
   #controls{top:12px;right:12px;width:290px;padding:14px 14px 12px;max-height:calc(100% - 24px);overflow:auto}
   h1{font-size:16px;margin:0 0 2px;letter-spacing:.2px}
@@ -41,9 +45,9 @@
   label.chk{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin:6px 0;cursor:pointer;line-height:1.3}
   label.chk input{margin-top:2px}
   .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}
-  #leftCol{position:fixed;top:48px;left:12px;width:290px;max-height:calc(100% - 60px);overflow:auto;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+  #leftCol{position:absolute;top:48px;left:12px;width:290px;max-height:calc(100% - 60px);overflow:auto;display:flex;flex-direction:column;gap:10px;pointer-events:none}
   #leftCol .panel{position:relative;pointer-events:auto}
-  #titleBox{position:fixed;top:12px;left:14px;pointer-events:none;white-space:nowrap}
+  #titleBox{position:absolute;top:12px;left:14px;pointer-events:none;white-space:nowrap}
   /* title floats over the scene as text, shaded from the light blue of the ice to the blue of the selected buttons */
   #titleBox h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.2px;line-height:1.2;
     /* diagonal streaks of blue, like light catching the ice */
@@ -62,18 +66,33 @@
   .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
   #graphBox{padding:8px 10px 6px}
   #graph{width:100%;height:190px;display:block}
-  #toggleUI{position:fixed;right:12px;bottom:12px;display:none;flex:none;width:auto;padding:8px 12px}
-  @media (max-width: 760px){
-    #controls{top:auto;bottom:12px;right:12px;width:calc(100% - 24px);max-height:46%;}
-    #leftCol{width:200px}
-    #readout{padding:8px 10px}
-    #graphBox{display:none}
-    .eq{font-size:13px}
-    .meas{font-size:12px}
-    #toggleUI{display:block}
-    body.hideUI #controls{display:none}
-  }
-  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--muted)}
+  .phoneOnly{display:none}
+  /* ---------- phones: rearranged for touch ---------- */
+  body.phone #stage{background:#0e1c30}
+  body.phone .phoneOnly{display:block}
+  body.phone #titleBox{top:8px;left:10px;right:10px;white-space:normal}
+  body.phone #titleBox h1{font-size:17px}
+  body.phone #leftCol{top:36px;left:8px;width:auto;right:auto;max-width:min(330px, calc(100% - 16px));max-height:45%;gap:6px}
+  body.phone #readout{padding:6px 10px 8px}
+  body.phone .eq{font-size:16px;padding:4px 2px;margin-bottom:0;border-bottom:none}
+  body.phone.details .eq{border-bottom:1px solid var(--line);margin-bottom:6px;padding-bottom:6px}
+  body.phone:not(.details) .meas, body.phone:not(.details) #kNote, body.phone:not(.details) #graphBox{display:none}
+  body.phone #graph{height:120px}
+  body.phone #controls{top:auto;bottom:0;left:0;right:0;width:auto;max-height:62%;border-radius:14px 14px 0 0;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  body.phone:not(.more) #controls .phoneExtra{display:none}
+  body.phone button{min-height:44px;font-size:15px}
+  body.phone button.big{min-height:48px;font-size:16px}
+  body.phone .toggle{width:100%;margin-top:8px;font-size:14px;font-weight:600}
+  body.phone #readout .toggle{min-height:40px;margin-top:6px}
+  body.phone input[type=range]{height:36px}
+  body.phone label.chk{min-height:44px;align-items:center;font-size:15px;margin:2px 0}
+  body.phone label.chk input{width:22px;height:22px;margin:0}
+  body.phone .hint{font-size:12px}
+  /* landscape phones: the controls sit down the right-hand side instead */
+  body.phone.landscape #controls{top:0;left:auto;width:min(340px, 46%);max-height:100%;border-radius:14px 0 0 14px}
+  body.phone.landscape #leftCol{max-height:calc(100% - 44px)}
+  #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--muted)}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +105,7 @@
 </script>
 </head>
 <body>
+<div id="stage">
 <canvas id="scene"></canvas>
 <div id="err">The 3D view could not start in this browser (WebGL is needed).</div>
 
@@ -102,6 +122,7 @@
     <span class="k"><span class="sw" style="background:#e8d39a"></span>Braid angle from vertical</span><span class="v" id="vB">—</span>
   </div>
   <div class="hint" id="kNote">Skater mass 50 kg. I is computed from her body segments in their current positions.</div>
+  <button id="detailBtn" class="toggle phoneOnly">Show details and graphs ▾</button>
 </div>
   <div id="graphBox" class="panel">
   <canvas id="graph"></canvas>
@@ -118,6 +139,8 @@
     <button id="btnPlay" class="big">Pause</button>
     <button id="btnResetAll" class="big">Reset</button>
   </div>
+  <button id="moreBtn" class="toggle phoneOnly">More controls ▴</button>
+  <div class="phoneExtra">
   <div style="margin-top:12px">
     <div class="lab">Position <b id="posVal">0% in</b></div>
     <input id="pos" type="range" min="0" max="100" value="0">
@@ -151,16 +174,40 @@
     <label class="chk"><input type="checkbox" id="chkFric"> Include blade–ice friction</label>
     <label class="chk"><input type="checkbox" id="chkVec"> Show <span style="color:var(--L)">L</span> and <span style="color:var(--w)">ω</span> vectors</label>
   </div>
+  </div><!-- /phoneExtra -->
 </div>
 
 
 
-<button id="toggleUI">Controls</button>
+</div><!-- /stage -->
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+// ---------- Fitting the app to the screen ----------
+// Computers and large screens: the stage keeps its 1600 × 900 design layout and is scaled to fit the window,
+// centred. Phones (narrow screens, or short landscape screens): the stage fills the screen and the layout
+// is rearranged for touch (body.phone).
+const STAGE_W = 1600, STAGE_H = 900;
+let UI_SCALE = 1;
+const stageEl = document.getElementById('stage');
+function layoutStage() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const phone = W < 760 || (H < 500 && W < 1000);
+  document.body.classList.toggle('phone', phone);
+  document.body.classList.toggle('landscape', phone && W > H);
+  if (phone) {
+    UI_SCALE = 1;
+    stageEl.style.width = W + 'px'; stageEl.style.height = H + 'px'; stageEl.style.transform = 'none';
+  } else {
+    UI_SCALE = Math.min(W / STAGE_W, H / STAGE_H);
+    const x = (W - STAGE_W * UI_SCALE) / 2, y = (H - STAGE_H * UI_SCALE) / 2;
+    stageEl.style.width = STAGE_W + 'px'; stageEl.style.height = STAGE_H + 'px';
+    stageEl.style.transform = `translate(${x}px, ${y}px) scale(${UI_SCALE})`;
+  }
+}
+layoutStage();
 const canvas = document.getElementById('scene');
 let renderer;
 try {
@@ -169,7 +216,7 @@ try {
   document.getElementById('err').style.display = 'flex';
   throw e;
 }
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// (pixel ratio is set in resize(), allowing for how much the stage is scaled)
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -181,6 +228,9 @@ scene.fog = new THREE.Fog(0x0e1c30, 14, 38);
 const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 100);
 scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
+// drags are measured in screen pixels; scale the speeds so dragging feels the same at any stage size
+function applyControlScale() { controls.rotateSpeed = 1 / UI_SCALE; controls.panSpeed = 1 / UI_SCALE; }
+applyControlScale();
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.set(0, 0.95, 0);
@@ -1242,7 +1292,6 @@ document.querySelectorAll('#speedRow button').forEach(b => b.onclick = () => {
 $('chkFric').onchange = e => { state.friction = e.target.checked; };
 $('chkVec').onchange = e => { vecGroup.visible = e.target.checked; };
 $('chkTrail').onchange = e => { trailHand.visible = trailFoot.visible = e.target.checked; clearTrails(); };
-$('toggleUI').onclick = () => document.body.classList.toggle('hideUI');
 window.addEventListener('keydown', e => {
   if (e.code === 'Space' && e.target.type !== 'checkbox') {
     e.preventDefault(); setTarget(state.target < 0.5 ? 1 : 0);
@@ -1257,9 +1306,16 @@ const views = {
   low:   { p: [2.4, 0.25, 2.6], t: [0, 1.0, 0] },
 };
 let glide = null;
+// On a tall, narrow phone screen the camera steps back a little so all of her fits in the visible area
+function viewZoom() {
+  if (!document.body.classList.contains('phone')) return 1;
+  const r = visibleRect(), a = r.w / Math.max(1, r.h);
+  return Math.min(2.2, Math.max(1, Math.pow(1.15 / a, 0.8)));
+}
+let currentView = 'angle', userMoved = false;
 function goView(name, instant) {
-  const v = views[name];
-  const to = new THREE.Vector3(...v.p), tt = new THREE.Vector3(...v.t);
+  const v = views[name]; currentView = name;
+  const tt = new THREE.Vector3(...v.t), to = new THREE.Vector3(...v.p).sub(tt).multiplyScalar(viewZoom()).add(tt);
   if (instant) { camera.position.copy(to); controls.target.copy(tt); controls.update(); return; }
   glide = { from: camera.position.clone(), ft: controls.target.clone(), to, tt, k: 0 };
 }
@@ -1267,8 +1323,40 @@ const viewBtns = document.querySelectorAll('#viewRow button');
 const markView = name => viewBtns.forEach(x => x.classList.toggle('on', x.dataset.v === name));
 viewBtns.forEach(b => b.onclick = () => { goView(b.dataset.v); markView(b.dataset.v); });
 // once the viewer drags, pinches or scrolls the view themselves, no preset is highlighted
-controls.addEventListener('start', () => { glide = null; markView(null); });
+controls.addEventListener('start', () => { glide = null; markView(null); userMoved = true; });
 goView('angle', true);
+
+// ---------- phones: keep her centred in the part of the screen the menus don't cover ----------
+function visibleRect() {
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  if (!document.body.classList.contains('phone')) return { x: 0, y: 0, w: W, h: H };
+  const sr = stageEl.getBoundingClientRect();
+  const top = document.getElementById('readout').getBoundingClientRect().bottom - sr.top + 6;
+  const ctl = document.getElementById('controls').getBoundingClientRect();
+  if (document.body.classList.contains('landscape')) return { x: 0, y: top, w: ctl.left - sr.left, h: H - top };
+  return { x: 0, y: top, w: W, h: Math.max(80, ctl.top - sr.top - top) };
+}
+function frameView() {
+  if (!document.body.classList.contains('phone')) { if (camera.view && camera.view.enabled) camera.clearViewOffset(); return; }
+  const W = canvas.clientWidth, H = canvas.clientHeight, r = visibleRect();
+  const dx = r.x + r.w / 2 - W / 2, dy = r.y + r.h / 2 - H / 2;
+  camera.setViewOffset(W, H, -dx, -dy, W, H);
+}
+function onLayoutChange() {
+  layoutStage(); applyControlScale(); resize(); alignBoxes();
+  if (!userMoved) goView(currentView, true);     // re-frame her (e.g. after rotating a phone) unless the viewer has moved the camera
+}
+window.addEventListener('resize', onLayoutChange);
+window.addEventListener('orientationchange', () => setTimeout(onLayoutChange, 200));
+const detailBtn = document.getElementById('detailBtn'), moreBtn = document.getElementById('moreBtn');
+if (detailBtn) detailBtn.onclick = () => {
+  const on = document.body.classList.toggle('details');
+  detailBtn.textContent = on ? 'Hide details and graphs ▴' : 'Show details and graphs ▾';
+};
+if (moreBtn) moreBtn.onclick = () => {
+  const on = document.body.classList.toggle('more');
+  moreBtn.textContent = on ? 'Fewer controls ▾' : 'More controls ▴';
+};
 
 // Reset: put everything back the way it is when the page first loads
 function resetAll() {
@@ -1312,7 +1400,7 @@ function updateReadout() {
   if (!state.dragging) pos.value = Math.round(state.s * 100);   // the slider shows the transition as it happens
 }
 function drawGraph() {
-  const dpr = Math.min(window.devicePixelRatio, 2);
+  const dpr = Math.min(window.devicePixelRatio * UI_SCALE, 3);   // stays sharp however much the stage is scaled
   const W = gC.clientWidth, H = gC.clientHeight;
   if (gC.width !== W * dpr || gC.height !== H * dpr) { gC.width = W * dpr; gC.height = H * dpr; }
   gx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1350,8 +1438,10 @@ function drawGraph() {
 // ---------- Resize ----------
 function resize() {
   const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight;
-  if (w === resize.w && h === resize.h) return;
-  resize.w = w; resize.h = h;
+  const pr = Math.min(window.devicePixelRatio * UI_SCALE, 3);    // sharp on high-resolution and scaled-up screens
+  if (w === resize.w && h === resize.h && pr === resize.pr) return;
+  resize.w = w; resize.h = h; resize.pr = pr;
+  renderer.setPixelRatio(pr);
   renderer.setSize(w, h, false);
   camera.aspect = w / h; camera.updateProjectionMatrix();
 }
@@ -1360,11 +1450,11 @@ window.addEventListener('resize', resize); resize();
 function alignBoxes() {
   const gb = document.getElementById('graphBox'), ctl = document.getElementById('controls'), gc = document.getElementById('graph');
   if (!gb || getComputedStyle(gb).display === 'none') return;
+  if (document.body.classList.contains('phone')) { gc.style.height = ''; return; }
   gc.style.height = '';                                   // start from the default height, then stretch or shrink
-  const extra = ctl.getBoundingClientRect().bottom - gb.getBoundingClientRect().bottom;
+  const extra = (ctl.getBoundingClientRect().bottom - gb.getBoundingClientRect().bottom) / UI_SCALE;   // screen px → design px
   gc.style.height = Math.max(120, gc.clientHeight + extra) + 'px';
 }
-window.addEventListener('resize', alignBoxes);
 alignBoxes();
 if (document.fonts) document.fonts.ready.then(alignBoxes);
 
@@ -1376,6 +1466,7 @@ let trailAcc = 0, histAcc = 0;
 function frame() {
   requestAnimationFrame(frame);
   resize(); // keeps the view centred if the preview window changes size
+  frameView();
   const realDt = Math.min(clock.getDelta(), 0.05);
   const dt = state.running ? realDt * state.timeScale : 0;
 
