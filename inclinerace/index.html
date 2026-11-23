@@ -56,6 +56,7 @@
   table{border-collapse:collapse;width:100%;table-layout:fixed;min-width:960px;font-size:.9rem;font-variant-numeric:tabular-nums}
   th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   th{font-size:.85rem;letter-spacing:0;color:var(--muted);font-weight:600;background:#faf9f6}
+  tbody td{height:46px}
   tr:last-child td{border-bottom:none}
   .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
   .place{font-weight:800}
@@ -63,7 +64,10 @@
   .bar .t{background:var(--trans);height:100%}
   .bar .r{background:var(--rot);height:100%}
   .legend{display:flex;gap:14px;padding:8px 12px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line)}
-  .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+  .legend>span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+  .fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;font-size:.88em;margin:0 1px}
+  .fr>span{padding:0 2px}
+  .fr>span+span{border-top:1px solid currentColor}
   .hidden-val{color:#a3a9b4}
   .kbd{font-size:.8rem;color:var(--muted);margin-top:auto}
 </style>
@@ -82,8 +86,8 @@
         <button id="reset">↺ Reset</button>
       </div>
       <div class="ctl">
-        <div class="ctl-head"><span>Ramp angle</span><span class="val" id="angleVal">10°</span></div>
-        <input id="angle" type="range" min="5" max="25" step="1" value="10" aria-label="Ramp angle">
+        <div class="ctl-head"><span>Ramp angle</span><span class="val" id="angleVal">15°</span></div>
+        <input id="angle" type="range" min="5" max="25" step="1" value="15" aria-label="Ramp angle">
       </div>
       <div class="ctl">
         <div class="ctl-head"><span>Playback rate</span></div>
@@ -112,14 +116,14 @@
             <col style="width:8%"><col style="width:9%"><col style="width:8%"><col style="width:6%"><col style="width:13%">
           </colgroup>
           <thead>
-            <tr><th>Object</th><th>Mass (kg)</th><th>Radius / width (m)</th><th>I</th><th>a ÷ g sin θ</th><th>a (m/s²)</th><th>Speed (m/s)</th><th>Time (s)</th><th>Place</th><th>KE split</th></tr>
+            <tr><th>Object</th><th>Mass (kg)</th><th>Radius / width (m)</th><th>I</th><th><span class="fr"><span>a</span><span>g sin θ</span></span></th><th>a (m/s²)</th><th>Speed (m/s)</th><th>Time (s)</th><th>Place</th><th>KE split</th></tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
       <div class="legend">
-        <span style="--c:var(--trans)">Translational ½mv²</span>
-        <span style="--c:var(--rot)">Rotational ½Iω²</span>
+        <span style="--c:var(--trans)">Translational <span class="fr"><span>1</span><span>2</span></span>mv²</span>
+        <span style="--c:var(--rot)">Rotational <span class="fr"><span>1</span><span>2</span></span>Iω²</span>
         <span style="margin-left:auto">Bar length = share of mgh released so far</span>
       </div>
     </div>
@@ -138,14 +142,14 @@
 
   const objs = [
     {type:'block', name:'Block (sliding)',  sub:'slides, frictionless', k:0,   I:'—  (no spin)', frac:'1',   color:'#c4873a'},
-    {type:'sdisk', name:'Solid disk',      sub:'solid cylinder',       k:0.5, I:'½ mr²',        frac:'2/3', color:'#2f6fd6'},
-    {type:'hcyl',  name:'Hollow cylinder', sub:'thin-walled',          k:1,   I:'mr²',          frac:'1/2', color:'#12968b'},
-    {type:'ssph',  name:'Solid sphere',    sub:'uniform',              k:0.4, I:'⅖ mr²',        frac:'5/7', color:'#d4473a'},
-    {type:'hsph',  name:'Hollow sphere',   sub:'thin shell',           k:2/3, I:'⅔ mr²',        frac:'3/5', color:'#8a4fc9'},
+    {type:'sdisk', name:'Solid disk',      sub:'solid cylinder',       k:0.5, I:'<span class="fr"><span>1</span><span>2</span></span> mr²', frac:'<span class="fr"><span>2</span><span>3</span></span>', color:'#2f6fd6'},
+    {type:'hcyl',  name:'Hollow cylinder', sub:'thin-walled',          k:1,   I:'mr²', frac:'<span class="fr"><span>1</span><span>2</span></span>', color:'#12968b'},
+    {type:'ssph',  name:'Solid sphere',    sub:'uniform',              k:0.4, I:'<span class="fr"><span>2</span><span>5</span></span> mr²', frac:'<span class="fr"><span>5</span><span>7</span></span>', color:'#d4473a'},
+    {type:'hsph',  name:'Hollow sphere',   sub:'thin shell',           k:2/3, I:'<span class="fr"><span>2</span><span>3</span></span> mr²', frac:'<span class="fr"><span>3</span><span>5</span></span>', color:'#8a4fc9'},
   ];
 
   // ---------- state ----------
-  let theta = 10, t = 0, playing = false, speed = 1, tMax = 0;
+  let theta = 15, t = 0, playing = false, speed = 1, tMax = 0;
   let showArrows = true, predict = true;
 
   const cv = document.getElementById('cv');
