@@ -456,11 +456,12 @@
     ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillStyle = '#4b5563';
     ctx.font = `500 ${fs(11,13,80)}px Inter, system-ui, sans-serif`;
     const lh = fs(16,19,60);
-    ctx.fillText(`Track length: ${TRACK.toFixed(1)} m`, W - 14, 10);
-    ctx.fillText(`Drop height: ${(TRACK*s).toFixed(2)} m`, W - 14, 10 + lh);
-    ctx.fillStyle = '#111827';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Track length: ${TRACK.toFixed(1)} m`, 14, 10);
+    ctx.fillText(`Drop height: ${(TRACK*s).toFixed(2)} m`, 14, 10 + lh);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#111827';
     ctx.font = `700 ${fs(14,20,50)}px Inter, system-ui, sans-serif`;
-    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, 10 + 2*lh + 4);
+    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, 10);
   }
 
   // ---------- table ----------
