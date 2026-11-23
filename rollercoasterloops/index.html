@@ -752,7 +752,7 @@
                 s,
                 x: p0.x + t * (p1.x - p0.x),
                 y: p0.y + t * (p1.y - p0.y),
-                theta: p0.theta + t * (p1.theta - p0.theta),
+                theta: p0.theta + t * Math.atan2(Math.sin(p1.theta - p0.theta), Math.cos(p1.theta - p0.theta)),
                 kappa: p1.zone === 'ramp' || p1.zone === 'runout' ? (p0.kappa + t * (p1.kappa - p0.kappa)) : p1.kappa,
                 radius: p1.zone === 'ramp' || p1.zone === 'runout' ? p0.radius : p1.radius,
                 zone: p1.zone
@@ -795,6 +795,32 @@
             return { sample, v, ac, gFelt };
         }
 
+        // G-force at a track point, the same formula the dotted theoretical curve uses
+        function gAtTrackPoint(track, pt) {
+            const drop = Math.max(0, track.H_drop - pt.y);
+            const v2 = 2 * G_ACCEL * drop;
+            return Math.cos(pt.theta) + (v2 * pt.kappa) / G_ACCEL;
+        }
+
+        // Append every track point the car has passed since the last frame to its live trace,
+        // so the solid line follows the dotted curve exactly, including the vertical jumps
+        function recordHistory(car, track) {
+            const pts = track.points;
+            const lastS = car.history.length ? car.historyS : -1;
+            // first point with s > lastS (binary search)
+            let lo = 0, hi = pts.length;
+            while (lo < hi) {
+                const mid = (lo + hi) >> 1;
+                if (pts[mid].s > lastS) hi = mid; else lo = mid + 1;
+            }
+            for (let i = lo; i < pts.length && pts[i].s <= car.s; i++) {
+                const g = gAtTrackPoint(track, pts[i]);
+                car.history.push({ p: pts[i].s / track.totalLength, g });
+                car.historyS = pts[i].s;
+                if (g > car.peakG) car.peakG = g;
+            }
+        }
+
         function stepCar(car, track, dt) {
             if (car.finished) return;
 
@@ -820,11 +846,7 @@
             }
 
             const finalPhys = evaluateCarPhysics(car, track);
-            const progress = Math.min(1, car.s / track.totalLength);
-            // Increased fidelity threshold to 0.001 to ensure crisp capture of vertical G-force transitions
-            if (car.history.length === 0 || progress - car.history[car.history.length - 1].p > 0.001) {
-                car.history.push({ p: progress, g: finalPhys.gFelt });
-            }
+            recordHistory(car, track);
 
             // Sample trail markers for normal force along track
             if (car.fnTrail.length === 0 || car.s - car.fnTrail[car.fnTrail.length - 1].s > 3.2) {
@@ -1290,9 +1312,7 @@
                 for (let i = 0; i < pts.length; i++) {
                     const pt = pts[i];
                     const p = pt.s / total;
-                    const drop = Math.max(0, track.H_drop - pt.y);
-                    const v = Math.sqrt(2 * G_ACCEL * drop);
-                    const g = Math.cos(pt.theta) + (v * v * pt.kappa) / G_ACCEL;
+                    const g = gAtTrackPoint(track, pt);
                     const gx = toGraphX(p);
                     const gy = toGraphY(g);
                     if (i === 0) ctx.moveTo(gx, gy);
