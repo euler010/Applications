@@ -8,7 +8,7 @@
   <style>
     /* ---------- Base reset (Preflight-equivalent) ---------- */
     *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
-    html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: ui-sans-serif, system-ui, sans-serif; }
+    html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: 'Inter', sans-serif; }
     body { margin: 0; line-height: inherit; }
     h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; margin: 0; }
     p { margin: 0; }
@@ -89,10 +89,8 @@
     .font-medium { font-weight: 500; }
     .font-semibold { font-weight: 600; }
     .font-bold { font-weight: 700; }
-    .uppercase { text-transform: uppercase; }
     .text-left { text-align: left; }
     .tracking-tight { letter-spacing: -0.025em; }
-    .tracking-wider { letter-spacing: 0.05em; }
     .leading-none { line-height: 1; }
     .leading-tight { line-height: 1.25; }
     .leading-snug { line-height: 1.375; }
@@ -186,7 +184,7 @@
       .lg\:w-96 { width: 24rem; }
     }
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     body {
@@ -194,7 +192,8 @@
       user-select: none;
     }
     .mono {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums;
     }
     ::-webkit-scrollbar {
       width: 6px;
@@ -254,7 +253,7 @@
       <!-- Frame of Reference Indicator Bar -->
       <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Current Reference Frame:</span>
+          <span class="text-xs font-semibold text-slate-400">Current Reference Frame:</span>
           <div id="activeFrameBadge" class="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs sm:text-sm shadow-xs">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span id="activeFrameName">Shoreline</span>
@@ -790,7 +789,7 @@
       const arrowY = arrowYOverride !== null ? arrowYOverride : (y - 26);
 
       ctx.save();
-      ctx.font = 'bold 15px "JetBrains Mono", monospace';
+      ctx.font = 'bold 15px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
@@ -928,7 +927,7 @@
         const arrowDir = vWaterRel > 0 ? 1 : -1;
         const flowOffset = (state.positions.riverOffset * PIXELS_PER_METER) % arrowStep;
         for (let x = -arrowStep + flowOffset; x < width + arrowStep; x += arrowStep) {
-          ctx.font = 'bold 16px sans-serif';
+          ctx.font = 'bold 16px Inter, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(arrowDir > 0 ? '➔' : '⬅', x, riverTopY + riverHeight * 0.52);
         }
@@ -992,7 +991,7 @@
         ctx.setLineDash([]);
       }
 
-      ctx.font = '24px sans-serif';
+      ctx.font = '24px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('🧍', observerScreenX, observerY);
@@ -1121,7 +1120,7 @@
       ctx.stroke();
 
       // Frog perched on top of log
-      ctx.font = '20px sans-serif';
+      ctx.font = '20px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('🐸', x - 2, y - 4);
 
