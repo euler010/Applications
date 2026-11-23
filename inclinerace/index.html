@@ -19,6 +19,15 @@
   header p{margin:0 0 12px;color:var(--muted);font-size:.95rem}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   canvas{display:block;width:100%;background:#fbfaf7}
+  .canvaswrap{position:relative;min-width:0}
+  .infobtn{position:absolute;left:14px;top:46px;width:24px;height:24px;padding:0;border-radius:50%;
+    border:1.5px solid #4b5563;background:#fff;color:#374151;font:700 14px/1 "Inter",system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .infobtn:hover,.infobtn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .infopop{position:absolute;left:14px;top:78px;width:min(420px,calc(100% - 28px));z-index:5;background:#fff;
+    border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 16px;font-size:.9rem;line-height:1.45}
+  .infopop p{margin:0 0 8px}
+  .infopop p:last-child{margin:0}
   .stage{display:grid;grid-template-columns:minmax(0,1fr) 250px}
   .controls{display:flex;flex-direction:column;gap:14px;padding:14px 16px;border-left:1px solid var(--line);background:#fdfcfa}
   @media (max-width:820px){.stage{grid-template-columns:1fr}.controls{border-left:none;border-top:1px solid var(--line)}}
@@ -81,7 +90,16 @@
   </header>
 
   <div class="card stage">
-    <canvas id="cv" aria-label="Animation of five objects racing down identical ramps"></canvas>
+    <div class="canvaswrap">
+      <canvas id="cv" aria-label="Animation of five objects racing down identical ramps"></canvas>
+      <button id="infoBtn" class="infobtn" aria-label="About this simulation" aria-expanded="false">i</button>
+      <div id="infoPop" class="infopop" role="dialog" hidden>
+        <p>Five objects start from rest at the top of identical ramps and race 2.0 m to the finish line.</p>
+        <p>The <b>block</b> slides down a frictionless track, so it doesn't spin. The <b>solid disk</b>, <b>hollow cylinder</b>, <b>solid sphere</b> and <b>hollow sphere</b> roll without slipping. Static friction makes them spin, but it does no work, so no energy is lost.</p>
+        <p>All five have the same mass (1.0 kg). The four round objects all have the same radius (0.10 m), and the block is 0.20 m across. The only difference is how each object's mass is spread out, which sets its moment of inertia.</p>
+        <p><b>Predict:</b> in what order will they cross the finish line?</p>
+      </div>
+    </div>
     <aside class="controls">
       <div class="btns">
         <button id="play" class="primary">▶ Play</button>
@@ -542,6 +560,12 @@
     else if(e.key === 'r' || e.key === 'R'){ reset(); }
   });
   window.addEventListener('resize', resize);
+  const infoBtn = document.getElementById('infoBtn'), infoPop = document.getElementById('infoPop');
+  function setInfo(open){ infoPop.hidden = !open; infoBtn.setAttribute('aria-expanded', String(open)); }
+  infoBtn.addEventListener('click', e => { e.stopPropagation(); setInfo(infoPop.hidden); });
+  infoPop.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', () => setInfo(false));
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') setInfo(false); });
 
   // ---------- loop ----------
   let last = null;
