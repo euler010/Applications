@@ -61,7 +61,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--x);outline-offs
 .seg button{border:0;border-radius:0;padding:8px 11px;font-family:var(--mono);font-size:12px}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
-.check{display:inline-flex;gap:9px;align-items:center;font-size:13px;color:var(--muted);margin-left:6px;cursor:pointer;user-select:none}
+.check{display:inline-flex;gap:9px;align-items:center;font-size:13px;color:var(--muted);margin-right:6px;cursor:pointer;user-select:none}
 .check input{appearance:none;-webkit-appearance:none;margin:0;width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;transition:background .18s;flex:none}
 .check input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .18s}
 .check input:checked{background:var(--ink)}
@@ -94,14 +94,14 @@ canvas{display:block;width:100%;height:190px}
       <div class="topbar">
       <header><h1>Kittymatics</h1></header>
       <div class="transport">
-        <button type="button" class="play" id="play">Play</button>
-        <button type="button" id="reset">Reset</button>
+        <label class="check"><input type="checkbox" role="switch" id="pred" checked> Show predicted curves</label>
         <div class="seg" role="group" aria-label="Playback speed">
           <button type="button" data-s="0.5" aria-pressed="false">0.5×</button>
           <button type="button" data-s="1" aria-pressed="true">1×</button>
           <button type="button" data-s="2" aria-pressed="false">2×</button>
         </div>
-        <label class="check"><input type="checkbox" role="switch" id="pred" checked> Show predicted curves</label>
+        <button type="button" id="reset">Reset</button>
+        <button type="button" class="play" id="play">Play</button>
       </div>
       </div>
       <div class="stage">
