@@ -64,6 +64,8 @@
   .bar .t{background:var(--trans);height:100%}
   .bar .r{background:var(--rot);height:100%}
   .legend{display:flex;gap:14px;padding:8px 12px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line)}
+  .legend .info{margin-left:auto;color:var(--muted)}
+  .legend .info::before{display:none}
   .legend>span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
   .fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;font-size:.88em;margin:0 1px}
   .fr>span{padding:0 2px}
@@ -124,7 +126,7 @@
       <div class="legend">
         <span style="--c:var(--trans)">Translational <span class="fr"><span>1</span><span>2</span></span>mv²</span>
         <span style="--c:var(--rot)">Rotational <span class="fr"><span>1</span><span>2</span></span>Iω²</span>
-        <span style="margin-left:auto">Bar length = share of mgh released so far</span>
+        <span class="info" id="trackInfo"></span>
       </div>
     </div>
 
@@ -154,6 +156,7 @@
 
   const cv = document.getElementById('cv');
   const ctx = cv.getContext('2d');
+  const trackInfo = document.getElementById('trackInfo');
   let cw = 0, ch = 0;
 
   function recompute(){
@@ -177,7 +180,9 @@
   function resize(){
     const dpr = window.devicePixelRatio || 1;
     cw = cv.clientWidth;
-    ch = Math.round(Math.min(Math.max(cw*0.5, 340), 620));
+    // size the canvas so the steepest ramp (25°) just fits, with no empty band on top
+    const L = layoutBase(cw, 25);
+    ch = Math.round(Math.max(260, L.topPx + L.botPx + L.spanY * (L.availW / L.spanX)));
     cv.style.height = ch + 'px';
     cv.width = Math.round(cw*dpr); cv.height = Math.round(ch*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -307,6 +312,17 @@
     ctx.lineTo(x2-Math.cos(ang+0.42)*hl, y2-Math.sin(ang+0.42)*hl); ctx.closePath(); ctx.fill();
   }
 
+  function layoutBase(W, deg){
+    const th = deg*Math.PI/180, c = Math.cos(th), s = Math.sin(th);
+    const uEnd = U0 + TRACK + 0.75*D;
+    const Xe = uEnd*c, He = uEnd*s;
+    const labelPx = Math.min(190, Math.max(130, W*0.15));
+    const leftPx = 16, rightPx = 10, topPx = 10, botPx = 4;
+    const Ymax = He + WD*K*SA + 1.25*D, Ymin = -0.35*K*SA;   // include the front edge of the floor
+    const spanX = Xe + WD*K*CA, spanY = Ymax - Ymin;
+    return {labelPx, leftPx, rightPx, topPx, botPx, spanX, spanY, Ymax, availW: W-leftPx-rightPx-labelPx};
+  }
+
   // ---------- main draw ----------
   function draw(){
     const W = cw, H = ch;
@@ -315,13 +331,12 @@
     const uEnd = U0 + TRACK + 0.75*D, uF = U0 + TRACK;
     const Xe = uEnd*c, He = uEnd*s;
     const dX = WD*K*CA, dY = WD*K*SA;
-    const labelPx = Math.min(190, Math.max(130, W*0.15));
-    const leftPx = 16, rightPx = 10, topPx = 52, botPx = 18;
-    const spanX = Xe + dX, spanY = He + dY + 1.25*D;
-    const sc = Math.min((W-leftPx-rightPx-labelPx)/spanX, (H-topPx-botPx)/spanY);
-    const ox = leftPx + ((W-leftPx-rightPx-labelPx) - spanX*sc)/2;
-    const oy = topPx + ((H-topPx-botPx) - spanY*sc)/2;
-    const P3 = (x,y,z) => [ox + (x + z*K*CA)*sc, oy + (spanY - (y + z*K*SA))*sc];
+    const Lb = layoutBase(W, theta);
+    const {labelPx, leftPx, rightPx, topPx, botPx, spanX, spanY, Ymax} = Lb;
+    const sc = Math.min(Lb.availW/spanX, (H-topPx-botPx)/spanY);
+    const ox = leftPx + (Lb.availW - spanX*sc)/2;
+    const oy = H - botPx - spanY*sc;            // sit the ramp at the bottom of the canvas
+    const P3 = (x,y,z) => [ox + (x + z*K*CA)*sc, oy + (Ymax - (y + z*K*SA))*sc];
     const Ps = (u,z) => P3(u*c, He - u*s, z);
     const allDone = t >= tMax - 1e-9;
     const reveal = !predict;
@@ -437,13 +452,12 @@
     }
 
     // clock & info
-    ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillStyle = '#111827';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#111827';
     ctx.font = `700 ${fs(14,20,50)}px Inter, system-ui, sans-serif`;
-    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, 10);
+    ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, H - 10);
     ctx.font = `${fs(11,13,80)}px Inter, system-ui, sans-serif`; ctx.fillStyle = '#6b7280';
-    ctx.fillText(`playback ${speed}×`, W - 14, 10 + fs(18,24,42));
-    ctx.textAlign = 'left';
-    ctx.fillText(`Track length ${TRACK.toFixed(1)} m · height drop ${(TRACK*s).toFixed(2)} m`, 12, 12);
+    ctx.fillText(`playback ${speed}×`, W - 14, H - 10 - fs(20,26,42));
+    trackInfo.textContent = `Track length ${TRACK.toFixed(1)} m · height drop ${(TRACK*s).toFixed(2)} m`;
   }
 
   // ---------- table ----------
