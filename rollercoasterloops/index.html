@@ -307,6 +307,10 @@
                     </span>
                     <span id="btnStartText">Release Carts</span>
                 </button>
+                <button id="btnStep" title="Pause and advance one step" class="px-2.5 py-1.5 rounded-lg font-semibold fs-14 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm active:scale-95 transition flex items-center justify-center gap-1">
+                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    <span>Step</span>
+                </button>
                 <button id="btnReset" class="px-2.5 py-1.5 rounded-lg font-semibold fs-14 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm active:scale-95 transition flex items-center justify-center gap-1">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
                     <span>Reset</span>
@@ -1365,21 +1369,29 @@
             updateTelemetryUI();
         }
 
+        // Advance both carts by dt seconds (scaled by the simulation speed inside stepCar)
+        function advanceSimulation(dt) {
+            stepCar(state.carCirc, state.circularTrack, dt);
+            stepCar(state.carCloth, state.clothoidTrack, dt);
+            updateTelemetryUI();
+
+            if (state.carCirc.finished && state.carCloth.finished) {
+                state.running = false;
+                state.paused = false;
+                updateStartButtonUI();
+            }
+        }
+
+        // One Step click = 1/30 s of motion at the selected simulation speed
+        const STEP_DT = 1 / 30;
+
         let lastTime = performance.now();
         function animate(now) {
             const dt = Math.min(0.04, (now - lastTime) / 1000);
             lastTime = now;
 
             if (state.running && !state.paused) {
-                stepCar(state.carCirc, state.circularTrack, dt);
-                stepCar(state.carCloth, state.clothoidTrack, dt);
-                updateTelemetryUI();
-
-                if (state.carCirc.finished && state.carCloth.finished) {
-                    state.running = false;
-                    state.paused = false;
-                    updateStartButtonUI();
-                }
+                advanceSimulation(dt);
             }
 
             drawTrackScene(ctxCirc, canvasCirc, state.circularTrack, state.carCirc, false);
@@ -1412,6 +1424,19 @@
                 state.paused = !state.paused;
                 updateStartButtonUI();
             }
+        });
+
+        document.getElementById('btnStep').addEventListener('click', () => {
+            const bothFinished = state.carCirc.finished && state.carCloth.finished;
+
+            if (!state.running || bothFinished) {
+                // Not released yet (or run finished): start a fresh run from the top
+                resetCars(true);
+            }
+            // Pause, then advance one step
+            state.paused = true;
+            updateStartButtonUI();
+            advanceSimulation(STEP_DT);
         });
 
         document.getElementById('btnReset').addEventListener('click', () => {
