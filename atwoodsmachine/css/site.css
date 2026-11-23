@@ -5,7 +5,7 @@
 *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
 html {
   line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4;
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: 'Inter', sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 body { margin: 0; line-height: inherit; }
@@ -125,8 +125,6 @@ img, video { max-width: 100%; height: auto; }
 .bg-amber-500 { background-color: #f59e0b; }
 
 /* ---------- Typography ---------- */
-.font-sans { font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
-.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 .text-xs { font-size: 0.75rem; line-height: 1rem; }
 .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
 .text-base { font-size: 1rem; line-height: 1.5rem; }
@@ -136,10 +134,8 @@ img, video { max-width: 100%; height: auto; }
 .font-semibold { font-weight: 600; }
 .font-bold { font-weight: 700; }
 .italic { font-style: italic; }
-.uppercase { text-transform: uppercase; }
 .text-center { text-align: center; }
 .tracking-tight { letter-spacing: -0.025em; }
-.tracking-wider { letter-spacing: 0.05em; }
 
 .text-white { color: #ffffff; }
 .text-slate-400 { color: #94a3b8; }
