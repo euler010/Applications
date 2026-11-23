@@ -42,19 +42,19 @@
   .seg button:hover{background:#f1efe9}
   .seg button.on{background:var(--accent);color:#fff}
   .toggle{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:999px;font-weight:600;
-    background:#fbeae7;border-color:#e7b9b1;color:#a5392b;transition:background .2s,border-color .2s,color .2s}
-  .toggle:hover{background:#f7dfda}
-  .toggle .track{position:relative;width:38px;height:22px;border-radius:11px;background:#c9533f;flex:none;transition:background .2s}
+    background:#f4f3f0;border-color:var(--line);color:var(--muted);transition:background .2s,border-color .2s,color .2s}
+  .toggle:hover{background:#ecebe6}
+  .toggle .track{position:relative;width:38px;height:22px;border-radius:11px;background:#c9c5bc;flex:none;transition:background .2s}
   .toggle .knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .2s}
-  .toggle.on{background:#e6f3ea;border-color:#a9d3b5;color:#23744a}
-  .toggle.on:hover{background:#dbeee1}
-  .toggle.on .track{background:#2f8f5b}
+  .toggle.on{background:#e4eefd;border-color:#b5cbf3;color:#1f4fae}
+  .toggle.on:hover{background:#d9e6fb}
+  .toggle.on .track{background:var(--accent)}
   .toggle.on .knob{left:19px}
   .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
   @media (max-width:900px){.grid{grid-template-columns:1fr}}
   .tablewrap{overflow-x:auto}
-  table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
-  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  table{border-collapse:collapse;width:100%;table-layout:fixed;min-width:960px;font-size:.9rem;font-variant-numeric:tabular-nums}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   th{font-size:.85rem;letter-spacing:0;color:var(--muted);font-weight:600;background:#faf9f6}
   tr:last-child td{border-bottom:none}
   .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
@@ -107,6 +107,10 @@
     <div class="card">
       <div class="tablewrap">
         <table>
+          <colgroup>
+            <col style="width:15%"><col style="width:8%"><col style="width:14%"><col style="width:10%"><col style="width:9%">
+            <col style="width:8%"><col style="width:9%"><col style="width:8%"><col style="width:6%"><col style="width:13%">
+          </colgroup>
           <thead>
             <tr><th>Object</th><th>Mass (kg)</th><th>Radius / width (m)</th><th>I</th><th>a ÷ g sin θ</th><th>a (m/s²)</th><th>Speed (m/s)</th><th>Time (s)</th><th>Place</th><th>KE split</th></tr>
           </thead>
