@@ -9,13 +9,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body {
+    html, body {
       font-family: 'Inter', sans-serif;
     }
+    /* Numbers use Inter too, with equal-width digits so readouts don't jitter */
     .font-mono-num {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums;
     }
     @keyframes snapSpark {
       0% { opacity: 1; transform: scale(1) rotate(0deg); }
@@ -319,8 +321,6 @@
     .to-slate-500 { --tw-gradient-to:#64748b }
     .italic { font-style:italic }
     .text-center { text-align:center }
-    .uppercase { text-transform:uppercase }
-    .font-serif { font-family:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif }
     .font-bold { font-weight:700 }
     .font-extrabold { font-weight:800 }
     .font-medium { font-weight:500 }
@@ -337,7 +337,6 @@
     .leading-snug { line-height:1.375 }
     .tracking-tight { letter-spacing:-0.025em }
     .tracking-wide { letter-spacing:0.025em }
-    .tracking-wider { letter-spacing:0.05em }
     .fill-current { fill:currentColor }
     .text-amber-400 { color:#fbbf24 }
     .text-amber-700 { color:#b45309 }
@@ -478,8 +477,8 @@
         <!-- Status Bar atop simulator (No floor or height text) -->
         <div class="px-4 py-2.5 bg-white/95 border-b border-slate-200 flex items-center justify-between z-20 text-xs font-mono-num shadow-sm">
           <div class="flex items-center gap-2">
-            <span id="motion-badge" class="px-2 py-0.5 rounded font-semibold tracking-wide bg-slate-100 text-slate-700 border border-slate-300">
-              AT REST
+            <span id="motion-badge" class="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-700 border border-slate-300">
+              At rest
             </span>
             <span id="status-desc" class="text-black text-sm font-semibold hidden sm:inline">a = 0.00 m/s², v = 0.00 m/s</span>
           </div>
@@ -535,7 +534,7 @@
                     <polygon points="12,11 24,5 36,11 24,17" fill="#60a5fa" stroke="#3b82f6" stroke-width="1" />
                     <polygon points="12,11 24,17 24,29 12,23" fill="#2563eb" stroke="#1d4ed8" stroke-width="1" />
                     <polygon points="36,11 24,17 24,29 36,23" fill="#1d4ed8" stroke="#1e40af" stroke-width="1" />
-                    <text x="24" y="23" font-size="8" font-family="'JetBrains Mono', monospace" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">m</text>
+                    <text x="24" y="23" font-size="8" font-family="Inter, sans-serif" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">m</text>
                   </g>
                 </svg>
               </div>
@@ -713,7 +712,7 @@
       <!-- Select Rider Section -->
       <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200 shadow-sm flex flex-col gap-2.5">
         <div class="flex items-center justify-between gap-2.5">
-          <label class="text-xs font-bold uppercase tracking-wider text-slate-500 max-w-[95px] sm:max-w-[110px] leading-snug select-none">
+          <label class="text-xs font-bold text-slate-500 max-w-[95px] sm:max-w-[110px] leading-snug select-none">
             Select Elevator Rider
           </label>
           <div class="flex items-center gap-2.5 flex-1 justify-end">
@@ -752,7 +751,7 @@
       <!-- Telemetry Gauges Card -->
       <div class="metal-plate rounded-2xl p-5 border border-slate-200 flex flex-col gap-4">
         <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+          <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
             <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
             Scale Telemetry
           </h2>
@@ -811,7 +810,7 @@
         <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <label for="accel-slider" class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <span>Acceleration Slider (<span class="font-serif italic font-bold">a</span>):</span>
+              <span>Acceleration Slider (<span class="italic font-bold">a</span>):</span>
             </label>
             <span id="accel-slider-val" class="text-xs font-mono-num font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
               0.00 m/s²
@@ -1262,15 +1261,15 @@
       } else {
         syncAccelSlider(newA);
         if (newA > 0.05) {
-          updateBadge('ACCELERATING UP', 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold');
+          updateBadge('Accelerating up', 'bg-emerald-50 text-emerald-700 border-emerald-300 font-bold');
         } else if (newA < -0.05) {
-          updateBadge('ACCELERATING DOWN', 'bg-rose-50 text-rose-700 border-rose-300 font-bold');
+          updateBadge('Accelerating down', 'bg-rose-50 text-rose-700 border-rose-300 font-bold');
         } else {
           if (Math.abs(state.velocity) > 0.05) {
-            const dir = state.velocity > 0 ? 'UP' : 'DOWN';
-            updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+            const dir = state.velocity > 0 ? 'up' : 'down';
+            updateBadge(`Constant speed (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
           } else {
-            updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+            updateBadge('At rest', 'bg-slate-100 text-slate-700 border-slate-300');
           }
         }
         // Slider drags fire many events; play at most one tick every 120 ms
@@ -1402,14 +1401,14 @@
         state.rampTimer = 0;
         state.rampDuration = CONST_V_DURATION;
         state.initialRampAccel = state.acceleration;
-        const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.acceleration) > 0 ? 'UP' : 'DOWN';
-        updateBadge(`SETTLING TO CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+        const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.acceleration) > 0 ? 'up' : 'down';
+        updateBadge(`Settling to constant speed (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
       } else if (Math.abs(state.velocity) > 0.05) {
         state.acceleration = 0.0;
         state.rampingAccelToZero = false;
         syncAccelSlider(0.0);
-        const dir = state.velocity > 0 ? 'UP' : 'DOWN';
-        updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+        const dir = state.velocity > 0 ? 'up' : 'down';
+        updateBadge(`Constant speed (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
       } else {
         // If at rest: gently ramp to a 0.5 m/s cruise upwards over 2 seconds
         // (a ramps linearly from a0 to 0, so the speed gained is a0 * T / 2)
@@ -1420,7 +1419,7 @@
         state.initialRampAccel = a0;
         state.acceleration = a0;
         syncAccelSlider(a0);
-        updateBadge('SETTLING TO CONSTANT SPEED (UP)', 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+        updateBadge('Settling to constant speed (up)', 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
       }
       playTone('C4', '8n');
       updatePhysicsDisplays();
@@ -1440,7 +1439,7 @@
 
       if (!alreadyFalling) playCableSnapSound();
 
-      updateBadge('MALFUNCTION: FREE FALL', 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse font-bold');
+      updateBadge('Malfunction: free fall', 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse font-bold');
 
       // Lifts the rider, or leaves them drifting if they're already floating
       startFloating();
@@ -1458,7 +1457,7 @@
         state.acceleration = 0.0;
         state.stopping = false;
         syncAccelSlider(0.0);
-        updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+        updateBadge('At rest', 'bg-slate-100 text-slate-700 border-slate-300');
       } else {
         state.stopping = true;
         state.stopTimer = 0;
@@ -1466,7 +1465,7 @@
         state.initialStopVelocity = state.velocity;
         state.acceleration = -state.velocity / state.stopDuration;
         syncAccelSlider(state.acceleration);
-        updateBadge('STOPPING...', 'bg-amber-100 text-amber-800 border-amber-300 font-bold animate-pulse');
+        updateBadge('Stopping...', 'bg-amber-100 text-amber-800 border-amber-300 font-bold animate-pulse');
       }
       playTone('C4', '8n');
       updatePhysicsDisplays();
@@ -1489,7 +1488,7 @@
       springVelocity = 0;
       setRider('woman', 50.0);
       syncAccelSlider(0.0);
-      updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+      updateBadge('At rest', 'bg-slate-100 text-slate-700 border-slate-300');
       updatePhysicsDisplays();
     });
 
@@ -1543,7 +1542,7 @@
 
     function updateBadge(text, classNames) {
       motionBadge.textContent = text;
-      motionBadge.className = 'px-2 py-0.5 rounded font-semibold tracking-wide border ' + classNames;
+      motionBadge.className = 'px-2 py-0.5 rounded font-semibold border ' + classNames;
     }
 
     // Mark a capped vector stem as "off scale" with a break in the middle of the stem
@@ -1706,7 +1705,7 @@
           state.acceleration = 0.0;
           state.stopping = false;
           syncAccelSlider(0.0);
-          updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+          updateBadge('At rest', 'bg-slate-100 text-slate-700 border-slate-300');
         } else {
           const progress = state.stopTimer / state.stopDuration;
           state.velocity = state.initialStopVelocity * (1 - progress);
@@ -1721,17 +1720,17 @@
           state.rampingAccelToZero = false;
           syncAccelSlider(0.0);
           if (Math.abs(state.velocity) > 0.05) {
-            const dir = state.velocity > 0 ? 'UP' : 'DOWN';
-            updateBadge(`CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+            const dir = state.velocity > 0 ? 'up' : 'down';
+            updateBadge(`Constant speed (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
           } else {
-            updateBadge('AT REST', 'bg-slate-100 text-slate-700 border-slate-300');
+            updateBadge('At rest', 'bg-slate-100 text-slate-700 border-slate-300');
           }
         } else {
           const progress = state.rampTimer / state.rampDuration;
           state.acceleration = state.initialRampAccel * (1 - progress);
           syncAccelSlider(state.acceleration);
-          const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.initialRampAccel) >= 0 ? 'UP' : 'DOWN';
-          updateBadge(`SETTLING TO CONSTANT SPEED (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
+          const dir = (Math.abs(state.velocity) > 0.05 ? state.velocity : state.initialRampAccel) >= 0 ? 'up' : 'down';
+          updateBadge(`Settling to constant speed (${dir})`, 'bg-blue-50 text-blue-700 border-blue-300 font-bold');
         }
       }
 
