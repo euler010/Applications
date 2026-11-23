@@ -20,11 +20,11 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
   canvas{display:block;width:100%;background:#fbfaf7}
   .canvaswrap{position:relative;min-width:0}
-  .infobtn{position:absolute;left:14px;top:46px;width:24px;height:24px;padding:0;border-radius:50%;
+  .infobtn{position:absolute;right:120px;top:8px;width:24px;height:24px;padding:0;border-radius:50%;
     border:1.5px solid #4b5563;background:#fff;color:#374151;font:700 14px/1 "Inter",system-ui,sans-serif;
     display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.12)}
   .infobtn:hover,.infobtn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-  .infopop{position:absolute;left:14px;top:78px;width:min(420px,calc(100% - 28px));z-index:5;background:#fff;
+  .infopop{position:absolute;right:14px;top:42px;width:min(420px,calc(100% - 28px));z-index:5;background:#fff;
     border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 16px;font-size:.9rem;line-height:1.45}
   .infopop p{margin:0 0 8px}
   .infopop p:last-child{margin:0}
@@ -174,6 +174,7 @@
 
   const cv = document.getElementById('cv');
   const ctx = cv.getContext('2d');
+  const infoBtn = document.getElementById('infoBtn');
   let cw = 0, ch = 0;
 
   function recompute(){
@@ -487,6 +488,11 @@
     ctx.textAlign = 'right'; ctx.fillStyle = '#111827';
     ctx.font = `700 ${fs(14,20,50)}px Inter, system-ui, sans-serif`;
     ctx.fillText(`t = ${t.toFixed(2)} s`, W - 14, 10);
+    const tfs = fs(14,20,50);
+    const tw = Math.ceil(ctx.measureText('t = 0.00 s').width);   // keep the i button just left of the timer
+    const right = (14 + tw + 10) + 'px', top = Math.round(10 + tfs*0.55 - 12) + 'px';
+    if(infoBtn.style.right !== right) infoBtn.style.right = right;
+    if(infoBtn.style.top !== top) infoBtn.style.top = top;
   }
 
   // ---------- table ----------
@@ -560,7 +566,7 @@
     else if(e.key === 'r' || e.key === 'R'){ reset(); }
   });
   window.addEventListener('resize', resize);
-  const infoBtn = document.getElementById('infoBtn'), infoPop = document.getElementById('infoPop');
+  const infoPop = document.getElementById('infoPop');
   function setInfo(open){ infoPop.hidden = !open; infoBtn.setAttribute('aria-expanded', String(open)); }
   infoBtn.addEventListener('click', e => { e.stopPropagation(); setInfo(infoPop.hidden); });
   infoPop.addEventListener('click', e => e.stopPropagation());
