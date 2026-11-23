@@ -18,10 +18,13 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden;background:#0b1626;color:var(--text);
     font-family: "Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  /* The whole app lives on a fixed-size "stage" (the design size, 1600 × 900). On computers and large screens
-     the stage is scaled up or down to fit the window and centred (blank bands fill any leftover space).
-     On phones the stage simply fills the screen and the layout is rearranged (see body.phone below). */
-  #stage{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0;overflow:hidden;background:#0e1c30}
+  /* The 3D view always fills the window. On large screens (SmartBoard, 4K) the menus are scaled up in
+     proportion to the window, relative to a 1600 × 900 design size; they are never shrunk below their
+     normal size. On phones the layout is rearranged for touch (see body.phone below). */
+  #stage{position:absolute;inset:0;overflow:hidden;background:#0e1c30}
+  #titleBox{transform-origin:0 0}
+  #leftCol{transform-origin:0 0}
+  #controls{transform-origin:100% 0}
   #scene{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
   .panel{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:12px;
     backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,.35)}
@@ -197,14 +200,19 @@ function layoutStage() {
   const phone = W < 760 || (H < 500 && W < 1000);
   document.body.classList.toggle('phone', phone);
   document.body.classList.toggle('landscape', phone && W > H);
+  const title = document.getElementById('titleBox'), left = document.getElementById('leftCol'), ctl = document.getElementById('controls');
   if (phone) {
     UI_SCALE = 1;
-    stageEl.style.width = W + 'px'; stageEl.style.height = H + 'px'; stageEl.style.transform = 'none';
+    for (const el of [title, left, ctl]) { el.style.transform = ''; el.style.maxHeight = ''; }
+    left.style.top = '';
   } else {
-    UI_SCALE = Math.min(W / STAGE_W, H / STAGE_H);
-    const x = (W - STAGE_W * UI_SCALE) / 2, y = (H - STAGE_H * UI_SCALE) / 2;
-    stageEl.style.width = STAGE_W + 'px'; stageEl.style.height = STAGE_H + 'px';
-    stageEl.style.transform = `translate(${x}px, ${y}px) scale(${UI_SCALE})`;
+    // menus keep their normal size on ordinary screens and grow on large ones
+    UI_SCALE = Math.max(1, Math.min(W / STAGE_W, H / STAGE_H));
+    const t = `scale(${UI_SCALE})`;
+    title.style.transform = t; left.style.transform = t; ctl.style.transform = t;
+    left.style.top = (12 + 36 * UI_SCALE) + 'px';
+    left.style.maxHeight = ((H - 12 - 36 * UI_SCALE - 12) / UI_SCALE) + 'px';
+    ctl.style.maxHeight = ((H - 24) / UI_SCALE) + 'px';
   }
 }
 layoutStage();
@@ -229,7 +237,7 @@ const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 100);
 scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 // drags are measured in screen pixels; scale the speeds so dragging feels the same at any stage size
-function applyControlScale() { controls.rotateSpeed = 1 / UI_SCALE; controls.panSpeed = 1 / UI_SCALE; }
+function applyControlScale() { controls.rotateSpeed = 1; controls.panSpeed = 1; }   // the 3D view itself is never scaled
 applyControlScale();
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
@@ -1438,7 +1446,7 @@ function drawGraph() {
 // ---------- Resize ----------
 function resize() {
   const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight;
-  const pr = Math.min(window.devicePixelRatio * UI_SCALE, 3);    // sharp on high-resolution and scaled-up screens
+  const pr = Math.min(window.devicePixelRatio, 3);               // sharp on high-resolution screens
   if (w === resize.w && h === resize.h && pr === resize.pr) return;
   resize.w = w; resize.h = h; resize.pr = pr;
   renderer.setPixelRatio(pr);
