@@ -1681,6 +1681,19 @@ img,video{max-width:100%;height:auto}
                     }
                 }
 
+                // Accents such as \vec arrows can stick out past MathJax's bounding box
+                // (e.g. over the last letter). An SVG drawn as an image is clipped at its
+                // viewBox, so widen it by a margin on every side; the auto-crop below
+                // trims the extra blank space again.
+                let expandedViewBox = null;
+                if (vbW > 0 && vbH > 0) {
+                    const marginUnits = 300; // MathJax uses 1000 units per em
+                    const unitsToPx = mathWidthPx / vbW;
+                    expandedViewBox = `${vbX - marginUnits} ${vbY - marginUnits} ${vbW + 2 * marginUnits} ${vbH + 2 * marginUnits}`;
+                    mathWidthPx = Math.ceil((vbW + 2 * marginUnits) * unitsToPx);
+                    mathHeightPx = Math.ceil((vbH + 2 * marginUnits) * unitsToPx);
+                }
+
                 const density = exportDensity || 3;
                 const rawPad = Math.round(16 * density);
                 const tempW = Math.round(mathWidthPx * density) + rawPad * 2;
@@ -1693,6 +1706,7 @@ img,video{max-width:100%;height:auto}
                 renderSvg.style.color = fgColor;
                 renderSvg.style.fontFamily = fontFamilyCss;
                 renderSvg.style.overflow = 'visible';
+                if (expandedViewBox) renderSvg.setAttribute('viewBox', expandedViewBox);
 
                 const vectorSvg = svgEl.cloneNode(true);
                 vectorSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -1700,6 +1714,7 @@ img,video{max-width:100%;height:auto}
                 vectorSvg.setAttribute('height', `${mathHeightPx}px`);
                 vectorSvg.style.color = fgColor;
                 vectorSvg.style.fontFamily = fontFamilyCss;
+                if (expandedViewBox) vectorSvg.setAttribute('viewBox', expandedViewBox);
                 currentSvgElement = vectorSvg;
 
                 const svgString = new XMLSerializer().serializeToString(renderSvg);
