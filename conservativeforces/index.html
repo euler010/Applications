@@ -396,7 +396,9 @@ function GravityScene() {
     text(LETTERS[t.idx], t.x, t.y - 20, 16, COLORS[t.idx], "center", 700);
   }
 
+  let readout = null;   // {cos, col} while the block is moving, else null
   function drawVectors() {
+    readout = null;
     if (!active) return;
     // Weight vector (always shown on the active block)
     const fgLen = 105;
@@ -416,7 +418,7 @@ function GravityScene() {
       const cos = uy; // angle between Δx and F_g (F_g points +y)
       const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
       const L = 95;
-      const sx = active.x + ux * (HALF * 0.4), sy = active.y + uy * (HALF * 0.4);
+      const sx = active.x, sy = active.y;   // tail starts at the center dot
       arrow(sx, sy, sx + ux * L, sy + uy * L, col, 6, 20);
       const lx = sx + ux * (L + 28), ly = sy + uy * (L + 22);
       ctx.save();
@@ -424,14 +426,13 @@ function GravityScene() {
       roundRect(lx - 20, ly - 16, 40, 30, 6); ctx.fill();
       ctx.restore();
       vecDeltaR(lx - 13, ly + 2, 16, col);
-      drawReadout(cos, col);
-    } else if (dragging) {
-      drawReadout(null);
+      readout = { cos, col };
     }
   }
 
-  function drawReadout(cos, col) {
-    const x = ROOM.left + 18, y = ROOM.top + 64, w = 290, h = 60;
+  function drawReadout() {
+    const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
+    const x = ROOM.left + 8, y = ROOM.top + 8, w = 310, h = 60;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
     roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
@@ -447,6 +448,8 @@ function GravityScene() {
     text("and Δx)", x + 14 + w1 + 12, y + 42, 15, col, "left", 700);
   }
 
+  // center of the space to the right of the work readout
+  const STATUS_CX = (ROOM.left + 8 + 310 + ROOM.right) / 2;
   function drawStatus() {
     let msg;
     if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
@@ -458,13 +461,13 @@ function GravityScene() {
       ctx.save();
       ctx.font = `600 16px Inter, system-ui, sans-serif`;
       const w = ctx.measureText(msg).width + 36;
-      const cx = (ROOM.left + ROOM.right) / 2;
+      const cx = STATUS_CX;
       ctx.fillStyle = "rgba(30,41,59,.9)";
-      roundRect(cx - w / 2, ROOM.top + 12, w, 36, 18); ctx.fill();
+      roundRect(cx - w / 2, ROOM.top + 8, w, 36, 18); ctx.fill();
       ctx.restore();
-      text(msg, (ROOM.left + ROOM.right) / 2, ROOM.top + 30, 16, "#fff", "center", 600);
+      text(msg, STATUS_CX, ROOM.top + 26, 16, "#fff", "center", 600);
     } else {
-      const cx = (ROOM.left + ROOM.right) / 2, w = 640, h = 76, y = ROOM.top + 12;
+      const cx = STATUS_CX, w = 640, h = 76, y = ROOM.top + 8;
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
@@ -561,6 +564,7 @@ function GravityScene() {
     drawTarget();
     for (const t of trials) drawPath(t);
     for (const t of trials) if (t.locked) drawBlock(t, false);
+    readout = null;
     // start marker
     if (active) {
       ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
@@ -569,6 +573,7 @@ function GravityScene() {
       drawVectors();
     }
     for (const s of labelSpots()) drawBadge(s.x, s.y, s.idx, 15);
+    drawReadout();
     drawStatus();
     drawPanel();
   }
