@@ -582,6 +582,63 @@ function GravityScene() {
   return { reset, draw, down, move, up, hover };
 }
 
+
+/* =====================================================================
+   Information button (top right of the workspace) + definitions pop-up
+   ===================================================================== */
+const INFO = { x: 1140 - 8 - 17, y: 20 + 8 + 17, r: 17 };
+const DEFS = [
+  [{ t: "A " }, { t: "conservative", b: true }, { t: " force is one in which the work done by the force in moving an object from point A to point B is independent of the path taken." }],
+  [{ t: "A " }, { t: "nonconservative", b: true }, { t: " force is one in which the work done by the force in moving an object from point A to point B is dependent on the path taken." }],
+];
+let infoOpen = false, infoHover = false;
+
+function onInfo(p) { return Math.hypot(p.x - INFO.x, p.y - INFO.y) <= INFO.r + 4; }
+
+// wrap text made of normal/bold pieces; returns the height used (or just measures when draw = false)
+function richParagraph(pieces, x, y, maxW, size, lineH, draw) {
+  const words = [];
+  for (const pc of pieces) pc.t.split(/(\s+)/).forEach(w => { if (w) words.push({ w, b: !!pc.b }); });
+  const font = b => `${b ? 700 : 400} ${size}px Inter, system-ui, sans-serif`;
+  let cx = x, cy = y;
+  ctx.save();
+  ctx.textBaseline = "top"; ctx.fillStyle = "#1f2937";
+  for (const wd of words) {
+    ctx.font = font(wd.b);
+    const ww = ctx.measureText(wd.w).width;
+    if (/^\s+$/.test(wd.w)) { if (cx > x) cx += ww; continue; }
+    if (cx + ww > x + maxW && cx > x) { cx = x; cy += lineH; }
+    if (draw) ctx.fillText(wd.w, cx, cy);
+    cx += ww;
+  }
+  ctx.restore();
+  return cy - y + lineH;
+}
+
+function drawInfo() {
+  // button
+  ctx.save();
+  ctx.fillStyle = infoOpen || infoHover ? "#1e293b" : "#475569";
+  ctx.beginPath(); ctx.arc(INFO.x, INFO.y, INFO.r, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  text("i", INFO.x, INFO.y + 1, 20, "#ffffff", "center", 700);
+  if (!infoOpen) return;
+
+  // pop-up
+  const W = 470, pad = 20, size = 16, lineH = 23, gap = 14;
+  const x = INFO.x + INFO.r - W, y = INFO.y + INFO.r + 10;
+  let h = pad * 2 - gap;
+  for (const d of DEFS) h += richParagraph(d, 0, 0, W - pad * 2, size, lineH, false) + gap;
+  ctx.save();
+  ctx.shadowColor = "rgba(15,23,42,.22)"; ctx.shadowBlur = 24; ctx.shadowOffsetY = 8;
+  ctx.fillStyle = "#ffffff";
+  roundRect(x, y, W, h, 12); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5; roundRect(x, y, W, h, 12); ctx.stroke(); ctx.restore();
+  let ty = y + pad;
+  for (const d of DEFS) ty += richParagraph(d, x + pad, ty, W - pad * 2, size, lineH, true) + gap;
+}
+
 /* =====================================================================
    Tabs — to add a new force later, write a Scene function like
    GravityScene (reset/draw/down/move/up/hover) and add it here.
@@ -611,14 +668,20 @@ document.getElementById("resetBtn").onclick = () => current && current.reset();
 
 /* ---------- pointer input ---------- */
 let pid = null;
+document.addEventListener("pointerdown", e => { if (e.target !== cv) infoOpen = false; });
 cv.addEventListener("pointerdown", e => {
   const p = toLogical(e);
+  if (onInfo(p)) { infoOpen = !infoOpen; return; }
+  if (infoOpen) { infoOpen = false; return; }   // any other click just closes the pop-up
   if (current && current.down(p)) { pid = e.pointerId; cv.setPointerCapture(pid); cv.style.cursor = "grabbing"; }
 });
 cv.addEventListener("pointermove", e => {
   const p = toLogical(e);
   if (pid !== null && e.pointerId === pid) current.move(p);
-  else cv.style.cursor = current && current.hover(p) ? "grab" : "default";
+  else {
+    infoHover = onInfo(p);
+    cv.style.cursor = infoHover ? "pointer" : (!infoOpen && current && current.hover(p)) ? "grab" : "default";
+  }
 });
 function release(e) {
   if (pid !== null && e.pointerId === pid) {
@@ -635,6 +698,7 @@ function frame() {
   ctx.fillRect(0, 0, cv.width, cv.height);
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * offX, dpr * offY);
   if (current) current.draw();
+  drawInfo();
   requestAnimationFrame(frame);
 }
 
