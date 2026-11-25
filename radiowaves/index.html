@@ -1553,15 +1553,16 @@
         currentAcc = (currentVel - prevChargeVel) / effectiveDt;
       } else if (STATE.mode === 'pulse') {
         if (STATE.pulseTriggered) {
+          // Exactly one full cycle (one crest, then one trough) at the carrier frequency, so
+          // its wavelength matches the Sine Wave at the same slider setting. The electron starts
+          // and ends at rest in the middle of the antenna.
           const tPulse = STATE.time - STATE.pulseTime;
+          const period = 1 / STATE.pulseFreq;
           const pOmega = 2 * Math.PI * STATE.pulseFreq;
-          const sigma = 0.2 / STATE.pulseFreq;
-          const dtPulse = tPulse - 0.4;
-          const gaussian = Math.exp(-Math.pow(dtPulse, 2) / (2 * sigma * sigma));
-          currentY = amp * gaussian * Math.sin(pOmega * 3 * dtPulse);
+          currentY = (tPulse >= 0 && tPulse <= period) ? amp * Math.sin(pOmega * tPulse) : 0;
           currentVel = (currentY - prevChargePos) / effectiveDt;
           currentAcc = (currentVel - prevChargeVel) / effectiveDt;
-          if (tPulse > 1.8 || tPulse < 0) {
+          if (tPulse > period || tPulse < 0) {
             STATE.pulseTriggered = false;
             currentY = 0;
           }
@@ -1614,7 +1615,11 @@
         // Position in the recorded voice carried by this moment of the wave (NaN when none).
         p: (STATE.txPowered && STATE.mode === 'data' && VOICE.source === 'recording') ? VOICE.prog : NaN,
         // 1 when this moment of the wave carries the voice, 0 for sine / pulse / wiggle.
-        d: STATE.mode === 'data' ? 1 : 0
+        d: STATE.mode === 'data' ? 1 : 0,
+        // Frequency the tower is sending at this moment (Sine Wave, Single Pulse); NaN when it
+        // has no set frequency (Manual Wiggle, voice) and the phone has to measure it.
+        f: !STATE.txPowered ? NaN : STATE.mode === 'sine' ? STATE.frequency
+           : (STATE.mode === 'pulse' && STATE.pulseTriggered) ? STATE.pulseFreq : NaN
       });
       if (Number.isFinite(STATE.history[0].p)) VOICE.lastSentAt = STATE.time;
 
@@ -1721,6 +1726,11 @@
         }
       }
 
+      // Sine Wave and Single Pulse carry the frequency they were sent at; use that exactly
+      // (a single-cycle pulse has too few zero crossings to measure reliably).
+      const sentFreq = sampleHistory(retardedTime, 'f');
+      if (Number.isFinite(sentFreq)) STATE.rxFreq = sentFreq;
+
       // Height of the wave reaching the phone RIGHT NOW (used for the tone's volume).
       // For a wave y = A·sin(ωt), A = √(y² + (dy/dt ÷ ω)²) at every instant, so a steady
       // sine wave gives a steady volume (no wobble), and the volume drops to zero as soon as
@@ -1805,7 +1815,7 @@
         payloadEl.title = spoken;
       } else if (STATE.mode === 'pulse') {
         document.getElementById('phoneDecodedTitle').textContent = 'Single Pulse Received';
-        document.getElementById('phonePayload').textContent = `Transient burst at ${STATE.pulseFreq.toFixed(2)} Hz`;
+        document.getElementById('phonePayload').textContent = `One cycle at ${STATE.pulseFreq.toFixed(2)} Hz`;
       } else if (STATE.mode === 'manual') {
         document.getElementById('phoneDecodedTitle').textContent = 'Manual Wiggle Signal';
         document.getElementById('phonePayload').textContent = 'Hand-driven waveform';
