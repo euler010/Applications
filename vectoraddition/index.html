@@ -999,27 +999,15 @@
       const arcRadius = getArcRadius(v, idx);
       let angleRad = Math.atan2(v.dy, v.dx); // standard cartesian
       if (angleRad < 0) angleRad += 2 * Math.PI;
-      const isReflex = angleRad > Math.PI;
 
       ctx.save();
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = v.color;
 
-      // Arc from 0 to -angleRad on canvas (counter-clockwise from +x, as in the sidebar)
+      // Arc from 0 to -angleRad on canvas (counter-clockwise from +x, as in the sidebar).
+      // Outline only for every angle, so all arcs look the same whatever their size.
       ctx.beginPath();
-      if (!isReflex) {
-        // Shaded sector for angles up to 180°
-        ctx.moveTo(v.tailX, v.tailY);
-        ctx.arc(v.tailX, v.tailY, arcRadius, 0, -angleRad, true);
-        ctx.closePath();
-        ctx.fillStyle = v.color;
-        ctx.globalAlpha = 0.15;
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-      } else {
-        // Angles over 180° get an outline arc only
-        ctx.arc(v.tailX, v.tailY, arcRadius, 0, -angleRad, true);
-      }
+      ctx.arc(v.tailX, v.tailY, arcRadius, 0, -angleRad, true);
       ctx.stroke();
       ctx.restore();
 
