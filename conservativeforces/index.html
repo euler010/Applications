@@ -543,22 +543,6 @@ function GravityScene() {
       text(t && t.path.length > 1 ? fmtJ(t.work) : "—", P.x + 352, ry, 16, "#0f172a", "center", 600);
     }
 
-    // formula once all done
-    if (done) {
-      const fy = ty + 160;
-      ctx.save();
-      ctx.fillStyle = "#f1f5f9";
-      roundRect(P.x + 20, fy - 22, P.w - 40, 44, 10); ctx.fill();
-      ctx.restore();
-      const h = (START.y - TARGET.y) / PPM;
-      const hs = (h < 0 ? "−" : "") + Math.abs(h).toFixed(1);
-      text(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${hs}) = ${fmtJ(-MASS * G * h)}`, P.x + P.w / 2 + 4, fy, 16, "#0f172a", "center", 600);
-      // subscript g on W
-      ctx.save(); ctx.font = `600 16px Inter, system-ui, sans-serif`;
-      const full = ctx.measureText(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${hs}) = ${fmtJ(-MASS * G * h)}`).width;
-      const ww = ctx.measureText("W").width; ctx.restore();
-      text("g", P.x + P.w / 2 + 4 - full / 2 + ww + 1, fy + 5, 12, "#0f172a", "left", 600);
-    }
   }
 
   function draw() {
@@ -590,8 +574,8 @@ function GravityScene() {
    ===================================================================== */
 const INFO = { x: 1140 - 8 - 17, y: 20 + 8 + 17, r: 17 };
 const DEFS = [
-  [{ t: "A " }, { t: "conservative", b: true }, { t: " force is one in which the work done by the force in moving an object from point A to point B is independent of the path taken." }],
-  [{ t: "A " }, { t: "nonconservative", b: true }, { t: " force is one in which the work done by the force in moving an object from point A to point B is dependent on the path taken." }],
+  [{ t: "A " }, { t: "conservative force", b: true }, { t: " is one in which the work done by the force in moving an object from point A to point B is independent of the path taken." }],
+  [{ t: "A " }, { t: "nonconservative force", b: true }, { t: " is one in which the work done by the force in moving an object from point A to point B is dependent on the path taken." }],
 ];
 let infoOpen = false, infoHover = false;
 
