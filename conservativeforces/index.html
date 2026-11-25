@@ -4,19 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conservative vs. Non-Conservative Forces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: #e9edf2; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; color: #1f2937; overflow: hidden; }
+  html, body { margin: 0; height: 100%; background: #e9edf2; font-family: Inter, system-ui, sans-serif; color: #1f2937; overflow: hidden; }
   body { display: flex; flex-direction: column; }
   header {
     display: flex; align-items: center; gap: 1.2vmin; flex-wrap: wrap;
     padding: 1.1vmin 2vmin; background: #1e293b; color: #fff;
-    font-size: clamp(13px, 2.1vmin, 30px);
+    font-size: 16px;
   }
-  header h1 { font-size: 1.15em; margin: 0 1.5vmin 0 0; font-weight: 600; letter-spacing: .02em; }
+  header h1 { font-size: 18px; margin: 0 1.5vmin 0 0; font-weight: 600; letter-spacing: .02em; }
   .tabs { display: flex; gap: .8vmin; flex: 1; }
   .tab, .reset {
-    font: inherit; border: none; cursor: pointer; border-radius: .5em;
+    font: inherit; font-size: 16px; border: none; cursor: pointer; border-radius: .5em;
     padding: .45em 1.1em; transition: background .15s;
   }
   .tab { background: #334155; color: #cbd5e1; }
@@ -45,7 +48,7 @@
    Everything is drawn in a fixed logical space (1600 x 900) and scaled
    uniformly to fit whatever screen the app is shown on.
    ===================================================================== */
-const LW = 1600, LH = 900;
+const LW = 1600, LH = 748;
 const cv = document.getElementById("cv");
 const ctx = cv.getContext("2d");
 const stage = document.getElementById("stage");
@@ -92,16 +95,16 @@ function subText(main, sub, x, y, size, color, align = "left") {
   ctx.save();
   ctx.fillStyle = color;
   ctx.textBaseline = "middle";
-  ctx.font = `italic 600 ${size}px "Segoe UI", system-ui, sans-serif`;
+  ctx.font = `italic 600 ${size}px Inter, system-ui, sans-serif`;
   const mw = ctx.measureText(main).width;
-  ctx.font = `italic 600 ${size * 0.65}px "Segoe UI", system-ui, sans-serif`;
+  ctx.font = `italic 600 ${Math.max(12, size * 0.75)}px Inter, system-ui, sans-serif`;
   const sw = ctx.measureText(sub).width;
   let sx = x;
   if (align === "center") sx = x - (mw + sw) / 2;
   if (align === "right") sx = x - (mw + sw);
-  ctx.font = `italic 600 ${size}px "Segoe UI", system-ui, sans-serif`;
+  ctx.font = `italic 600 ${size}px Inter, system-ui, sans-serif`;
   ctx.fillText(main, sx, y);
-  ctx.font = `italic 600 ${size * 0.65}px "Segoe UI", system-ui, sans-serif`;
+  ctx.font = `italic 600 ${Math.max(12, size * 0.75)}px Inter, system-ui, sans-serif`;
   ctx.fillText(sub, sx + mw + 1, y + size * 0.3);
   ctx.restore();
 }
@@ -111,7 +114,7 @@ function vecDeltaR(x, y, size, color) {
   ctx.save();
   ctx.fillStyle = color; ctx.strokeStyle = color;
   ctx.textBaseline = "middle";
-  ctx.font = `italic 600 ${size}px "Segoe UI", system-ui, sans-serif`;
+  ctx.font = `italic 600 ${size}px Inter, system-ui, sans-serif`;
   const dw = ctx.measureText("Δ").width;
   const rw = ctx.measureText("r").width;
   ctx.fillText("Δr", x, y);
@@ -135,7 +138,7 @@ function roundRect(x, y, w, h, r) {
 function text(str, x, y, size, color, align = "left", weight = 400, base = "middle") {
   ctx.save();
   ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = base;
-  ctx.font = `${weight} ${size}px "Segoe UI", system-ui, sans-serif`;
+  ctx.font = `${weight} ${size}px Inter, system-ui, sans-serif`;
   ctx.fillText(str, x, y);
   ctx.restore();
 }
@@ -150,12 +153,12 @@ function fmtJ(v) {
    ===================================================================== */
 function GravityScene() {
   // --- Room geometry (logical px) ---
-  const ROOM = { left: 20, top: 20, right: 1140, floor: 780, bottom: 880 };
+  const ROOM = { left: 20, top: 20, right: 1140, floor: 628, bottom: 728 };
   const PPM = 200;              // pixels per meter
   const MASS = 2.0, G = 9.8;    // kg, m/s^2
   const S = 80, HALF = S / 2;   // block size
   const START = { x: 170, y: ROOM.floor - HALF };
-  const TABLE = { x1: 860, x2: 1100, top: 580, slab: 18, legW: 18, legInset: 15 };
+  const TABLE = { x1: 860, x2: 1100, top: 428, slab: 18, legW: 18, legInset: 15 };
   const TARGET = { x: (TABLE.x1 + TABLE.x2) / 2, y: TABLE.top - HALF };
   const SNAP = 18;
 
@@ -292,8 +295,11 @@ function GravityScene() {
     ctx.strokeRect(ROOM.left, ROOM.top, ROOM.right - ROOM.left, ROOM.bottom - ROOM.top);
 
     // given values
-    ctx.save(); ctx.fillStyle = "rgba(255,255,255,.9)"; roundRect(ROOM.left + 16, ROOM.floor + 26, 340, 48, 10); ctx.fill(); ctx.restore();
-    text(`each block: m = ${MASS.toFixed(1)} kg     g = ${G} m/s²`, ROOM.left + 30, ROOM.floor + 50, 19, "#334155", "left", 600);
+    {
+      const cx = (ROOM.left + ROOM.right) / 2, cy = (ROOM.floor + ROOM.bottom) / 2;
+      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.92)"; roundRect(cx - 160, cy - 20, 320, 40, 10); ctx.fill(); ctx.restore();
+      text(`Each block: m = ${MASS.toFixed(1)} kg     g = ${G} m/s²`, cx, cy, 16, "#334155", "center", 600);
+    }
 
     // table
     ctx.fillStyle = "#a16207";
@@ -316,7 +322,7 @@ function GravityScene() {
     ctx.translate(mx - 0, TABLE.top + 100);
     ctx.fillStyle = "#fff"; ctx.fillRect(-12, -30, 24, 60);
     ctx.rotate(-Math.PI / 2);
-    text("1.0 m", 0, 0, 18, "#475569", "center", 600);
+    text("1.0 m", 0, 0, 14, "#475569", "center", 600);
     ctx.restore();
   }
 
@@ -378,7 +384,7 @@ function GravityScene() {
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
     ctx.restore();
-    text(LETTERS[idx], x, y + 1, r * 1.15, "#fff", "center", 700);
+    text(LETTERS[idx], x, y + 1, Math.max(12, Math.min(16, r * 0.95)), "#fff", "center", 700);
   }
 
   function drawBlock(t, isActive) {
@@ -392,7 +398,7 @@ function GravityScene() {
     ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4;
     roundRect(x, y, S, S, 6); ctx.stroke();
     ctx.restore();
-    text(LETTERS[t.idx], t.x, t.y - 18, 28, COLORS[t.idx], "center", 700);
+    text(LETTERS[t.idx], t.x, t.y - 20, 16, COLORS[t.idx], "center", 700);
   }
 
   function drawVectors() {
@@ -403,9 +409,9 @@ function GravityScene() {
     arrow(active.x, active.y, active.x, active.y + fgLen, "#111827", 6, 20);
     ctx.save();
     ctx.fillStyle = "rgba(255,255,255,.85)";
-    roundRect(active.x + 10, active.y + fgLen - 34, 46, 34, 6); ctx.fill();
+    roundRect(active.x + 10, active.y + fgLen - 28, 36, 26, 6); ctx.fill();
     ctx.restore();
-    subText("F", "g", active.x + 14, active.y + fgLen - 17, 26, "#111827");
+    subText("F", "g", active.x + 14, active.y + fgLen - 17, 16, "#111827");
 
     // Displacement vector (direction of motion right now)
     const now = performance.now();
@@ -420,9 +426,9 @@ function GravityScene() {
       const lx = sx + ux * (L + 28), ly = sy + uy * (L + 22);
       ctx.save();
       ctx.fillStyle = "rgba(255,255,255,.85)";
-      roundRect(lx - 24, ly - 18, 50, 36, 6); ctx.fill();
+      roundRect(lx - 20, ly - 16, 40, 30, 6); ctx.fill();
       ctx.restore();
-      vecDeltaR(lx - 18, ly + 2, 26, col);
+      vecDeltaR(lx - 13, ly + 2, 16, col);
       drawReadout(cos, col);
     } else if (dragging) {
       drawReadout(null);
@@ -430,20 +436,20 @@ function GravityScene() {
   }
 
   function drawReadout(cos, col) {
-    const x = ROOM.left + 18, y = ROOM.top + 74, w = 345, h = 74;
+    const x = ROOM.left + 18, y = ROOM.top + 64, w = 290, h = 60;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
     roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
     ctx.restore();
-    text("Work by gravity right now:", x + 14, y + 22, 18, "#475569", "left", 600);
-    if (cos === null) { text("block not moving  →  zero", x + 14, y + 50, 20, "#6b7280", "left", 700); return; }
+    text("Work by gravity right now:", x + 14, y + 19, 14, "#475569", "left", 600);
+    if (cos === null) { text("Block not moving  →  zero", x + 14, y + 42, 15, "#6b7280", "left", 700); return; }
     const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
     const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
-    text(`${word}   (θ = ${deg}° between F`, x + 14, y + 50, 20, col, "left", 700);
-    ctx.save(); ctx.font = `700 20px "Segoe UI", system-ui, sans-serif`;
+    text(`${word}   (θ = ${deg}° between F`, x + 14, y + 42, 15, col, "left", 700);
+    ctx.save(); ctx.font = `700 15px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word}   (θ = ${deg}° between F`).width; ctx.restore();
-    text("g", x + 14 + w1 + 1, y + 56, 14, col, "left", 700);
-    text("and Δr)", x + 14 + w1 + 16, y + 50, 20, col, "left", 700);
+    text("g", x + 14 + w1 + 1, y + 47, 12, col, "left", 700);
+    text("and Δr)", x + 14 + w1 + 12, y + 42, 15, col, "left", 700);
   }
 
   function drawStatus() {
@@ -454,48 +460,48 @@ function GravityScene() {
     else msg = "One more: drag block C along yet another path onto the stack.";
     if (msg) {
       ctx.save();
-      ctx.font = `600 22px "Segoe UI", system-ui, sans-serif`;
+      ctx.font = `600 16px Inter, system-ui, sans-serif`;
       const w = ctx.measureText(msg).width + 36;
       const cx = (ROOM.left + ROOM.right) / 2;
       ctx.fillStyle = "rgba(30,41,59,.9)";
-      roundRect(cx - w / 2, ROOM.top + 14, w, 42, 21); ctx.fill();
+      roundRect(cx - w / 2, ROOM.top + 12, w, 36, 18); ctx.fill();
       ctx.restore();
-      text(msg, (ROOM.left + ROOM.right) / 2, ROOM.top + 36, 22, "#fff", "center", 600);
+      text(msg, (ROOM.left + ROOM.right) / 2, ROOM.top + 30, 16, "#fff", "center", 600);
     } else {
-      const cx = (ROOM.left + ROOM.right) / 2, w = 900, h = 96, y = ROOM.top + 14;
+      const cx = (ROOM.left + ROOM.right) / 2, w = 640, h = 76, y = ROOM.top + 12;
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
       ctx.restore();
-      text("Three different paths — the same work by gravity!", cx, y + 30, 27, "#14532d", "center", 700);
-      text("Gravity is a conservative force: its work depends only on where the object", cx, y + 60, 19, "#166534", "center", 500);
-      text("starts and ends, not on the path it takes between them.", cx, y + 82, 19, "#166534", "center", 500);
+      text("Three different paths — the same work by gravity!", cx, y + 22, 16, "#14532d", "center", 700);
+      text("Gravity is a conservative force: its work depends only on where the object", cx, y + 44, 14, "#166534", "center", 500);
+      text("starts and ends, not on the path it takes between them.", cx, y + 62, 14, "#166534", "center", 500);
     }
   }
 
   function drawPanel() {
-    const P = { x: 1160, y: 20, w: 420, h: 860 };
+    const P = { x: 1160, y: 20, w: 420, h: 708 };
     ctx.save();
     ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
     roundRect(P.x, P.y, P.w, P.h, 12); ctx.fill(); ctx.stroke();
     ctx.restore();
 
-    text("Total Work Done by Gravity", P.x + P.w / 2, P.y + 36, 25, "#0f172a", "center", 700);
+    text("Total Work Done by Gravity", P.x + P.w / 2, P.y + 30, 16, "#0f172a", "center", 700);
     // W_g (J) subtitle
-    subText("W", "g", P.x + P.w / 2 - 42, P.y + 68, 22, "#475569");
-    text("(J)", P.x + P.w / 2 + 6, P.y + 68, 20, "#475569", "left", 600);
+    subText("W", "g", P.x + P.w / 2 - 30, P.y + 54, 15, "#475569");
+    text("(J)", P.x + P.w / 2 + 4, P.y + 54, 15, "#475569", "left", 600);
 
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
-    const gTop = P.y + 105, gBot = P.y + 560;
-    const vMax = 10, vMin = -70;
+    const gTop = P.y + 84, gBot = P.y + 420;
+    const vMax = 10, vMin = -60;
     const yOf = v => gTop + (vMax - v) / (vMax - vMin) * (gBot - gTop);
     for (let v = vMax; v >= vMin; v -= 10) {
       const y = yOf(v);
       ctx.strokeStyle = v === 0 ? "#0f172a" : "#e2e8f0";
       ctx.lineWidth = v === 0 ? 2.5 : 1;
       ctx.beginPath(); ctx.moveTo(gx1, y); ctx.lineTo(gx2, y); ctx.stroke();
-      text((v < 0 ? "−" : "") + Math.abs(v), gx1 - 10, y, 17, "#475569", "right", v === 0 ? 700 : 400);
+      text((v < 0 ? "−" : "") + Math.abs(v), gx1 - 10, y, 13, "#475569", "right", v === 0 ? 700 : 400);
     }
     ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(gx1, gTop); ctx.lineTo(gx1, gBot); ctx.stroke();
@@ -507,8 +513,8 @@ function GravityScene() {
       const cx = gx1 + slotW * (i + 0.5);
       const t = trials[i];
       // letter label at bottom
-      drawBadge(cx, gBot + 32, i, 18);
-      if (!t) continue;
+      drawBadge(cx, gBot + 26, i, 15);
+      if (!t || t.path.length < 2) continue;
       const vClamped = Math.max(vMin, Math.min(vMax, t.work));
       const yv = yOf(vClamped);
       ctx.save();
@@ -517,39 +523,39 @@ function GravityScene() {
       ctx.fillRect(cx - barW / 2, Math.min(y0, yv), barW, Math.abs(yv - y0));
       ctx.restore();
       const labelY = t.work <= 0 ? yv + 18 : yv - 18;
-      text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 19, t.locked ? "#0f172a" : "#64748b", "center", 700);
-      if (!t.locked && t.path.length > 1) text("in progress", cx, y0 - 16, 15, "#64748b", "center", 600);
+      text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 15, t.locked ? "#0f172a" : "#64748b", "center", 700);
+      if (!t.locked && t.path.length > 1) text("In progress", cx, y0 - 14, 12, "#64748b", "center", 600);
     }
 
     // data table
-    const ty = gBot + 82;
-    text("Path", P.x + 40, ty, 18, "#475569", "left", 700);
-    text("Distance traveled", P.x + 200, ty, 18, "#475569", "center", 700);
-    subText("W", "g", P.x + 352, ty, 19, "#475569", "center");
+    const ty = gBot + 68;
+    text("Path", P.x + 40, ty, 14, "#475569", "left", 700);
+    text("Distance traveled", P.x + 200, ty, 14, "#475569", "center", 700);
+    subText("W", "g", P.x + 352, ty, 14, "#475569", "center");
     ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 14); ctx.stroke();
     for (let i = 0; i < 3; i++) {
       const t = trials[i];
-      const ry = ty + 42 + i * 34;
-      drawBadge(P.x + 54, ry, i, 13);
-      text(t && t.dist > 0 ? t.dist.toFixed(2) + " m" : "—", P.x + 200, ry, 19, "#0f172a", "center", 600);
-      text(t && t.path.length > 1 ? fmtJ(t.work) : "—", P.x + 352, ry, 19, "#0f172a", "center", 600);
+      const ry = ty + 36 + i * 30;
+      drawBadge(P.x + 54, ry, i, 11);
+      text(t && t.dist > 0 ? t.dist.toFixed(2) + " m" : "—", P.x + 200, ry, 15, "#0f172a", "center", 600);
+      text(t && t.path.length > 1 ? fmtJ(t.work) : "—", P.x + 352, ry, 15, "#0f172a", "center", 600);
     }
 
     // formula once all done
     if (done) {
-      const fy = ty + 162;
+      const fy = ty + 150;
       ctx.save();
       ctx.fillStyle = "#f1f5f9";
-      roundRect(P.x + 20, fy - 26, P.w - 40, 52, 10); ctx.fill();
+      roundRect(P.x + 20, fy - 22, P.w - 40, 44, 10); ctx.fill();
       ctx.restore();
       const h = (START.y - TARGET.y) / PPM;
-      text(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${h.toFixed(1)}) = ${fmtJ(-MASS * G * h)}`, P.x + P.w / 2 + 4, fy, 18, "#0f172a", "center", 600);
+      text(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${h.toFixed(1)}) = ${fmtJ(-MASS * G * h)}`, P.x + P.w / 2 + 4, fy, 15, "#0f172a", "center", 600);
       // subscript g on W
-      ctx.save(); ctx.font = `600 18px "Segoe UI", system-ui, sans-serif`;
+      ctx.save(); ctx.font = `600 15px Inter, system-ui, sans-serif`;
       const full = ctx.measureText(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${h.toFixed(1)}) = ${fmtJ(-MASS * G * h)}`).width;
       const ww = ctx.measureText("W").width; ctx.restore();
-      text("g", P.x + P.w / 2 + 4 - full / 2 + ww + 1, fy + 6, 13, "#0f172a", "left", 600);
+      text("g", P.x + P.w / 2 + 4 - full / 2 + ww + 1, fy + 5, 12, "#0f172a", "left", 600);
     }
   }
 
@@ -565,7 +571,7 @@ function GravityScene() {
       drawBlock(active, true);
       drawVectors();
     }
-    for (const s of labelSpots()) drawBadge(s.x, s.y, s.idx);
+    for (const s of labelSpots()) drawBadge(s.x, s.y, s.idx, 15);
     drawStatus();
     drawPanel();
   }
