@@ -432,24 +432,24 @@ function GravityScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
-    const x = ROOM.left + 8, y = ROOM.top + 8, w = 350, h = 66;
+    const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
     roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
     ctx.restore();
-    text("Work by gravity right now:", x + 14, y + 21, 16, "#475569", "left", 600);
-    if (cos === null) { text("Block not moving  →  zero", x + 14, y + 46, 16, "#6b7280", "left", 700); return; }
+    text("Work by gravity right now:", x + 14, y + 23, 18, "#475569", "left", 600);
+    if (cos === null) { text("Block not moving  →  zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
     const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
     const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
-    text(`${word}   (θ = ${deg}° between F`, x + 14, y + 46, 16, col, "left", 700);
-    ctx.save(); ctx.font = `700 16px Inter, system-ui, sans-serif`;
+    text(`${word}   (θ = ${deg}° between F`, x + 14, y + 51, 18, col, "left", 700);
+    ctx.save(); ctx.font = `700 18px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word}   (θ = ${deg}° between F`).width; ctx.restore();
-    text("g", x + 14 + w1 + 1, y + 51, 12, col, "left", 700);
-    text("and Δx)", x + 14 + w1 + 12, y + 46, 16, col, "left", 700);
+    text("g", x + 14 + w1 + 1, y + 57, 14, col, "left", 700);
+    text("and Δx)", x + 14 + w1 + 15, y + 51, 18, col, "left", 700);
   }
 
   // center of the space to the right of the work readout
-  const STATUS_CX = (ROOM.left + 8 + 350 + ROOM.right) / 2;
+  const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
     if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
@@ -469,14 +469,14 @@ function GravityScene() {
       ctx.restore();
       text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
-      const cx = STATUS_CX, w = 640, h = 76, y = ROOM.top + 8;
+      const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
       ctx.restore();
-      text("Three different paths — the same work by gravity!", cx, y + 22, 16, "#14532d", "center", 700);
-      text("Gravity is a conservative force: its work depends only on where the object", cx, y + 44, 14, "#166534", "center", 500);
-      text("starts and ends, not on the path it takes between them.", cx, y + 62, 14, "#166534", "center", 500);
+      text("Three different paths — the same work by gravity!", cx, y + 25, 18, "#14532d", "center", 700);
+      text("Gravity is a conservative force: its work depends only on where the object", cx, y + 50, 16, "#166534", "center", 500);
+      text("starts and ends, not on the path it takes between them.", cx, y + 70, 16, "#166534", "center", 500);
     }
   }
 
@@ -826,24 +826,24 @@ function FrictionScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
-    const x = ROOM.left + 8, y = ROOM.top + 8, w = 350, h = 66;
+    const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
     roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
     ctx.restore();
-    text("Work by friction right now:", x + 14, y + 21, 16, "#475569", "left", 600);
-    if (cos === null) { text("Block not moving  →  zero", x + 14, y + 46, 16, "#6b7280", "left", 700); return; }
+    text("Work by friction right now:", x + 14, y + 23, 18, "#475569", "left", 600);
+    if (cos === null) { text("Block not moving  →  zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
     const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
     const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
-    text(`${word}   (θ = ${deg}° between f`, x + 14, y + 46, 16, col, "left", 700);
-    ctx.save(); ctx.font = `700 16px Inter, system-ui, sans-serif`;
+    text(`${word}   (θ = ${deg}° between f`, x + 14, y + 51, 18, col, "left", 700);
+    ctx.save(); ctx.font = `700 18px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word}   (θ = ${deg}° between f`).width; ctx.restore();
-    text("k", x + 14 + w1 + 1, y + 51, 12, col, "left", 700);
-    text("and Δx)", x + 14 + w1 + 12, y + 46, 16, col, "left", 700);
+    text("k", x + 14 + w1 + 1, y + 57, 14, col, "left", 700);
+    text("and Δx)", x + 14 + w1 + 15, y + 51, 18, col, "left", 700);
   }
 
   // center of the space to the right of the work readout
-  const STATUS_CX = (ROOM.left + 8 + 350 + ROOM.right) / 2;
+  const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
     if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
@@ -863,14 +863,14 @@ function FrictionScene() {
       ctx.restore();
       text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
-      const cx = STATUS_CX, w = 640, h = 76, y = ROOM.top + 8;
+      const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
       ctx.restore();
-      text("Three different paths — different amounts of work by friction!", cx, y + 22, 16, "#14532d", "center", 700);
-      text("Friction is a nonconservative force: its work depends on the path taken,", cx, y + 44, 14, "#166534", "center", 500);
-      text("not just on where the object starts and ends.", cx, y + 62, 14, "#166534", "center", 500);
+      text("Three different paths — different amounts of work by friction!", cx, y + 25, 18, "#14532d", "center", 700);
+      text("Friction is a nonconservative force: its work depends on the path taken,", cx, y + 50, 16, "#166534", "center", 500);
+      text("not just on where the object starts and ends.", cx, y + 70, 16, "#166534", "center", 500);
     }
   }
 
