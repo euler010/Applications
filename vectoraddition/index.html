@@ -1025,6 +1025,21 @@
 
       addDiscObstacle(v.tailX, v.tailY, arcRadius + 2);
 
+      // Horizontal reference line the angle is measured from: dotted, in the vector's
+      // colour, running in the +x direction from the tail a little past the arc.
+      const refLen = arcRadius + 38;
+      ctx.save();
+      ctx.strokeStyle = v.color;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([0.1, 6]); // round caps turn these into dots
+      ctx.beginPath();
+      ctx.moveTo(v.tailX, v.tailY);
+      ctx.lineTo(v.tailX + refLen, v.tailY);
+      ctx.stroke();
+      ctx.restore();
+      addSegmentObstacle(v.tailX, v.tailY, v.tailX + refLen, v.tailY, 3);
+
       // Candidate spots: around the arc (middle of the sweep first), then just outside
       // the sweep on either side, stepping further out from the tail each round.
       const fractions = [0.5, 0.35, 0.65, 0.2, 0.8, 0.05, 0.95];
