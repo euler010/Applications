@@ -170,7 +170,15 @@ function GravityScene() {
 
   let trials, active, dragging, grab, vel, lastMove, done;
 
+  let bannerHidden = false, bannerRect = null;
+  // after the activity ends, a click anywhere outside the green banner closes it
+  function outsideClick(p) {
+    if (!done || bannerHidden || !bannerRect) return;
+    const r = bannerRect;
+    if (!p || p.x < r.x || p.x > r.x + r.w || p.y < r.y || p.y > r.y + r.h) bannerHidden = true;
+  }
   function reset() {
+    bannerHidden = false; bannerRect = null;
     trials = [];
     done = false;
     dragging = false;
@@ -469,7 +477,9 @@ function GravityScene() {
       ctx.restore();
       text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
+      if (bannerHidden) return;
       const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
+      bannerRect = { x: cx - w / 2, y, w, h };
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
@@ -565,7 +575,7 @@ function GravityScene() {
   }
 
   reset();
-  return { reset, draw, down, move, up, hover };
+  return { reset, draw, down, move, up, hover, outsideClick };
 }
 
 
@@ -592,7 +602,15 @@ function FrictionScene() {
   let trials, active, dragging, grab, vel, lastMove, done;
 
   let axisMin = -30;
+  let bannerHidden = false, bannerRect = null;
+  // after the activity ends, a click anywhere outside the green banner closes it
+  function outsideClick(p) {
+    if (!done || bannerHidden || !bannerRect) return;
+    const r = bannerRect;
+    if (!p || p.x < r.x || p.x > r.x + r.w || p.y < r.y || p.y > r.y + r.h) bannerHidden = true;
+  }
   function reset() {
+    bannerHidden = false; bannerRect = null;
     axisMin = -30;
     trials = [];
     done = false;
@@ -863,7 +881,9 @@ function FrictionScene() {
       ctx.restore();
       text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
+      if (bannerHidden) return;
       const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
+      bannerRect = { x: cx - w / 2, y, w, h };
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
@@ -966,7 +986,7 @@ function FrictionScene() {
   }
 
   reset();
-  return { reset, draw, down, move, up, hover };
+  return { reset, draw, down, move, up, hover, outsideClick };
 }
 
 
@@ -996,7 +1016,15 @@ function TensionScene() {
   let trials, active, dragging, grab, vel, lastMove, done;
 
   let axisMax = 30;
+  let bannerHidden = false, bannerRect = null;
+  // after the activity ends, a click anywhere outside the green banner closes it
+  function outsideClick(p) {
+    if (!done || bannerHidden || !bannerRect) return;
+    const r = bannerRect;
+    if (!p || p.x < r.x || p.x > r.x + r.w || p.y < r.y || p.y > r.y + r.h) bannerHidden = true;
+  }
   function reset() {
+    bannerHidden = false; bannerRect = null;
     axisMax = 30;
     trials = [];
     done = false;
@@ -1305,7 +1333,9 @@ function TensionScene() {
       ctx.restore();
       text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
+      if (bannerHidden) return;
       const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
+      bannerRect = { x: cx - w / 2, y, w, h };
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
       roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
@@ -1408,7 +1438,7 @@ function TensionScene() {
   }
 
   reset();
-  return { reset, draw, down, move, up, hover };
+  return { reset, draw, down, move, up, hover, outsideClick };
 }
 
 
@@ -1499,9 +1529,10 @@ document.getElementById("resetBtn").onclick = () => current && current.reset();
 
 /* ---------- pointer input ---------- */
 let pid = null;
-document.addEventListener("pointerdown", e => { if (e.target !== cv) infoOpen = false; });
+document.addEventListener("pointerdown", e => { if (e.target !== cv) { infoOpen = false; if (current) current.outsideClick(null); } });
 cv.addEventListener("pointerdown", e => {
   const p = toLogical(e);
+  if (current) current.outsideClick(p);
   if (onInfo(p)) { infoOpen = !infoOpen; return; }
   if (infoOpen) { infoOpen = false; return; }   // any other click just closes the pop-up
   if (current && current.down(p)) { pid = e.pointerId; cv.setPointerCapture(pid); cv.style.cursor = "grabbing"; }
