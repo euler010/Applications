@@ -109,13 +109,13 @@ function subText(main, sub, x, y, size, color, align = "left") {
   ctx.restore();
 }
 
-// Δr label (plain text)
+// Δx label (plain text)
 function vecDeltaR(x, y, size, color) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.textBaseline = "middle";
   ctx.font = `italic 600 ${size}px Inter, system-ui, sans-serif`;
-  ctx.fillText("Δr", x, y);
+  ctx.fillText("Δx", x, y);
   ctx.restore();
 }
 
@@ -208,7 +208,7 @@ function GravityScene() {
 
   function record(ox, oy) {
     const dx = active.x - ox, dy = active.y - oy;
-    // W = F·Δr, F_g = (0, +mg) in screen coords (down is +y)
+    // W = F·Δx, F_g = (0, +mg) in screen coords (down is +y)
     active.work += MASS * G * (dy / PPM);
     active.dist += Math.hypot(dx, dy) / PPM;
     const last = active.path[active.path.length - 1];
@@ -413,7 +413,7 @@ function GravityScene() {
     const sp = Math.hypot(vel.x, vel.y);
     if (dragging && now - lastMove < 140 && sp > 0.4) {
       const ux = vel.x / sp, uy = vel.y / sp;
-      const cos = uy; // angle between Δr and F_g (F_g points +y)
+      const cos = uy; // angle between Δx and F_g (F_g points +y)
       const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
       const L = 95;
       const sx = active.x + ux * (HALF * 0.4), sy = active.y + uy * (HALF * 0.4);
@@ -444,7 +444,7 @@ function GravityScene() {
     ctx.save(); ctx.font = `700 15px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word}   (θ = ${deg}° between F`).width; ctx.restore();
     text("g", x + 14 + w1 + 1, y + 47, 12, col, "left", 700);
-    text("and Δr)", x + 14 + w1 + 12, y + 42, 15, col, "left", 700);
+    text("and Δx)", x + 14 + w1 + 12, y + 42, 15, col, "left", 700);
   }
 
   function drawStatus() {
