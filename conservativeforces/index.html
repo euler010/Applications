@@ -464,10 +464,10 @@ function GravityScene() {
       // centered across the workspace, 80% of the way from the floor up to the ceiling
       const cx = (ROOM.left + ROOM.right) / 2;
       const cy = ROOM.floor - 0.8 * (ROOM.floor - ROOM.top);
-      ctx.fillStyle = "rgba(30,41,59,.9)";
-      roundRect(cx - w / 2, cy - 18, w, 36, 18); ctx.fill();
+      ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
+      roundRect(cx - w / 2, cy - 18, w, 36, 18); ctx.fill(); ctx.stroke();
       ctx.restore();
-      text(msg, cx, cy, 16, "#fff", "center", 600);
+      text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
       const cx = STATUS_CX, w = 640, h = 76, y = ROOM.top + 8;
       ctx.save();
