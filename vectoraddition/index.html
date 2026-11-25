@@ -494,16 +494,14 @@
       const minY = margin;
       const maxY = h - margin;
 
-      // Adjust average vector lengths based on vector count
-      // Vector lengths scale with the room available around the origin, so larger
-      // vector counts still fill the screen instead of clustering in the middle.
-      // reach = distance from the origin to the nearest usable edge.
-      const reach = Math.max(80, Math.min(originX - minX, maxX - originX, originY - minY, maxY - originY));
-      const LENGTH_RANGE = { 2: [0.45, 0.80], 3: [0.42, 0.70], 4: [0.40, 0.66], 5: [0.38, 0.60] };
-      const [minFrac, maxFrac] = LENGTH_RANGE[Math.min(Math.max(count, 2), 5)];
-      const minLenPx = Math.max(40, reach * minFrac);
-      const maxLenPx = Math.max(minLenPx + 10, reach * maxFrac);
-      const minResultantPx = Math.max(50, reach * 0.3);
+      // Room from the origin to each usable edge, in canvas pixels
+      const roomLeft = originX - minX;
+      const roomRight = maxX - originX;
+      const roomUp = originY - minY;
+      const roomDown = maxY - originY;
+      const minRoom = Math.max(60, Math.min(roomLeft, roomRight, roomUp, roomDown));
+      const FILL = 0.94;          // use up to 94% of the room on the tightest side
+      const SHAPES_TO_COMPARE = 12; // pick the roomiest of this many valid random sets
 
       // Minimum angular separation between vectors radiating from origin (in radians)
       // Ensures vectors never overlap or cluster too closely together
@@ -515,97 +513,99 @@
 
       const subLabels = ['A', 'B', 'C', 'D', 'E'];
 
-      // Search for a configuration that keeps all heads, resultant, and clear separations visible
-      for (let attempt = 0; attempt < 300; attempt++) {
-        const candidateVectors = [];
-        const candidateAngles = [];
-        let valid = true;
-        let chainX = originX;
-        let chainY = originY;
-        let sumDx = 0;
-        let sumDy = 0;
+      // Each attempt builds a random *shape* (directions plus relative lengths), then scales
+      // it up as far as it can go while every point that will be shown stays on screen:
+      // each vector drawn from the origin, every joint of the head-to-tail chain, and the
+      // resultant's tip. Of the valid shapes, the one whose chained figure covers the most
+      // of the screen wins. Because the scale comes from the canvas size, sets grow on big
+      // screens and shrink on small ones.
+      let best = null;
+      let bestScore = -1;
+      let validFound = 0;
 
+      for (let attempt = 0; attempt < 400 && validFound < SHAPES_TO_COMPARE; attempt++) {
+        const angles = [];
+        let ok = true;
         for (let i = 0; i < count; i++) {
-          let angle;
-          let angleFound = false;
-
-          // Attempt to find an angle with sufficient angular separation from existing vectors
+          let found = false;
           for (let aTry = 0; aTry < 35; aTry++) {
-            angle = Math.PI * 2 * Math.random();
-            let farEnough = true;
-            for (const prevAngle of candidateAngles) {
-              if (minAngularDistance(angle, prevAngle) < minAngleSeparation) {
-                farEnough = false;
-                break;
-              }
-            }
-            if (farEnough) {
-              angleFound = true;
+            const angle = Math.PI * 2 * Math.random();
+            if (angles.every(prev => minAngularDistance(angle, prev) >= minAngleSeparation)) {
+              angles.push(angle);
+              found = true;
               break;
             }
           }
+          if (!found) { ok = false; break; }
+        }
+        if (!ok) continue;
 
-          if (!angleFound) {
-            valid = false;
-            break;
-          }
-          candidateAngles.push(angle);
+        // Relative lengths: the shortest is at least 45% of the longest
+        const rel = angles.map(() => 0.45 + Math.random() * 0.55);
+        const unit = angles.map((ang, i) => ({ x: Math.cos(ang) * rel[i], y: -Math.sin(ang) * rel[i] })); // canvas offsets
 
-          const lengthPx = minLenPx + Math.random() * (maxLenPx - minLenPx);
-          const dx = Math.cos(angle) * lengthPx;
-          const dy = Math.sin(angle) * lengthPx; // Math coordinate (+y upwards)
+        // Every point that must stay visible, as offsets from the origin (canvas coords)
+        const pts = [];
+        let cx = 0;
+        let cy = 0;
+        unit.forEach(u => {
+          pts.push({ x: u.x, y: u.y }); // vector drawn from the origin
+          cx += u.x;
+          cy += u.y;
+          pts.push({ x: cx, y: cy });   // chain joint; the last one is the resultant tip
+        });
 
-          // Individual vector head at origin
-          const soloHeadX = originX + dx;
-          const soloHeadY = originY - dy;
+        // Largest scale that keeps every point inside the usable area
+        let scale = Infinity;
+        pts.forEach(pt => {
+          if (pt.x > 0) scale = Math.min(scale, roomRight / pt.x);
+          if (pt.x < 0) scale = Math.min(scale, roomLeft / -pt.x);
+          if (pt.y > 0) scale = Math.min(scale, roomDown / pt.y);
+          if (pt.y < 0) scale = Math.min(scale, roomUp / -pt.y);
+        });
+        if (!isFinite(scale)) continue;
+        scale *= FILL;
 
-          // Head-to-tail chain accumulation
-          chainX += dx;
-          chainY -= dy;
-          sumDx += dx;
-          sumDy += dy;
+        // Reject sets with a tiny resultant or a vector too short to read
+        const resultantPx = Math.hypot(cx, cy) * scale;
+        const shortestPx = Math.min(...rel) * scale;
+        if (resultantPx < minRoom * 0.35 || shortestPx < 40) continue;
 
-          // Check if individual vector head at origin is within visible screen
-          if (soloHeadX < minX || soloHeadX > maxX || soloHeadY < minY || soloHeadY > maxY) {
-            valid = false;
-            break;
-          }
+        // Score: share of the usable area covered by the chained figure's bounding box
+        const chainXs = [0];
+        const chainYs = [0];
+        let jx = 0;
+        let jy = 0;
+        unit.forEach(u => { jx += u.x; jy += u.y; chainXs.push(jx); chainYs.push(jy); });
+        const spanX = (Math.max(...chainXs) - Math.min(...chainXs)) * scale / (maxX - minX);
+        const spanY = (Math.max(...chainYs) - Math.min(...chainYs)) * scale / (maxY - minY);
+        const score = spanX * spanY + 0.5 * Math.min(spanX, spanY); // favour figures that spread both ways
 
-          // Check if chained head position is within visible screen
-          if (chainX < minX || chainX > maxX || chainY < minY || chainY > maxY) {
-            valid = false;
-            break;
-          }
+        validFound++;
+        if (score > bestScore) {
+          bestScore = score;
+          best = { angles, rel, scale };
+        }
+      }
 
-          candidateVectors.push({
+      if (best) {
+        return best.angles.map((ang, i) => {
+          const lengthPx = best.rel[i] * best.scale;
+          return {
             id: i,
             name: String.fromCharCode(65 + i),
             label: subLabels[i] || String.fromCharCode(65 + i),
             color: chosenColors[i],
-            dx: dx,
-            dy: dy,
+            dx: Math.cos(ang) * lengthPx,
+            dy: Math.sin(ang) * lengthPx, // math coordinates (+y upwards)
             tailX: originX,
             tailY: originY,
             animTailX: originX,
             animTailY: originY,
             targetTailX: originX,
             targetTailY: originY
-          });
-        }
-
-        if (valid) {
-          const resultantMagPx = Math.hypot(sumDx, sumDy);
-          const resultantTipX = originX + sumDx;
-          const resultantTipY = originY - sumDy;
-
-          // Resultant tip must also lie strictly inside screen boundaries and have clear magnitude
-          const resultantInBounds = (resultantTipX >= minX && resultantTipX <= maxX &&
-                                     resultantTipY >= minY && resultantTipY <= maxY);
-
-          if (resultantInBounds && resultantMagPx >= minResultantPx) {
-            return candidateVectors;
-          }
-        }
+          };
+        });
       }
 
       // Fallback: angles fanned across a 120° sector so they stay separated but never cancel.
