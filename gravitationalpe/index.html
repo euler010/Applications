@@ -76,7 +76,7 @@ label.chk input:checked::after{opacity:1}
 <div class="grid">
   <section>
     <div class="fig scene"><canvas id="sc" aria-label="Star field with two draggable masses"></canvas><div id="hint" class="hint">Drag masses to begin.</div></div>
-    <p class="note">m<sub>1</sub> = 5.0 × 10<sup>24</sup> kg, m<sub>2</sub> = 1.0 × 10<sup>24</sup> kg, G = 6.67 × 10<sup>−11</sup> N·m²/kg². As the masses separate, gravity does negative work. Carried all the way to infinity, W<sub>g</sub> = −Gm<sub>1</sub>m<sub>2</sub>/r<sub>0</sub>, which is the potential energy U<sub>0</sub> of the starting arrangement (with U = 0 at infinity).</p>
+    <p class="note">m<sub>1</sub> = 5.0 × 10<sup>24</sup> kg, m<sub>2</sub> = 2.0 × 10<sup>24</sup> kg, G = 6.67 × 10<sup>−11</sup> N·m²/kg². As the masses separate, gravity does negative work. Carried all the way to infinity, W<sub>g</sub> = −Gm<sub>1</sub>m<sub>2</sub>/r<sub>0</sub>, which is the potential energy U<sub>0</sub> of the starting arrangement (with U = 0 at infinity).</p>
     <p id="status" aria-live="polite"></p>
   </section>
   <aside class="side">
@@ -95,7 +95,7 @@ label.chk input:checked::after{opacity:1}
 </div>
 <script>
 {
-const G=6.674e-11,M1=5.0e24,M2=1.0e24,GMM=G*M1*M2,SC=1e6,WW=1000,R1=34,R2=22,RMIN=R1+R2+4,XMAX=1000;
+const G=6.674e-11,M1=5.0e24,M2=2.0e24,GMM=G*M1*M2,SC=1e6,WW=1000,R1=30,R2=22,RMIN=R1+R2+4,XMAX=1000;
 const INK='#e9ecf5',DIM='#9a9da6',GRID='rgba(233,236,245,.10)',CW='#ff5d73',CP='#5ee0a0',SHN='rgb(219,82,101)',SHP='rgba(120,240,180,.32)';
 const $=id=>document.getElementById(id);
 const sc=$('sc'),gf=$('gf'),gw=$('gw');
@@ -194,7 +194,7 @@ function yTitle(ctx,t,x,y){ctx.save();ctx.translate(x,y);ctx.rotate(-Math.PI/2);
 function drawF(){
   const {ctx,w,h}=fit(gf);ctx.clearRect(0,0,w,h);
   const pl=58,pr=14,pt=12,pb=40,pw=w-pl-pr,ph=h-pt-pb,e=Math.floor(Math.log10(FTOP)),un=10**e;
-  const st0=niceStep(FTOP/un,4),base=1.5e22,rr=rNow(),tgt=Math.max(base,F(rr)*1.12);
+  const st0=niceStep(FTOP/un,4),base=2.0e22,rr=rNow(),tgt=Math.max(base,F(rr)*1.12);
   if(!fTopCur)fTopCur=base;fTopCur+=(tgt-fTopCur)*.25;if(Math.abs(tgt-fTopCur)<tgt*.002)fTopCur=tgt;
   const top=fTopCur,topU=top/un,st=niceStep(topU,4);
   const X=x=>pl+x/XMAX*pw,Y=f=>pt+ph*(1-f/top);
