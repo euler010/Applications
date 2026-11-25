@@ -93,7 +93,7 @@ label.chk input:checked::after{opacity:1}
 <script>
 {
 const G=6.674e-11,M1=5.0e24,M2=1.0e24,GMM=G*M1*M2,SC=1e6,WW=1000,R1=34,R2=22,RMIN=R1+R2+4,XMAX=1000;
-const INK='#e9ecf5',DIM='rgba(233,236,245,.6)',GRID='rgba(233,236,245,.10)',CW='#ff5d73',CP='#5ee0a0';
+const INK='#e9ecf5',DIM='#9a9da6',GRID='rgba(233,236,245,.10)',CW='#ff5d73',CP='#5ee0a0';
 const $=id=>document.getElementById(id);
 const sc=$('sc'),gf=$('gf'),gw=$('gw');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -110,7 +110,9 @@ const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6
 const sup=n=>String(n).split('').map(c=>SUP[c]).join('');
 function sci(v,d=2){if(!isFinite(v))return '—';if(v===0)return '0';let e=Math.floor(Math.log10(Math.abs(v))),m=v/10**e;if(Math.abs(+m.toFixed(d))>=10){m/=10;e++}return (m.toFixed(d)+' × 10'+sup(e)).replace('-','−')}
 function niceStep(range,n){const raw=range/n,mag=10**Math.floor(Math.log10(raw)),f=raw/mag;return (f<1.5?1:f<3?2:f<7?5:10)*mag}
-function fit(c){const b=c.getBoundingClientRect(),d=window.devicePixelRatio||1,W=Math.max(1,Math.round(b.width*d)),H=Math.max(1,Math.round(b.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H}const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);return{ctx,w:b.width,h:b.height}}
+function fit(c){const P=c.parentElement.getBoundingClientRect(),d=window.devicePixelRatio||1,L=Math.round(P.left*d),T=Math.round(P.top*d),W=Math.max(1,Math.round(P.right*d)-L),H=Math.max(1,Math.round(P.bottom*d)-T);
+  const st=c.style,css=[(L/d-P.left)+'px',(T/d-P.top)+'px',W/d+'px',H/d+'px'];if(st.left!==css[0]||st.top!==css[1]||st.width!==css[2]||st.height!==css[3]){st.left=css[0];st.top=css[1];st.width=css[2];st.height=css[3];st.right='auto';st.bottom='auto'}
+  if(c.width!==W||c.height!==H){c.width=W;c.height=H}const ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);return{ctx,w:W/d,h:H/d}}
 function clampP(p,R){p.x=Math.min(WW-R,Math.max(R,p.x));p.y=Math.min(Hw-R,Math.max(R,p.y))}
 function constrain(p,R,o){clampP(p,R);let dx=p.x-o.x,dy=p.y-o.y,d=Math.hypot(dx,dy);if(d<RMIN){if(d<1e-6){dx=1;dy=0;d=1}p.x=o.x+dx/d*RMIN;p.y=o.y+dy/d*RMIN;clampP(p,R)}}
 function defaults(){p1.x=WW*.38;p1.y=Hw*.5;p2.x=WW*.62;p2.y=Hw*.5}
