@@ -461,11 +461,13 @@ function GravityScene() {
       ctx.save();
       ctx.font = `600 16px Inter, system-ui, sans-serif`;
       const w = ctx.measureText(msg).width + 36;
-      const cx = STATUS_CX;
+      // centered across the workspace, 80% of the way from the floor up to the ceiling
+      const cx = (ROOM.left + ROOM.right) / 2;
+      const cy = ROOM.floor - 0.8 * (ROOM.floor - ROOM.top);
       ctx.fillStyle = "rgba(30,41,59,.9)";
-      roundRect(cx - w / 2, ROOM.top + 8, w, 36, 18); ctx.fill();
+      roundRect(cx - w / 2, cy - 18, w, 36, 18); ctx.fill();
       ctx.restore();
-      text(msg, STATUS_CX, ROOM.top + 26, 16, "#fff", "center", 600);
+      text(msg, cx, cy, 16, "#fff", "center", 600);
     } else {
       const cx = STATUS_CX, w = 640, h = 76, y = ROOM.top + 8;
       ctx.save();
