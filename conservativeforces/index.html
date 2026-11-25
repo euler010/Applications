@@ -522,7 +522,7 @@ function GravityScene() {
       ctx.fillRect(cx - barW / 2, Math.min(y0, yv), barW, Math.abs(yv - y0));
       ctx.restore();
       const labelY = t.work <= 0 ? yv + 18 : yv - 18;
-      text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 15, t.locked ? "#0f172a" : "#64748b", "center", 700);
+      text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 16, t.locked ? "#0f172a" : "#64748b", "center", 700);
       if (!t.locked && t.path.length > 1) text("In progress", cx, t.work > 0 ? y0 + 15 : y0 - 15, 14, "#64748b", "center", 600);
     }
 
