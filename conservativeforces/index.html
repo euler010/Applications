@@ -157,9 +157,10 @@ function GravityScene() {
   const PPM = 200;              // pixels per meter
   const MASS = 2.0, G = 9.8;    // kg, m/s^2
   const S = 80, HALF = S / 2;   // block size
-  const START = { x: 170, y: ROOM.floor - HALF };
-  const TABLE = { x1: 860, x2: 1100, top: 428, slab: 18, legW: 18, legInset: 15 };
-  const TARGET = { x: (TABLE.x1 + TABLE.x2) / 2, y: TABLE.top - HALF };
+  const TABLE_H = 1.5;          // table height (m)
+  const TABLE = { x1: 70, x2: 310, top: ROOM.floor - TABLE_H * PPM, slab: 18, legW: 18, legInset: 15 };
+  const START = { x: (TABLE.x1 + TABLE.x2) / 2, y: TABLE.top - HALF };   // on the table (left)
+  const TARGET = { x: 980, y: ROOM.floor - HALF };                        // on the floor (right)
   const SNAP = 18;
 
   const OBST = [
@@ -170,8 +171,8 @@ function GravityScene() {
   const BOUNDS = { x1: ROOM.left + HALF, x2: ROOM.right - HALF, y1: ROOM.top + HALF, y2: ROOM.floor - HALF };
 
   const LETTERS = ["A", "B", "C"];
-  const COLORS = ["#2563eb", "#ea7a0c", "#9333ea"];
-  const LIGHT = ["#dbeafe", "#ffedd5", "#f3e8ff"];
+  const COLORS = ["#2563eb", "#db2777", "#9333ea"];
+  const LIGHT = ["#dbeafe", "#fce7f3", "#f3e8ff"];
 
   let trials, active, dragging, grab, vel, lastMove, done;
 
@@ -309,20 +310,20 @@ function GravityScene() {
     ctx.fillStyle = "#d97706";
     ctx.fillRect(TABLE.x1 + 3, TABLE.top + 2, TABLE.x2 - TABLE.x1 - 6, 4);
 
-    // height marker (1.0 m)
-    const mx = TABLE.x2 + 18;
+    // height marker (left of the table)
+    const mx = TABLE.x1 - 22, mid = (TABLE.top + ROOM.floor) / 2;
     ctx.save();
     ctx.strokeStyle = "#64748b"; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
-    ctx.beginPath(); ctx.moveTo(TABLE.x2 + 4, TABLE.top); ctx.lineTo(mx + 8, TABLE.top); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(TABLE.x1 - 4, TABLE.top); ctx.lineTo(mx - 8, TABLE.top); ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
-    arrow(mx, TABLE.top + 100, mx, TABLE.top + 4, "#64748b", 2, 10);
-    arrow(mx, TABLE.top + 100, mx, ROOM.floor - 4, "#64748b", 2, 10);
+    arrow(mx, mid, mx, TABLE.top + 4, "#64748b", 2, 10);
+    arrow(mx, mid, mx, ROOM.floor - 4, "#64748b", 2, 10);
     ctx.save();
-    ctx.translate(mx - 0, TABLE.top + 100);
+    ctx.translate(mx, mid);
     ctx.fillStyle = "#fff"; ctx.fillRect(-12, -30, 24, 60);
     ctx.rotate(-Math.PI / 2);
-    text("1.0 m", 0, 0, 14, "#475569", "center", 600);
+    text(TABLE_H.toFixed(1) + " m", 0, 0, 14, "#475569", "center", 600);
     ctx.restore();
   }
 
@@ -454,8 +455,9 @@ function GravityScene() {
 
   function drawStatus() {
     let msg;
+    if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
     if (done) msg = null;
-    else if (active.idx === 0) msg = "Drag block A from the floor to the dashed square on the table.";
+    else if (active.idx === 0) msg = "Drag block A from the table to the dashed square on the floor.";
     else if (active.idx === 1) msg = "Now drag block B along a different path until it lands on block A.";
     else msg = "One more: drag block C along yet another path onto the stack.";
     if (msg) {
@@ -494,7 +496,7 @@ function GravityScene() {
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
     const gTop = P.y + 84, gBot = P.y + 420;
-    const vMax = 10, vMin = -60;
+    const vMax = 40, vMin = -30;
     const yOf = v => gTop + (vMax - v) / (vMax - vMin) * (gBot - gTop);
     for (let v = vMax; v >= vMin; v -= 10) {
       const y = yOf(v);
@@ -524,7 +526,7 @@ function GravityScene() {
       ctx.restore();
       const labelY = t.work <= 0 ? yv + 18 : yv - 18;
       text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 15, t.locked ? "#0f172a" : "#64748b", "center", 700);
-      if (!t.locked && t.path.length > 1) text("In progress", cx, y0 - 14, 12, "#64748b", "center", 600);
+      if (!t.locked && t.path.length > 1) text("In progress", cx, t.work > 0 ? y0 + 14 : y0 - 14, 12, "#64748b", "center", 600);
     }
 
     // data table
@@ -550,10 +552,11 @@ function GravityScene() {
       roundRect(P.x + 20, fy - 22, P.w - 40, 44, 10); ctx.fill();
       ctx.restore();
       const h = (START.y - TARGET.y) / PPM;
-      text(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${h.toFixed(1)}) = ${fmtJ(-MASS * G * h)}`, P.x + P.w / 2 + 4, fy, 15, "#0f172a", "center", 600);
+      const hs = (h < 0 ? "−" : "") + Math.abs(h).toFixed(1);
+      text(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${hs}) = ${fmtJ(-MASS * G * h)}`, P.x + P.w / 2 + 4, fy, 15, "#0f172a", "center", 600);
       // subscript g on W
       ctx.save(); ctx.font = `600 15px Inter, system-ui, sans-serif`;
-      const full = ctx.measureText(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${h.toFixed(1)}) = ${fmtJ(-MASS * G * h)}`).width;
+      const full = ctx.measureText(`W    = −mgΔh = −(${MASS.toFixed(1)})(${G})(${hs}) = ${fmtJ(-MASS * G * h)}`).width;
       const ww = ctx.measureText("W").width; ctx.restore();
       text("g", P.x + P.w / 2 + 4 - full / 2 + ww + 1, fy + 5, 12, "#0f172a", "left", 600);
     }
