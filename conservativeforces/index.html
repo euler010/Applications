@@ -109,19 +109,13 @@ function subText(main, sub, x, y, size, color, align = "left") {
   ctx.restore();
 }
 
-// Δr with an arrow over the r
+// Δr label (plain text)
 function vecDeltaR(x, y, size, color) {
   ctx.save();
-  ctx.fillStyle = color; ctx.strokeStyle = color;
+  ctx.fillStyle = color;
   ctx.textBaseline = "middle";
   ctx.font = `italic 600 ${size}px Inter, system-ui, sans-serif`;
-  const dw = ctx.measureText("Δ").width;
-  const rw = ctx.measureText("r").width;
   ctx.fillText("Δr", x, y);
-  const ax = x + dw, ay = y - size * 0.62;
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + rw + 2, ay); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(ax + rw + 4, ay); ctx.lineTo(ax + rw - 3, ay - 4); ctx.lineTo(ax + rw - 3, ay + 4); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
 
@@ -385,7 +379,7 @@ function GravityScene() {
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
     ctx.restore();
-    text(LETTERS[idx], x, y + 1, Math.max(12, Math.min(16, Math.round(r * 0.95))), "#fff", "center", 700);
+    text(LETTERS[idx], x, y + 1, Math.max(14, Math.min(16, Math.round(r * 0.95))), "#fff", "center", 700);
   }
 
   function drawBlock(t, isActive) {
@@ -503,7 +497,7 @@ function GravityScene() {
       ctx.strokeStyle = v === 0 ? "#0f172a" : "#e2e8f0";
       ctx.lineWidth = v === 0 ? 2.5 : 1;
       ctx.beginPath(); ctx.moveTo(gx1, y); ctx.lineTo(gx2, y); ctx.stroke();
-      text((v < 0 ? "−" : "") + Math.abs(v), gx1 - 10, y, 13, "#475569", "right", v === 0 ? 700 : 400);
+      text((v < 0 ? "−" : "") + Math.abs(v), gx1 - 10, y, 14, "#475569", "right", v === 0 ? 700 : 400);
     }
     ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(gx1, gTop); ctx.lineTo(gx1, gBot); ctx.stroke();
@@ -526,7 +520,7 @@ function GravityScene() {
       ctx.restore();
       const labelY = t.work <= 0 ? yv + 18 : yv - 18;
       text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 15, t.locked ? "#0f172a" : "#64748b", "center", 700);
-      if (!t.locked && t.path.length > 1) text("In progress", cx, t.work > 0 ? y0 + 14 : y0 - 14, 12, "#64748b", "center", 600);
+      if (!t.locked && t.path.length > 1) text("In progress", cx, t.work > 0 ? y0 + 15 : y0 - 15, 14, "#64748b", "center", 600);
     }
 
     // data table
