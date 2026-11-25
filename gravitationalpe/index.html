@@ -67,7 +67,7 @@ label.chk input:checked::after{opacity:1}
 <header>
   <h1>Gravitational work and potential energy</h1>
   <div class="controls">
-    <button id="bStart" class="primary">Start</button>
+    <button id="bStart" class="primary">Set Positions</button>
     <button id="bInf" class="inf" disabled>Move to <span>∞</span></button>
     <button id="bReset">Reset</button>
     <button id="bDef">Default</button>
@@ -82,7 +82,7 @@ label.chk input:checked::after{opacity:1}
   <aside class="side">
     <div class="card graphs">
       <div class="gsec"><h2>Force of gravity vs. separation</h2><div class="eqo"><span>F<sub>g</sub> =</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r<sup>2</sup></span></span></div><div class="fig g"><canvas id="gf"></canvas></div></div>
-      <div class="gsec"><h2>Work done by gravity <small>since Start</small></h2><div class="eqo"><span>U<sub>g</sub> = −</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r</span></span></div><div class="fig g"><canvas id="gw"></canvas></div></div>
+      <div class="gsec"><h2>Work done by gravity <small>since positions were set</small></h2><div class="eqo"><span>U<sub>g</sub> = −</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r</span></span></div><div class="fig g"><canvas id="gw"></canvas></div></div>
     </div>
     <dl class="read">
       <div><dt>Separation r</dt><dd id="oR">—</dd></div>
@@ -224,7 +224,7 @@ function drawW(){
   if(!r0){
     ctx.strokeStyle='rgba(233,236,245,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,pt+ph);ctx.moveTo(pl,y0);ctx.lineTo(pl+pw,y0);ctx.stroke();
     ctx.fillStyle=DIM;ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText('0',pl-6,y0);yTitle(ctx,'Wg  (J)',4,pt+ph/2);
-    ctx.textAlign='center';ctx.font='15px Inter,system-ui';ctx.fillText('Press Start to set r₀',pl+pw/2,pt+ph*.58);return;
+    ctx.textAlign='center';ctx.font='15px Inter,system-ui';ctx.fillText('Press Set Positions to set r₀',pl+pw/2,pt+ph*.58);return;
   }
   const u0=U0(),e=Math.floor(Math.log10(-u0)),un=10**e,st=niceStep(-u0/un*1.15,4),neg=Math.max(-u0/un*1.06,(-u0/un)/Math.max(.5,1-24/(ph*.86))),ppu=ph*.86/neg,posU=ph*.14/ppu;
   const Y=v=>y0-(v/un)*ppu,dec=Math.max(0,-Math.floor(Math.log10(st)));
@@ -246,8 +246,8 @@ function drawW(){
 const bS=$('bStart'),bI=$('bInf'),bR=$('bReset'),st=$('status'),outs={R:$('oR'),F:$('oF'),W:$('oW'),U:$('oU')};
 function ui(){
   bS.disabled=phase!=='setup';bI.disabled=phase!=='run';
-  st.textContent={setup:'',run:'Drag the masses apart (or press Move to ∞). The bar shows the work gravity has done since Start.',anim:'Moving the masses to infinity…',done:'As r → ∞, the work done by gravity approaches −Gm₁m₂/r₀, which is U₀, the potential energy of the starting arrangement.'}[phase];
-  bS.textContent=phase==='setup'?'Start':'Started';
+  st.textContent={setup:'',run:'Drag the masses apart (or press Move to ∞). The bar shows the work gravity has done since the positions were set.',anim:'Moving the masses to infinity…',done:'As r → ∞, the work done by gravity approaches −Gm₁m₂/r₀, which is U₀, the potential energy of the starting arrangement.'}[phase];
+  bS.textContent=phase==='setup'?'Set Positions':'Positions Set';
 }
 function setOut(el,t){if(el.textContent!==t)el.textContent=t}
 function readouts(){const r=rNow();setOut(outs.R,phase==='done'?'→ ∞':sci(r*SC)+' m');setOut(outs.F,phase==='done'?'→ 0':sci(F(r))+' N');setOut(outs.W,r0?sci(Wg(r))+' J':'—');setOut(outs.U,r0?sci(U0())+' J':'—')}
