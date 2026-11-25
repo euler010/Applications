@@ -21,8 +21,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 22px;margin-bottom:14px}
 h1{font:700 18px/1.3 Inter,system-ui,sans-serif;margin:0;text-wrap:balance}
 .eq{font:500 15px/1.3 Inter,system-ui,sans-serif;color:var(--dim);margin:0;white-space:nowrap}
-.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:2px}
-.ch h2{margin-top:2px}
+.gsec{position:relative}
+.gsec+.gsec{margin-top:8px}
+.gsec .eqo{position:absolute;top:0;right:0;z-index:1;background:var(--panel);padding:0 0 4px 8px;border-radius:0 0 0 8px}
 .eqo{display:flex;align-items:center;gap:6px;flex:none;font:500 15px/1.3 Inter,system-ui,sans-serif;color:var(--ink);white-space:nowrap}
 .frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1.25}
 .frac>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px 1px}
@@ -79,8 +80,10 @@ label.chk input:checked::after{opacity:1}
     <p id="status" aria-live="polite"></p>
   </section>
   <aside class="side">
-    <div class="card"><div class="ch"><h2>Force of gravity vs. separation</h2><div class="eqo"><span>F<sub>g</sub> =</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r<sup>2</sup></span></span></div></div><div class="fig g"><canvas id="gf"></canvas></div></div>
-    <div class="card"><div class="ch"><h2>Work done by gravity <small>since Start</small></h2><div class="eqo"><span>U<sub>g</sub> = −</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r</span></span></div></div><div class="fig g"><canvas id="gw"></canvas></div></div>
+    <div class="card graphs">
+      <div class="gsec"><h2>Force of gravity vs. separation</h2><div class="eqo"><span>F<sub>g</sub> =</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r<sup>2</sup></span></span></div><div class="fig g"><canvas id="gf"></canvas></div></div>
+      <div class="gsec"><h2>Work done by gravity <small>since Start</small></h2><div class="eqo"><span>U<sub>g</sub> = −</span><span class="frac"><span>Gm<sub>1</sub>m<sub>2</sub></span><span>r</span></span></div><div class="fig g"><canvas id="gw"></canvas></div></div>
+    </div>
     <dl class="read">
       <div><dt>Separation r</dt><dd id="oR">—</dd></div>
       <div><dt>Force F<sub>g</sub></dt><dd id="oF">—</dd></div>
