@@ -198,7 +198,7 @@ function drawF(){
   if(!fTopCur)fTopCur=base;fTopCur+=(tgt-fTopCur)*.25;if(Math.abs(tgt-fTopCur)<tgt*.002)fTopCur=tgt;
   const top=fTopCur,topU=top/un,st=niceStep(topU,4);
   const X=x=>pl+x/XMAX*pw,Y=f=>pt+ph*(1-f/top);
-  ctx.font='12px Inter,system-ui';ctx.lineWidth=1;
+  ctx.font='13px Inter,system-ui';ctx.lineWidth=1;
   ctx.textAlign='right';ctx.textBaseline='middle';
   for(let v=0;v<=topU+1e-9;v+=st){const y=Y(v*un);ctx.strokeStyle=GRID;ctx.beginPath();ctx.moveTo(pl,y);ctx.lineTo(pl+pw,y);ctx.stroke();ctx.fillStyle=DIM;ctx.fillText((+v.toFixed(3)).toString(),pl-6,y)}
   const xU=XMAX*SC/1e8,xs=w<320?5:2;ctx.textAlign='center';ctx.textBaseline='top';
@@ -220,7 +220,7 @@ function drawF(){
 function drawW(){
   const {ctx,w,h}=fit(gw);ctx.clearRect(0,0,w,h);
   const pl=58,pr=14,pt=12,pb=14,pw=w-pl-pr,ph=h-pt-pb,y0=pt+ph*.14,bx=pl+pw*.3,bw=Math.min(84,pw*.3);
-  ctx.font='12px Inter,system-ui';
+  ctx.font='13px Inter,system-ui';
   if(!r0){
     ctx.strokeStyle='rgba(233,236,245,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,pt+ph);ctx.moveTo(pl,y0);ctx.lineTo(pl+pw,y0);ctx.stroke();
     ctx.fillStyle=DIM;ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText('0',pl-6,y0);yTitle(ctx,'Wg  (J)',4,pt+ph/2);
