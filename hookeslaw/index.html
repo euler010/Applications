@@ -20,6 +20,7 @@ body { margin: 0; }
   --vel: #c8372d;
   --acc: #2a8c5c;
   --energy: #e0359a;
+  --ke: #4fa9dc;
   --line: #c9d1da;
   --steel: #4f6478;
   --mass: #1f5f73;
@@ -33,11 +34,11 @@ body { margin: 0; }
   --font-data: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #e1e6eb; --vel: #f2726a; --acc: #5cc995; --energy: #ff6cbf; --fric-on: #a85a54;
+  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #e1e6eb; --vel: #f2726a; --acc: #5cc995; --energy: #ff6cbf; --ke: #7cc6f0; --fric-on: #a85a54;
   --steel: #9fb3c6; --mass: #3b95ad; --mass-edge: #7cc3d6; --force: #b79cf2; --disp: #7ea4f2; --wall: #5d6b7a;
   color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #e1e6eb; --fric-on: #a85a54; --vel: #f2726a; --acc: #5cc995; --energy: #ff6cbf;
+  --bg: #12171d; --panel: #1a2129; --ink: #e6ebf0; --muted: #94a2b1; --line: #2f3a46; --axis: #e1e6eb; --fric-on: #a85a54; --vel: #f2726a; --acc: #5cc995; --energy: #ff6cbf; --ke: #7cc6f0;
   --steel: #9fb3c6; --mass: #3b95ad; --mass-edge: #7cc3d6; --force: #b79cf2; --disp: #7ea4f2; --wall: #5d6b7a;
   color-scheme: dark }
 
@@ -81,6 +82,12 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; }
 .label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
 #graph { display: block; width: 100%; height: 250px; }
+/* Spring and Energy: same page, graph options hidden, force graph on top with energy bars below */
+#pageSpring.energy-mode .tabs, #pageSpring.energy-mode #graphLabel { display: none; }
+/* The graph fills its panel; the panel runs the full height beside the spring and the slider box */
+#pageSpring.energy-mode > .lower > .card:first-child { display: flex; flex-direction: column; }
+#pageSpring.energy-mode #graph { flex: 1 1 0; height: 0; min-height: 440px; }
+#pageSpring.energy-mode .rd .eq { display: none; }
 #graphLabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: none; letter-spacing: normal; font-size: 0.9rem; font-weight: 600; color: var(--axis); }
 .tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
 /* Function switches keep their space in both views so the card never changes height */
@@ -146,6 +153,11 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter
   #pageSpring .rd { order: 3; }
   /* Bottom row, left to right: equation | spring constant */
   #pageSpring .rd { grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr); }
+  /* Spring and Energy: graph panel on the left spans both rows; spring above, slider below on the right */
+  #pageSpring.energy-mode { grid-template-rows: 1fr auto; }
+  #pageSpring.energy-mode > .lower > .card:first-child { grid-column: 1; grid-row: 1 / 3; }
+  #pageSpring.energy-mode .bench { grid-column: 2; grid-row: 1; }
+  #pageSpring.energy-mode .rd { grid-column: 2; grid-row: 2; grid-template-columns: minmax(0, 1fr); }
 }
 .topctl button { background: var(--panel); }
 /* Two aligned columns of switches; one column if the panel is too narrow for two */
@@ -187,6 +199,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     <h1>Hooke's Law Lab</h1>
     <nav class="pages" role="tablist" aria-label="Lab pages">
       <button type="button" role="tab" id="navCircle" aria-selected="false" aria-controls="pageCircle">Circle and SHM</button>
+      <button type="button" role="tab" id="navEnergy" aria-selected="false" aria-controls="pageSpring">Spring and Energy</button>
       <button type="button" role="tab" id="navSpring" aria-selected="true" aria-controls="pageSpring">Spring and Force</button>
     </nav>
   </header>
@@ -289,6 +302,8 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   let raf = null, lastT = 0;
   let view = 'force';            // 'force' | 'pt'
   let showEnergy = false;        // shade the area under |F| vs x and show U in the readings
+  let energyMode = false;        // true on the Spring and Energy tab
+  const energyOn = () => showEnergy || energyMode;   // stored energy is always on in energy mode
   const WIN = 6;                 // seconds shown on the position-time graph
   let simT = 0;
   const history = [];            // { t, x, v, a } samples for the functions-of-time graph
@@ -303,7 +318,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   let C = {};
   const readColors = () => { C = { ink: css('--ink'), muted: css('--muted'), axis: css('--axis'), line: css('--line'), steel: css('--steel'),
-    vel: css('--vel'), acc: css('--acc'), energy: css('--energy'), mass: css('--mass'), edge: css('--mass-edge'), force: css('--force'), disp: css('--disp'), wall: css('--wall'), panel: css('--panel') }; };
+    vel: css('--vel'), acc: css('--acc'), energy: css('--energy'), ke: css('--ke'), mass: css('--mass'), edge: css('--mass-edge'), force: css('--force'), disp: css('--disp'), wall: css('--wall'), panel: css('--panel') }; };
 
   function fit(canvas, ctx) {
     const dpr = window.devicePixelRatio || 1;
@@ -492,16 +507,80 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     ctx.fillText('t (s)', pad.l + pw / 2, h - 3);
   }
 
-  function drawGraph() { view === 'force' ? drawForce() : drawFunctions(); }
+  function drawGraph() {
+    if (energyMode) {
+      // Force graph in the top 54%, energy bar graph underneath
+      const Hf = Math.round(gSize.h * 0.54);
+      gctx.clearRect(0, 0, gSize.w, gSize.h);
+      drawForce(Hf, false);
+      drawBars(Hf, gSize.h - Hf);
+      return;
+    }
+    view === 'force' ? drawForce() : drawFunctions();
+  }
 
-  function drawForce() {
-    const { w, h } = gSize, ctx = gctx;
+  // Energy bar graph: kinetic energy KE = 1/2 m v^2, spring potential energy U_s = 1/2 k x^2, and their total
+  function drawBars(top, H) {
+    const { w } = gSize, ctx = gctx, FD = css('--font-data');
+    const pad = { l: 42, r: 14, t: 24, b: 30 };
+    const pw = w - pad.l - pad.r, ph = H - pad.t - pad.b, y0 = top + pad.t + ph;
+    const free = !state.friction && !state.dragging;
+    const v = free ? state.v : vEst;
+    const KE = 0.5 * MASS * v * v, U = 0.5 * state.k * state.x * state.x, E = KE + U;
+    // Fixed scale for this k: the largest stored energy the spring can hold (at x = +/-0.50 m)
+    const eMax = [0.5, 1, 2, 2.5, 5, 10, 15, 20, 25, 30, 40, 50].find(s => s >= 0.5 * state.k * X_MAX * X_MAX) || 50;
+    const Y = e => y0 - Math.min(1, e / eMax) * ph;
+
+    // Grid and energy axis
+    const step = eMax / 5;
+    ctx.font = '12px ' + FD; ctx.fillStyle = C.axis; ctx.textAlign = 'right'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const e = i * step;
+      ctx.strokeStyle = C.line; ctx.globalAlpha = i === 0 ? 1 : 0.6;
+      ctx.beginPath(); ctx.moveTo(pad.l, Y(e)); ctx.lineTo(pad.l + pw, Y(e)); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.fillText(e.toFixed(step < 1 ? 1 : 0), pad.l - 6, Y(e) + 4);
+    }
+    ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(pad.l, top + pad.t); ctx.lineTo(pad.l, y0); ctx.stroke();
+    ctx.save(); ctx.font = '11.55px ' + FD; ctx.translate(11, top + pad.t + ph / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center'; ctx.fillText('Energy (J)', 0, 0); ctx.restore();
+
+    // Bars
+    // U_s uses the same pink tint as the shaded area under the force graph.
+    // Total is a stacked bar: U_s (pink) at the bottom with KE (light blue) on top, so its height stays
+    // constant while the split between the two colours shifts back and forth.
+    const KE_A = 0.85, U_A = 0.28;
+    const bars = [['KE', '', KE, C.ke], ['U', 's', U, C.energy], ['Total', '', E, C.ink]];
+    const bw = Math.min(64, pw / 5);
+    bars.forEach(([name, sub, val, col], i) => {
+      const bx = pad.l + pw * (2 * i + 1) / 6;
+      if (i === 0) { ctx.fillStyle = C.ke; ctx.globalAlpha = KE_A; ctx.fillRect(bx - bw / 2, Y(KE), bw, y0 - Y(KE)); }
+      if (i === 1) { ctx.fillStyle = C.energy; ctx.globalAlpha = U_A; ctx.fillRect(bx - bw / 2, Y(U), bw, y0 - Y(U)); }
+      if (i === 2) {
+        ctx.fillStyle = C.energy; ctx.globalAlpha = U_A; ctx.fillRect(bx - bw / 2, Y(U), bw, y0 - Y(U));
+        ctx.fillStyle = C.ke; ctx.globalAlpha = KE_A; ctx.fillRect(bx - bw / 2, Y(E), bw, Y(U) - Y(E));
+      }
+      ctx.globalAlpha = 1;
+      // value above the bar
+      ctx.font = '600 12px ' + FD; ctx.textAlign = 'center'; ctx.fillStyle = col;
+      ctx.fillText(val.toFixed(2) + ' J', bx, Math.max(top + 12, Y(val) - 6));
+      // name under the bar (U with a subscript s)
+      ctx.font = '600 13px ' + FD; ctx.fillStyle = col;
+      if (sub) {
+        const mw = ctx.measureText(name).width; ctx.font = '600 10px ' + FD; const sw = ctx.measureText(sub).width;
+        ctx.textAlign = 'left'; ctx.font = '600 13px ' + FD; ctx.fillText(name, bx - (mw + sw) / 2, y0 + 18);
+        ctx.font = '600 10px ' + FD; ctx.fillText(sub, bx - (mw + sw) / 2 + mw, y0 + 22);
+      } else ctx.fillText(name, bx, y0 + 18);
+    });
+  }
+
+  function drawForce(H = gSize.h, clear = true) {
+    const { w } = gSize, h = H, ctx = gctx;
     const pad = { l: 42, r: 14, t: 14, b: 34 };
     const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
     const yMax = niceMax(state.k * X_MAX);
     const X = x => pad.l + ((x + X_MAX) / (2 * X_MAX)) * pw;
     const Y = f => pad.t + ph - (f / yMax) * ph;
-    ctx.clearRect(0, 0, w, h);
+    if (clear) ctx.clearRect(0, 0, w, h);
     ctx.font = '12px ' + css('--font-data'); ctx.fillStyle = C.axis; ctx.lineWidth = 1;   // axis numbers: 12 px
 
     // Grid + ticks
@@ -524,7 +603,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     ctx.save(); ctx.translate(11, pad.t + ph / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('|Fs| (N)', 0, 0); ctx.restore();
 
     // Stored energy: shaded area under the line from 0 to x, U = ½ k x²
-    if (showEnergy && Math.abs(state.x) > 0.0005) {
+    if (energyOn() && Math.abs(state.x) > 0.0005) {
       const Fx = Math.abs(state.k * state.x);
       ctx.fillStyle = C.energy; ctx.globalAlpha = 0.28;
       ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(state.x), Y(Fx)); ctx.lineTo(X(state.x), Y(0)); ctx.closePath(); ctx.fill();
@@ -548,7 +627,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     ctx.setLineDash([3, 3]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
     ctx.beginPath();
     // The vertical guide is left out when the stored-energy triangle is shaded (its edge already marks x)
-    if (!showEnergy) { ctx.moveTo(X(state.x), Y(F)); ctx.lineTo(X(state.x), Y(0)); }
+    if (!energyOn()) { ctx.moveTo(X(state.x), Y(F)); ctx.lineTo(X(state.x), Y(0)); }
     ctx.moveTo(X(state.x), Y(F)); ctx.lineTo(pad.l, Y(F)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = C.force; ctx.strokeStyle = C.panel; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(X(state.x), Y(F), 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -560,7 +639,7 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     const U = 0.5 * state.k * x * x;
     document.getElementById('eq').innerHTML =
       `<span class="eqp">|F<sub>s</sub>| = k|x|</span> <span class="eqp">= (${state.k} N/m)(${Math.abs(x).toFixed(3)} m) = <span class="fres">${F.toFixed(2)} N</span></span>` +
-      `<span class="uline${showEnergy ? '' : ' off'}">U = <span class="frac" aria-label="one half"><span>1</span><span>2</span></span>kx² = ${U.toFixed(2)} J</span>`;
+      `<span class="uline${energyOn() ? '' : ' off'}">U = <span class="frac" aria-label="one half"><span>1</span><span>2</span></span>kx² = ${U.toFixed(2)} J</span>`;
     document.getElementById('kOut').textContent = state.k + ' N/m';
     document.getElementById('kDown').disabled = state.k <= +kInput.min;
     document.getElementById('kUp').disabled = state.k >= +kInput.max;
@@ -644,6 +723,22 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
     });
   });
 
+  // Entering Spring and Energy shows only the velocity vector; leaving restores the Spring and Force choice
+  let savedVecs = null;
+  document.addEventListener('springmode', e => {
+    const on = !!e.detail;
+    if (on && !energyMode) {
+      savedVecs = { ...state.vecs };
+      setVec('F', false); setVec('v', true); setVec('a', false);
+    } else if (!on && energyMode && savedVecs) {
+      Object.keys(savedVecs).forEach(key => setVec(key, savedVecs[key]));
+      savedVecs = null;
+    }
+    energyMode = on;
+    document.getElementById('pageSpring').classList.toggle('energy-mode', energyMode);
+    resize();
+  });
+
   // Graph tabs
   const tabForce = document.getElementById('tabForce'), tabPT = document.getElementById('tabPT');
   function setView(v) {
@@ -714,18 +809,21 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
 
   window.addEventListener('resize', resize);
   if (window.ResizeObserver) {
-    let lw = 0, lh = 0;
+    let lw = 0, lh = 0, gw = 0, gh = 0;
     // Resize on the next frame, outside the observer callback, so redrawing never re-triggers it
     let pending = false;
-    new ResizeObserver(() => {
+    const ro = new ResizeObserver(() => {
       if (pending) return;
       pending = true;
       requestAnimationFrame(() => {
         pending = false;
-        const r = work.getBoundingClientRect();
-        if (r.width !== lw || r.height !== lh) { lw = r.width; lh = r.height; resize(); }
+        const r = work.getBoundingClientRect(), g = graph.getBoundingClientRect();
+        if (r.width !== lw || r.height !== lh || g.width !== gw || g.height !== gh) {
+          lw = r.width; lh = r.height; gw = g.width; gh = g.height; resize();
+        }
       });
-    }).observe(work);
+    });
+    ro.observe(work); ro.observe(graph);
   }
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   mq.addEventListener?.('change', resize);
@@ -1057,20 +1155,24 @@ button:focus-visible { outline: 2px solid var(--disp); outline-offset: 2px; }
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', resize);
   new MutationObserver(resize).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-  // Page switching (#spring / #circle)
+  // Page switching (#spring / #energy / #circle). Spring and Energy is the spring page in energy mode.
   const navSpring = document.getElementById('navSpring'), navCircle = document.getElementById('navCircle');
+  const navEnergy = document.getElementById('navEnergy');
   function showPage(name) {
-    if (name !== 'circle') name = 'spring';
-    document.getElementById('pageSpring').hidden = name !== 'spring';
+    if (name !== 'circle' && name !== 'energy') name = 'spring';
+    document.getElementById('pageSpring').hidden = name === 'circle';
     document.getElementById('pageCircle').hidden = name !== 'circle';
     navSpring.setAttribute('aria-selected', String(name === 'spring'));
+    navEnergy.setAttribute('aria-selected', String(name === 'energy'));
     navCircle.setAttribute('aria-selected', String(name === 'circle'));
+    document.dispatchEvent(new CustomEvent('springmode', { detail: name === 'energy' }));
     setActive(name === 'circle');
     window.dispatchEvent(new Event('resize'));           // the visible page re-fits its canvases
   }
   const go = name => { showPage(name); try { location.hash = name; } catch (e) {} };
   navSpring.addEventListener('click', () => go('spring'));
   navCircle.addEventListener('click', () => go('circle'));
+  navEnergy.addEventListener('click', () => go('energy'));
   window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 
   kIn.value = 10;   // Circle and SHM starts at k = 10 N/m
