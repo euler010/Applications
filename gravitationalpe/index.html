@@ -96,7 +96,7 @@ label.chk input:checked::after{opacity:1}
 <script>
 {
 const G=6.674e-11,M1=5.0e24,M2=1.0e24,GMM=G*M1*M2,SC=1e6,WW=1000,R1=34,R2=22,RMIN=R1+R2+4,XMAX=1000;
-const INK='#e9ecf5',DIM='#9a9da6',GRID='rgba(233,236,245,.10)',CW='#ff5d73',CP='#5ee0a0';
+const INK='#e9ecf5',DIM='#9a9da6',GRID='rgba(233,236,245,.10)',CW='#ff5d73',CP='#5ee0a0',SHN='rgba(255,128,145,.32)',SHP='rgba(120,240,180,.32)';
 const $=id=>document.getElementById(id);
 const sc=$('sc'),gf=$('gf'),gw=$('gw');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -187,7 +187,6 @@ function drawScene(ts){
     arrow(ctx,X2-ux*a2,Y2-uy*a2,X2-ux*(a2+len),Y2-uy*(a2+len),'#6cc4ff',2.5);
   }
   edgeMarks(ctx,X1,Y1,Math.max(4,Rp1),X2,Y2,Math.max(4,Rp2),w,h);
-  if(phase==='done'){ctx.font='600 18px Inter,system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=INK;ctx.fillText('r → ∞',w/2,h/2)}
 }
 
 /* ---------- force graph ---------- */
@@ -206,7 +205,7 @@ function drawF(){
   for(let v=0;v<=xU+1e-9;v+=xs){const x=X(v*1e8/SC);ctx.strokeStyle=GRID;ctx.beginPath();ctx.moveTo(x,pt);ctx.lineTo(x,pt+ph);ctx.stroke();ctx.fillStyle=DIM;ctx.fillText(String(v),x,pt+ph+5)}
   ctx.fillStyle=DIM;ctx.fillText('x  (× 10⁸ m)',pl+pw/2,pt+ph+22);yTitle(ctx,'Fg  (× 10'+sup(e)+' N)',4,pt+ph/2);
   const r=rNow();
-  if(r0){const a=Math.max(RMIN,Math.min(r0,r)),b=Math.min(Math.max(r0,r),XMAX);if(b>a){ctx.beginPath();ctx.moveTo(X(a),Y(0));for(let i=0;i<=120;i++){const x=a+(b-a)*i/120;ctx.lineTo(X(x),Math.max(pt,Y(F(x))))}ctx.lineTo(X(b),Y(0));ctx.closePath();ctx.fillStyle=r>=r0?'rgba(255,93,115,.32)':'rgba(94,224,160,.32)';ctx.fill()}}
+  if(r0){const a=Math.max(RMIN,Math.min(r0,r)),b=Math.min(Math.max(r0,r),XMAX);if(b>a){ctx.beginPath();ctx.moveTo(X(a),Y(0));for(let i=0;i<=120;i++){const x=a+(b-a)*i/120;ctx.lineTo(X(x),Math.max(pt,Y(F(x))))}ctx.lineTo(X(b),Y(0));ctx.closePath();ctx.fillStyle=r>=r0?SHN:SHP;ctx.fill()}}
   ctx.strokeStyle=INK;ctx.lineWidth=2.2;ctx.beginPath();
   let on=false;for(let i=0;i<=400;i++){const x=RMIN+(XMAX-RMIN)*i/400;if(F(x)>top)continue;const y=Y(F(x));if(!on){const xe=Math.sqrt(GMM/top)/SC;ctx.moveTo(X(Math.max(x-(XMAX-RMIN)/400,xe)),pt);on=true}ctx.lineTo(X(x),y)}ctx.stroke();
   ctx.strokeStyle='rgba(233,236,245,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,pt+ph);ctx.lineTo(pl+pw,pt+ph);ctx.stroke();
@@ -237,7 +236,7 @@ function drawW(){
   ctx.fillStyle='#ffb3bf';ctx.font='600 13px Inter,system-ui';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('−Gm₁m₂/r₀  (r → ∞)',pl+pw-2,ly+4);
   const wv=Wg(rNow());let ty=Y(wv),clip=false;if(ty<pt){ty=pt;clip=true}
   const t=Math.min(ty,y0),hh=Math.abs(ty-y0);
-  if(hh>.5){const g=ctx.createLinearGradient(0,y0,0,ty);if(wv<0){g.addColorStop(0,'rgba(255,93,115,.55)');g.addColorStop(1,CW)}else{g.addColorStop(0,'rgba(94,224,160,.55)');g.addColorStop(1,CP)}ctx.fillStyle=g;ctx.fillRect(bx-bw/2,t,bw,hh);ctx.fillStyle='#fff';ctx.fillRect(bx-bw/2,ty-(wv<0?2:0),bw,2)}
+  if(hh>.5){ctx.fillStyle=wv<0?SHN:SHP;ctx.fillRect(bx-bw/2,t,bw,hh);ctx.fillStyle='#fff';ctx.fillRect(bx-bw/2,ty-(wv<0?2:0),bw,2)}
   ctx.strokeStyle='rgba(233,236,245,.6)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,pt+ph);ctx.moveTo(pl,y0);ctx.lineTo(pl+pw,y0);ctx.stroke();
   ctx.fillStyle=INK;ctx.font='600 13px Inter,system-ui';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('Wg',bx,y0-4);
   ctx.textAlign='left';ctx.textBaseline='middle';ctx.font='500 13px Inter,system-ui';ctx.fillStyle=wv<0?'#ffb3bf':'#b6f3d4';
