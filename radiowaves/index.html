@@ -418,8 +418,8 @@
       <button id="btnPlayPause" class="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300">
         <span id="playText">Pause</span>
       </button>
-      <button id="btnReset" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300">
-        Reset
+      <button id="btnDefault" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300" title="Return every setting to how the app starts">
+        Default
       </button>
       <button id="btnSound" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-300" title="Toggle audio representation">
         <span id="audioText">Audio Tone: Off</span>
@@ -2475,8 +2475,30 @@
         if (!STATE.running) muteAudio();
       });
 
-      // Reset
-      document.getElementById('btnReset').addEventListener('click', () => {
+      // Default
+      // Default: put the app back exactly as it is when the page first loads.
+      document.getElementById('btnDefault').addEventListener('click', () => {
+        // Controls (each goes through its normal handler, so labels and the phone's position update too)
+        if (STATE.txPowered) toggleTransmitterPower();           // transmitter off
+        if (!STATE.running) {                                     // running, not paused
+          STATE.running = true;
+          document.getElementById('playText').textContent = 'Pause';
+        }
+        if (STATE.audioEnabled) setAudioEnabled(false);           // Audio Tone: Off
+        setMode('sine');
+        setView('transverse');
+        ['slFreq', 'slAmp', 'slDist', 'slSpeed'].forEach(id => {
+          const el = document.getElementById(id);
+          el.value = el.defaultValue;                             // the value written in the page
+          el.dispatchEvent(new Event('input'));
+        });
+        ['chkEField', 'chkBField', 'chkFieldLines'].forEach(id => {
+          const el = document.getElementById(id);
+          el.checked = el.defaultChecked;
+          el.dispatchEvent(new Event('change'));
+        });
+
+        // Simulation state
         STATE.time = 0;
         STATE.history = [];
         phoneWaveHistory.fill(0);
@@ -2490,8 +2512,14 @@
         STATE.rxPowerDbm = -115;
         STATE.bitstreamTimer = 0;
         STATE.pulseTriggered = false; // a pending pulse would otherwise fire much later
+        STATE.rxPeak = 0;
+        STATE.rxFreq = 0;
+        STATE.rxIsVoice = false;
+        STATE.travelTime = 0;
+        if (STATE.wiggle) STATE.wiggle.active = false;
         resetVoice();
         updateBitstreamMock();
+        updateAntennaStatus();
       });
 
       // Audio Toggle
