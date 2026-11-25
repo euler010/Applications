@@ -194,7 +194,7 @@ function yTitle(ctx,t,x,y){ctx.save();ctx.translate(x,y);ctx.rotate(-Math.PI/2);
 function drawF(){
   const {ctx,w,h}=fit(gf);ctx.clearRect(0,0,w,h);
   const pl=58,pr=14,pt=12,pb=40,pw=w-pl-pr,ph=h-pt-pb,e=Math.floor(Math.log10(FTOP)),un=10**e;
-  const st0=niceStep(FTOP/un,4),base=Math.ceil(FTOP/un*1.02/st0)*st0*un,rr=rNow(),tgt=Math.max(base,F(rr)*1.12);
+  const st0=niceStep(FTOP/un,4),base=1.5e22,rr=rNow(),tgt=Math.max(base,F(rr)*1.12);
   if(!fTopCur)fTopCur=base;fTopCur+=(tgt-fTopCur)*.25;if(Math.abs(tgt-fTopCur)<tgt*.002)fTopCur=tgt;
   const top=fTopCur,topU=top/un,st=niceStep(topU,4);
   const X=x=>pl+x/XMAX*pw,Y=f=>pt+ph*(1-f/top);
