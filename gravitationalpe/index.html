@@ -210,11 +210,10 @@ function drawF(){
   let on=false;for(let i=0;i<=400;i++){const x=RMIN+(XMAX-RMIN)*i/400;if(F(x)>top)continue;const y=Y(F(x));if(!on){const xe=Math.sqrt(GMM/top)/SC;ctx.moveTo(X(Math.max(x-(XMAX-RMIN)/400,xe)),pt);on=true}ctx.lineTo(X(x),y)}ctx.stroke();
   ctx.strokeStyle='rgba(233,236,245,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(pl,pt);ctx.lineTo(pl,pt+ph);ctx.lineTo(pl+pw,pt+ph);ctx.stroke();
   if(r0&&r0<=XMAX){const x=X(r0);ctx.strokeStyle='rgba(255,178,74,.7)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,pt);ctx.lineTo(x,pt+ph);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#ffb24a';ctx.font='600 13px Inter,system-ui';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('r₀',x+4,pt+2)}
-  const onS=r<=XMAX,hi=F(r)>top,cx=onS?X(r):X(XMAX),cy=Math.max(pt,Y(F(r)));
+  const onS=r<=XMAX,hi=F(r)>top,cx=X(Math.min(r,XMAX*1.2)),cy=Math.max(pt,Y(F(r)));
   if(onS&&!hi){ctx.strokeStyle='rgba(108,196,255,.55)';ctx.setLineDash([3,4]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(cx,pt+ph);ctx.lineTo(cx,cy);ctx.lineTo(pl,cy);ctx.stroke();ctx.setLineDash([])}
   ctx.fillStyle='rgba(108,196,255,.3)';ctx.beginPath();ctx.arc(cx,cy,11,0,7);ctx.fill();
   ctx.fillStyle='#6cc4ff';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fill();ctx.stroke();
-  if(!onS){ctx.fillStyle=INK;ctx.font='600 13px Inter,system-ui';ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText(phase==='done'?'r → ∞, Fg → 0':'off scale →',cx-10,cy-12)}
 }
 
 /* ---------- work bar graph ---------- */
