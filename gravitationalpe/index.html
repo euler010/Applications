@@ -260,8 +260,8 @@ bR.onclick=()=>{anim=null;view.z=1;if(saved){Object.assign(p1,s1);Object.assign(
 function place(){const a=anim,f1=M2/(M1+M2),f2=M1/(M1+M2);p1.x=a.cm.x-a.u.x*a.r*f1;p1.y=a.cm.y-a.u.y*a.r*f1;p2.x=a.cm.x+a.u.x*a.r*f2;p2.y=a.cm.y+a.u.y*a.r*f2}
 function offScreen(p,R){const z=view.z,W=WW*k,H=Hw*k,X=W/2+(p.x-view.x)*k*z,Y=H/2+(p.y-view.y)*k*z,Rp=Math.max(4,R*k*z);return X<-Rp||X>W+Rp||Y<-Rp||Y>H+Rp}
 function stepAnim(dt){const a=anim;a.t+=dt;let rate=0.45+0.4*a.t;
-  if(a.off==null&&a.t>2&&offScreen(p1,R1)&&offScreen(p2,R2))a.off=a.t;
-  if(a.off!=null)rate=Math.max(rate,12*Math.min(1,(a.t-a.off)/0.15));
+  if(a.off==null&&a.t>2&&offScreen(p1,R1)&&offScreen(p2,R2)){a.off=a.t;a.offRate=Math.log(3000*r0/a.r)/1.0}
+  if(a.off!=null)rate=a.offRate;
   a.r*=Math.exp(rate*dt);if(a.r>=3000*r0){phase='done';ui()}place();
   if(a.t<=2){const b=Math.min(1,a.t/0.8),e=b*b*(3-2*b),mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
     view.x=a.v0.x+(mx-a.v0.x)*e;view.y=a.v0.y+(my-a.v0.y)*e;
