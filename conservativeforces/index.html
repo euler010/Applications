@@ -555,7 +555,8 @@ function GravityScene() {
   const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
+    // instructions show only before the first block moves (not for blocks B and C)
+    if (!done && (active.path.length > 1 || active.idx > 0)) { HUD.msg = null; HUD.banner = null; return; }
     if (done) msg = null;
     else if (active.idx === 0) msg = "Drag block A from the table to the dashed square on the floor.";
     else if (active.idx === 1) msg = "Now drag block B along a different path until it lands on block A.";
@@ -595,8 +596,16 @@ function GravityScene() {
 
     text("Total Work Done by Gravity", P.x + P.w / 2, P.y + 30, 18, "#0f172a", "center", 700);
     // W_g (J) subtitle
-    subText("W", "g", P.x + P.w / 2 - 30, P.y + 54, 15, "#475569");
-    text("(J)", P.x + P.w / 2 + 4, P.y + 54, 15, "#475569", "left", 600);
+    { // "W_g (J)" centered, with one normal space before (J)
+      ctx.save();
+      ctx.font = `italic 600 15px Inter, system-ui, sans-serif`; const ww = ctx.measureText("W").width;
+      ctx.font = `italic 600 12px Inter, system-ui, sans-serif`; const sw = ctx.measureText("g").width;
+      ctx.font = `600 15px Inter, system-ui, sans-serif`; const jw = ctx.measureText("(J)").width, sp = ctx.measureText(" ").width;
+      ctx.restore();
+      const x0 = P.x + P.w / 2 - (ww + 1 + sw + sp + jw) / 2;
+      subText("W", "g", x0, P.y + 54, 15, "#475569");
+      text("(J)", x0 + ww + 1 + sw + sp, P.y + 54, 15, "#475569", "left", 600);
+    }
 
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
@@ -963,7 +972,8 @@ function FrictionScene() {
   const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
+    // instructions show only before the first block moves (not for blocks B and C)
+    if (!done && (active.path.length > 1 || active.idx > 0)) { HUD.msg = null; HUD.banner = null; return; }
     if (done) msg = null;
     else if (active.idx === 0) msg = "Slide block A across the floor to the dashed square.";
     else if (active.idx === 1) msg = "Now drag block B along a different path until it lands on block A.";
@@ -1003,8 +1013,16 @@ function FrictionScene() {
 
     text("Total Work Done by Friction", P.x + P.w / 2, P.y + 30, 18, "#0f172a", "center", 700);
     // W_g (J) subtitle
-    subText("W", "f", P.x + P.w / 2 - 30, P.y + 54, 15, "#475569");
-    text("(J)", P.x + P.w / 2 + 4, P.y + 54, 15, "#475569", "left", 600);
+    { // "W_f (J)" centered, with one normal space before (J)
+      ctx.save();
+      ctx.font = `italic 600 15px Inter, system-ui, sans-serif`; const ww = ctx.measureText("W").width;
+      ctx.font = `italic 600 12px Inter, system-ui, sans-serif`; const sw = ctx.measureText("f").width;
+      ctx.font = `600 15px Inter, system-ui, sans-serif`; const jw = ctx.measureText("(J)").width, sp = ctx.measureText(" ").width;
+      ctx.restore();
+      const x0 = P.x + P.w / 2 - (ww + 1 + sw + sp + jw) / 2;
+      subText("W", "f", x0, P.y + 54, 15, "#475569");
+      text("(J)", x0 + ww + 1 + sw + sp, P.y + 54, 15, "#475569", "left", 600);
+    }
 
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
@@ -1425,7 +1443,8 @@ function TensionScene() {
   const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
+    // instructions show only before the first block moves (not for blocks B and C)
+    if (!done && (active.path.length > 1 || active.idx > 0)) { HUD.msg = null; HUD.banner = null; return; }
     if (done) msg = null;
     else if (active.idx === 0) msg = "Grab the loop on block A\u2019s handle and pull the block to the dashed square.";
     else if (active.idx === 1) msg = "Now pull block B along a different path until it lands on block A.";
@@ -1465,8 +1484,16 @@ function TensionScene() {
 
     text("Total Work Done by Tension", P.x + P.w / 2, P.y + 30, 18, "#0f172a", "center", 700);
     // W_g (J) subtitle
-    subText("W", "T", P.x + P.w / 2 - 30, P.y + 54, 15, "#475569");
-    text("(J)", P.x + P.w / 2 + 4, P.y + 54, 15, "#475569", "left", 600);
+    { // "W_T (J)" centered, with one normal space before (J)
+      ctx.save();
+      ctx.font = `italic 600 15px Inter, system-ui, sans-serif`; const ww = ctx.measureText("W").width;
+      ctx.font = `italic 600 12px Inter, system-ui, sans-serif`; const sw = ctx.measureText("T").width;
+      ctx.font = `600 15px Inter, system-ui, sans-serif`; const jw = ctx.measureText("(J)").width, sp = ctx.measureText(" ").width;
+      ctx.restore();
+      const x0 = P.x + P.w / 2 - (ww + 1 + sw + sp + jw) / 2;
+      subText("W", "T", x0, P.y + 54, 15, "#475569");
+      text("(J)", x0 + ww + 1 + sw + sp, P.y + 54, 15, "#475569", "left", 600);
+    }
 
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
@@ -1963,7 +1990,8 @@ function SpringScene() {
   const STATUS_CX = (WALL + 10 + 382 + ROOM.right - 48) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
+    // instructions show only before the first block moves (not for blocks B and C)
+    if (!done && (active.path.length > 1 || active.idx > 0)) { HUD.msg = null; HUD.banner = null; return; }
     if (done) msg = null;
     else if (active.idx === 0) msg = "Drag block A to the dashed square \u2014 or pull it and let go.";
     else if (active.idx === 1) msg = "Now get block B to the dashed square a different way.";
@@ -2003,8 +2031,16 @@ function SpringScene() {
 
     text("Total Work Done by the Spring", P.x + P.w / 2, P.y + 30, 18, "#0f172a", "center", 700);
     // W_g (J) subtitle
-    subText("W", "s", P.x + P.w / 2 - 30, P.y + 54, 15, "#475569");
-    text("(J)", P.x + P.w / 2 + 4, P.y + 54, 15, "#475569", "left", 600);
+    { // "W_s (J)" centered, with one normal space before (J)
+      ctx.save();
+      ctx.font = `italic 600 15px Inter, system-ui, sans-serif`; const ww = ctx.measureText("W").width;
+      ctx.font = `italic 600 12px Inter, system-ui, sans-serif`; const sw = ctx.measureText("s").width;
+      ctx.font = `600 15px Inter, system-ui, sans-serif`; const jw = ctx.measureText("(J)").width, sp = ctx.measureText(" ").width;
+      ctx.restore();
+      const x0 = P.x + P.w / 2 - (ww + 1 + sw + sp + jw) / 2;
+      subText("W", "s", x0, P.y + 54, 15, "#475569");
+      text("(J)", x0 + ww + 1 + sw + sp, P.y + 54, 15, "#475569", "left", 600);
+    }
 
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
