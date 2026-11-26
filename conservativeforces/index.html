@@ -90,7 +90,7 @@
 
 /* =====================================================================
    Canvas + resolution-independent scaling
-   Everything is drawn in a fixed logical space (1600 x 900) and scaled
+   Everything is drawn in a fixed logical space (1600 x 748) and scaled
    uniformly to fit whatever screen the app is shown on.
    ===================================================================== */
 const LW = 1600, LH = 748;
@@ -151,6 +151,18 @@ function resize() {
 window.addEventListener("resize", resize);
 window.__layout = () => ({ regions, PHONE, PORTRAIT });   // read-only, for layout testing
 window.addEventListener("orientationchange", () => setTimeout(resize, 150));
+// re-measure whenever the drawing area changes size for any reason (e.g. the Inter font finishing loading
+// and changing the title bar's height), and when the screen's sharpness changes (window moved to another monitor)
+let resizeQueued = false;
+function queueResize() { if (!resizeQueued) { resizeQueued = true; requestAnimationFrame(() => { resizeQueued = false; resize(); }); } }
+if (window.ResizeObserver) new ResizeObserver(queueResize).observe(stage);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(queueResize);
+(function watchDpr() {
+  if (!window.matchMedia) return;
+  const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+  const onChange = () => { mq.removeEventListener ? mq.removeEventListener("change", onChange) : mq.removeListener(onChange); queueResize(); watchDpr(); };
+  mq.addEventListener ? mq.addEventListener("change", onChange) : mq.addListener(onChange);
+})();
 
 function regionAt(px, py) {
   return regions.find(r => px >= r.dx && px <= r.dx + r.sw * r.s && py >= r.dy && py <= r.dy + r.sh * r.s) || null;
@@ -310,6 +322,8 @@ function smoothPath(p) {
   }
   return a;
 }
+// round tick spacing for a graph axis covering about `range` joules (at most ~7 ticks)
+const niceStep = range => [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find(st => range / st <= 7) || 2000;
 const STATE_COL = s => s > 0 ? "#16a34a" : s < 0 ? "#dc2626" : "#6b7280";
 const STATE_WORD = s => s > 0 ? "positive" : s < 0 ? "negative" : "≈ zero";
 const deg5 = cos => Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI / 5) * 5;
@@ -733,7 +747,7 @@ function GravityScene() {
     text("Distance traveled", P.x + 200, ty, 14, "#475569", "center", 700);
     subText("W", "g", P.x + 352, ty, 14, "#475569", "center");
     ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 15); ctx.lineTo(P.x + P.w - 24, ty + 15); ctx.stroke();
     for (let i = 0; i < 3; i++) {
       const t = trials[i];
       const ry = ty + 38 + i * 32;
@@ -791,7 +805,7 @@ function FrictionScene() {
   let trials, active, dragging, grab, vel, lastMove, done;
   const ds = new DispSmoother();
 
-  let axisMin = -30;
+  let axisMin = -30, axisT = performance.now();
   let bannerHidden = false, bannerRect = null;
   // after the activity ends, a click anywhere outside the green banner closes it
   function outsideClick(p) {
@@ -1117,16 +1131,19 @@ function FrictionScene() {
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
     const gTop = P.y + 84, gBot = P.y + 420;
-    // vertical axis rescales so the most negative bar always fits
+    // vertical axis rescales smoothly so the most negative bar always fits
     const worst = Math.min(0, ...trials.map(t => t.work));
     const need = Math.max(30, -worst * 1.12);
-    const step = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find(st => need / st <= 7) || 2000;
-    const target = -Math.ceil(need / step) * step;
-    axisMin += (target - axisMin) * 0.2;
-    if (Math.abs(target - axisMin) < 0.05) axisMin = target;
-    const vMax = step, vMin = axisMin;
+    const target = -Math.ceil(need / niceStep(need)) * niceStep(need);
+    if (DRAW_PASS === 0) {   // same speed at any frame rate, and only once per frame on phones
+      const now = performance.now(), dt = Math.min(0.1, (now - axisT) / 1000); axisT = now;
+      axisMin += (target - axisMin) * (1 - Math.exp(-dt * 13));
+      if (Math.abs(target - axisMin) < 0.05) axisMin = target;
+    }
+    const step = niceStep(-axisMin);
+    const vMin = axisMin, vMax = -axisMin * 0.14;   // headroom above zero grows with the axis (no jumps)
     const yOf = v => gTop + (vMax - v) / (vMax - vMin) * (gBot - gTop);
-    for (let v = vMax; v >= vMin - 1e-6; v -= step) {
+    for (let v = Math.floor(vMax / step + 1e-6) * step; v >= vMin - 1e-6; v -= step) {
       const y = yOf(v);
       ctx.strokeStyle = v === 0 ? "#0f172a" : "#e2e8f0";
       ctx.lineWidth = v === 0 ? 2.5 : 1;
@@ -1163,7 +1180,7 @@ function FrictionScene() {
     text("Distance traveled", P.x + 200, ty, 14, "#475569", "center", 700);
     subText("W", "f", P.x + 352, ty, 14, "#475569", "center");
     ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 15); ctx.lineTo(P.x + P.w - 24, ty + 15); ctx.stroke();
     for (let i = 0; i < 3; i++) {
       const t = trials[i];
       const ry = ty + 38 + i * 32;
@@ -1224,7 +1241,7 @@ function TensionScene() {
   let trials, active, dragging, grab, vel, lastMove, done;
   const ds = new DispSmoother();
 
-  let axisMax = 30;
+  let axisMax = 30, axisT = performance.now();
   let bannerHidden = false, bannerRect = null;
   // after the activity ends, a click anywhere outside the green banner closes it
   function outsideClick(p) {
@@ -1594,14 +1611,17 @@ function TensionScene() {
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
     const gTop = P.y + 84, gBot = P.y + 420;
-    // vertical axis rescales so the tallest bar always fits
+    // vertical axis rescales smoothly so the tallest bar always fits
     const best = Math.max(0, ...trials.map(t => t.work));
     const need = Math.max(30, best * 1.12);
-    const step = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find(st => need / st <= 7) || 2000;
-    const target = Math.ceil(need / step) * step;
-    axisMax += (target - axisMax) * 0.2;
-    if (Math.abs(target - axisMax) < 0.05) axisMax = target;
-    const vMax = axisMax, vMin = -step;
+    const target = Math.ceil(need / niceStep(need)) * niceStep(need);
+    if (DRAW_PASS === 0) {   // same speed at any frame rate, and only once per frame on phones
+      const now = performance.now(), dt = Math.min(0.1, (now - axisT) / 1000); axisT = now;
+      axisMax += (target - axisMax) * (1 - Math.exp(-dt * 13));
+      if (Math.abs(target - axisMax) < 0.05) axisMax = target;
+    }
+    const step = niceStep(axisMax);
+    const vMax = axisMax, vMin = -axisMax * 0.14;   // room below zero grows with the axis (no jumps)
     const yOf = v => gTop + (vMax - v) / (vMax - vMin) * (gBot - gTop);
     for (let v = Math.floor(vMax / step + 1e-6) * step; v >= vMin - 1e-6; v -= step) {
       const y = yOf(v);
@@ -1640,7 +1660,7 @@ function TensionScene() {
     text("Distance traveled", P.x + 200, ty, 14, "#475569", "center", 700);
     subText("W", "T", P.x + 352, ty, 14, "#475569", "center");
     ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 15); ctx.lineTo(P.x + P.w - 24, ty + 15); ctx.stroke();
     for (let i = 0; i < 3; i++) {
       const t = trials[i];
       const ry = ty + 38 + i * 32;
@@ -1708,7 +1728,7 @@ function SpringScene() {
     const r = bannerRect;
     if (!p || p.x < r.x || p.x > r.x + r.w || p.y < r.y || p.y > r.y + r.h) bannerHidden = true;
   }
-  let axisMin = -30;
+  let axisMin = -30, axisT = performance.now();
   function reset() {
     axisMin = -30;
     bannerHidden = false; bannerRect = null;
@@ -1787,6 +1807,9 @@ function SpringScene() {
     const a = active;
     if (!a || done) return;
     if (Math.abs(a.x - a.lastTx) > 0.5) { a.tt += frameDt; a.trace.push({ x: a.x, t: a.tt }); a.lastTx = a.x; }
+    // a block left oscillating would add ~60 points a second forever: thin the older points (drawing only)
+    if (a.trace.length > 900) a.trace = a.trace.filter((p, k) => k % 2 === 0 || k === a.trace.length - 1);
+    if (a.path.length > 1200) a.path = [a.path[0], ...a.path.slice(-600)];
   }
 
   // tightly stacked lanes above the scene: A at the bottom, then B, then C
@@ -2148,16 +2171,19 @@ function SpringScene() {
     // axis
     const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
     const gTop = P.y + 84, gBot = P.y + 420;
-    // vertical axis rescales so the most negative bar always fits
+    // vertical axis rescales smoothly so the most negative bar always fits
     const worst = Math.min(0, ...trials.map(t => t.work));
     const need = Math.max(30, -worst * 1.12);
-    const step = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find(st => need / st <= 7) || 2000;
-    const target = -Math.ceil(need / step) * step;
-    axisMin += (target - axisMin) * 0.2;
-    if (Math.abs(target - axisMin) < 0.05) axisMin = target;
-    const vMax = step, vMin = axisMin;
+    const target = -Math.ceil(need / niceStep(need)) * niceStep(need);
+    if (DRAW_PASS === 0) {   // same speed at any frame rate, and only once per frame on phones
+      const now = performance.now(), dt = Math.min(0.1, (now - axisT) / 1000); axisT = now;
+      axisMin += (target - axisMin) * (1 - Math.exp(-dt * 13));
+      if (Math.abs(target - axisMin) < 0.05) axisMin = target;
+    }
+    const step = niceStep(-axisMin);
+    const vMin = axisMin, vMax = -axisMin * 0.14;   // headroom above zero grows with the axis (no jumps)
     const yOf = v => gTop + (vMax - v) / (vMax - vMin) * (gBot - gTop);
-    for (let v = vMax; v >= vMin - 1e-6; v -= step) {
+    for (let v = Math.floor(vMax / step + 1e-6) * step; v >= vMin - 1e-6; v -= step) {
       const y = yOf(v);
       ctx.strokeStyle = v === 0 ? "#0f172a" : "#e2e8f0";
       ctx.lineWidth = v === 0 ? 2.5 : 1;
@@ -2194,7 +2220,7 @@ function SpringScene() {
     text("Distance traveled", P.x + 200, ty, 14, "#475569", "center", 700);
     subText("W", "s", P.x + 352, ty, 14, "#475569", "center");
     ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 15); ctx.lineTo(P.x + P.w - 24, ty + 15); ctx.stroke();
     for (let i = 0; i < 3; i++) {
       const t = trials[i];
       const ry = ty + 38 + i * 32;
@@ -2337,6 +2363,7 @@ let current = null;
 const instances = {};
 
 function selectTab(id) {
+  endDrag();   // finish any drag on the old tab before switching
   const def = SCENES.find(s => s.id === id);
   if (!instances[id]) instances[id] = def.make();
   current = instances[id];
@@ -2348,10 +2375,18 @@ SCENES.forEach(s => {
   b.onclick = () => selectTab(s.id);
   tabsEl.appendChild(b);
 });
-document.getElementById("resetBtn").onclick = () => current && current.reset();
+document.getElementById("resetBtn").onclick = () => { endDrag(); if (current) current.reset(); };
 
 /* ---------- pointer input ---------- */
 let pid = null, dragReg = null;
+// end the current drag cleanly (also used when the browser takes the pointer away mid-drag)
+function endDrag() {
+  if (pid === null) return;
+  const id = pid;
+  pid = null; dragReg = null; cv.style.cursor = "default";
+  if (current) current.up();
+  try { if (cv.hasPointerCapture && cv.hasPointerCapture(id)) cv.releasePointerCapture(id); } catch (err) {}
+}
 document.addEventListener("pointerdown", e => {
   if (e.target === cv) return;
   if (e.target.closest && e.target.closest("#hudInfo")) return;
@@ -2360,6 +2395,7 @@ document.addEventListener("pointerdown", e => {
 });
 document.getElementById("hudInfo").addEventListener("pointerdown", e => { infoOpen = !infoOpen; if (current) current.outsideClick(null); });
 cv.addEventListener("pointerdown", e => {
+  if (pid !== null) return;   // a second finger can't take over a drag that's already happening
   const p = toLogical(e);
   if (current) current.outsideClick(p);
   if (!PHONE && onInfo(p)) { infoOpen = !infoOpen; return; }
@@ -2375,12 +2411,12 @@ cv.addEventListener("pointermove", e => {
   }
 });
 function release(e) {
-  if (pid !== null && e.pointerId === pid) {
-    current.up(); pid = null; cv.style.cursor = "default";
-  }
+  if (pid !== null && e.pointerId === pid) endDrag();
 }
 cv.addEventListener("pointerup", release);
 cv.addEventListener("pointercancel", release);
+cv.addEventListener("lostpointercapture", release);   // e.g. a SmartBoard gesture or a pop-up interrupts the drag
+window.addEventListener("blur", endDrag);              // switching windows mid-drag
 
 /* ---------- render loop ---------- */
 function frame() {
