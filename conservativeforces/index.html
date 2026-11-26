@@ -1459,7 +1459,7 @@ function TensionScene() {
    ===================================================================== */
 function SpringScene() {
   // --- Room geometry (logical px) — side view, spring attached to the left wall ---
-  const ROOM = { left: 20, top: 20, right: 1140, floor: 628, bottom: 728 };
+  const ROOM = { left: 20, top: 20, right: 1140, floor: 528, bottom: 728 };   // taller floor: spring sits nearer the middle
   const PPM = 200;                       // pixels per meter
   const MASS = 2.0, K = 20;              // kg, N/m
   const S = 80, HALF = S / 2;            // block size
@@ -1567,7 +1567,7 @@ function SpringScene() {
   }
 
   // tightly stacked lanes above the scene: A at the bottom, then B, then C
-  const LANE = { bottom: 395, h: 64, gap: 6, x1: BOUNDS.x1 - HALF + 10, x2: BOUNDS.x2 + HALF - 10 };
+  const LANE = { bottom: ROOM.floor - 168, h: 60, gap: 6, x1: BOUNDS.x1 - HALF + 10, x2: BOUNDS.x2 + HALF - 10 };
   const laneBottom = i => LANE.bottom - i * (LANE.h + LANE.gap);
   function drawTraces() {
     // reference lines for equilibrium and the final position run up through the lanes
@@ -1693,20 +1693,22 @@ function SpringScene() {
     // equilibrium marker and the 1.0 m compression
     ctx.save();
     ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
-    ctx.beginPath(); ctx.moveTo(X0, ROOM.floor); ctx.lineTo(X0, ROOM.floor - 200); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X0, ROOM.floor); ctx.lineTo(X0, ROOM.floor - 138); ctx.stroke();
     ctx.restore();
-    text("Equilibrium (x = 0)", X0, ROOM.floor - 214, 14, "#64748b", "center", 600);
-    const dy = ROOM.floor - 150;
-    arrow((X0 + TARGET.x) / 2, dy, TARGET.x + 3, dy, "#64748b", 2, 10);
-    arrow((X0 + TARGET.x) / 2, dy, X0 - 3, dy, "#64748b", 2, 10);
-    ctx.save(); ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
-    ctx.beginPath(); ctx.moveTo(TARGET.x, ROOM.floor - S - 4); ctx.lineTo(TARGET.x, dy - 14); ctx.stroke(); ctx.restore();
-    ctx.save(); ctx.fillStyle = "#fff"; ctx.fillRect((X0 + TARGET.x) / 2 - 30, dy - 12, 60, 24); ctx.restore();
+    text("Equilibrium (x = 0)", X0, ROOM.floor - 150, 14, "#64748b", "center", 600);
+    // 1.55 m dimension drawn on the floor below the blocks
+    const dy = ROOM.floor + 34;
+    ctx.save(); ctx.strokeStyle = "#64748b"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+    for (const x of [TARGET.x, X0]) { ctx.beginPath(); ctx.moveTo(x, ROOM.floor + 4); ctx.lineTo(x, dy + 12); ctx.stroke(); }
+    ctx.restore();
+    arrow((X0 + TARGET.x) / 2, dy, TARGET.x + 3, dy, "#475569", 2, 10);
+    arrow((X0 + TARGET.x) / 2, dy, X0 - 3, dy, "#475569", 2, 10);
+    ctx.save(); ctx.fillStyle = "#fff"; roundRect((X0 + TARGET.x) / 2 - 32, dy - 12, 64, 24, 6); ctx.fill(); ctx.restore();
     text(D.toFixed(2) + " m", (X0 + TARGET.x) / 2, dy, 14, "#475569", "center", 600);
 
     // given values
     {
-      const cx = (ROOM.left + ROOM.right) / 2, cy = (ROOM.floor + ROOM.bottom) / 2;
+      const cx = (ROOM.left + ROOM.right) / 2, cy = ROOM.floor + 120;
       ctx.save(); ctx.fillStyle = "rgba(255,255,255,.92)"; roundRect(cx - 160, cy - 20, 320, 40, 10); ctx.fill(); ctx.restore();
       text(`Each block: m = ${MASS.toFixed(1)} kg     k = ${K} N/m`, cx, cy, 16, "#334155", "center", 600);
     }
