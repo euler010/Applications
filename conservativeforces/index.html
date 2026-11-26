@@ -14,12 +14,13 @@
   /* --u: title-bar scale. 1 on laptops/desktops; grows on big screens (reference 1600 × 900); never below 1 */
   :root { --u: 1; }
   header {
-    display: flex; align-items: center; gap: 1.2vmin; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
     padding: 1.1vmin 2vmin; background: #1e293b; color: #fff;
     font-size: calc(16px * var(--u));
   }
-  header h1 { font-size: calc(18px * var(--u)); margin: 0 1.5vmin 0 0; font-weight: 600; letter-spacing: .02em; }
-  .tabs { display: flex; gap: .8vmin; flex: 1; }
+  header h1 { font-size: calc(18px * var(--u)); margin: 0 calc(50px * var(--u)) 0 0; font-weight: 600; letter-spacing: .02em; }
+  .tabs { display: flex; gap: .8vmin; flex: none; }
+  .reset { margin-left: calc(50px * var(--u)); }   /* same gap after the last tab as after the title */
   .tab, .reset {
     font: inherit; font-size: calc(16px * var(--u)); border: none; cursor: pointer; border-radius: .5em;
     padding: .45em 1.1em; transition: background .15s;
@@ -43,6 +44,7 @@
   body.phone .tabs::-webkit-scrollbar { height: 6px; }
   body.phone .tabs::-webkit-scrollbar-track { background: #1e293b; }
   body.phone .tabs::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  body.phone .reset { margin-left: 0; }
   body.phone .tab, body.phone .reset { min-height: 44px; font-size: 15px; white-space: nowrap; flex: none; padding: 0 14px; }
   body.phone #hud { display: flex; gap: 8px; align-items: stretch; padding: 6px 8px; background: #e9edf2; }
   body.phone.portrait #hud { height: 104px; }
