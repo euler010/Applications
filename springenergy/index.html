@@ -370,7 +370,7 @@
       // value
       ctx.fillStyle = '#1d2433'; ctx.font = `600 ${F * 0.85 + PT2}px Inter,sans-serif`; ctx.textAlign = 'center';
       ctx.textBaseline = it.val >= 0 ? 'bottom' : 'top';
-      ctx.fillText(`${it.val.toFixed(2)} J`, cx, it.val >= 0 ? yTop - 4 : yTop + h + 4);
+      ctx.fillText(`${(Math.abs(it.val) < 0.05 ? 0 : it.val).toFixed(1)} J`, cx, it.val >= 0 ? yTop - 4 : yTop + h + 4);
       // label with subscript
       drawSubLabel(ctx, it.main, it.sub, cx, B + F * 1.0, F * 1.25, it.col);
     });
