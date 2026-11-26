@@ -1843,7 +1843,7 @@ function SpringScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
-    const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
+    const x = WALL + 10, y = ROOM.top + 8, w = 382, h = 74;   // just right of the wall
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
     roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
@@ -1861,7 +1861,7 @@ function SpringScene() {
   }
 
   // center of the space to the right of the work readout
-  const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
+  const STATUS_CX = (WALL + 10 + 382 + ROOM.right - 48) / 2;
   function drawStatus() {
     let msg;
     if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
@@ -1882,7 +1882,7 @@ function SpringScene() {
       text(msg, cx, cy, 16, "#475569", "center", 600);
     } else {
       if (bannerHidden) return;
-      const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
+      const cx = STATUS_CX, w = 616, h = 86, y = ROOM.top + 8;
       bannerRect = { x: cx - w / 2, y, w, h };
       ctx.save();
       ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
