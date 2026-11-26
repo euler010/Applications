@@ -1247,17 +1247,21 @@ function TensionScene() {
     const k = HALF / Math.max(Math.abs(ux), Math.abs(uy));      // where the handle leaves the block's edge
     const ax = t.x + ux * k, ay = t.y + uy * k;
     const ex = t.hx - ux * LOOP_R, ey = t.hy - uy * LOOP_R;     // where it meets the loop
+    const ropePath = () => {
+      ctx.beginPath(); ctx.moveTo(ax, ay);
+      if (d < ROPE - 1) {   // slack handle: let it bow a little
+        const sag = (ROPE - d) * 0.45, mx = (ax + ex) / 2 - uy * sag, my = (ay + ey) / 2 + ux * sag;
+        ctx.quadraticCurveTo(mx, my, ex, ey);
+      } else ctx.lineTo(ex, ey);
+    };
+    const loopPath = () => { ctx.beginPath(); ctx.arc(t.hx, t.hy, LOOP_R, 0, Math.PI * 2); };
     ctx.save();
-    ctx.strokeStyle = "#475569"; ctx.lineWidth = 3.5; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(ax, ay);
-    if (d < ROPE - 1) {   // slack handle: let it bow a little
-      const sag = (ROPE - d) * 0.45, mx = (ax + ex) / 2 - uy * sag, my = (ay + ey) / 2 + ux * sag;
-      ctx.quadraticCurveTo(mx, my, ex, ey);
-    } else ctx.lineTo(ex, ey);
-    ctx.stroke();
-    ctx.fillStyle = isActive ? "#ffffff" : "rgba(255,255,255,.8)";
-    ctx.lineWidth = 3.5;
-    ctx.beginPath(); ctx.arc(t.hx, t.hy, LOOP_R, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.lineCap = "round";
+    // faint edge in the block's color, then the light fill color on top
+    ctx.strokeStyle = COLORS[t.idx]; ctx.globalAlpha = 0.45; ctx.lineWidth = 6.5;
+    ropePath(); ctx.stroke(); loopPath(); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.strokeStyle = LIGHT[t.idx]; ctx.lineWidth = 4;
+    ropePath(); ctx.stroke(); loopPath(); ctx.stroke();
     if (isActive && !dragging) {   // gentle hint ring on the loop to grab
       ctx.strokeStyle = "rgba(71,85,105,.35)"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(t.hx, t.hy, LOOP_R + 7, 0, Math.PI * 2); ctx.stroke();
@@ -1270,28 +1274,30 @@ function TensionScene() {
     readout = null;
     if (!active) return;
     ctx.fillStyle = "#111827"; ctx.beginPath(); ctx.arc(active.x, active.y, 5, 0, Math.PI * 2); ctx.fill();
+    if (!dragging) return;
 
+    const rx = active.hx - active.x, ry = active.hy - active.y, rl = Math.hypot(rx, ry) || 1;
+    if (rl < ROPE - 1) return;                       // slack handle: no tension
+    const ux = rx / rl, uy = ry / rl;                // along the handle
+    const nx = -uy, ny = ux;
+
+    // tension: from the center dot to just short of the loop
+    const tl = rl - LOOP_R - 5;
+    arrow(active.x, active.y, active.x + ux * tl, active.y + uy * tl, "#111827", 6, 20);
+    let lx = active.x + ux * (tl - 14) + nx * 20, ly = active.y + uy * (tl - 14) + ny * 20;
+    ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 14, ly - 15, 28, 30, 6); ctx.fill(); ctx.restore();
+    text("T", lx, ly, 16, "#111827", "center", 700);
+
+    // displacement: colinear with T, tail at the far edge of the loop
     const now = performance.now();
     const sp = Math.hypot(vel.x, vel.y);
-    if (dragging && now - lastMove < 140 && sp > 0.4) {
-      const vx = vel.x / sp, vy = vel.y / sp;
-      const rx = active.hx - active.x, ry = active.hy - active.y, rl = Math.hypot(rx, ry) || 1;
-      const ux = rx / rl, uy = ry / rl;                 // tension direction (along the handle)
-      const cos = vx * ux + vy * uy;
+    if (now - lastMove < 140 && sp > 0.4) {
+      const cos = (vel.x * ux + vel.y * uy) / sp;
       const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
-      const L = 95;
-      // tension: drawn beside the handle, starting where the handle meets the block
-      const k = HALF / Math.max(Math.abs(ux), Math.abs(uy));
-      const nx = -uy * 22, ny = ux * 22;
-      const tx0 = active.x + ux * k + nx, ty0 = active.y + uy * k + ny;
-      arrow(tx0, ty0, tx0 + ux * L, ty0 + uy * L, "#111827", 6, 20);
-      let lx = tx0 + ux * (L - 6) + nx * 1.2, ly = ty0 + uy * (L - 6) + ny * 1.2;
-      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 14, ly - 15, 28, 30, 6); ctx.fill(); ctx.restore();
-      text("T", lx, ly, 16, "#111827", "center", 700);
-      // displacement: tail at the center dot
-      const sx = active.x, sy = active.y;
-      arrow(sx, sy, sx + vx * L, sy + vy * L, col, 6, 20);
-      lx = sx + vx * (L - 10) - nx * 1.3; ly = sy + vy * (L - 10) - ny * 1.3;
+      const L = 80;
+      const sx = active.hx + ux * LOOP_R, sy = active.hy + uy * LOOP_R;
+      arrow(sx, sy, sx + ux * L, sy + uy * L, col, 6, 20);
+      lx = sx + ux * (L - 14) + nx * 22; ly = sy + uy * (L - 14) + ny * 22;
       ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, ly - 16, 40, 30, 6); ctx.fill(); ctx.restore();
       vecDeltaR(lx - 13, ly + 2, 16, col);
       readout = { cos, col };
