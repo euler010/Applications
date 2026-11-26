@@ -278,6 +278,38 @@ class DispSmoother {
     return this.state;
   }
 }
+// Smooth a traced path for display only: resample every ~3.2 px, average over ±5 samples
+// (about ±16 px), keep the true start and end, then round the corners twice (Chaikin).
+function smoothPath(p) {
+  if (p.length < 3) return p;
+  const r = [{ x: p[0].x, y: p[0].y }]; let acc = 0;
+  for (let i = 1; i < p.length; i++) {
+    let ax = p[i - 1].x, ay = p[i - 1].y; const bx = p[i].x, by = p[i].y;
+    let seg = Math.hypot(bx - ax, by - ay);
+    while (acc + seg >= 3.2) {
+      const t = (3.2 - acc) / seg; ax += (bx - ax) * t; ay += (by - ay) * t;
+      seg = Math.hypot(bx - ax, by - ay); r.push({ x: ax, y: ay }); acc = 0;
+    }
+    acc += seg;
+  }
+  r.push({ x: p[p.length - 1].x, y: p[p.length - 1].y });
+  const n = r.length; let a = [];
+  for (let i = 0; i < n; i++) {
+    let sx = 0, sy = 0;
+    for (let k = -5; k <= 5; k++) { const q = r[Math.min(n - 1, Math.max(0, i + k))]; sx += q.x; sy += q.y; }
+    a.push({ x: sx / 11, y: sy / 11 });
+  }
+  a[0] = r[0]; a[n - 1] = r[n - 1];
+  for (let it = 0; it < 2; it++) {
+    const b = [a[0]];
+    for (let i = 0; i < a.length - 1; i++) {
+      const u = a[i], v = a[i + 1];
+      b.push({ x: .75 * u.x + .25 * v.x, y: .75 * u.y + .25 * v.y }, { x: .25 * u.x + .75 * v.x, y: .25 * u.y + .75 * v.y });
+    }
+    b.push(a[a.length - 1]); a = b;
+  }
+  return a;
+}
 const STATE_COL = s => s > 0 ? "#16a34a" : s < 0 ? "#dc2626" : "#6b7280";
 const STATE_WORD = s => s > 0 ? "positive" : s < 0 ? "negative" : "≈ zero";
 const deg5 = cos => Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI / 5) * 5;
@@ -485,9 +517,11 @@ function GravityScene() {
     ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.lineCap = "round";
     ctx.setLineDash(t.locked ? [] : [2, 0]);
     ctx.globalAlpha = t.locked ? 0.9 : 1;
+    // drawn smoothed (finished paths are smoothed once and cached); work and distance use the raw path
+    const pts = t.locked ? (t.smooth || (t.smooth = smoothPath(t.path))) : smoothPath(t.path);
     ctx.beginPath();
-    ctx.moveTo(t.path[0].x, t.path[0].y);
-    for (let i = 1; i < t.path.length; i++) ctx.lineTo(t.path[i].x, t.path[i].y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
     ctx.restore();
   }
@@ -910,9 +944,11 @@ function FrictionScene() {
     ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.lineCap = "round";
     ctx.setLineDash(t.locked ? [] : [2, 0]);
     ctx.globalAlpha = t.locked ? 0.9 : 1;
+    // drawn smoothed (finished paths are smoothed once and cached); work and distance use the raw path
+    const pts = t.locked ? (t.smooth || (t.smooth = smoothPath(t.path))) : smoothPath(t.path);
     ctx.beginPath();
-    ctx.moveTo(t.path[0].x, t.path[0].y);
-    for (let i = 1; i < t.path.length; i++) ctx.lineTo(t.path[i].x, t.path[i].y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
     ctx.restore();
   }
@@ -1353,9 +1389,11 @@ function TensionScene() {
     ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.lineCap = "round";
     ctx.setLineDash(t.locked ? [] : [2, 0]);
     ctx.globalAlpha = t.locked ? 0.9 : 1;
+    // drawn smoothed (finished paths are smoothed once and cached); work and distance use the raw path
+    const pts = t.locked ? (t.smooth || (t.smooth = smoothPath(t.path))) : smoothPath(t.path);
     ctx.beginPath();
-    ctx.moveTo(t.path[0].x, t.path[0].y);
-    for (let i = 1; i < t.path.length; i++) ctx.lineTo(t.path[i].x, t.path[i].y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
     ctx.restore();
   }
@@ -1927,9 +1965,11 @@ function SpringScene() {
     ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.lineCap = "round";
     ctx.setLineDash(t.locked ? [] : [2, 0]);
     ctx.globalAlpha = t.locked ? 0.9 : 1;
+    // drawn smoothed (finished paths are smoothed once and cached); work and distance use the raw path
+    const pts = t.locked ? (t.smooth || (t.smooth = smoothPath(t.path))) : smoothPath(t.path);
     ctx.beginPath();
-    ctx.moveTo(t.path[0].x, t.path[0].y);
-    for (let i = 1; i < t.path.length; i++) ctx.lineTo(t.path[i].x, t.path[i].y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
     ctx.restore();
   }
