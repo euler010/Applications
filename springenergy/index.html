@@ -413,7 +413,10 @@
 
   function setRunning(r) {
     running = r;
-    playBtn.disabled = !r;   // active (blue) only while the block is moving
+    // moving → blue "Pause"; paused mid-motion → blue "Play"; at rest or being dragged → grey "Pause"
+    const pausedMid = !r && A !== 0 && !drag;
+    playBtn.textContent = pausedMid ? 'Play' : 'Pause';
+    playBtn.disabled = !(r || pausedMid);
   }
 
   function resetMotion() { A = 0; t = 0; setRunning(false); invalidate(); }
@@ -421,7 +424,7 @@
   kSl.addEventListener('input', () => {
     k = parseFloat(kSl.value); $('kOut').textContent = `${k} N/m`; resetMotion();
   });
-  playBtn.addEventListener('click', () => setRunning(false));
+  playBtn.addEventListener('click', () => setRunning(!running));
   // Default: restore every setting to how the app first loads
   $('defaultBtn').addEventListener('click', () => {
     k = 40; y0 = 0; speed = 0.25;
