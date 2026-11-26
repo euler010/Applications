@@ -350,19 +350,21 @@ function GravityScene() {
     ctx.restore();
   }
 
-  // place letter badge near the end of each finished path, nudged apart
+  // place letter badge at the middle of each finished path, nudged apart
   function labelSpots() {
     const spots = [];
     for (const t of trials) {
       if (!t.locked) continue;
-      // walk back ~90px along the path from the end
-      let acc = 0, px = t.path[t.path.length - 1].x, py = t.path[t.path.length - 1].y;
-      let dirx = -1, diry = 0;
-      for (let i = t.path.length - 1; i > 0; i--) {
-        const a = t.path[i], b = t.path[i - 1];
-        const seg = Math.hypot(a.x - b.x, a.y - b.y);
+      // find the point halfway along the path
+      let total = 0;
+      for (let i = 1; i < t.path.length; i++) total += Math.hypot(t.path[i].x - t.path[i - 1].x, t.path[i].y - t.path[i - 1].y);
+      const half = total / 2;
+      let acc = 0, px = t.path[0].x, py = t.path[0].y, dirx = 1, diry = 0;
+      for (let i = 1; i < t.path.length; i++) {
+        const a = t.path[i - 1], b = t.path[i];
+        const seg = Math.hypot(b.x - a.x, b.y - a.y);
         if (seg > 0.01) { dirx = (b.x - a.x) / seg; diry = (b.y - a.y) / seg; }
-        if (acc + seg >= 90) { const f = (90 - acc) / seg; px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; acc = 90; break; }
+        if (acc + seg >= half) { const f = (half - acc) / (seg || 1); px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; break; }
         acc += seg; px = b.x; py = b.y;
       }
       // perpendicular offset (prefer upward side)
@@ -760,19 +762,21 @@ function FrictionScene() {
     ctx.restore();
   }
 
-  // place letter badge near the end of each finished path, nudged apart
+  // place letter badge at the middle of each finished path, nudged apart
   function labelSpots() {
     const spots = [];
     for (const t of trials) {
       if (!t.locked) continue;
-      // walk back ~90px along the path from the end
-      let acc = 0, px = t.path[t.path.length - 1].x, py = t.path[t.path.length - 1].y;
-      let dirx = -1, diry = 0;
-      for (let i = t.path.length - 1; i > 0; i--) {
-        const a = t.path[i], b = t.path[i - 1];
-        const seg = Math.hypot(a.x - b.x, a.y - b.y);
+      // find the point halfway along the path
+      let total = 0;
+      for (let i = 1; i < t.path.length; i++) total += Math.hypot(t.path[i].x - t.path[i - 1].x, t.path[i].y - t.path[i - 1].y);
+      const half = total / 2;
+      let acc = 0, px = t.path[0].x, py = t.path[0].y, dirx = 1, diry = 0;
+      for (let i = 1; i < t.path.length; i++) {
+        const a = t.path[i - 1], b = t.path[i];
+        const seg = Math.hypot(b.x - a.x, b.y - a.y);
         if (seg > 0.01) { dirx = (b.x - a.x) / seg; diry = (b.y - a.y) / seg; }
-        if (acc + seg >= 90) { const f = (90 - acc) / seg; px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; acc = 90; break; }
+        if (acc + seg >= half) { const f = (half - acc) / (seg || 1); px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; break; }
         acc += seg; px = b.x; py = b.y;
       }
       // perpendicular offset (prefer upward side)
@@ -1186,19 +1190,21 @@ function TensionScene() {
     ctx.restore();
   }
 
-  // place letter badge near the end of each finished path, nudged apart
+  // place letter badge at the middle of each finished path, nudged apart
   function labelSpots() {
     const spots = [];
     for (const t of trials) {
       if (!t.locked) continue;
-      // walk back ~90px along the path from the end
-      let acc = 0, px = t.path[t.path.length - 1].x, py = t.path[t.path.length - 1].y;
-      let dirx = -1, diry = 0;
-      for (let i = t.path.length - 1; i > 0; i--) {
-        const a = t.path[i], b = t.path[i - 1];
-        const seg = Math.hypot(a.x - b.x, a.y - b.y);
+      // find the point halfway along the path
+      let total = 0;
+      for (let i = 1; i < t.path.length; i++) total += Math.hypot(t.path[i].x - t.path[i - 1].x, t.path[i].y - t.path[i - 1].y);
+      const half = total / 2;
+      let acc = 0, px = t.path[0].x, py = t.path[0].y, dirx = 1, diry = 0;
+      for (let i = 1; i < t.path.length; i++) {
+        const a = t.path[i - 1], b = t.path[i];
+        const seg = Math.hypot(b.x - a.x, b.y - a.y);
         if (seg > 0.01) { dirx = (b.x - a.x) / seg; diry = (b.y - a.y) / seg; }
-        if (acc + seg >= 90) { const f = (90 - acc) / seg; px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; acc = 90; break; }
+        if (acc + seg >= half) { const f = (half - acc) / (seg || 1); px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; break; }
         acc += seg; px = b.x; py = b.y;
       }
       // perpendicular offset (prefer upward side)
