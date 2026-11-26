@@ -32,6 +32,7 @@
   button:hover{background:#eef2fb}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   button.primary:hover{background:#1e40af}
+  button.primary:disabled{background:#e3e6ec;border-color:#d7dce6;color:#9aa1ae;cursor:default}
   select{font:inherit;font-size:.9em;padding:.4em .5em;border-radius:8px;border:1px solid var(--line);background:#fff;width:100%}
   #readoutBar{padding:.55em 1em .7em}
   .readout{font-size:.85em;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -49,7 +50,7 @@
     <section>
       <h2>Motion</h2>
       <div class="row2">
-        <button class="primary" id="playBtn">Play</button>
+        <button class="primary" id="playBtn" disabled>Pause</button>
         <button id="defaultBtn">Default</button>
       </div>
       <label class="lbl" for="speed">Speed</label>
@@ -395,7 +396,7 @@
 
   function setRunning(r) {
     running = r;
-    playBtn.textContent = r ? 'Pause' : 'Play';
+    playBtn.disabled = !r;   // active (blue) only while the block is moving
   }
 
   function resetMotion() { A = 0; t = 0; setRunning(false); invalidate(); }
@@ -403,7 +404,7 @@
   kSl.addEventListener('input', () => {
     k = parseFloat(kSl.value); $('kOut').textContent = `${k} N/m`; resetMotion();
   });
-  playBtn.addEventListener('click', () => setRunning(!running));
+  playBtn.addEventListener('click', () => setRunning(false));
   // Default: restore every setting to how the app first loads
   $('defaultBtn').addEventListener('click', () => {
     k = 40; y0 = 0; speed = 0.25;
