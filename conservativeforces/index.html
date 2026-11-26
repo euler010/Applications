@@ -1465,9 +1465,9 @@ function SpringScene() {
   const S = 80, HALF = S / 2;            // block size
   const WALL = 80;                       // x of the wall's face
   const X0 = 700;                        // block center at the spring's equilibrium
-  const D = 1.0;                         // compression to the final position (m)
   const START = { x: X0, y: ROOM.floor - HALF };
-  const TARGET = { x: X0 - D * PPM, y: ROOM.floor - HALF };
+  const TARGET = { x: (WALL + X0) / 2, y: ROOM.floor - HALF };   // halfway between the wall and equilibrium
+  const D = (X0 - TARGET.x) / PPM;       // compression to the final position (m)
   const SNAP = 8;
   const OBST = [];
   const BOUNDS = { x1: WALL + 60 + HALF, x2: ROOM.right - HALF, y1: START.y, y2: START.y };
@@ -1502,6 +1502,7 @@ function SpringScene() {
       x: START.x, y: START.y,
       path: [{ x: START.x, y: START.y }],
       work: 0, dist: 0, locked: false, v: 0,   // v: velocity (m/s) when released
+      trace: [{ x: START.x, t: 0 }], tt: 0, lastTx: START.x,   // stretched-out trace (moving time)
     };
     trials.push(active);
     vel = { x: 0, y: 0 };
@@ -1556,10 +1557,49 @@ function SpringScene() {
   }
 
   // released block: frictionless spring motion along the floor
-  let lastT = performance.now(), dragV = 0, lastDrag = null;
+  let lastT = performance.now(), dragV = 0, lastDrag = null, frameDt = 0;
+
+  // trace: time only advances while the block is moving
+  function traceTick() {
+    const a = active;
+    if (!a || done) return;
+    if (Math.abs(a.x - a.lastTx) > 0.5) { a.tt += frameDt; a.trace.push({ x: a.x, t: a.tt }); a.lastTx = a.x; }
+  }
+
+  // tightly stacked lanes above the scene: A at the bottom, then B, then C
+  const LANE = { bottom: 395, h: 64, gap: 6, x1: BOUNDS.x1 - HALF + 10, x2: BOUNDS.x2 + HALF - 10 };
+  const laneBottom = i => LANE.bottom - i * (LANE.h + LANE.gap);
+  function drawTraces() {
+    // reference lines for equilibrium and the final position run up through the lanes
+    const top = laneBottom(2) - LANE.h;
+    ctx.save(); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
+    for (const x of [X0, TARGET.x]) { ctx.beginPath(); ctx.moveTo(x, LANE.bottom); ctx.lineTo(x, top); ctx.stroke(); }
+    ctx.restore();
+    for (const tr of trials) {
+      const yb = laneBottom(tr.idx), yt = yb - LANE.h;
+      ctx.save();
+      ctx.fillStyle = "rgba(248,250,252,.75)"; ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 1.5;
+      roundRect(LANE.x1, yt, LANE.x2 - LANE.x1, LANE.h, 8); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      if (tr.trace.length < 2) continue;
+      const T = Math.max(1.5, tr.tt + 0.03);
+      const yOf = tt => yb - 6 - (tt / T) * (LANE.h - 12);
+      ctx.save();
+      ctx.strokeStyle = COLORS[tr.idx]; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath();
+      tr.trace.forEach((p, k) => k ? ctx.lineTo(p.x, yOf(p.t)) : ctx.moveTo(p.x, yOf(p.t)));
+      ctx.stroke();
+      ctx.restore();
+      if (tr.locked) {
+        const m = tr.trace[Math.floor(tr.trace.length / 2)];
+        const bx = Math.min(LANE.x2 - 18, m.x + 24);
+        drawBadge(bx, yOf(m.t), tr.idx, 15);
+      }
+    }
+  }
   function physics() {
     const now = performance.now();
-    const dt = Math.min(0.033, (now - lastT) / 1000); lastT = now;
+    const dt = Math.min(0.033, (now - lastT) / 1000); lastT = now; frameDt = dt;
     if (!active || dragging || done) return;
     if (Math.abs(active.v) < 1e-4 && Math.abs(xm(active.x)) < 1e-4) return;
     const steps = 8, h = dt / steps;
@@ -1576,6 +1616,7 @@ function SpringScene() {
 
   function lock() {
     active.v = 0;
+    active.trace.push({ x: TARGET.x, t: active.tt + 0.03 });
     const ox = active.x, oy = active.y;
     active.x = TARGET.x; active.y = TARGET.y;
     record(ox, oy);
@@ -1661,7 +1702,7 @@ function SpringScene() {
     ctx.save(); ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
     ctx.beginPath(); ctx.moveTo(TARGET.x, ROOM.floor - S - 4); ctx.lineTo(TARGET.x, dy - 14); ctx.stroke(); ctx.restore();
     ctx.save(); ctx.fillStyle = "#fff"; ctx.fillRect((X0 + TARGET.x) / 2 - 30, dy - 12, 60, 24); ctx.restore();
-    text(D.toFixed(1) + " m", (X0 + TARGET.x) / 2, dy, 14, "#475569", "center", 600);
+    text(D.toFixed(2) + " m", (X0 + TARGET.x) / 2, dy, 14, "#475569", "center", 600);
 
     // given values
     {
@@ -1925,7 +1966,9 @@ function SpringScene() {
 
   function draw() {
     physics();
+    traceTick();
     drawRoom();
+    drawTraces();
     drawTarget();
     for (const t of trials) drawPath(t);
     // earlier blocks wait at the final position as faded ghosts; the spring is attached to the current block
