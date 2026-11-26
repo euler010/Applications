@@ -1875,7 +1875,7 @@ function SpringScene() {
       const w = ctx.measureText(msg).width + 36;
       // centered across the workspace, 80% of the way from the floor up to the ceiling
       const cx = (ROOM.left + ROOM.right) / 2;
-      const cy = ROOM.floor - 0.8 * (ROOM.floor - ROOM.top);
+      const cy = ROOM.floor - 0.8 * (ROOM.floor - ROOM.top) + 25;   // spring: 25 px lower
       ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
       roundRect(cx - w / 2, cy - 18, w, 36, 18); ctx.fill(); ctx.stroke();
       ctx.restore();
