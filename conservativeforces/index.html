@@ -11,15 +11,17 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: #e9edf2; font-family: Inter, system-ui, sans-serif; color: #1f2937; overflow: hidden; }
   body { display: flex; flex-direction: column; }
+  /* --u: title-bar scale. 1 on laptops/desktops; grows on big screens (reference 1600 × 900); never below 1 */
+  :root { --u: 1; }
   header {
     display: flex; align-items: center; gap: 1.2vmin; flex-wrap: wrap;
     padding: 1.1vmin 2vmin; background: #1e293b; color: #fff;
-    font-size: 16px;
+    font-size: calc(16px * var(--u));
   }
-  header h1 { font-size: 18px; margin: 0 1.5vmin 0 0; font-weight: 600; letter-spacing: .02em; }
+  header h1 { font-size: calc(18px * var(--u)); margin: 0 1.5vmin 0 0; font-weight: 600; letter-spacing: .02em; }
   .tabs { display: flex; gap: .8vmin; flex: 1; }
   .tab, .reset {
-    font: inherit; font-size: 16px; border: none; cursor: pointer; border-radius: .5em;
+    font: inherit; font-size: calc(16px * var(--u)); border: none; cursor: pointer; border-radius: .5em;
     padding: .45em 1.1em; transition: background .15s;
   }
   .tab { background: #334155; color: #cbd5e1; }
@@ -29,6 +31,39 @@
   .reset:hover { background: #dc2626; }
   .stage { position: relative; flex: 1; min-height: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+
+  /* ---------- phones: rearranged layout ---------- */
+  #hud, #hudBanner, #defs { display: none; }
+  body.phone header { padding: 6px 8px; gap: 8px; flex-wrap: nowrap; }
+  body.phone.portrait header { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+  body.phone.portrait header h1 { grid-column: 1 / -1; font-size: 16px; margin: 0; }
+  body.phone.landscape header h1 { flex: 0 1 auto; font-size: 14px; margin: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  body.phone .tabs { flex: 1 1 auto; min-width: 0; overflow-x: auto; flex-wrap: nowrap; gap: 6px;
+    scrollbar-width: thin; scrollbar-color: #475569 #1e293b; -webkit-overflow-scrolling: touch; }
+  body.phone .tabs::-webkit-scrollbar { height: 6px; }
+  body.phone .tabs::-webkit-scrollbar-track { background: #1e293b; }
+  body.phone .tabs::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  body.phone .tab, body.phone .reset { min-height: 44px; font-size: 15px; white-space: nowrap; flex: none; padding: 0 14px; }
+  body.phone #hud { display: flex; gap: 8px; align-items: stretch; padding: 6px 8px; background: #e9edf2; }
+  body.phone.portrait #hud { height: 104px; }
+  body.phone.landscape #hud { height: 58px; }
+  #hudText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.3; color: #475569; }
+  #hudRead { background: rgba(248,250,252,.94); border: 2px solid #cbd5e1; border-radius: 10px; padding: 4px 10px; font-weight: 600; }
+  #hudRead b { font-weight: 700; }
+  #hudMsg { font-weight: 600; padding: 0 4px; }
+  body.phone.landscape #hudRead, body.phone.landscape #hudMsg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #hudInfo { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 2px solid #475569; background: #fff;
+    color: #334155; font: 700 20px Inter, system-ui, sans-serif; cursor: pointer; }
+  body.phone #hudBanner.show { display: block; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: min(94%, 560px); z-index: 2; background: rgba(220,252,231,.97); border: 3px solid #16a34a; border-radius: 14px;
+    padding: 10px 14px; text-align: center; color: #166534; font-size: 15px; line-height: 1.35; }
+  #hudBanner b { display: block; color: #14532d; font-size: 16px; margin-bottom: 4px; }
+  body.phone #defs.show { display: flex; position: fixed; inset: 0; z-index: 5; background: rgba(15,23,42,.35);
+    align-items: center; justify-content: center; padding: 16px; }
+  #defsCard { background: #fff; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 18px 20px; max-width: 480px;
+    font-size: 16px; line-height: 1.45; color: #1f2937; box-shadow: 0 8px 24px rgba(15,23,42,.22);
+    max-height: 90%; overflow: auto; scrollbar-color: #475569 #1e293b; }
+  #defsCard p { margin: 0 0 12px; } #defsCard p:last-child { margin: 0; }
 </style>
 </head>
 <body>
@@ -37,7 +72,15 @@
   <nav class="tabs" id="tabs"></nav>
   <button class="reset" id="resetBtn">Reset</button>
 </header>
-<div class="stage" id="stage"><canvas id="cv"></canvas></div>
+<div id="hud">
+  <div id="hudText"><div id="hudRead"></div><div id="hudMsg"></div></div>
+  <button id="hudInfo" aria-label="Definitions">i</button>
+</div>
+<div class="stage" id="stage"><canvas id="cv"></canvas><div id="hudBanner"></div></div>
+<div id="defs"><div id="defsCard">
+  <p>A <b>conservative force</b> is one in which the work done by the force in moving an object from point A to point B is independent of the path taken.</p>
+  <p>A <b>nonconservative force</b> is one in which the work done by the force in moving an object from point A to point B is dependent on the path taken.</p>
+</div></div>
 
 <script>
 (() => {
@@ -52,22 +95,69 @@ const LW = 1600, LH = 748;
 const cv = document.getElementById("cv");
 const ctx = cv.getContext("2d");
 const stage = document.getElementById("stage");
-let scale = 1, offX = 0, offY = 0, dpr = 1;
+let dpr = 1;
+// Each region maps a rectangle of the logical drawing (sx, sy, sw, sh) to the screen at scale s, offset (dx, dy).
+// Computers: one region — the whole layout, scaled to fit and centered (exactly as before).
+// Phones: two regions — the workspace and the graph panel, arranged to fit the narrow screen.
+let regions = [];
+let PHONE = false, PORTRAIT = false, HUD_MODE = false, DRAW_PASS = 0, GRAB_PAD = 12;
+const WORK_SRC = { sx: 0, sy: 0, sw: 1150, sh: LH };
+const PANEL_SRC = { sx: 1150, sy: 0, sw: LW - 1150, sh: LH };
 
 function resize() {
+  const W = window.innerWidth, H = window.innerHeight;
+  PHONE = W < 760 || (H < 500 && W > H);
+  PORTRAIT = PHONE && H >= W;
+  HUD_MODE = PHONE;
+  document.body.classList.toggle("phone", PHONE);
+  document.body.classList.toggle("portrait", PHONE && PORTRAIT);
+  document.body.classList.toggle("landscape", PHONE && !PORTRAIT);
+  document.documentElement.style.setProperty("--u", PHONE ? 1 : Math.max(1, Math.min(W / 1600, H / 900)));
+
   dpr = window.devicePixelRatio || 1;
   const w = stage.clientWidth, h = stage.clientHeight;
   cv.width = Math.round(w * dpr);
   cv.height = Math.round(h * dpr);
-  scale = Math.min(w / LW, h / LH);
-  offX = (w - LW * scale) / 2;
-  offY = (h - LH * scale) / 2;
+  const m = 6;
+  if (!PHONE) {
+    const s = Math.min(w / LW, h / LH);
+    regions = [{ sx: 0, sy: 0, sw: LW, sh: LH, s, dx: (w - LW * s) / 2, dy: (h - LH * s) / 2 }];
+  } else if (PORTRAIT) {
+    // workspace across the top, graph panel centered in the space below
+    const sw = Math.min((w - 2 * m) / WORK_SRC.sw, (h * 0.5) / WORK_SRC.sh);
+    const wh = WORK_SRC.sh * sw;
+    const rem = h - wh - 3 * m;
+    const sp = Math.min((w - 2 * m) / PANEL_SRC.sw, rem / PANEL_SRC.sh);
+    regions = [
+      { ...WORK_SRC, s: sw, dx: (w - WORK_SRC.sw * sw) / 2, dy: m },
+      { ...PANEL_SRC, s: sp, dx: (w - PANEL_SRC.sw * sp) / 2, dy: wh + 2 * m + (rem - PANEL_SRC.sh * sp) / 2 },
+    ];
+  } else {
+    // landscape: workspace on the left, graph panel on the right, both full height
+    const sw = Math.min((w * 0.7) / WORK_SRC.sw, (h - 2 * m) / WORK_SRC.sh);
+    const ww = WORK_SRC.sw * sw;
+    const sp = Math.min((w - ww - 3 * m) / PANEL_SRC.sw, (h - 2 * m) / PANEL_SRC.sh);
+    const pw = PANEL_SRC.sw * sp, x0 = (w - ww - pw - m) / 2;
+    regions = [
+      { ...WORK_SRC, s: sw, dx: x0, dy: (h - WORK_SRC.sh * sw) / 2 },
+      { ...PANEL_SRC, s: sp, dx: x0 + ww + m, dy: (h - PANEL_SRC.sh * sp) / 2 },
+    ];
+  }
+  // on phones, give blocks/handles a finger-sized grab zone (about 44 px across)
+  GRAB_PAD = PHONE ? Math.max(12, 22 / regions[0].s - 40) : 12;
 }
 window.addEventListener("resize", resize);
+window.__layout = () => ({ regions, PHONE, PORTRAIT });   // read-only, for layout testing
+window.addEventListener("orientationchange", () => setTimeout(resize, 150));
 
-function toLogical(e) {
-  const r = cv.getBoundingClientRect();
-  return { x: (e.clientX - r.left - offX) / scale, y: (e.clientY - r.top - offY) / scale };
+function regionAt(px, py) {
+  return regions.find(r => px >= r.dx && px <= r.dx + r.sw * r.s && py >= r.dy && py <= r.dy + r.sh * r.s) || null;
+}
+function toLogical(e, reg) {
+  const rc = cv.getBoundingClientRect();
+  const px = e.clientX - rc.left, py = e.clientY - rc.top;
+  reg = reg || regionAt(px, py) || regions[0];
+  return { x: reg.sx + (px - reg.dx) / reg.s, y: reg.sy + (py - reg.dy) / reg.s, reg };
 }
 
 /* =====================================================================
@@ -257,7 +347,7 @@ function GravityScene() {
   /* ---------- input ---------- */
   function down(p) {
     if (!active || done) return;
-    if (Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12) {
+    if (Math.abs(p.x - active.x) <= HALF + GRAB_PAD && Math.abs(p.y - active.y) <= HALF + GRAB_PAD) {
       dragging = true;
       grab = { x: p.x - active.x, y: p.y - active.y };
       return true;
@@ -269,7 +359,7 @@ function GravityScene() {
   }
   function up() { dragging = false; }
   function hover(p) {
-    return active && !done && Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12;
+    return active && !done && Math.abs(p.x - active.x) <= HALF + GRAB_PAD && Math.abs(p.y - active.y) <= HALF + GRAB_PAD;
   }
 
   /* ---------- drawing ---------- */
@@ -442,6 +532,7 @@ function GravityScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
+    if (HUD_MODE) { hudReadout("Work by gravity right now:", "F<sub>g</sub>", cos, col, false); return; }
     const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
@@ -462,11 +553,12 @@ function GravityScene() {
   const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
+    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
     if (done) msg = null;
     else if (active.idx === 0) msg = "Drag block A from the table to the dashed square on the floor.";
     else if (active.idx === 1) msg = "Now drag block B along a different path until it lands on block A.";
     else msg = "One more: drag block C along yet another path onto the stack.";
+    if (HUD_MODE) { HUD.msg = msg; HUD.banner = (!msg && !bannerHidden) ? ["Three different paths — the same work by gravity!", "Gravity is a conservative force: its work depends only on where the object", "starts and ends, not on the path it takes between them."] : null; bannerRect = { x: 0, y: 0, w: 0, h: 0 }; return; }
     if (msg) {
       ctx.save();
       ctx.font = `600 16px Inter, system-ui, sans-serif`;
@@ -692,7 +784,7 @@ function FrictionScene() {
   /* ---------- input ---------- */
   function down(p) {
     if (!active || done) return;
-    if (Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12) {
+    if (Math.abs(p.x - active.x) <= HALF + GRAB_PAD && Math.abs(p.y - active.y) <= HALF + GRAB_PAD) {
       dragging = true;
       grab = { x: p.x - active.x, y: p.y - active.y };
       return true;
@@ -704,7 +796,7 @@ function FrictionScene() {
   }
   function up() { dragging = false; }
   function hover(p) {
-    return active && !done && Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12;
+    return active && !done && Math.abs(p.x - active.x) <= HALF + GRAB_PAD && Math.abs(p.y - active.y) <= HALF + GRAB_PAD;
   }
 
   /* ---------- drawing ---------- */
@@ -848,6 +940,7 @@ function FrictionScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
+    if (HUD_MODE) { hudReadout("Work by friction right now:", "f<sub>k</sub>", cos, col, false); return; }
     const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
@@ -868,11 +961,12 @@ function FrictionScene() {
   const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
+    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
     if (done) msg = null;
     else if (active.idx === 0) msg = "Slide block A across the floor to the dashed square.";
     else if (active.idx === 1) msg = "Now drag block B along a different path until it lands on block A.";
     else msg = "One more: drag block C along yet another path onto the stack.";
+    if (HUD_MODE) { HUD.msg = msg; HUD.banner = (!msg && !bannerHidden) ? ["Three different paths — different amounts of work by friction!", "Friction is a nonconservative force: its work depends on the path taken,", "not just on where the object starts and ends."] : null; bannerRect = { x: 0, y: 0, w: 0, h: 0 }; return; }
     if (msg) {
       ctx.save();
       ctx.font = `600 16px Inter, system-ui, sans-serif`;
@@ -1109,7 +1203,7 @@ function TensionScene() {
   }
 
   /* ---------- input ---------- */
-  function onLoop(p) { return active && !done && Math.hypot(p.x - active.hx, p.y - active.hy) <= LOOP_R + 14; }
+  function onLoop(p) { return active && !done && Math.hypot(p.x - active.hx, p.y - active.hy) <= LOOP_R + Math.max(14, GRAB_PAD); }
   function down(p) {
     if (!onLoop(p)) return;
     dragging = true;
@@ -1312,6 +1406,7 @@ function TensionScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
+    if (HUD_MODE) { hudReadout("Work by tension right now:", "T", cos, col, false); return; }
     const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
@@ -1328,11 +1423,12 @@ function TensionScene() {
   const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
+    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
     if (done) msg = null;
     else if (active.idx === 0) msg = "Grab the loop on block A\u2019s handle and pull the block to the dashed square.";
     else if (active.idx === 1) msg = "Now pull block B along a different path until it lands on block A.";
     else msg = "One more: pull block C along yet another path onto the stack.";
+    if (HUD_MODE) { HUD.msg = msg; HUD.banner = (!msg && !bannerHidden) ? ["Three different paths — different amounts of work by tension!", "Tension is a nonconservative force: its work depends on the path taken,", "not just on where the object starts and ends."] : null; bannerRect = { x: 0, y: 0, w: 0, h: 0 }; return; }
     if (msg) {
       ctx.save();
       ctx.font = `600 16px Inter, system-ui, sans-serif`;
@@ -1630,7 +1726,7 @@ function SpringScene() {
   /* ---------- input ---------- */
   function down(p) {
     if (!active || done) return;
-    if (Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12) {
+    if (Math.abs(p.x - active.x) <= HALF + GRAB_PAD && Math.abs(p.y - active.y) <= HALF + GRAB_PAD) {
       dragging = true; active.v = 0; dragV = 0; lastDrag = null;
       grab = { x: p.x - active.x, y: p.y - active.y };
       return true;
@@ -1656,7 +1752,7 @@ function SpringScene() {
     dragging = false; dragV = 0; lastDrag = null;
   }
   function hover(p) {
-    return active && !done && Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12;
+    return active && !done && Math.abs(p.x - active.x) <= HALF + GRAB_PAD && Math.abs(p.y - active.y) <= HALF + GRAB_PAD;
   }
 
   /* ---------- drawing ---------- */
@@ -1843,6 +1939,7 @@ function SpringScene() {
 
   function drawReadout() {
     const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
+    if (HUD_MODE) { hudReadout("Work by the spring right now:", "F<sub>s</sub>", cos, col, !!(readout && readout.zeroF)); return; }
     const x = WALL + 10, y = ROOM.top + 8, w = 382, h = 74;   // just right of the wall
     ctx.save();
     ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
@@ -1864,11 +1961,12 @@ function SpringScene() {
   const STATUS_CX = (WALL + 10 + 382 + ROOM.right - 48) / 2;
   function drawStatus() {
     let msg;
-    if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
+    if (!done && active.path.length > 1) { HUD.msg = null; HUD.banner = null; return; }   // hide the bubble once the block starts moving
     if (done) msg = null;
     else if (active.idx === 0) msg = "Drag block A to the dashed square \u2014 or pull it and let go.";
     else if (active.idx === 1) msg = "Now get block B to the dashed square a different way.";
     else msg = "One more: get block C to the dashed square yet another way.";
+    if (HUD_MODE) { HUD.msg = msg; HUD.banner = (!msg && !bannerHidden) ? ["Three different paths — the same work by the spring!", "The spring force is conservative: its work depends only on where the object", "starts and ends, not on the path it takes between them."] : null; bannerRect = { x: 0, y: 0, w: 0, h: 0 }; return; }
     if (msg) {
       ctx.save();
       ctx.font = `600 16px Inter, system-ui, sans-serif`;
@@ -1967,8 +2065,7 @@ function SpringScene() {
   }
 
   function draw() {
-    physics();
-    traceTick();
+    if (DRAW_PASS === 0) { physics(); traceTick(); }
     drawRoom();
     drawTraces();
     drawTarget();
@@ -1997,6 +2094,34 @@ function SpringScene() {
   return { reset, draw, down, move, up, hover, outsideClick };
 }
 
+
+/* =====================================================================
+   Phone HUD: the work readout, instructions and end message as page text
+   ===================================================================== */
+const HUD = { readT: "", readL: "", msg: null, banner: null };
+function hudReadout(title, sym, cos, col, zeroF) {
+  HUD.readT = title;
+  if (cos === null) HUD.readL = `<span style="color:#6b7280">Block not moving → zero</span>`;
+  else if (zeroF) HUD.readL = `<span style="color:#6b7280">zero (no spring force at equilibrium)</span>`;
+  else {
+    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
+    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    HUD.readL = `<span style="color:${col}">${word} (θ = ${deg}° between ${sym} and Δx)</span>`;
+  }
+}
+const hudEls = { read: document.getElementById("hudRead"), msg: document.getElementById("hudMsg"), banner: document.getElementById("hudBanner"), defs: document.getElementById("defs") };
+let hudLast = "";
+function renderHud() {
+  const read = `${HUD.readT} <b>${HUD.readL}</b>`;
+  const key = read + "|" + HUD.msg + "|" + (HUD.banner ? HUD.banner.join("|") : "") + "|" + infoOpen + "|" + PHONE;
+  if (key === hudLast) return;
+  hudLast = key;
+  hudEls.read.innerHTML = read;
+  hudEls.msg.textContent = HUD.msg || "";
+  hudEls.banner.classList.toggle("show", PHONE && !!HUD.banner);
+  hudEls.banner.innerHTML = HUD.banner ? `<b>${HUD.banner[0]}</b>${HUD.banner[1]} ${HUD.banner[2]}` : "";
+  hudEls.defs.classList.toggle("show", PHONE && infoOpen);
+}
 
 /* =====================================================================
    Information button (top right of the workspace) + definitions pop-up
@@ -2085,20 +2210,26 @@ SCENES.forEach(s => {
 document.getElementById("resetBtn").onclick = () => current && current.reset();
 
 /* ---------- pointer input ---------- */
-let pid = null;
-document.addEventListener("pointerdown", e => { if (e.target !== cv) { infoOpen = false; if (current) current.outsideClick(null); } });
+let pid = null, dragReg = null;
+document.addEventListener("pointerdown", e => {
+  if (e.target === cv) return;
+  if (e.target.closest && e.target.closest("#hudInfo")) return;
+  infoOpen = false;
+  if (current && !(e.target.closest && e.target.closest("#hudBanner"))) current.outsideClick(null);
+});
+document.getElementById("hudInfo").addEventListener("pointerdown", e => { infoOpen = !infoOpen; if (current) current.outsideClick(null); });
 cv.addEventListener("pointerdown", e => {
   const p = toLogical(e);
   if (current) current.outsideClick(p);
-  if (onInfo(p)) { infoOpen = !infoOpen; return; }
+  if (!PHONE && onInfo(p)) { infoOpen = !infoOpen; return; }
   if (infoOpen) { infoOpen = false; return; }   // any other click just closes the pop-up
-  if (current && current.down(p)) { pid = e.pointerId; cv.setPointerCapture(pid); cv.style.cursor = "grabbing"; }
+  if (current && current.down(p)) { dragReg = p.reg; pid = e.pointerId; cv.setPointerCapture(pid); cv.style.cursor = "grabbing"; }
 });
 cv.addEventListener("pointermove", e => {
-  const p = toLogical(e);
+  const p = toLogical(e, pid !== null && e.pointerId === pid ? dragReg : null);
   if (pid !== null && e.pointerId === pid) current.move(p);
   else {
-    infoHover = onInfo(p);
+    infoHover = !PHONE && onInfo(p);
     cv.style.cursor = infoHover ? "pointer" : (!infoOpen && current && current.hover(p)) ? "grab" : "default";
   }
 });
@@ -2115,9 +2246,16 @@ function frame() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = "#e9edf2";
   ctx.fillRect(0, 0, cv.width, cv.height);
-  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * offX, dpr * offY);
-  if (current) current.draw();
-  drawInfo();
+  regions.forEach((r, k) => {
+    ctx.setTransform(dpr * r.s, 0, 0, dpr * r.s, dpr * (r.dx - r.sx * r.s), dpr * (r.dy - r.sy * r.s));
+    ctx.save();
+    ctx.beginPath(); ctx.rect(r.sx, r.sy, r.sw, r.sh); ctx.clip();
+    DRAW_PASS = k;
+    if (current) current.draw();
+    if (!PHONE) drawInfo();
+    ctx.restore();
+  });
+  renderHud();
   requestAnimationFrame(frame);
 }
 
