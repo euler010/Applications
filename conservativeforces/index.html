@@ -235,6 +235,54 @@ function fmtJ(v) {
 }
 
 /* =====================================================================
+   Smooth displacement-vector display (drawing only — work, bars and
+   distances are always computed from the real, unsmoothed positions)
+   1. direction = the last ~40 px of actual travel along the path
+   2. the drawn arrow turns smoothly toward that direction
+   3. it fades in/out instead of popping
+   4. sign/colour changes use a small buffer so they don't flicker near 90°
+   ===================================================================== */
+class DispSmoother {
+  constructor() { this.reset(); }
+  reset() { this.ang = null; this.tgt = null; this.alpha = 0; this.t = performance.now(); this.state = 0; }
+  update(path, cx, cy, moving) {
+    const now = performance.now(), dt = Math.min(0.05, (now - this.t) / 1000); this.t = now;
+    // direction of the last ~40 px of travel
+    let acc = 0, px = cx, py = cy, bx = cx, by = cy;
+    for (let i = path.length - 1; i >= 0; i--) {
+      const p = path[i], d = Math.hypot(p.x - px, p.y - py);
+      if (acc + d >= 40) { const f = (40 - acc) / (d || 1); bx = px + (p.x - px) * f; by = py + (p.y - py) * f; acc = 40; break; }
+      acc += d; px = bx = p.x; py = by = p.y;
+    }
+    const cl = Math.hypot(cx - bx, cy - by);
+    if (cl >= 8) this.tgt = Math.atan2(cy - by, cx - bx);
+    const show = moving && this.tgt !== null;
+    // fade: ~0.1 s in, ~0.25 s out
+    this.alpha = show ? Math.min(1, this.alpha + dt / 0.1) : Math.max(0, this.alpha - dt / 0.25);
+    if (this.tgt !== null) {
+      if (this.ang === null || this.alpha <= dt / 0.1 + 1e-6) this.ang = this.tgt;   // appearing: point straight at it
+      else {
+        let d = this.tgt - this.ang;
+        d = Math.atan2(Math.sin(d), Math.cos(d));
+        this.ang += d * Math.min(1, dt * 10);                                        // smooth turn (~0.1 s)
+      }
+    }
+    return { ux: Math.cos(this.ang ?? 0), uy: Math.sin(this.ang ?? 0), alpha: this.alpha };
+  }
+  // +1 positive, 0 ≈ zero, −1 negative — with a buffer so it doesn't flicker near 90°
+  classify(cos) {
+    if (this.state === 1 && cos < 0.12) this.state = 0;
+    if (this.state === -1 && cos > -0.12) this.state = 0;
+    if (cos > 0.22) this.state = 1;
+    if (cos < -0.22) this.state = -1;
+    return this.state;
+  }
+}
+const STATE_COL = s => s > 0 ? "#16a34a" : s < 0 ? "#dc2626" : "#6b7280";
+const STATE_WORD = s => s > 0 ? "positive" : s < 0 ? "negative" : "≈ zero";
+const deg5 = cos => Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI / 5) * 5;
+
+/* =====================================================================
    SCENE: Gravity (conservative)
    ===================================================================== */
 function GravityScene() {
@@ -261,6 +309,7 @@ function GravityScene() {
   const LIGHT = ["#dbeafe", "#fce7f3", "#f3e8ff"];
 
   let trials, active, dragging, grab, vel, lastMove, done;
+  const ds = new DispSmoother();
 
   let bannerHidden = false, bannerRect = null;
   // after the activity ends, a click anywhere outside the green banner closes it
@@ -287,6 +336,7 @@ function GravityScene() {
     trials.push(active);
     vel = { x: 0, y: 0 };
     lastMove = 0;
+    ds.reset();
   }
 
   function overlaps(cx, cy, o) {
@@ -512,23 +562,23 @@ function GravityScene() {
     ctx.restore();
     subText("F", "g", active.x + 14, active.y + fgLen - 17, 16, "#111827");
 
-    // Displacement vector (direction of motion right now)
+    // Displacement vector (direction of the last bit of travel, smoothed for display)
     const now = performance.now();
-    const sp = Math.hypot(vel.x, vel.y);
-    if (dragging && now - lastMove < 140 && sp > 0.4) {
-      const ux = vel.x / sp, uy = vel.y / sp;
+    const d = ds.update(active.path, active.x, active.y, dragging && now - lastMove < 120);
+    if (d.alpha > 0.02) {
+      const ux = d.ux, uy = d.uy;
       const cos = uy; // angle between Δx and F_g (F_g points +y)
-      const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
+      const st = ds.classify(cos), col = STATE_COL(st);
       const L = 95;
       const sx = active.x, sy = active.y;   // tail starts at the center dot
+      ctx.save(); ctx.globalAlpha = d.alpha;
       arrow(sx, sy, sx + ux * L, sy + uy * L, col, 6, 20);
       const lx = sx + ux * (L + 28), ly = sy + uy * (L + 22);
-      ctx.save();
       ctx.fillStyle = "rgba(255,255,255,.85)";
       roundRect(lx - 20, ly - 16, 40, 30, 6); ctx.fill();
-      ctx.restore();
       vecDeltaR(lx - 13, ly + 2, 16, col);
-      readout = { cos, col };
+      ctx.restore();
+      readout = { cos, col, st };
     }
   }
 
@@ -542,8 +592,8 @@ function GravityScene() {
     ctx.restore();
     text("Work by gravity right now:", x + 14, y + 23, 18, "#475569", "left", 600);
     if (cos === null) { text("Block not moving → zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
-    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
-    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    const deg = deg5(cos);
+    const word = STATE_WORD(readout.st);
     text(`${word} (θ = ${deg}° between F`, x + 14, y + 51, 18, col, "left", 700);
     ctx.save(); ctx.font = `700 18px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word} (θ = ${deg}° between F`).width; ctx.restore();
@@ -705,6 +755,7 @@ function FrictionScene() {
   const LIGHT = ["#dbeafe", "#fce7f3", "#f3e8ff"];
 
   let trials, active, dragging, grab, vel, lastMove, done;
+  const ds = new DispSmoother();
 
   let axisMin = -30;
   let bannerHidden = false, bannerRect = null;
@@ -733,6 +784,7 @@ function FrictionScene() {
     trials.push(active);
     vel = { x: 0, y: 0 };
     lastMove = 0;
+    ds.reset();
   }
 
   function overlaps(cx, cy, o) {
@@ -929,12 +981,13 @@ function FrictionScene() {
 
     // Kinetic friction exists only while the block slides: opposite the displacement
     const now = performance.now();
-    const sp = Math.hypot(vel.x, vel.y);
-    if (dragging && now - lastMove < 140 && sp > 0.4) {
-      const ux = vel.x / sp, uy = vel.y / sp;
+    const d = ds.update(active.path, active.x, active.y, dragging && now - lastMove < 120);
+    if (d.alpha > 0.02) {
+      const ux = d.ux, uy = d.uy;
       const col = "#dc2626";   // θ = 180° → negative work
       const L = 95;
       const sx = active.x, sy = active.y;   // both tails start at the center dot
+      ctx.save(); ctx.globalAlpha = d.alpha;
       // displacement
       arrow(sx, sy, sx + ux * L, sy + uy * L, col, 6, 20);
       let lx = sx + ux * (L + 28), ly = sy + uy * (L + 22);
@@ -945,7 +998,8 @@ function FrictionScene() {
       lx = sx - ux * (L + 28); ly = sy - uy * (L + 22);
       ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 18, ly - 16, 36, 30, 6); ctx.fill(); ctx.restore();
       subText("f", "k", lx - 10, ly, 16, "#111827");
-      readout = { cos: -1, col };
+      ctx.restore();
+      readout = { cos: -1, col, st: -1 };
     }
   }
 
@@ -959,8 +1013,8 @@ function FrictionScene() {
     ctx.restore();
     text("Work by friction right now:", x + 14, y + 23, 18, "#475569", "left", 600);
     if (cos === null) { text("Block not moving → zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
-    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
-    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    const deg = deg5(cos);
+    const word = STATE_WORD(readout.st);
     text(`${word} (θ = ${deg}° between f`, x + 14, y + 51, 18, col, "left", 700);
     ctx.save(); ctx.font = `700 18px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word} (θ = ${deg}° between f`).width; ctx.restore();
@@ -1132,6 +1186,7 @@ function TensionScene() {
   const LIGHT = ["#dbeafe", "#fce7f3", "#f3e8ff"];
 
   let trials, active, dragging, grab, vel, lastMove, done;
+  const ds = new DispSmoother();
 
   let axisMax = 30;
   let bannerHidden = false, bannerRect = null;
@@ -1161,6 +1216,7 @@ function TensionScene() {
     trials.push(active);
     vel = { x: 0, y: 0 };
     lastMove = 0;
+    ds.reset();
   }
 
   function overlaps(cx, cy, o) {
@@ -1410,17 +1466,19 @@ function TensionScene() {
 
     // displacement: colinear with T, tail at the far edge of the loop
     const now = performance.now();
-    const sp = Math.hypot(vel.x, vel.y);
-    if (now - lastMove < 140 && sp > 0.4) {
-      const cos = (vel.x * ux + vel.y * uy) / sp;
-      const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
+    const d = ds.update(active.path, active.x, active.y, now - lastMove < 120);
+    if (d.alpha > 0.02) {
+      const cos = d.ux * ux + d.uy * uy;           // between T and the (smoothed) direction of travel
+      const st = ds.classify(cos), col = STATE_COL(st);
       const L = 80;
       const sx = active.hx + ux * LOOP_R, sy = active.hy + uy * LOOP_R;
+      ctx.save(); ctx.globalAlpha = d.alpha;
       arrow(sx, sy, sx + ux * L, sy + uy * L, col, 6, 20);
       lx = sx + ux * (L - 14) + nx * 22; ly = sy + uy * (L - 14) + ny * 22;
-      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, ly - 16, 40, 30, 6); ctx.fill(); ctx.restore();
+      ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, ly - 16, 40, 30, 6); ctx.fill();
       vecDeltaR(lx - 13, ly + 2, 16, col);
-      readout = { cos, col };
+      ctx.restore();
+      readout = { cos, col, st };
     }
   }
 
@@ -1434,8 +1492,8 @@ function TensionScene() {
     ctx.restore();
     text("Work by tension right now:", x + 14, y + 23, 18, "#475569", "left", 600);
     if (cos === null) { text("Block not moving → zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
-    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
-    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    const deg = deg5(cos);
+    const word = STATE_WORD(readout.st);
     text(`${word} (θ = ${deg}° between T and Δx)`, x + 14, y + 51, 18, col, "left", 700);
   }
 
@@ -1603,6 +1661,7 @@ function SpringScene() {
   const LIGHT = ["#dbeafe", "#fce7f3", "#f3e8ff"];
 
   let trials, active, dragging, grab, vel, lastMove, done;
+  const ds = new DispSmoother();
 
   let bannerHidden = false, bannerRect = null;
   // after the activity ends, a click anywhere outside the green banner closes it
@@ -1632,6 +1691,7 @@ function SpringScene() {
     trials.push(active);
     vel = { x: 0, y: 0 };
     lastMove = 0;
+    ds.reset();
   }
 
   function overlaps(cx, cy, o) {
@@ -1950,19 +2010,22 @@ function SpringScene() {
 
     // displacement: drawn just above the block, tail above the center dot
     const now = performance.now();
-    const moving = now - lastMove < 140 && (dragging || Math.abs(active.v) > 0.02);
-    if (moving) {
-      const ux = Math.sign(vel.x) || 1;
+    const moving = now - lastMove < 120 && (dragging || Math.abs(active.v) > 0.02);
+    const d = ds.update(active.path, active.x, active.y, moving);
+    if (d.alpha > 0.02) {
+      const ux = Math.sign(d.ux) || 1;
       const cos = Math.abs(F) < 0.1 ? 0 : Math.sign(F) * ux;
-      const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
+      const st = ds.classify(cos), col = STATE_COL(st);
       const L = 95, ay = active.y - HALF - 26;
+      ctx.save(); ctx.globalAlpha = d.alpha;
       ctx.save(); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]);
       ctx.beginPath(); ctx.moveTo(active.x, active.y - HALF); ctx.lineTo(active.x, ay); ctx.stroke(); ctx.restore();
       arrow(active.x, ay, active.x + ux * L, ay, col, 6, 20);
       const lx = active.x + ux * (L + 28);
-      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, ay - 16, 40, 30, 6); ctx.fill(); ctx.restore();
+      ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, ay - 16, 40, 30, 6); ctx.fill();
       vecDeltaR(lx - 13, ay + 2, 16, col);
-      readout = { cos, col, zeroF: Math.abs(F) < 0.1 };
+      ctx.restore();
+      readout = { cos, col, st, zeroF: Math.abs(F) < 0.1 };
     }
   }
 
@@ -1977,8 +2040,8 @@ function SpringScene() {
     text("Work by the spring right now:", x + 14, y + 23, 18, "#475569", "left", 600);
     if (cos === null) { text("Block not moving → zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
     if (readout.zeroF) { text("zero (no spring force at equilibrium)", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
-    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
-    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    const deg = deg5(cos);
+    const word = STATE_WORD(readout.st);
     text(`${word} (θ = ${deg}° between F`, x + 14, y + 51, 18, col, "left", 700);
     ctx.save(); ctx.font = `700 18px Inter, system-ui, sans-serif`;
     const w1 = ctx.measureText(`${word} (θ = ${deg}° between F`).width; ctx.restore();
@@ -2142,8 +2205,8 @@ function hudReadout(title, sym, cos, col, zeroF) {
   if (cos === null) HUD.readL = `<span style="color:#6b7280">Block not moving → zero</span>`;
   else if (zeroF) HUD.readL = `<span style="color:#6b7280">zero (no spring force at equilibrium)</span>`;
   else {
-    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
-    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    const deg = deg5(cos);
+    const word = col === "#16a34a" ? "positive" : col === "#dc2626" ? "negative" : "≈ zero";
     HUD.readL = `<span style="color:${col}">${word} (θ = ${deg}° between ${sym} and Δx)</span>`;
   }
 }
