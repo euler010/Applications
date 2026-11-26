@@ -1455,6 +1455,505 @@ function TensionScene() {
 
 
 /* =====================================================================
+   SCENE: Spring force (conservative) — side view
+   ===================================================================== */
+function SpringScene() {
+  // --- Room geometry (logical px) — side view, spring attached to the left wall ---
+  const ROOM = { left: 20, top: 20, right: 1140, floor: 628, bottom: 728 };
+  const PPM = 200;                       // pixels per meter
+  const MASS = 2.0, K = 20;              // kg, N/m
+  const S = 80, HALF = S / 2;            // block size
+  const WALL = 80;                       // x of the wall's face
+  const X0 = 700;                        // block center at the spring's equilibrium
+  const D = 1.0;                         // compression to the final position (m)
+  const START = { x: X0, y: ROOM.floor - HALF };
+  const TARGET = { x: X0 - D * PPM, y: ROOM.floor - HALF };
+  const SNAP = 8;
+  const OBST = [];
+  const BOUNDS = { x1: WALL + 60 + HALF, x2: ROOM.right - HALF, y1: START.y, y2: START.y };
+  const xm = px => (px - X0) / PPM;      // displacement from equilibrium (m)
+
+  const LETTERS = ["A", "B", "C"];
+  const COLORS = ["#2563eb", "#db2777", "#9333ea"];
+  const LIGHT = ["#dbeafe", "#fce7f3", "#f3e8ff"];
+
+  let trials, active, dragging, grab, vel, lastMove, done;
+
+  let bannerHidden = false, bannerRect = null;
+  // after the activity ends, a click anywhere outside the green banner closes it
+  function outsideClick(p) {
+    if (!done || bannerHidden || !bannerRect) return;
+    const r = bannerRect;
+    if (!p || p.x < r.x || p.x > r.x + r.w || p.y < r.y || p.y > r.y + r.h) bannerHidden = true;
+  }
+  let axisMin = -30;
+  function reset() {
+    axisMin = -30;
+    bannerHidden = false; bannerRect = null;
+    trials = [];
+    done = false;
+    dragging = false;
+    newBlock();
+  }
+
+  function newBlock() {
+    active = {
+      idx: trials.length,
+      x: START.x, y: START.y,
+      path: [{ x: START.x, y: START.y }],
+      work: 0, dist: 0, locked: false, v: 0,   // v: velocity (m/s) when released
+    };
+    trials.push(active);
+    vel = { x: 0, y: 0 };
+    lastMove = 0;
+  }
+
+  function overlaps(cx, cy, o) {
+    return cx + HALF > o.x1 && cx - HALF < o.x2 && cy + HALF > o.y1 && cy - HALF < o.y2;
+  }
+
+  // move along one axis with collision against table pieces + room
+  function stepAxis(axis, d) {
+    if (axis === "x") {
+      let nx = Math.min(BOUNDS.x2, Math.max(BOUNDS.x1, active.x + d));
+      for (const o of OBST) if (overlaps(nx, active.y, o)) nx = d > 0 ? o.x1 - HALF - 0.001 : o.x2 + HALF + 0.001;
+      active.x = nx;
+    } else {
+      let ny = Math.min(BOUNDS.y2, Math.max(BOUNDS.y1, active.y + d));
+      for (const o of OBST) if (overlaps(active.x, ny, o)) ny = d > 0 ? o.y1 - HALF - 0.001 : o.y2 + HALF + 0.001;
+      active.y = ny;
+    }
+  }
+
+  function record(ox, oy) {
+    const dx = active.x - ox, dy = active.y - oy;
+    // W_s = −½k(x_f² − x_i²) for each small step (x measured from equilibrium)
+    active.work += -0.5 * K * (xm(active.x) ** 2 - xm(ox) ** 2);
+    active.dist += Math.hypot(dx, dy) / PPM;
+    const last = active.path[active.path.length - 1];
+    if (Math.hypot(active.x - last.x, active.y - last.y) > 2) active.path.push({ x: active.x, y: active.y });
+  }
+
+  // move the block horizontally to x (px); returns true if it locked
+  function moveToX(tx) {
+    tx = Math.min(BOUNDS.x2, Math.max(BOUNDS.x1, tx));
+    const n = Math.max(1, Math.ceil(Math.abs(tx - active.x) / 3));
+    const dd = (tx - active.x) / n;
+    for (let i = 0; i < n; i++) {
+      const ox = active.x;
+      active.x += dd;
+      record(ox, active.y);
+      const crossed = (ox - TARGET.x) * (active.x - TARGET.x) <= 0 && ox !== active.x;
+      if (crossed || Math.abs(active.x - TARGET.x) < SNAP) { lock(); return true; }
+    }
+    return false;
+  }
+  function moveToward(tx) {
+    const sx = active.x, blk = active;
+    if (moveToX(tx)) return;
+    const mx = blk.x - sx;
+    if (Math.abs(mx) > 0.3) { vel.x = vel.x * 0.6 + mx * 0.4; vel.y = 0; lastMove = performance.now(); }
+  }
+
+  // released block: frictionless spring motion along the floor
+  let lastT = performance.now(), dragV = 0, lastDrag = null;
+  function physics() {
+    const now = performance.now();
+    const dt = Math.min(0.033, (now - lastT) / 1000); lastT = now;
+    if (!active || dragging || done) return;
+    if (Math.abs(active.v) < 1e-4 && Math.abs(xm(active.x)) < 1e-4) return;
+    const steps = 8, h = dt / steps;
+    for (let i = 0; i < steps; i++) {
+      active.v += -(K / MASS) * xm(active.x) * h;
+      let nx = active.x + active.v * h * PPM;
+      if (nx < BOUNDS.x1 || nx > BOUNDS.x2) { nx = Math.min(BOUNDS.x2, Math.max(BOUNDS.x1, nx)); active.v = 0; }
+      const blk = active, sx = blk.x;
+      if (moveToX(nx)) return;
+      const mx = blk.x - sx;
+      if (Math.abs(mx) > 0.01) { vel.x = Math.sign(mx); vel.y = 0; lastMove = now; }
+    }
+  }
+
+  function lock() {
+    active.v = 0;
+    const ox = active.x, oy = active.y;
+    active.x = TARGET.x; active.y = TARGET.y;
+    record(ox, oy);
+    active.path.push({ x: TARGET.x, y: TARGET.y });
+    active.locked = true;
+    dragging = false;
+    if (trials.length < 3) newBlock();
+    else { done = true; active = null; }
+  }
+
+  /* ---------- input ---------- */
+  function down(p) {
+    if (!active || done) return;
+    if (Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12) {
+      dragging = true; active.v = 0; dragV = 0; lastDrag = null;
+      grab = { x: p.x - active.x, y: p.y - active.y };
+      return true;
+    }
+  }
+  function move(p) {
+    if (!dragging || !active) return;
+    const now = performance.now(), blk = active;
+    const before = blk.x;
+    moveToward(p.x - grab.x);
+    if (blk.locked) return;
+    if (lastDrag) {
+      const dtt = Math.max(0.008, (now - lastDrag.t) / 1000);
+      dragV = dragV * 0.5 + ((blk.x - before) / PPM / dtt) * 0.5;
+    }
+    lastDrag = { t: now };
+  }
+  function up() {
+    if (dragging && active) {
+      const stale = !lastDrag || performance.now() - lastDrag.t > 80;
+      active.v = stale ? 0 : Math.max(-6, Math.min(6, dragV));
+    }
+    dragging = false; dragV = 0; lastDrag = null;
+  }
+  function hover(p) {
+    return active && !done && Math.abs(p.x - active.x) <= HALF + 12 && Math.abs(p.y - active.y) <= HALF + 12;
+  }
+
+  /* ---------- drawing ---------- */
+  function drawRoom() {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(ROOM.left, ROOM.top, ROOM.right - ROOM.left, ROOM.floor - ROOM.top);
+    ctx.save();
+    ctx.strokeStyle = "#f1f4f8"; ctx.lineWidth = 1;
+    for (let y = ROOM.floor; y > ROOM.top; y -= PPM / 2) { ctx.beginPath(); ctx.moveTo(ROOM.left, y); ctx.lineTo(ROOM.right, y); ctx.stroke(); }
+    for (let x = ROOM.left; x < ROOM.right; x += PPM / 2) { ctx.beginPath(); ctx.moveTo(x, ROOM.top); ctx.lineTo(x, ROOM.floor); ctx.stroke(); }
+    ctx.restore();
+    // floor
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillRect(ROOM.left, ROOM.floor, ROOM.right - ROOM.left, ROOM.bottom - ROOM.floor);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(ROOM.left, ROOM.floor, ROOM.right - ROOM.left, ROOM.bottom - ROOM.floor); ctx.clip();
+    ctx.strokeStyle = "#b4c0cf"; ctx.lineWidth = 3;
+    for (let x = ROOM.left - 100; x < ROOM.right + 100; x += 28) { ctx.beginPath(); ctx.moveTo(x, ROOM.bottom); ctx.lineTo(x + 100, ROOM.floor); ctx.stroke(); }
+    ctx.restore();
+    // wall on the left
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillRect(ROOM.left, ROOM.top, WALL - ROOM.left, ROOM.floor - ROOM.top);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(ROOM.left, ROOM.top, WALL - ROOM.left, ROOM.floor - ROOM.top); ctx.clip();
+    ctx.strokeStyle = "#b4c0cf"; ctx.lineWidth = 3;
+    for (let y = ROOM.top - 100; y < ROOM.floor + 100; y += 28) { ctx.beginPath(); ctx.moveTo(ROOM.left, y + 60); ctx.lineTo(WALL, y); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle = "#475569"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(WALL, ROOM.top); ctx.lineTo(WALL, ROOM.floor); ctx.lineTo(ROOM.right, ROOM.floor); ctx.stroke();
+    // outline
+    ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
+    ctx.strokeRect(ROOM.left, ROOM.top, ROOM.right - ROOM.left, ROOM.bottom - ROOM.top);
+
+    // equilibrium marker and the 1.0 m compression
+    ctx.save();
+    ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+    ctx.beginPath(); ctx.moveTo(X0, ROOM.floor); ctx.lineTo(X0, ROOM.floor - 200); ctx.stroke();
+    ctx.restore();
+    text("Equilibrium (x = 0)", X0, ROOM.floor - 214, 14, "#64748b", "center", 600);
+    const dy = ROOM.floor - 150;
+    arrow((X0 + TARGET.x) / 2, dy, TARGET.x + 3, dy, "#64748b", 2, 10);
+    arrow((X0 + TARGET.x) / 2, dy, X0 - 3, dy, "#64748b", 2, 10);
+    ctx.save(); ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+    ctx.beginPath(); ctx.moveTo(TARGET.x, ROOM.floor - S - 4); ctx.lineTo(TARGET.x, dy - 14); ctx.stroke(); ctx.restore();
+    ctx.save(); ctx.fillStyle = "#fff"; ctx.fillRect((X0 + TARGET.x) / 2 - 30, dy - 12, 60, 24); ctx.restore();
+    text(D.toFixed(1) + " m", (X0 + TARGET.x) / 2, dy, 14, "#475569", "center", 600);
+
+    // given values
+    {
+      const cx = (ROOM.left + ROOM.right) / 2, cy = (ROOM.floor + ROOM.bottom) / 2;
+      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.92)"; roundRect(cx - 160, cy - 20, 320, 40, 10); ctx.fill(); ctx.restore();
+      text(`Each block: m = ${MASS.toFixed(1)} kg     k = ${K} N/m`, cx, cy, 16, "#334155", "center", 600);
+    }
+  }
+
+  function drawSpring(b) {
+    const x1 = WALL, x2 = b.x - HALF, y = b.y;
+    const lead = 14, coils = 16, amp = 16;
+    const L = x2 - x1 - 2 * lead;
+    ctx.save();
+    ctx.strokeStyle = "#334155"; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 + lead, y);
+    for (let i = 0; i < coils * 2; i++) ctx.lineTo(x1 + lead + L * (i + 0.5) / (coils * 2), y + (i % 2 ? amp : -amp));
+    ctx.lineTo(x2 - lead, y); ctx.lineTo(x2, y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTarget() {
+    if (trials.some(t => t.locked)) return;
+    ctx.save();
+    ctx.setLineDash([10, 7]); ctx.lineWidth = 3; ctx.strokeStyle = "#64748b";
+    ctx.strokeRect(TARGET.x - HALF, TARGET.y - HALF, S, S);
+    ctx.restore();
+  }
+
+  function drawPath(t) {
+    return;   // motion is along one line, so paths are compared in the table instead
+    if (t.path.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.setLineDash(t.locked ? [] : [2, 0]);
+    ctx.globalAlpha = t.locked ? 0.9 : 1;
+    ctx.beginPath();
+    ctx.moveTo(t.path[0].x, t.path[0].y);
+    for (let i = 1; i < t.path.length; i++) ctx.lineTo(t.path[i].x, t.path[i].y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // place letter badge at the middle of each finished path, nudged apart
+  function labelSpots() {
+    return [];
+    const spots = [];
+    for (const t of trials) {
+      if (!t.locked) continue;
+      // find the point halfway along the path
+      let total = 0;
+      for (let i = 1; i < t.path.length; i++) total += Math.hypot(t.path[i].x - t.path[i - 1].x, t.path[i].y - t.path[i - 1].y);
+      const half = total / 2;
+      let acc = 0, px = t.path[0].x, py = t.path[0].y, dirx = 1, diry = 0;
+      for (let i = 1; i < t.path.length; i++) {
+        const a = t.path[i - 1], b = t.path[i];
+        const seg = Math.hypot(b.x - a.x, b.y - a.y);
+        if (seg > 0.01) { dirx = (b.x - a.x) / seg; diry = (b.y - a.y) / seg; }
+        if (acc + seg >= half) { const f = (half - acc) / (seg || 1); px = a.x + (b.x - a.x) * f; py = a.y + (b.y - a.y) * f; break; }
+        acc += seg; px = b.x; py = b.y;
+      }
+      // perpendicular offset (prefer upward side)
+      let nx = -diry, ny = dirx;
+      if (ny > 0) { nx = -nx; ny = -ny; }
+      let lx = px + nx * 26, ly = py + ny * 26;
+      for (let k = 0; k < 12; k++) {
+        const clash = spots.some(s => Math.hypot(s.x - lx, s.y - ly) < 42);
+        if (!clash) break;
+        ly -= 38;
+      }
+      lx = Math.min(ROOM.right - 22, Math.max(ROOM.left + 22, lx));
+      ly = Math.min(ROOM.floor - 22, Math.max(ROOM.top + 22, ly));
+      spots.push({ x: lx, y: ly, idx: t.idx });
+    }
+    return spots;
+  }
+
+  function drawBadge(x, y, idx, r = 19) {
+    ctx.save();
+    ctx.fillStyle = COLORS[idx];
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+    text(LETTERS[idx], x, y + 1, Math.max(14, Math.min(16, Math.round(r * 0.95))), "#fff", "center", 700);
+  }
+
+  function drawBlock(t, isActive) {
+    const x = t.x - HALF, y = t.y - HALF;
+    ctx.save();
+    if (isActive) { ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = dragging ? 18 : 8; ctx.shadowOffsetY = dragging ? 8 : 3; }
+    ctx.fillStyle = LIGHT[t.idx];
+    roundRect(x, y, S, S, 6); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.strokeStyle = COLORS[t.idx]; ctx.lineWidth = 4;
+    roundRect(x, y, S, S, 6); ctx.stroke();
+    ctx.restore();
+    text(LETTERS[t.idx], t.x, t.y - 20, 16, COLORS[t.idx], "center", 700);
+  }
+
+  let readout = null;   // {cos, col} while the block is moving, else null
+  function drawVectors() {
+    readout = null;
+    if (!active) return;
+    ctx.fillStyle = "#111827"; ctx.beginPath(); ctx.arc(active.x, active.y, 5, 0, Math.PI * 2); ctx.fill();
+
+    // spring force: length grows with the stretch or compression
+    const x = xm(active.x), F = -K * x;              // N (+ = to the right)
+    const fl = Math.min(220, Math.abs(F) * 4);
+    if (fl > 6) {
+      const dir = Math.sign(F);
+      arrow(active.x, active.y, active.x + dir * fl, active.y, "#111827", 6, Math.min(20, fl * 0.6));
+      const lx = active.x + dir * (fl + 30);
+      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, active.y - 16, 40, 30, 6); ctx.fill(); ctx.restore();
+      subText("F", "s", lx - 12, active.y, 16, "#111827");
+    }
+
+    // displacement: drawn just above the block, tail above the center dot
+    const now = performance.now();
+    const moving = now - lastMove < 140 && (dragging || Math.abs(active.v) > 0.02);
+    if (moving) {
+      const ux = Math.sign(vel.x) || 1;
+      const cos = Math.abs(F) < 0.1 ? 0 : Math.sign(F) * ux;
+      const col = cos > 0.17 ? "#16a34a" : cos < -0.17 ? "#dc2626" : "#6b7280";
+      const L = 95, ay = active.y - HALF - 26;
+      ctx.save(); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(active.x, active.y - HALF); ctx.lineTo(active.x, ay); ctx.stroke(); ctx.restore();
+      arrow(active.x, ay, active.x + ux * L, ay, col, 6, 20);
+      const lx = active.x + ux * (L + 28);
+      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.85)"; roundRect(lx - 20, ay - 16, 40, 30, 6); ctx.fill(); ctx.restore();
+      vecDeltaR(lx - 13, ay + 2, 16, col);
+      readout = { cos, col, zeroF: Math.abs(F) < 0.1 };
+    }
+  }
+
+  function drawReadout() {
+    const cos = readout ? readout.cos : null, col = readout ? readout.col : null;
+    const x = ROOM.left + 8, y = ROOM.top + 8, w = 392, h = 74;
+    ctx.save();
+    ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
+    roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    text("Work by the spring right now:", x + 14, y + 23, 18, "#475569", "left", 600);
+    if (cos === null) { text("Block not moving  →  zero", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
+    if (readout.zeroF) { text("zero  (no spring force at equilibrium)", x + 14, y + 51, 18, "#6b7280", "left", 700); return; }
+    const deg = Math.round(Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI);
+    const word = cos > 0.17 ? "positive" : cos < -0.17 ? "negative" : "≈ zero";
+    text(`${word}   (θ = ${deg}° between F`, x + 14, y + 51, 18, col, "left", 700);
+    ctx.save(); ctx.font = `700 18px Inter, system-ui, sans-serif`;
+    const w1 = ctx.measureText(`${word}   (θ = ${deg}° between F`).width; ctx.restore();
+    text("s", x + 14 + w1 + 1, y + 57, 14, col, "left", 700);
+    text("and Δx)", x + 14 + w1 + 15, y + 51, 18, col, "left", 700);
+  }
+
+  // center of the space to the right of the work readout
+  const STATUS_CX = (ROOM.left + 8 + 392 + ROOM.right - 50) / 2;
+  function drawStatus() {
+    let msg;
+    if (!done && active.path.length > 1) return;   // hide the bubble once the block starts moving
+    if (done) msg = null;
+    else if (active.idx === 0) msg = "Drag block A to the dashed square \u2014 or pull it and let go.";
+    else if (active.idx === 1) msg = "Now get block B to the dashed square a different way.";
+    else msg = "One more: get block C to the dashed square yet another way.";
+    if (msg) {
+      ctx.save();
+      ctx.font = `600 16px Inter, system-ui, sans-serif`;
+      const w = ctx.measureText(msg).width + 36;
+      // centered across the workspace, 80% of the way from the floor up to the ceiling
+      const cx = (ROOM.left + ROOM.right) / 2;
+      const cy = ROOM.floor - 0.8 * (ROOM.floor - ROOM.top);
+      ctx.fillStyle = "rgba(248,250,252,.94)"; ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
+      roundRect(cx - w / 2, cy - 18, w, 36, 18); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      text(msg, cx, cy, 16, "#475569", "center", 600);
+    } else {
+      if (bannerHidden) return;
+      const cx = STATUS_CX, w = 630, h = 86, y = ROOM.top + 8;
+      bannerRect = { x: cx - w / 2, y, w, h };
+      ctx.save();
+      ctx.fillStyle = "rgba(220,252,231,.96)"; ctx.strokeStyle = "#16a34a"; ctx.lineWidth = 3;
+      roundRect(cx - w / 2, y, w, h, 14); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      text("Three different paths — the same work by the spring!", cx, y + 21, 18, "#14532d", "center", 700);
+      text("The spring force is conservative: its work depends only on where the object", cx, y + 46, 16, "#166534", "center", 500);
+      text("starts and ends, not on the path it takes between them.", cx, y + 66, 16, "#166534", "center", 500);
+    }
+  }
+
+  function drawPanel() {
+    const P = { x: 1160, y: 20, w: 420, h: 708 };
+    ctx.save();
+    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2;
+    roundRect(P.x, P.y, P.w, P.h, 12); ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    text("Total Work Done by the Spring", P.x + P.w / 2, P.y + 30, 16, "#0f172a", "center", 700);
+    // W_g (J) subtitle
+    subText("W", "s", P.x + P.w / 2 - 30, P.y + 54, 15, "#475569");
+    text("(J)", P.x + P.w / 2 + 4, P.y + 54, 15, "#475569", "left", 600);
+
+    // axis
+    const gx1 = P.x + 78, gx2 = P.x + P.w - 22;
+    const gTop = P.y + 84, gBot = P.y + 420;
+    // vertical axis rescales so the most negative bar always fits
+    const worst = Math.min(0, ...trials.map(t => t.work));
+    const need = Math.max(30, -worst * 1.12);
+    const step = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find(st => need / st <= 7) || 2000;
+    const target = -Math.ceil(need / step) * step;
+    axisMin += (target - axisMin) * 0.2;
+    if (Math.abs(target - axisMin) < 0.05) axisMin = target;
+    const vMax = step, vMin = axisMin;
+    const yOf = v => gTop + (vMax - v) / (vMax - vMin) * (gBot - gTop);
+    for (let v = vMax; v >= vMin - 1e-6; v -= step) {
+      const y = yOf(v);
+      ctx.strokeStyle = v === 0 ? "#0f172a" : "#e2e8f0";
+      ctx.lineWidth = v === 0 ? 2.5 : 1;
+      ctx.beginPath(); ctx.moveTo(gx1, y); ctx.lineTo(gx2, y); ctx.stroke();
+      text((v < 0 ? "−" : "") + Math.abs(v), gx1 - 10, y, 14, "#475569", "right", v === 0 ? 700 : 400);
+    }
+    ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(gx1, gTop); ctx.lineTo(gx1, gBot); ctx.stroke();
+
+    // bars
+    const slotW = (gx2 - gx1) / 3, barW = 64;
+    const y0 = yOf(0);
+    for (let i = 0; i < 3; i++) {
+      const cx = gx1 + slotW * (i + 0.5);
+      const t = trials[i];
+      // letter label at bottom
+      drawBadge(cx, gBot + 26, i, 15);
+      if (!t || t.path.length < 2) continue;
+      const vClamped = Math.max(vMin, Math.min(vMax, t.work));
+      const yv = yOf(vClamped);
+      ctx.save();
+      ctx.globalAlpha = t.locked ? 1 : 0.55;
+      ctx.fillStyle = COLORS[i];
+      ctx.fillRect(cx - barW / 2, Math.min(y0, yv), barW, Math.abs(yv - y0));
+      ctx.restore();
+      const labelY = t.work <= 0 ? yv + 18 : yv - 18;
+      text(fmtJ(t.work), cx, Math.min(gBot - 10, labelY), 16, t.locked ? "#0f172a" : "#64748b", "center", 700);
+      if (!t.locked && t.path.length > 1) text("In progress", cx, t.work > 0 ? y0 + 15 : y0 - 15, 14, "#64748b", "center", 600);
+    }
+
+    // data table
+    const ty = gBot + 68;
+    text("Path", P.x + 40, ty, 14, "#475569", "left", 700);
+    text("Distance traveled", P.x + 200, ty, 14, "#475569", "center", 700);
+    subText("W", "s", P.x + 352, ty, 14, "#475569", "center");
+    ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(P.x + 24, ty + 16); ctx.lineTo(P.x + P.w - 24, ty + 14); ctx.stroke();
+    for (let i = 0; i < 3; i++) {
+      const t = trials[i];
+      const ry = ty + 38 + i * 32;
+      drawBadge(P.x + 54, ry, i, 15);
+      text(t && t.dist > 0 ? t.dist.toFixed(2) + " m" : "—", P.x + 200, ry, 16, "#0f172a", "center", 600);
+      text(t && t.path.length > 1 ? fmtJ(t.work) : "—", P.x + 352, ry, 16, "#0f172a", "center", 600);
+    }
+
+  }
+
+  function draw() {
+    physics();
+    drawRoom();
+    drawTarget();
+    for (const t of trials) drawPath(t);
+    // earlier blocks wait at the final position as faded ghosts; the spring is attached to the current block
+    ctx.save(); ctx.globalAlpha = 0.4;
+    for (const t of trials) if (t.locked && (active || t !== trials[trials.length - 1])) drawBlock(t, false);
+    ctx.restore();
+    drawSpring(active || trials[trials.length - 1]);
+    if (!active) drawBlock(trials[trials.length - 1], false);
+    readout = null;
+    // start marker
+    if (active) {
+      ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2;
+      ctx.strokeRect(START.x - HALF, START.y - HALF, S, S); ctx.restore();
+      drawBlock(active, true);
+      drawVectors();
+    }
+    for (const s of labelSpots()) drawBadge(s.x, s.y, s.idx, 15);
+    drawReadout();
+    drawStatus();
+    drawPanel();
+  }
+
+  reset();
+  return { reset, draw, down, move, up, hover, outsideClick };
+}
+
+
+/* =====================================================================
    Information button (top right of the workspace) + definitions pop-up
    ===================================================================== */
 const INFO = { x: 1140 - 8 - 17, y: 20 + 8 + 17, r: 17 };
@@ -1519,6 +2018,7 @@ const SCENES = [
   { id: "gravity", label: "Gravity", make: GravityScene },
   { id: "friction", label: "Friction", make: FrictionScene },
   { id: "tension", label: "Tension", make: TensionScene },
+  { id: "spring", label: "Spring Force", make: SpringScene },
 ];
 
 const tabsEl = document.getElementById("tabs");
