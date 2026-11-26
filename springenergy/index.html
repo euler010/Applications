@@ -110,6 +110,7 @@
   let speed = 0.25;
 
   const PT2 = 8 / 3; // 2 pt expressed in CSS px
+  const fmt = (x, d) => (Math.abs(x) < 0.5 * 10 ** -d ? 0 : x).toFixed(d);   // avoids "-0.00"
   const omega = () => Math.sqrt(k / m);
   const yEq = () => H - L0 - m * g / k - BH / 2;          // equilibrium height of block's center
   const yNow = () => yEq() + A * Math.cos(omega() * t);
@@ -255,7 +256,7 @@
     ctx.fillStyle = '#e4572e';
     ctx.beginPath(); ctx.arc(bx - bwPx / 2 - 4, ybPx, 3.5, 0, Math.PI * 2); ctx.fill();
     ctx.font = `600 ${F * 0.85 + PT2}px Inter,sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-    ctx.fillText(`y = ${(yb - y0).toFixed(2)} m`, ax + 14, ybPx - 3);
+    ctx.fillText(`y = ${fmt(yb - y0, 2)} m`, ax + 14, ybPx - 3);
 
     drawAxis();
   }
@@ -322,7 +323,7 @@
     }
     if (hi - lo < 0.5) hi = lo + 0.5;
     const st = niceStep(hi - lo);
-    return { lo: Math.floor(lo / st + 1e-9) * st, hi: Math.ceil(hi / st + 0.15) * st, st };
+    return { lo: lo < -1e-9 ? Math.floor(lo / st - 0.15) * st : 0, hi: Math.ceil(hi / st + 0.15) * st, st };
   }
 
   let rangeCache = null;
@@ -370,7 +371,7 @@
       // value
       ctx.fillStyle = '#1d2433'; ctx.font = `600 ${F * 0.85 + PT2}px Inter,sans-serif`; ctx.textAlign = 'center';
       ctx.textBaseline = it.val >= 0 ? 'bottom' : 'top';
-      ctx.fillText(`${(Math.abs(it.val) < 0.05 ? 0 : it.val).toFixed(1)} J`, cx, it.val >= 0 ? yTop - 4 : yTop + h + 4);
+      ctx.fillText(`${fmt(it.val, 1)} J`, cx, it.val >= 0 ? yTop - 4 : yTop + h + 4);
       // label with subscript
       drawSubLabel(ctx, it.main, it.sub, cx, B + F * 1.0, F * 1.25, it.col);
     });
@@ -405,9 +406,9 @@
     $('mA').textContent = `${Math.abs(A).toFixed(2)} m`;
   }
   function updateLive() {   // values that change every frame
-    $('mY').textContent = `${(yNow() - y0).toFixed(2)} m`;
+    $('mY').textContent = `${fmt(yNow() - y0, 2)} m`;
     const v = vNow();
-    $('mV').textContent = `${(Math.abs(v) < 0.005 ? 0 : v).toFixed(2)} m/s`;
+    $('mV').textContent = `${fmt(v, 2)} m/s`;
   }
   function invalidate() { rangeCache = null; updateReadout(); }
 
@@ -455,7 +456,8 @@
       drag = 'origin'; setOrigin(pxToH(p.y));
     } else if (p.x > bx - bwPx / 2 - 10 && p.x < bx + bwPx / 2 + 10 && p.y > top - 10 && p.y < bottom + 10) {
       drag = { type: 'block', off: pxToH(p.y) - yb };
-      A = yb - yEq(); t = 0; setRunning(false); invalidate();
+      A = yb - yEq(); if (Math.abs(A) < 0.005) A = 0;
+      t = 0; setRunning(false); invalidate();
     } else return;
     scene.setPointerCapture(ev.pointerId);
   });
@@ -494,7 +496,8 @@
     requestAnimationFrame(frame);
   }
 
-  window.addEventListener('resize', () => { resize(); });
+  const panelObserver = new ResizeObserver(() => resize());
+  panelObserver.observe($('sceneWrap')); panelObserver.observe($('barsWrap'));
   resize(); updateReadout();
   requestAnimationFrame(frame);
 })();
