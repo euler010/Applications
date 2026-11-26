@@ -34,8 +34,11 @@
   button.primary:hover{background:#1e40af}
   button.primary:disabled{background:#e3e6ec;border-color:#d7dce6;color:#9aa1ae;cursor:default}
   select{font:inherit;font-size:.9em;padding:.4em .5em;border-radius:8px;border:1px solid var(--line);background:#fff;width:100%}
-  #readoutBar{padding:.55em 1em .7em}
-  .readout{font-size:.85em;color:var(--muted);font-variant-numeric:tabular-nums}
+  #stats{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.6em;padding:.7em 1em .9em}
+  .stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:.55em .8em}
+  .sl{font-size:.8em;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sv{font-size:1.15em;font-weight:700;margin-top:.15em;font-variant-numeric:tabular-nums;white-space:nowrap}
+  @media (max-width:900px){#stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -78,7 +81,15 @@
   </aside>
 </main>
 
-<div id="readoutBar"><span class="readout" id="readout"></span></div>
+<div id="stats">
+  <div class="stat"><div class="sl">Mass</div><div class="sv" id="mMass" style="color:#0e7490">1.0 kg</div></div>
+  <div class="stat"><div class="sl">Spring Constant</div><div class="sv" id="mK" style="color:#d97706">40 N/m</div></div>
+  <div class="stat"><div class="sl">Equilibrium Stretch</div><div class="sv" id="mStretch" style="color:#e11d48"></div></div>
+  <div class="stat"><div class="sl">Period</div><div class="sv" id="mT" style="color:#2563eb"></div></div>
+  <div class="stat"><div class="sl">Amplitude</div><div class="sv" id="mA" style="color:#7c3aed"></div></div>
+  <div class="stat"><div class="sl">Position y</div><div class="sv" id="mY" style="color:#e4572e"></div></div>
+  <div class="stat"><div class="sl">Velocity</div><div class="sv" id="mV" style="color:#059669"></div></div>
+</div>
 
 <script>
 (() => {
@@ -388,9 +399,15 @@
 
   // ---------- UI ----------
   function updateReadout() {
-    const T = 2 * Math.PI / omega();
-    $('readout').textContent =
-      `Equilibrium stretch = mg/k = ${(m * g / k).toFixed(3)} m   •   Period T = ${T.toFixed(2)} s   •   Amplitude = ${Math.abs(A).toFixed(2)} m`;
+    $('mK').textContent = `${k} N/m`;
+    $('mStretch').textContent = `${(m * g / k).toFixed(3)} m`;
+    $('mT').textContent = `${(2 * Math.PI / omega()).toFixed(2)} s`;
+    $('mA').textContent = `${Math.abs(A).toFixed(2)} m`;
+  }
+  function updateLive() {   // values that change every frame
+    $('mY').textContent = `${(yNow() - y0).toFixed(2)} m`;
+    const v = vNow();
+    $('mV').textContent = `${(Math.abs(v) < 0.005 ? 0 : v).toFixed(2)} m/s`;
   }
   function invalidate() { rangeCache = null; updateReadout(); }
 
@@ -470,7 +487,7 @@
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (running) t += dt * speed;
-    drawScene(); drawBars();
+    drawScene(); drawBars(); updateLive();
     requestAnimationFrame(frame);
   }
 
