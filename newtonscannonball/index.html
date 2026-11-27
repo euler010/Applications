@@ -269,7 +269,11 @@
       font-size: 0.95rem;
       line-height: 1.65;
     }
-    .info-box p + p { margin-top: 0.75rem; }
+    .info-box p + p, .info-box p + .info-list { margin-top: 0.75rem; }
+    .info-list { list-style: none; margin: 0; padding: 0; }
+    .info-list li { position: relative; padding-left: 1.1rem; }
+    .info-list li + li { margin-top: 0.3rem; }
+    .info-list li::before { content: "•"; position: absolute; left: 0.2rem; color: #f59e0b; }
     .info-title {
       display: flex;
       align-items: center;
@@ -575,14 +579,20 @@
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        Newton's Thought Experiment (1728)
+        Newton's Thought Experiment
       </h3>
       <p>
-        In <em>A Treatise of the System of the World</em>, Sir Isaac Newton demonstrated that planetary orbital motion and projectile free-fall are governed by the same universal law of gravitation.
+        In <em>A Treatise of the System of the World</em> (written in the 1680s, published 1728), Isaac Newton imagined throwing a stone horizontally from the top of a very high mountain, with no air to slow it down. He used this to argue that a falling projectile and the orbiting Moon obey the same law of gravity.
+        The faster the launch, the farther it travels before landing.
       </p>
       <p>
-        At horizontal velocity v = √(GM/r) ≈ 7.35 km/s, the cannonball falls toward Earth at the exact rate the surface curves away underneath it.
+        From this hypothetical 1,000 km mountaintop, if v = √(GM/r) ≈ 7.35 km/s, a cannonball falls toward Earth at exactly the rate the surface curves away beneath it, so it never lands, and the result is a circular orbit.
       </p>
+      <ul class="info-list">
+        <li>Slower than 7.35 km/s: it lands.</li>
+        <li>Between 7.35 and about 10.4 km/s: an elliptical orbit.</li>
+        <li>Faster than about 10.4 km/s: it escapes Earth's gravity.</li>
+      </ul>
     </div>
   </div>
 
