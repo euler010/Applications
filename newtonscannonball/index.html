@@ -218,6 +218,80 @@
       font-family: 'Inter', sans-serif;
       font-variant-numeric: tabular-nums;
     }
+    /* Overlay controls: button row with the info button right-aligned beneath it */
+    .overlay-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+    /* Orange "circle i" info button (same gradient as Fire!) */
+    .info-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #020617;
+      background-image: linear-gradient(to right, #f59e0b, #d97706, #ea580c);
+      border: 1px solid rgba(252, 211, 77, 0.4);
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+      transition: transform 0.15s ease, filter 0.15s ease;
+      touch-action: manipulation;
+    }
+    .info-btn:hover { filter: brightness(1.12); }
+    .info-btn:active { transform: scale(0.95); }
+    .info-btn svg { width: 20px; height: 20px; }
+    /* Info pop-up */
+    .info-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background-color: rgba(2, 6, 23, 0.6);
+      -webkit-backdrop-filter: blur(3px);
+      backdrop-filter: blur(3px);
+    }
+    .info-overlay[hidden] { display: none; }
+    .info-box {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem 1.4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+    .info-box p + p { margin-top: 0.75rem; }
+    .info-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fcd34d;
+      font-weight: 700;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      margin-bottom: 0.75rem;
+      padding-right: 1.5rem;
+    }
+    .info-close {
+      position: absolute;
+      top: 0.55rem;
+      right: 0.8rem;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: #64748b;
+      padding: 0.25rem;
+    }
+    .info-close:hover { color: #e2e8f0; }
     /* Title text: same amber-to-orange gradient as the Fire! button */
     .title-gradient {
       font-size: 14pt; /* was 12pt (16px); +2pt */
@@ -335,8 +409,9 @@
     <div id="canvasContainer" class="flex-1 relative bg-slate-950 cursor-grab active:cursor-grabbing min-h-[500px] lg:min-h-0">
       <canvas id="glCanvas" class="w-full h-full block"></canvas>
 
-      <!-- View Navigation Overlay Buttons -->
-      <div class="absolute top-4 right-4 z-20 flex gap-2">
+      <!-- View Navigation Overlay Buttons (row) with the info button below it -->
+      <div class="overlay-controls absolute top-4 right-4 z-20">
+      <div class="flex gap-2">
         <button id="zoomInBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom In">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
@@ -365,6 +440,13 @@
           </svg>
           Reset
         </button>
+      </div>
+      <button id="infoBtn" class="info-btn" title="About Newton's thought experiment" aria-label="About Newton's thought experiment" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round">
+          <path d="M12 11v6" />
+          <circle cx="12" cy="7.2" r="0.6" fill="currentColor" />
+        </svg>
+      </button>
       </div>
 
       <!-- Drag / Orbit Hint -->
@@ -485,24 +567,27 @@
         </p>
       </div>
 
-      <!-- Educational Context Card -->
-      <div class="bg-slate-950/60 rounded-2xl border border-slate-800 p-4 shadow-xl text-xs space-y-2 text-slate-300">
-        <h3 class="font-bold text-amber-300 text-sm flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          Newton's Thought Experiment (1728)
-        </h3>
-        <p class="leading-relaxed text-slate-400">
-          In <em>A Treatise of the System of the World</em>, Sir Isaac Newton demonstrated that planetary orbital motion and projectile free-fall are governed by the same universal law of gravitation.
-        </p>
-        <p class="leading-relaxed text-slate-400">
-          At horizontal velocity v = √(GM/r) ≈ 7.35 km/s, the cannonball falls toward Earth at the exact rate the surface curves away underneath it.
-        </p>
-      </div>
-
     </div>
   </main>
+
+  <!-- Info pop-up: Newton's Thought Experiment -->
+  <div id="infoOverlay" class="info-overlay" hidden>
+    <div class="info-box" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+      <button id="infoCloseBtn" class="info-close" aria-label="Close">&times;</button>
+      <h3 id="infoTitle" class="info-title">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Newton's Thought Experiment (1728)
+      </h3>
+      <p>
+        In <em>A Treatise of the System of the World</em>, Sir Isaac Newton demonstrated that planetary orbital motion and projectile free-fall are governed by the same universal law of gravitation.
+      </p>
+      <p>
+        At horizontal velocity v = √(GM/r) ≈ 7.35 km/s, the cannonball falls toward Earth at the exact rate the surface curves away underneath it.
+      </p>
+    </div>
+  </div>
 
   <script>
     /* ==========================================================================
@@ -1644,6 +1729,22 @@
         activatePresetButton(btn);
         fireCannon(color);
       });
+    });
+
+    // Info pop-up: open from the orange "i" button; close on any click outside the box,
+    // on the close (x) button, or with the Escape key
+    const infoBtn = document.getElementById('infoBtn');
+    const infoOverlay = document.getElementById('infoOverlay');
+    const infoCloseBtn = document.getElementById('infoCloseBtn');
+    function openInfo() { infoOverlay.hidden = false; infoCloseBtn.focus(); }
+    function closeInfo() { infoOverlay.hidden = true; infoBtn.focus(); }
+    infoBtn.addEventListener('click', openInfo);
+    infoCloseBtn.addEventListener('click', closeInfo);
+    infoOverlay.addEventListener('pointerdown', (e) => {
+      if (e.target === infoOverlay) closeInfo();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !infoOverlay.hidden) closeInfo();
     });
 
     // Clear Trajectories
