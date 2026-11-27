@@ -1338,45 +1338,7 @@
       fociGroup.add(f1Marker);
     }
 
-    // Dynamic width text billboard sprite
-    function createFocusSprite(text, colorHex) {
-      const c = document.createElement('canvas');
-      const ctx = c.getContext('2d');
-      ctx.font = 'bold 24px Inter, sans-serif';
-      const textMetrics = ctx.measureText(text);
-      const textWidth = Math.ceil(textMetrics.width);
-
-      // Generous dynamic padding so text is never truncated
-      const padX = 40;
-      const canvasWidth = Math.max(420, textWidth + padX * 2);
-      const canvasHeight = 72;
-      c.width = canvasWidth;
-      c.height = canvasHeight;
-
-      ctx.font = 'bold 24px Inter, sans-serif';
-      ctx.fillStyle = 'rgba(2, 6, 23, 0.92)';
-      ctx.strokeStyle = colorHex;
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.roundRect(4, 4, c.width - 8, c.height - 8, 14);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#f8fafc';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(text, c.width / 2, c.height / 2);
-
-      const texture = new THREE.CanvasTexture(c);
-      const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
-      const sprite = new THREE.Sprite(spriteMat);
-      const worldHeight = 310;
-      const worldWidth = worldHeight * (canvasWidth / canvasHeight);
-      sprite.scale.set(worldWidth, worldHeight, 1);
-      return sprite;
-    }
-
-    function createFocusMarker(pos, labelText, mainColor) {
+    function createFocusMarker(pos, name, mainColor) { // name identifies the focus in code only (no on-screen label)
       const group = new THREE.Group();
 
       // Glowing core sphere
@@ -1397,10 +1359,6 @@
       const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
       group.add(outerRing);
 
-      // Text label
-      const sprite = createFocusSprite(labelText, mainColor);
-      sprite.position.set(0, 520, 0);
-      group.add(sprite);
 
       group.position.copy(pos);
       return group;
@@ -1449,12 +1407,8 @@
           const f2Marker = createFocusMarker(f2Pos, "Focus 2 (Empty Focus)", "#f97316");
           fociGroup.add(f2Marker);
         }
-      } else {
-        // Unbound parabolic/hyperbolic escape trajectory
-        const escapeBadge = createFocusSprite("Unbound Trajectory (No 2nd Focus)", "#ef4444");
-        escapeBadge.position.set(0, 1100, 0);
-        fociGroup.add(escapeBadge);
       }
+      // Unbound (escape) trajectories have no second focus, so only Focus 1 is shown
     }
 
     function clearFoci() {
