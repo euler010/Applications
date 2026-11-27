@@ -85,6 +85,7 @@
     .h-5 { height: 1.25rem; }
     .h-8 { height: 2rem; }
     .h-full { height: 100%; }
+    .h-\[30px\] { height: 30px; }
     .min-w-0 { min-width: 0; }
     .min-h-screen { min-height: 100vh; }
     .min-h-\[500px\] { min-height: 500px; }
@@ -221,8 +222,8 @@
     }
     /* "Circle i" info button: dark center with an orange ring and orange "i" */
     .info-btn {
-      width: 30px;  /* same as the height of the Reset View / Clear Paths / Default buttons */
-      height: 30px;
+      width: 27px;  /* 90% of the 30px button height, so it looks the same height as the row */
+      height: 27px;
       border-radius: 9999px;
       display: flex;
       align-items: center;
@@ -240,7 +241,7 @@
       box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
     }
     .info-btn:active { transform: scale(0.95); }
-    .info-btn svg { width: 17.6px; height: 17.6px; }
+    .info-btn svg { width: 15.84px; height: 15.84px; }
     /* Info pop-up */
     .info-overlay {
       position: fixed;
@@ -409,12 +410,12 @@
 
       <!-- View Navigation Overlay Buttons (info button at the far right) -->
       <div class="absolute top-4 right-4 z-20 flex items-center gap-2">
-        <button id="zoomInBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom In">
+        <button id="zoomInBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 h-[30px] text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom In">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
           </svg>
         </button>
-        <button id="zoomOutBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom Out">
+        <button id="zoomOutBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-2.5 py-1.5 h-[30px] text-xs font-bold shadow-lg backdrop-blur-md transition-all flex items-center justify-center hover:text-cyan-400 active:scale-95 touch-manipulation" title="Zoom Out">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
           </svg>
