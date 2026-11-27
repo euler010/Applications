@@ -270,6 +270,11 @@
       line-height: 1.65;
     }
     .info-box p + p, .info-box p + .info-list { margin-top: 0.75rem; }
+    /* Square root: a drawn radical sign whose top joins a bar over the whole expression */
+    .nowrap-eq { white-space: nowrap; }
+    .sqrt { display: inline-flex; align-items: stretch; white-space: nowrap; vertical-align: -0.12em; }
+    .sqrt-sign { display: block; width: 0.55em; height: auto; overflow: visible; position: relative; top: 0.75px; flex-shrink: 0; }
+    .sqrt-body { display: inline-block; border-top: 1.5px solid currentColor; padding: 0.08em 0.12em 0 0.06em; line-height: 1.25; }
     .info-list { list-style: none; margin: 0; padding: 0; }
     .info-list li { position: relative; padding-left: 1.1rem; }
     .info-list li + li { margin-top: 0.3rem; }
@@ -586,7 +591,7 @@
         The faster the launch, the farther it travels before landing.
       </p>
       <p>
-        From this hypothetical 1,000 km mountaintop, if v = √(GM/r) ≈ 7.35 km/s, a cannonball falls toward Earth at exactly the rate the surface curves away beneath it, so it never lands, and the result is a circular orbit.
+        From this hypothetical 1,000 km mountaintop, if <span class="nowrap-eq">v = <span class="sqrt" aria-label="square root of G M over r"><svg class="sqrt-sign" viewBox="0 0 10 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0.5 12.5 L2.6 11.2 L5.2 19.5 L9.6 0 L10 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg><span class="sqrt-body">GM/r</span></span> ≈ 7.35 km/s</span>, a cannonball falls toward Earth at exactly the rate the surface curves away beneath it, so it never lands, and the result is a circular orbit.
       </p>
       <ul class="info-list">
         <li>Slower than 7.08 km/s: it lands.</li>
