@@ -1327,7 +1327,15 @@
         b.dispose();
       }
       clearFoci();
+      showEarthCenterFocus();
       resetAllPresetButtons();
+    }
+
+    // While Show Foci is on, mark Earth's center (Focus 1) even before anything is fired
+    function showEarthCenterFocus() {
+      if (!showFociMode) return;
+      const f1Marker = createFocusMarker(new THREE.Vector3(0, 0, 0), "Focus 1 (Earth Center)", "#38bdf8");
+      fociGroup.add(f1Marker);
     }
 
     // Dynamic width text billboard sprite
@@ -1589,6 +1597,7 @@
       if (showFociCheckbox) {
         showFociCheckbox.checked = false;
         showFociMode = false;
+        clearFoci();
         setEarthTransparency(false);
         if (fociStatusBadge) {
           fociStatusBadge.textContent = "Off";
