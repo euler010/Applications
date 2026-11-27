@@ -438,11 +438,11 @@
           </svg>
           Clear Paths
         </button>
-        <button id="resetAppBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-all flex items-center gap-1.5 active:scale-95" title="Reset entire app to initial load state">
+        <button id="resetAppBtn" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/70 rounded-xl px-3 py-1.5 text-xs font-medium shadow-lg backdrop-blur-md transition-all flex items-center gap-1.5 active:scale-95" title="Return the app to its default settings (as when it first loads)">
           <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Reset
+          Default
         </button>
       </div>
       <button id="infoBtn" class="info-btn" title="About Newton's thought experiment" aria-label="About Newton's thought experiment" aria-haspopup="dialog">
@@ -1622,7 +1622,7 @@
     // Attach single-shot listener to the Fire! button
     attachSingleFireListener(fireBtn, () => fireCannon());
 
-    // Reset whole app to initial launch state
+    // "Default" button: return the whole app to its initial load state
     function resetEntireApp() {
       // 1. Clear all active cannonballs, trails, particles, and foci markers
       clearAllTrajectories();
@@ -1659,6 +1659,9 @@
       if (speed500xBtn) {
         setSimSpeed(500.0, speed500xBtn);
       }
+
+      // 8. Sound back on (its setting at load)
+      setSoundEnabled(true);
     }
 
     if (resetAppBtn) {
@@ -1796,13 +1799,14 @@
     if (speed1000xBtn) speed1000xBtn.addEventListener('click', () => setSimSpeed(1000.0, speed1000xBtn));
 
     // Sound Toggle
-    soundToggleBtn.addEventListener('click', () => {
-      soundEnabled = !soundEnabled;
+    function setSoundEnabled(on) {
+      soundEnabled = on;
       soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
       soundToggleBtn.className = soundEnabled 
         ? "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-300 hover:bg-slate-800 transition-all flex items-center gap-1"
         : "px-2.5 py-1 text-xs font-medium rounded-lg text-rose-400 bg-rose-950/40 border border-rose-800/40 transition-all flex items-center gap-1";
-    });
+    }
+    soundToggleBtn.addEventListener('click', () => setSoundEnabled(!soundEnabled));
 
     // Interactive Camera Drag / Orbit
     let isDragging = false;
