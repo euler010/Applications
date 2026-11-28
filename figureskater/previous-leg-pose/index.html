@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figure Skating and Angular Momentum</title>
+<style>
+  :root{
+    --panel: rgba(14,24,40,0.82);
+    --line: rgba(255,255,255,0.14);
+    --text: #eaf2fb;
+    --muted: #9fb3c8;
+    --L: #ffc94a;
+    --w: #4fd1ff;
+    --I: #ff8fb1;
+    --K: #a7f3a0;
+  }
+  *{box-sizing:border-box}
+  /* dark scroll bars (used only if a menu ever needs to scroll) */
+  :root{color-scheme:dark}
+  *{scrollbar-width:thin;scrollbar-color:rgba(159,179,200,.45) rgba(14,24,40,.6)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:rgba(14,24,40,.6);border-radius:8px}
+  ::-webkit-scrollbar-thumb{background:rgba(159,179,200,.4);border-radius:8px;border:2px solid rgba(14,24,40,.6)}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(159,179,200,.6)}
+  ::-webkit-scrollbar-corner{background:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0b1626;color:var(--text);
+    font-family: "Inter",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  /* The 3D view always fills the window. On large screens (SmartBoard, 4K) the menus are scaled up in
+     proportion to the window, relative to a 1600 × 900 design size; they are never shrunk below their
+     normal size. On phones the layout is rearranged for touch (see body.phone below). */
+  #stage{position:absolute;inset:0;overflow:hidden;background:#0e1c30}
+  #titleBox{transform-origin:0 0}
+  #leftCol{transform-origin:0 0}
+  #controls{transform-origin:100% 0}
+  #scene{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
+  .panel{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+  #controls{top:12px;right:12px;width:290px;padding:14px 14px 12px;max-height:calc(100% - 24px);overflow:auto}
+  h1{font-size:16px;margin:0 0 2px;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.35}
+  .sec{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+  .lab{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+  .lab b{color:var(--text);font-weight:600}
+  .row{display:flex;gap:6px;flex-wrap:wrap}
+  /* stacked (vertical) fractions */
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.72em;line-height:1;margin:0 1px}
+  .frac > span:first-child{border-bottom:1px solid currentColor;padding:0 1px 1px}
+  .frac > span:last-child{padding:1px 1px 0}
+  button{flex:1;min-width:0;background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:8px 6px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .15s}
+  button:hover{background:rgba(255,255,255,.16)}
+  button.on{background:#2a6fdb;border-color:#5b95f0}
+  button.big{font-size:14px;padding:10px 6px;font-weight:600}
+  input[type=range]{width:100%;accent-color:#5b95f0}
+  label.chk{display:flex;align-items:flex-start;gap:8px;font-size:13px;margin:6px 0;cursor:pointer;line-height:1.3}
+  label.chk input{margin-top:2px}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}
+  #leftCol{position:absolute;top:48px;left:12px;width:290px;max-height:calc(100% - 60px);overflow:auto;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+  #leftCol .panel{position:relative;pointer-events:auto}
+  #titleBox{position:absolute;top:12px;left:14px;pointer-events:none;white-space:nowrap}
+  /* title floats over the scene as text, shaded from the light blue of the ice to the blue of the selected buttons */
+  #titleBox h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.2px;line-height:1.2;
+    /* diagonal streaks of blue, like light catching the ice */
+    background:linear-gradient(115deg,
+      #e6f1fb 0%, #c2def7 8%, #98c2f2 17%, #8cbaf1 21%, #b9d9f5 30%, #eef6fc 37%,
+      #cbe3f8 45%, #a2c9f3 53%, #8cbaf1 58%, #c2def7 67%, #e6f1fb 74%,
+      #b6d6f5 82%, #94c0f2 89%, #cbe3f8 96%, #e6f1fb 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 2px rgba(5,12,24,.6))}
+  #readout{padding:12px 14px}
+  .eq{font-variant-numeric:tabular-nums;font-size:18px;text-align:center;padding:8px 4px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .eq .t{display:block;margin-bottom:4px}
+  .meas{display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:13px;font-variant-numeric:tabular-nums;align-items:baseline}
+  .meas .k{color:var(--muted)}
+  .meas .v{text-align:right}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0}
+  #graphBox{padding:8px 10px 6px}
+  #graph{width:100%;height:190px;display:block}
+  .phoneOnly{display:none}
+  /* ---------- phones: rearranged for touch ---------- */
+  body.phone #stage{background:#0e1c30}
+  body.phone .phoneOnly{display:block}
+  body.phone #titleBox{top:8px;left:10px;right:10px;white-space:normal}
+  body.phone #titleBox h1{font-size:17px}
+  body.phone #leftCol{top:36px;left:8px;width:auto;right:auto;max-width:min(330px, calc(100% - 16px));max-height:45%;gap:6px}
+  body.phone #readout{padding:6px 10px 8px}
+  body.phone .eq{font-size:16px;padding:4px 2px;margin-bottom:0;border-bottom:none}
+  body.phone.details .eq{border-bottom:1px solid var(--line);margin-bottom:6px;padding-bottom:6px}
+  body.phone:not(.details) .meas, body.phone:not(.details) #kNote, body.phone:not(.details) #graphBox{display:none}
+  body.phone #graph{height:120px}
+  body.phone #controls{top:auto;bottom:0;left:0;right:0;width:auto;max-height:62%;border-radius:14px 14px 0 0;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  body.phone:not(.more) #controls .phoneExtra{display:none}
+  body.phone button{min-height:44px;font-size:15px}
+  body.phone button.big{min-height:48px;font-size:16px}
+  body.phone .toggle{width:100%;margin-top:8px;font-size:14px;font-weight:600}
+  body.phone #readout .toggle{min-height:40px;margin-top:6px}
+  body.phone input[type=range]{height:36px}
+  body.phone label.chk{min-height:44px;align-items:center;font-size:15px;margin:2px 0}
+  body.phone label.chk input{width:22px;height:22px;margin:0}
+  body.phone .hint{font-size:12px}
+  /* landscape phones: the controls sit down the right-hand side instead */
+  body.phone.landscape #controls{top:0;left:auto;width:min(340px, 46%);max-height:100%;border-radius:14px 0 0 14px}
+  body.phone.landscape #leftCol{max-height:calc(100% - 44px)}
+  #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--muted)}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+</head>
+<body>
+<div id="stage">
+<canvas id="scene"></canvas>
+<div id="err">The 3D view could not start in this browser (WebGL is needed).</div>
+
+<div id="titleBox"><h1>Figure Skating and Angular Momentum</h1></div>
+<div id="leftCol">
+  <div id="readout" class="panel">
+  <div class="eq"><span class="t"><span style="color:var(--L)">L</span> = <span style="color:var(--I)">I</span> × <span style="color:var(--w)">ω</span></span><span id="eqLine">—</span></div>
+  <div class="meas">
+    <span class="k"><span class="sw" style="background:var(--I)"></span>Moment of inertia, I</span><span class="v" id="vI">—</span>
+    <span class="k"><span class="sw" style="background:var(--w)"></span>Angular velocity, ω</span><span class="v" id="vW">—</span>
+    <span class="k"></span><span class="v" id="vRev" style="color:var(--muted)">—</span>
+    <span class="k"><span class="sw" style="background:var(--L)"></span>Angular momentum, L</span><span class="v" id="vL">—</span>
+    <span class="k"><span class="sw" style="background:var(--K)"></span>Rotational KE, <span class="frac"><span>1</span><span>2</span></span>Iω²</span><span class="v" id="vK">—</span>
+    <span class="k"><span class="sw" style="background:#e8d39a"></span>Braid angle from vertical</span><span class="v" id="vB">—</span>
+  </div>
+  <div class="hint" id="kNote">Skater mass 50 kg. I is computed from her body segments in their current positions.</div>
+  <button id="detailBtn" class="toggle phoneOnly">Show details and graphs ▾</button>
+</div>
+  <div id="graphBox" class="panel">
+  <canvas id="graph"></canvas>
+</div>
+</div>
+
+<div id="controls" class="panel">
+
+  <div class="lab">Arm Position</div>
+  <div class="row">
+    <button id="btnOut" class="big on">Out</button>
+    <button id="btnIn" class="big">In</button>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <button id="btnPlay" class="big">Pause</button>
+    <button id="btnResetAll" class="big">Reset</button>
+  </div>
+  <button id="moreBtn" class="toggle phoneOnly">More controls ▴</button>
+  <div class="phoneExtra">
+  <div style="margin-top:12px">
+    <div class="lab">Position <b id="posVal">0% in</b></div>
+    <input id="pos" type="range" min="0" max="100" value="0">
+  </div>
+  <div style="margin-top:8px">
+    <div class="lab">Starting spin (arms out) <b id="w0Val">1.0 rev/s</b></div>
+    <input id="w0" type="range" min="0.2" max="2" step="0.1" value="1.0">
+  </div>
+  <div class="hint">Shortcut: press <b>Space</b> to switch between Out and In.</div>
+
+  <div class="sec">
+    <div class="row" id="speedRow">
+      <button data-s="1" class="on">1×</button>
+      <button data-s="0.5"><span class="frac"><span>1</span><span>2</span></span>×</button>
+      <button data-s="0.25"><span class="frac"><span>1</span><span>4</span></span>×</button>
+      <button data-s="0.1"><span class="frac"><span>1</span><span>10</span></span>×</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="row" id="viewRow">
+      <button data-v="angle" class="on">Angled</button>
+      <button data-v="front">Side</button>
+      <button data-v="top">Top</button>
+    </div>
+    <div class="hint">Drag to orbit, scroll or pinch to zoom, right-drag to pan.</div>
+  </div>
+
+  <div class="sec">
+    <label class="chk"><input type="checkbox" id="chkTrail" checked> Trace the path of the hand and toe</label>
+    <label class="chk"><input type="checkbox" id="chkFric"> Include blade–ice friction</label>
+    <label class="chk"><input type="checkbox" id="chkVec"> Show <span style="color:var(--L)">L</span> and <span style="color:var(--w)">ω</span> vectors</label>
+  </div>
+  </div><!-- /phoneExtra -->
+</div>
+
+
+
+</div><!-- /stage -->
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------- Fitting the app to the screen ----------
+// Computers and large screens: the stage keeps its 1600 × 900 design layout and is scaled to fit the window,
+// centred. Phones (narrow screens, or short landscape screens): the stage fills the screen and the layout
+// is rearranged for touch (body.phone).
+const STAGE_W = 1600, STAGE_H = 900;
+let UI_SCALE = 1;
+const stageEl = document.getElementById('stage');
+function layoutStage() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const phone = W < 760 || (H < 500 && W < 1000);
+  document.body.classList.toggle('phone', phone);
+  document.body.classList.toggle('landscape', phone && W > H);
+  const title = document.getElementById('titleBox'), left = document.getElementById('leftCol'), ctl = document.getElementById('controls');
+  if (phone) {
+    UI_SCALE = 1;
+    for (const el of [title, left, ctl]) { el.style.transform = ''; el.style.maxHeight = ''; }
+    left.style.top = '';
+  } else {
+    // menus keep their normal size on ordinary screens and grow on large ones
+    UI_SCALE = Math.max(1, Math.min(W / STAGE_W, H / STAGE_H));
+    const t = `scale(${UI_SCALE})`;
+    title.style.transform = t; left.style.transform = t; ctl.style.transform = t;
+    left.style.top = (12 + 36 * UI_SCALE) + 'px';
+    left.style.maxHeight = ((H - 12 - 36 * UI_SCALE - 12) / UI_SCALE) + 'px';
+    ctl.style.maxHeight = ((H - 24) / UI_SCALE) + 'px';
+  }
+}
+layoutStage();
+const canvas = document.getElementById('scene');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+} catch (e) {
+  document.getElementById('err').style.display = 'flex';
+  throw e;
+}
+// (pixel ratio is set in resize(), allowing for how much the stage is scaled)
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1c30);
+scene.fog = new THREE.Fog(0x0e1c30, 14, 38);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 100);
+scene.add(camera);
+const controls = new OrbitControls(camera, canvas);
+// drags are measured in screen pixels; scale the speeds so dragging feels the same at any stage size
+function applyControlScale() { controls.rotateSpeed = 1; controls.panSpeed = 1; }   // the 3D view itself is never scaled
+applyControlScale();
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.target.set(0, 0.95, 0);
+controls.minDistance = 1.2;
+controls.maxDistance = 16;
+controls.maxPolarAngle = Math.PI * 0.495;
+
+// ---------- Lights ----------
+// light from below: white ice reflects a lot of light back up, so the "ground" half of the sky light is bright
+scene.add(new THREE.HemisphereLight(0xdfefff, 0xc9d8e8, 1.15));
+// two low rink-side lights aimed upward at her from near ice level (no shadows), so her chin, jaw and
+// the undersides of her arms are lit as well as the top of her head
+// a soft light from below the viewer, aimed up: whatever side you look from, her chin and jaw are lit
+const underFill = new THREE.DirectionalLight(0xfff6ee, 0.9);
+underFill.position.set(0, -1, 0.2); underFill.target.position.set(0, 0.35, -1);
+camera.add(underFill); camera.add(underFill.target);
+for (const [x, z] of [[3.2, 2.6], [-2.8, -3.0]]) {
+  const low = new THREE.DirectionalLight(0xf2f7ff, 1.1);
+  low.position.set(x, 0.15, z); low.target.position.set(0, 1.6, 0);
+  scene.add(low); scene.add(low.target);
+}
+// soft fill light that moves with the camera, so whatever side you look from is lit
+const camFill = new THREE.DirectionalLight(0xfff4ec, 0.7);
+camFill.position.set(0.3, 0.4, 0); camFill.target.position.set(0, -0.1, -1);
+camera.add(camFill); camera.add(camFill.target);
+const key = new THREE.DirectionalLight(0xffffff, 1.7);   // overhead light, a little softer so it doesn't dominate
+key.position.set(3.5, 7, 4);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = -3; key.shadow.camera.right = 3;
+key.shadow.camera.top = 3; key.shadow.camera.bottom = -3;
+key.shadow.camera.near = 1; key.shadow.camera.far = 20;
+key.shadow.bias = -0.0005;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x9fc6ff, 0.8);
+rim.position.set(-4, 3, -5);
+scene.add(rim);
+
+// ---------- Ice ----------
+function makeIceTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 1024;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(512, 512, 40, 512, 512, 720);
+  grd.addColorStop(0, '#f4f9ff'); grd.addColorStop(1, '#cfe1f2');
+  g.fillStyle = grd; g.fillRect(0, 0, 1024, 1024);
+  // faint skate scratches
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  g.lineCap = 'round';
+  for (let i = 0; i < 260; i++) {
+    const x = rnd() * 1024, y = rnd() * 1024, r = 40 + rnd() * 260, a0 = rnd() * 6.28, da = 0.2 + rnd() * 0.9;
+    g.strokeStyle = `rgba(150,180,210,${0.06 + rnd() * 0.12})`;
+    g.lineWidth = 0.6 + rnd() * 1.2;
+    g.beginPath(); g.arc(x, y, r, a0, a0 + da); g.stroke();
+  }
+  // rink markings: a centre circle and a centre line (helps you see the spin)
+  g.strokeStyle = 'rgba(40,90,200,0.35)'; g.lineWidth = 6;      // same blue as the lines on the ice
+  g.beginPath(); g.arc(512, 512, 150, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = 'rgba(40,90,200,0.35)';
+  g.beginPath(); g.arc(512, 512, 9, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = 'rgba(40,90,200,0.35)'; g.lineWidth = 10;
+  g.beginPath(); g.moveTo(0, 820); g.lineTo(1024, 820); g.stroke();
+  g.beginPath(); g.moveTo(0, 204); g.lineTo(1024, 204); g.stroke();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+const ice = new THREE.Mesh(
+  new THREE.CircleGeometry(20, 96),
+  new THREE.MeshStandardMaterial({ map: makeIceTexture(), roughness: 0.25, metalness: 0.0 })
+);
+ice.rotation.x = -Math.PI / 2;
+ice.receiveShadow = true;
+ice.scale.set(0.5, 0.5, 1); // 10 m radius disc; the red centre circle is ≈ 2.9 m radius
+scene.add(ice);
+const iceFar = new THREE.Mesh(new THREE.CircleGeometry(40, 64),
+  new THREE.MeshStandardMaterial({ color: 0xc6d9ec, roughness: 0.3 }));
+iceFar.rotation.x = -Math.PI / 2; iceFar.position.y = -0.002; iceFar.receiveShadow = true;
+scene.add(iceFar);
+
+// ---------- Skater ----------
+// "Glacier": ice-blue dress, sheer pale sleeves, silver trim, blond braid
+const mat = {
+  skin: new THREE.MeshStandardMaterial({ color: 0xf2d0bb, roughness: 0.6 }),
+  dress: new THREE.MeshStandardMaterial({ color: 0x6fb6e8, roughness: 0.3, metalness: 0.35 }),
+  dress2: new THREE.MeshStandardMaterial({ color: 0xb8e0fa, roughness: 0.5, metalness: 0.3, side: THREE.DoubleSide }),
+  tights: new THREE.MeshStandardMaterial({ color: 0xeec4ab, roughness: 0.55 }),
+  hair: new THREE.MeshStandardMaterial({ color: 0xe8d39a, roughness: 0.65 }),
+  boot: new THREE.MeshStandardMaterial({ color: 0xf7f7f2, roughness: 0.4 }),
+  blade: new THREE.MeshStandardMaterial({ color: 0xc8d0d8, roughness: 0.15, metalness: 0.95 }),
+  sleeve: new THREE.MeshStandardMaterial({ color: 0xcfe9fb, roughness: 0.45, transparent: true, opacity: 0.55, depthWrite: false }),
+  accent: new THREE.MeshStandardMaterial({ color: 0xf0f6ff, roughness: 0.25, metalness: 0.8, emissive: 0xf0f6ff, emissiveIntensity: 0.15 }),
+};
+function shade(m) { m.castShadow = true; m.receiveShadow = true; return m; }
+// The rounded ends of each limb piece are centred on the joints, so the upper and lower
+// pieces overlap like a ball joint and no gap opens when an elbow or knee bends.
+function capsule(r, len, material) {
+  const m = shade(new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 8, 16), material));
+  return m;
+}
+
+const skater = new THREE.Group();   // rotates about the vertical (y) axis
+scene.add(skater);
+
+// Torso pieces (body frame: y up, she faces +z)
+// leotard: hips are covered by the dress down below the top of the skirt
+// Torso: an hourglass silhouette made by spinning a side profile (radius vs height)
+const lathe = pts => {        // resampled every 4 mm so the colour gradient on the dress stays smooth
+  const out = [];
+  for (let k = 0; k < pts.length - 1; k++) {
+    const [r0, y0] = pts[k], [r1, y1] = pts[k + 1];
+    const n = Math.max(1, Math.ceil(Math.abs(y1 - y0) / 0.004));
+    for (let j = 0; j < n; j++) { const t = j / n; out.push([r0 + (r1 - r0) * t, y0 + (y1 - y0) * t]); }
+  }
+  out.push(pts[pts.length - 1]);
+  return new THREE.LatheGeometry(out.map(([r, y]) => new THREE.Vector2(r, y)), 72);
+};
+// Bodice shape: the front comes forward a little at the rib cage and again just below the armpits.
+// Multiplying only z (front) leaves her width and back unchanged.
+const CHEST_PROFILE = [[0.104, 1.04], [0.103, 1.08], [0.108, 1.13], [0.122, 1.19], [0.138, 1.25], [0.143, 1.29],
+  [0.142, 1.33], [0.148, 1.37], [0.152, 1.4], [0.13, 1.435], [0.08, 1.455], [0.04, 1.46]];
+// above the bust the front slopes back toward the collarbones
+function upperTrim(y) {
+  const t = Math.min(Math.max((y - 1.345) / (1.44 - 1.345), 0), 1);
+  return 1 - 0.38 * t * t * (3 - 2 * t);
+}
+function chestZ(x, y) {
+  return (1 + 0.34 * Math.exp(-Math.pow((y - 1.29) / 0.075, 2)) + 0.2 * Math.exp(-Math.pow((y - 1.33) / 0.042, 2))) * upperTrim(y);
+}
+function chestR(y) {
+  const P = CHEST_PROFILE;
+  if (y <= P[0][1]) return P[0][0];
+  for (let k = 0; k < P.length - 1; k++) if (y <= P[k + 1][1]) {
+    const t = (y - P[k][1]) / (P[k + 1][1] - P[k][1]); return P[k][0] + (P[k + 1][0] - P[k][0]) * t;
+  }
+  return P[P.length - 1][0];
+}
+// Flatter front across the bust (seen from above): each horizontal slice follows |x/r|^n + |z/r|^n = 1,
+// round (n = 2) away from the bust and a little flatter across the front at bust height (n = 2.8).
+const FLAT = 2.8;
+function flatN(y) { return 2 + (FLAT - 2) * Math.exp(-Math.pow((y - 1.32) / 0.065, 2)); }
+function frontCurve(sinPhi, y) { const n = flatN(y); return Math.pow(Math.max(0, 1 - Math.pow(Math.abs(sinPhi), n)), 1 / n); }
+function onChest(y, phi, out = 0.003) {   // a point on the bodice surface (phi = 0 is the front)
+  const r = chestR(y) + out, cz = Math.cos(phi);
+  const zf = 0.7 * (cz > 0 ? chestZ(r * Math.sin(phi), y) : 1);
+  const front = cz > 0 ? frontCurve(Math.sin(phi), y) : cz;
+  return new THREE.Vector3(r * Math.sin(phi), y, r * front * zf);
+}
+const PELVIS_Z = 0.85, CHEST_Z = 0.7;
+const pelvis = shade(new THREE.Mesh(lathe([
+  [0.168, 0.82], [0.174, 0.85], [0.175, 0.88], [0.172, 0.91], [0.166, 0.94], [0.157, 0.97], [0.144, 1.0], [0.128, 1.03], [0.115, 1.06], [0.108, 1.08],
+]), mat.dress));
+pelvis.scale.z = PELVIS_Z; skater.add(pelvis);
+const chest = shade(new THREE.Mesh(lathe(CHEST_PROFILE), mat.dress));
+chest.scale.z = CHEST_Z; skater.add(chest);
+// the front of the bodice angles gently outward at the chest, then back in toward the neckline
+{
+  const p = chest.geometry.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const y = p.getY(i), z = p.getZ(i);
+    if (z <= 0) continue;
+    const x = p.getX(i), r = Math.hypot(x, z);
+    p.setZ(i, r * frontCurve(r > 0 ? x / r : 0, y) * chestZ(x, y));
+  }
+  chest.geometry.computeVertexNormals();
+}
+const shoulders = shade(new THREE.Mesh(new THREE.SphereGeometry(0.16, 72, 40), mat.dress));
+shoulders.scale.set(1.16, 0.4, 0.6); shoulders.position.y = 1.41; skater.add(shoulders);
+{ // trim the front of the shoulders the same way, so the upper chest slopes back
+  const p = shoulders.geometry.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const z = p.getZ(i); if (z <= 0) continue;
+    p.setZ(i, z * upperTrim(1.41 + p.getY(i) * 0.4));
+  }
+  shoulders.geometry.computeVertexNormals();
+}
+// neck: slim in the middle, flaring smoothly where it meets the shoulders and the underside of the head
+const neck = shade(new THREE.Mesh(new THREE.LatheGeometry([
+  [0.058, 1.40], [0.05, 1.42], [0.044, 1.44], [0.041, 1.46], [0.042, 1.478], [0.046, 1.492],
+  [0.052, 1.502], [0.0565, 1.51], [0.057, 1.52], [0.05, 1.54],
+].map(([r, y]) => {
+  // the middle of the neck is slimmer (NECK); the flares into the shoulders and head are kept
+  const NECK = 0.836;
+  const ss = (a, b, x) => { const t = Math.min(Math.max((x - a) / (b - a), 0), 1); return t * t * (3 - 2 * t); };
+  const keep = Math.max(ss(1.485, 1.515, y), 1 - ss(1.4, 1.43, y));
+  return new THREE.Vector2(r * (NECK + (1 - NECK) * keep), y);
+}), 40), mat.skin));
+neck.scale.z = 1.06; skater.add(neck);
+// head: an ellipsoid, reshaped below the mouth so the jaw narrows into a defined chin
+const HEAD_SCALE = new THREE.Vector3(0.92, 1.08, 1.0);
+const CHIN = { narrow: 0.2, forward: 0.015, down: 0.01, focus: 1.35, start: 0.03, point: 0.006 };
+function chinShape(v) {          // v in the sphere's own (unscaled) coordinates, radius 0.095
+  const c = CHIN;
+  const low = Math.min(Math.max((-v.y - c.start) / 0.06, 0), 1);         // 0 above the mouth → 1 at the bottom
+  const front = Math.pow(Math.min(Math.max(v.z / 0.095, 0), 1), c.focus); // 0 at the sides/back → 1 at the front
+  v.x *= 1 - c.narrow * low * low;                                        // jaw narrows toward the chin
+  v.z += c.forward * low * front;                                         // chin comes forward
+  v.y -= c.down * low * low * front;                                      // and a little down
+  const tip = Math.exp(-Math.pow((v.y + 0.088) / 0.016, 2)) * Math.exp(-Math.pow(v.x / 0.022, 2));
+  v.z += c.point * tip * front;                                           // small rounded point at the tip
+  return v;
+}
+const headGeo = new THREE.SphereGeometry(0.095, 64, 40);
+{
+  const p = headGeo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) { chinShape(v.fromBufferAttribute(p, i)); p.setXYZ(i, v.x, v.y, v.z); }
+  headGeo.computeVertexNormals();
+}
+const head = shade(new THREE.Mesh(headGeo, mat.skin));
+// head, hair and face sit in one group, scaled about the base of the head (HEAD_SIZE 1 = original)
+const HEAD_SIZE = 1.1 * 1.04 * 0.98, HEAD_PIVOT_Y = 1.49;   // about 12% larger than the original head
+const headScaler = new THREE.Group(); headScaler.position.y = HEAD_PIVOT_Y; headScaler.scale.setScalar(HEAD_SIZE); skater.add(headScaler);
+const headParts = new THREE.Group(); headParts.position.y = -HEAD_PIVOT_Y; headScaler.add(headParts);
+head.scale.copy(HEAD_SCALE); head.position.y = 1.585; headParts.add(head);
+head.receiveShadow = false; neck.receiveShadow = false;   // keep her face and neck evenly lit
+// ---------- Hair: full and textured, combed back and down to a low braid at the nape ----------
+// The hair is a cap over the head (tilted back). It has thickness that tapers to nothing at the hairline,
+// fine grooves that radiate from the nape (as if combed toward it), and strands in lighter and darker blonde.
+// HAIR_STYLE 'nape': combed back and down to a low braid at the nape; 'crown': combed back to the crown, braid from mid-back of the head, wisps by the face
+const HAIR_STYLE = 'nape';
+const HAIR_TH = Math.PI * 0.56, HAIR_THICK = 0.09, GROOVE = 0.0016, GROOVE_N = 46;
+const NAPE = new THREE.Vector3(0, -0.5, -0.87).normalize().applyAxisAngle(new THREE.Vector3(1, 0, 0), 0.62);   // in the cap's frame
+const NAPE_U = new THREE.Vector3(1, 0, 0), NAPE_W = new THREE.Vector3().crossVectors(NAPE, NAPE_U).normalize();
+const hairMat = new THREE.MeshStandardMaterial({ color: 0xe8d39a, roughness: 0.55, side: THREE.DoubleSide });
+const hairLight = new THREE.MeshStandardMaterial({ color: 0xf6e6b8, roughness: 0.5 });
+const hairDark = new THREE.MeshStandardMaterial({ color: 0xcbb07a, roughness: 0.6 });
+function capRadius(theta, phi) {
+  const inner = Math.min(1, Math.max(0, (HAIR_TH - theta) / 0.3)), body = inner * inner * (3 - 2 * inner);
+  const d = new THREE.Vector3(Math.sin(theta) * Math.cos(phi), Math.cos(theta), Math.sin(theta) * Math.sin(phi));
+  const nape = HAIR_STYLE === 'nape';
+  const ang = nape ? Math.atan2(d.dot(NAPE_W), d.dot(NAPE_U)) : phi;
+  const fade = nape ? Math.min(1, Math.max(0, (d.angleTo(NAPE) - 0.25) / 0.35)) : Math.min(1, Math.max(0, theta / 0.35));
+  return 0.1 * (1 + HAIR_THICK * body) + GROOVE * Math.pow(0.5 + 0.5 * Math.cos(GROOVE_N * ang), 2) * fade * body;
+}
+const hairCap = (() => {
+  const geo = new THREE.SphereGeometry(1, 160, 48, 0, Math.PI * 2, 0, HAIR_TH), p = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const theta = Math.acos(Math.max(-1, Math.min(1, v.y))), phi = Math.atan2(v.z, v.x);
+    v.multiplyScalar(capRadius(theta, phi)); p.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return shade(new THREE.Mesh(geo, hairMat));
+})();
+hairCap.scale.set(0.95, 1.08, 1.02); hairCap.position.set(0, 1.592, -0.01); hairCap.rotation.x = -0.62; headParts.add(hairCap);
+for (let k = 0; k < 70; k++) {   // strands from the hairline, back over the head to where the hair is gathered
+  const phi = (k / 70) * Math.PI * 2 + 0.03 * Math.sin(k * 7.3), th0 = HAIR_TH - 0.03;
+  if (HAIR_STYLE === 'crown') {
+    const pts = [];
+    for (let q = 0; q <= 14; q++) {
+      const th = th0 - (HAIR_TH - 0.18) * (q / 14);
+      pts.push(new THREE.Vector3(Math.sin(th) * Math.cos(phi), Math.cos(th), Math.sin(th) * Math.sin(phi)).multiplyScalar(capRadius(th, phi) + 0.0012));
+    }
+    hairCap.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, 0.0011 + 0.0006 * (k % 3), 5), k % 2 ? hairLight : hairDark));
+    continue;
+  }
+  const start = new THREE.Vector3(Math.sin(th0) * Math.cos(phi), Math.cos(th0), Math.sin(th0) * Math.sin(phi));
+  if (start.angleTo(NAPE) < 0.6) continue;
+  const axis = new THREE.Vector3().crossVectors(start, NAPE).normalize(), total = start.angleTo(NAPE) - 0.22, pts = [];
+  for (let q = 0; q <= 16; q++) {
+    const d = start.clone().applyAxisAngle(axis, total * q / 16);
+    const th = Math.acos(Math.max(-1, Math.min(1, d.y))), ph = Math.atan2(d.z, d.x);
+    if (th > HAIR_TH) continue;
+    pts.push(d.multiplyScalar(capRadius(th, ph) + 0.0012));
+  }
+  if (pts.length < 4) continue;
+  hairCap.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, 0.0011 + 0.0006 * (k % 3), 5), k % 2 ? hairLight : hairDark));
+}
+// hair gathered at the nape into a soft bundle with a silver tie (the braid hangs from here),
+// or, for the crown style, loose wisps framing the face
+if (HAIR_STYLE === 'crown') {
+  for (const sx of [-1, 1]) for (const off of [0, 0.006]) {
+    const pts = [new THREE.Vector3(sx * (0.056 + off), 0.05, 0.05), new THREE.Vector3(sx * (0.07 + off), 0.02, 0.045),
+      new THREE.Vector3(sx * (0.077 + off), -0.015, 0.035), new THREE.Vector3(sx * (0.074 + off), -0.05, 0.03)].map(p => p.add(new THREE.Vector3(0, 1.585, 0)));
+    headParts.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 20, 0.0028 - off * 0.15, 6), off ? hairLight : hairMat));
+  }
+} else {
+  const bundle = shade(new THREE.Mesh(new THREE.SphereGeometry(0.024, 20, 14), hairMat));
+  bundle.scale.set(1.15, 0.9, 0.8); bundle.position.set(0, 1.536, -0.094); headParts.add(bundle);
+  const tie = shade(new THREE.Mesh(new THREE.TorusGeometry(0.014, 0.0038, 10, 20), mat.accent));
+  tie.rotation.x = Math.PI / 2 - 0.25; tie.position.set(0, 1.514, -0.104); headParts.add(tie);
+}
+// ---------- Braid: a hanging chain of links that swings outward as she spins ----------
+// In her rotating frame each bit of hair feels gravity m·g (down) and centrifugal force m·ω²·r (outward).
+// A flexible braid lines up with the total force on everything below each link, so link i hangs at
+//     tan θᵢ = ω² Σ(mⱼ rⱼ) / (g Σ mⱼ)     (sums over the hair below that link)
+// The hair's mass cancels: like a conical pendulum, the angle depends only on ω and how far out the hair is.
+const BRAID_N = HAIR_STYLE === 'crown' ? 11 : 10, BRAID_SEG = 0.031, BRAID_REST = HAIR_STYLE === 'crown' ? 0.166 : 0.06;   // sections, section length (m, before head scaling), resting lean (rad)
+const braid = { links: [], mass: [], theta: new Float32Array(BRAID_N).fill(BRAID_REST) };
+{
+  let parent = headParts;
+  for (let i = 0; i < BRAID_N; i++) {
+    const link = new THREE.Group();
+    if (i === 0) link.position.copy(HAIR_STYLE === 'crown' ? new THREE.Vector3(0, 1.605, -0.108) : new THREE.Vector3(0, 1.5, -0.11)); else link.position.y = -BRAID_SEG;
+    parent.add(link); braid.links.push(link); parent = link;
+    // three-strand braid: two interlocking lobes per section, angled alternately
+    const r = HAIR_STYLE === 'crown' ? 0.021 - i * 0.0011 : 0.019 - i * 0.0009;
+    for (const side of [-1, 1]) {
+      const lobe = shade(new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), i % 2 ? hairMat : hairLight));
+      lobe.scale.set(0.95, 1.55, 0.9); lobe.rotation.z = side * 0.55;
+      lobe.position.set(side * r * 0.45 * (i % 2 ? 1 : -1) + side * r * 0.2, side * r * 0.35, -i * 0.002);
+      link.add(lobe);
+    }
+    braid.mass.push(r * r * r);                       // mass ∝ volume of each section (only ratios matter)
+  }
+  const band = shade(new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.003, 8, 16), mat.accent));
+  band.rotation.x = Math.PI / 2; band.position.y = -0.018; parent.add(band);
+  const tuft = shade(new THREE.Mesh(new THREE.SphereGeometry(0.01, 12, 10), hairMat));
+  tuft.scale.set(0.9, 1.8, 0.9); tuft.position.y = -0.036; parent.add(tuft);
+}
+function updateBraid(omega, dt) {
+  const g = 9.8, S = HEAD_SIZE, n = BRAID_N, th = braid.theta, m = braid.mass;
+  // distance of the top of the braid from the spin axis (axis runs up through her centre)
+  const r0 = (HAIR_STYLE === 'crown' ? 0.108 : 0.11) * S;
+  const target = new Float32Array(n);
+  target.set(th);
+  for (let iter = 0; iter < 4; iter++) {
+    // horizontal distance of each section from the axis, for the current angles
+    const r = new Float32Array(n); r[0] = r0;
+    for (let i = 1; i < n; i++) r[i] = r[i - 1] + BRAID_SEG * S * Math.sin(target[i]);
+    for (let i = 1; i < n; i++) {
+      let mr = 0, ms = 0;
+      for (let j = i; j < n; j++) { mr += m[j] * r[j]; ms += m[j]; }
+      target[i] = Math.max(BRAID_REST, Math.atan2(omega * omega * mr, g * ms));   // can't swing in through her back
+    }
+  }
+  // hair takes a moment to swing out or fall back
+  const k = 1 - Math.exp(-dt / 0.12);
+  for (let i = 1; i < n; i++) th[i] += (target[i] - th[i]) * k;
+  th[0] = th[1];
+  // each link's rotation is relative to the one above it; +x rotation swings it out behind her (−z)
+  // link k's rotation sets the direction to the next section, so link k carries angle θ(k+1)
+  braid.links[0].rotation.x = th[1];
+  for (let k = 1; k < n - 1; k++) braid.links[k].rotation.x = th[k + 1] - th[k];
+  braid.links[n - 1].rotation.x = 0;
+  state.braidAngle = th[n - 1];
+}
+// silver belt and a few rhinestones on the bodice
+const belt = shade(new THREE.Mesh(new THREE.TorusGeometry(0.108, 0.011, 8, 40), mat.accent));
+belt.rotation.x = Math.PI / 2; belt.scale.y = 0.77; belt.position.y = 1.065; skater.add(belt);
+// ombré: deep blue at the hips fading to pale ice at the shoulders (blended in sRGB), with scattered crystals
+{
+  const deep = new THREE.Color(0x2f6db5), ice = new THREE.Color(0xcfe9fb);
+  const shadeAt = y => {
+    const t = Math.min(Math.max((y - 1.06) / 0.36, 0), 1);
+    return deep.clone().convertLinearToSRGB().lerp(ice.clone().convertLinearToSRGB(), t * t * (3 - 2 * t)).convertSRGBToLinear();
+  };
+  const ombreMat = mat.dress.clone(); ombreMat.vertexColors = true; ombreMat.color.set(0xffffff);
+  ombreMat.roughness = 0.6; ombreMat.metalness = 0.1;   // satin
+  for (const mesh of [chest, shoulders, pelvis]) {
+    mesh.updateMatrixWorld(true);
+    const p = mesh.geometry.attributes.position, col = new Float32Array(p.count * 3), v = new THREE.Vector3();
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i).applyMatrix4(mesh.matrixWorld);
+      const c = shadeAt(v.y); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    }
+    mesh.geometry.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    mesh.material = ombreMat;
+  }
+  mat.band = new THREE.MeshStandardMaterial({ color: 0x2f6db5, roughness: 0.6, metalness: 0.1 });
+  const crystalMat = new THREE.MeshStandardMaterial({ color: 0xeaf6ff, metalness: 0.7, roughness: 0.05, emissive: 0xbfe2ff, emissiveIntensity: 0.4 });
+  let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let k = 0; k < 45; k++) {
+    const y = 1.1 + Math.pow(rnd(), 0.7) * 0.3, phi = (rnd() - 0.5) * 2.2;
+    const size = 0.0035 + rnd() * 0.002;
+    const m = new THREE.Mesh(new THREE.OctahedronGeometry(size, 0), crystalMat);
+    m.position.copy(onChest(y, phi, 0.003)); m.rotation.set(rnd() * 3, rnd() * 3, 0); skater.add(m);
+  }
+}
+// a small nose so you can tell which way she faces
+// ---------- Face: sparkly eyes, light brows, button nose, small smile, blush, petite ears ----------
+{
+  const face = new THREE.Group(); face.position.y = 1.585; headParts.add(face);
+  const fm = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...extra });
+  const F = {
+    eye: fm(0x2a2f45, { roughness: 0.15 }), glint: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+    dark: fm(0x2a1c14, { roughness: 0.6 }), brow: fm(0xa98450, { roughness: 0.8 }), lip: fm(0xd9707a, { roughness: 0.45 }),
+    nostril: fm(0xc9927e, { roughness: 0.7 }), earInner: fm(0xe0ad96, { roughness: 0.7 }),
+    blush: new THREE.MeshBasicMaterial({ color: 0xff9a9a, transparent: true, opacity: 0.28, depthWrite: false }),
+  };
+  // the head is an ellipsoid; features sit on its surface
+  const AX = 0.095 * 0.92, AY = 0.095 * 1.08, AZ = 0.095;
+  const surf = (x, y, out = 0) => {
+    const v = new THREE.Vector3(x, y, AZ * Math.sqrt(Math.max(0, 1 - (x / AX) ** 2 - (y / AY) ** 2)));
+    v.divide(HEAD_SCALE); chinShape(v); v.multiply(HEAD_SCALE);   // follow the reshaped chin
+    v.z += out; return v;
+  };
+  const onFace = (m, x, y, out = 0) => {
+    m.position.copy(surf(x, y, out));
+    m.rotation.y = Math.asin(Math.max(-1, Math.min(1, x / AX))) * 0.9;
+    m.rotation.x = -Math.asin(Math.max(-1, Math.min(1, y / AY))) * 0.6;
+    return m;
+  };
+  const sph = (r, m, sx = 1, sy = 1, sz = 1) => { const o = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), m); o.scale.set(sx, sy, sz); return o; };
+  const arc = (radius, tube, angle, m, centre) => {
+    const g = new THREE.TorusGeometry(radius, tube, 6, 24, angle);
+    g.rotateZ(centre - angle / 2);
+    g.translate(-radius * Math.cos(centre), -radius * Math.sin(centre), 0);
+    return new THREE.Mesh(g, m);
+  };
+  const W = 1.3;   // eye width
+  for (const sx of [-1, 1]) {
+    // eyes
+    const eye = new THREE.Group();
+    eye.add(sph(0.0105, F.eye, 0.9 * W, 1.3, 0.4));
+    const g1 = sph(0.0034, F.glint); g1.position.set(sx * 0.003 * W, 0.005, 0.0042); eye.add(g1);
+    const g2 = sph(0.0016, F.glint); g2.position.set(-sx * 0.003 * W, -0.005, 0.0042); eye.add(g2);
+    for (const k of [0, 1]) {
+      const l = new THREE.Mesh(new THREE.CapsuleGeometry(0.0011, 0.0045, 3, 5), F.dark);
+      l.rotation.z = sx * -(0.9 + k * 0.45); l.position.set(sx * (0.0095 * W + k * 0.001), 0.009 - k * 0.003, 0.002); eye.add(l);
+    }
+    face.add(onFace(eye, sx * 0.0325, -0.004, -0.001));
+    // brows
+    const b = arc(0.03, 0.002, 0.9, F.brow, Math.PI / 2);
+    onFace(b, sx * 0.031, 0.025, 0.002); b.rotation.z += sx * -0.06; face.add(b);
+    // blush
+    face.add(onFace(new THREE.Mesh(new THREE.CircleGeometry(0.016, 20), F.blush), sx * 0.047, -0.03, 0.0015));
+    // nostrils
+    const n = sph(0.0022, F.nostril, 1.3, 0.8, 1); n.position.copy(surf(sx * 0.0042, -0.0322, 0.0075)); face.add(n);
+    // petite ears
+    const ear = new THREE.Group();
+    const shell = sph(0.025, mat.skin, 0.21, 1.0, 0.62); shell.position.x = 0.003; ear.add(shell);
+    const concha = sph(0.011, F.earInner, 0.225, 1.0, 0.8); concha.position.set(0.0056, -0.003, 0.002); ear.add(concha);
+    ear.scale.set(0.8 * sx, 0.8, 0.8); ear.position.set(sx * 0.084, -0.014, -0.012); ear.rotation.x = -0.15;
+    face.add(ear);
+  }
+  // button nose
+  const tip = sph(0.0095, mat.skin); tip.position.copy(surf(0, -0.026, 0.0055)); face.add(tip);
+  // smile
+  face.add(onFace(arc(0.021, 0.0027, 1.4, F.lip, -Math.PI / 2), 0, -0.05, 0.001));
+}
+
+// ---------- Skirt: flexible fabric ----------
+// The skirt fabric starts at her waist (under the belt) and lies on her hips down to just above the hip
+// joints. Below that it hangs freely. Each vertical strip is treated as a hanging chain in her rotating
+// frame: each piece feels gravity m·g (down) and centrifugal force m·ω²·r (outward), so it hangs at
+//     tan θ = ω² Σ(m r) / (g Σ m)       (sums over the fabric below; wider fabric farther out, so m ∝ r)
+// At low ω it hangs and drapes over her legs; as ω grows it bells out, and at high ω it flies nearly flat.
+const skirtPivot = new THREE.Group(); skirtPivot.position.y = 0.96; skater.add(skirtPivot);
+const SKIRT_LEN = 0.25, TOP_Y = 0.1, SEAM_Y = -0.02, SK_R = 144, SK_H = 30, SKIRT_K = 12, SKIRT_NS = 60;
+const PELVIS_PTS = [[0.168, 0.82], [0.174, 0.85], [0.175, 0.88], [0.172, 0.91], [0.166, 0.94], [0.157, 0.97], [0.144, 1.0], [0.128, 1.03], [0.115, 1.06], [0.108, 1.08]];
+function hipClear(phi, y) {        // radius of the outside of her hips (an oval) at height y below the skirt pivot, + 4 mm
+  const wy = y + 0.96; if (wy < PELVIS_PTS[0][1]) return 0;
+  let pr = PELVIS_PTS[PELVIS_PTS.length - 1][0];
+  for (let k = 0; k < PELVIS_PTS.length - 1; k++) if (wy >= PELVIS_PTS[k][1] && wy <= PELVIS_PTS[k + 1][1]) {
+    const u = (wy - PELVIS_PTS[k][1]) / (PELVIS_PTS[k + 1][1] - PELVIS_PTS[k][1]);
+    pr = PELVIS_PTS[k][0] + (PELVIS_PTS[k + 1][0] - PELVIS_PTS[k][0]) * u; break;
+  }
+  return 1 / Math.sqrt((Math.sin(phi) / pr) ** 2 + (Math.cos(phi) / (pr * PELVIS_Z)) ** 2) + 0.004;
+}
+function makeDrape(t0, t1, material, out, ombre) {
+  const geo = new THREE.CylinderGeometry(1, 1, 1, SK_R, SK_H, true), p = geo.attributes.position;
+  const phi = new Float32Array(p.count), t = new Float32Array(p.count);
+  for (let i = 0; i < p.count; i++) { phi[i] = Math.atan2(p.getX(i), p.getZ(i)); t[i] = t0 + (0.5 - p.getY(i)) * (t1 - t0); }
+  if (ombre) {   // deep blue where the skirt starts hanging, fading to pale ice at the hem
+    const deep = new THREE.Color(0x2f6db5).convertLinearToSRGB(), pale = new THREE.Color(0xcfe9fb).convertLinearToSRGB();
+    const fit = TOP_Y - SEAM_Y, col = new Float32Array(p.count * 3);
+    for (let i = 0; i < p.count; i++) {
+      const sk = Math.max(0, (t[i] * (fit + SKIRT_LEN) - fit) / SKIRT_LEN), u = Math.min(1, sk / 0.85), e = u * u * (3 - 2 * u);
+      const c = deep.clone().lerp(pale, e).convertSRGBToLinear();
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  }
+  const mesh = shade(new THREE.Mesh(geo, material));
+  mesh.frustumCulled = false;
+  mesh.userData = { phi, t, out };
+  skirtPivot.add(mesh);
+  return mesh;
+}
+const skirtMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide });
+const skirt = makeDrape(0, 1, skirtMat, 0, true);
+const hemBand = makeDrape(0.93, 1.0, mat.accent, 0.003);
+const skirtTheta = new Float32Array(SKIRT_K).fill(0.15);
+const _hip = new THREE.Vector3(), _knee = new THREE.Vector3(), _P = new THREE.Vector3(), _Q = new THREE.Vector3(), _D = new THREE.Vector3();
+const stripR = new Float32Array(SKIRT_NS + 1), stripY = new Float32Array(SKIRT_NS + 1);
+let legSegs = [];
+function thighProfile(u) {          // thigh radius (leotard surface) a fraction u of the way from hip to knee
+  const [r0, rm, r1, mid] = LEG_SHAPE.a, ss = x => x * x * (3 - 2 * x);
+  const bulge = Math.max(LEG_SHAPE.aBack, LEG_SHAPE.aFront.amt);
+  return (u < mid ? r0 + (rm - r0) * ss(u / mid) : rm + (r1 - rm) * ss((u - mid) / (1 - mid)))
+         * (1 + bulge * Math.exp(-Math.pow((u - 0.45) / 0.25, 2))) + 0.004;
+}
+function legGap(x, y, z, extra) {   // how far inside a thigh this point is (≤ 0 means outside)
+  _P.set(x, y, z); let worst = 0;
+  for (const sg of legSegs) {
+    _D.subVectors(sg.k, sg.h); const L2 = _D.lengthSq();
+    const u = Math.min(1, Math.max(0, _Q.subVectors(_P, sg.h).dot(_D) / L2));
+    worst = Math.max(worst, thighProfile(u) + extra - _Q.copy(sg.h).addScaledVector(_D, u).distanceTo(_P));
+  }
+  return worst;
+}
+function updateSkirt(omega, dt = 1) {
+  const g = 9.8, K = SKIRT_K, NS = SKIRT_NS;
+  // 1) hanging angles (the same for every strip), solved a few times so radii and angles agree
+  const target = new Float32Array(K); target.set(skirtTheta);
+  for (let iter = 0; iter < 4; iter++) {
+    const r = new Float32Array(K); let rr = 0.17;
+    for (let k = 0; k < K; k++) { rr += (SKIRT_LEN / K) * Math.sin(target[k]); r[k] = rr; }
+    for (let k = 0; k < K; k++) {
+      let mr = 0, ms = 0; for (let j = k; j < K; j++) { mr += r[j] * r[j]; ms += r[j]; }
+      target[k] = Math.min(1.5, Math.atan2(omega * omega * mr, g * ms));
+    }
+  }
+  const kk = 1 - Math.exp(-dt / 0.18);                       // fabric takes a moment to respond
+  for (let k = 0; k < K; k++) skirtTheta[k] += (target[k] - skirtTheta[k]) * kk;
+  // 2) where her thighs are, in the skirt's frame
+  legSegs = [legS, legF].map(l => {
+    l.root.getWorldPosition(_hip); l.joint.getWorldPosition(_knee);
+    return { h: skirtPivot.worldToLocal(_hip.clone()), k: skirtPivot.worldToLocal(_knee.clone()) };
+  });
+  const foldAmp = 0.014 / (1 + Math.pow(omega / 9, 2)), foldPhase = 0.25 * Math.sin((state.t || 0) * 1.7);
+  const fit = TOP_Y - SEAM_Y, total = fit + SKIRT_LEN, NF = Math.round(NS * fit / total), NH = NS - NF, st = SKIRT_LEN / NH;
+  const C = SK_R + 1, R0 = new Float32Array(skirt.geometry.attributes.position.count), Y = new Float32Array(R0.length);
+  const PUSH = new Float32Array(R0.length);
+  const tS = skirt.userData.t, tB = hemBand.userData.t, Rb = new Float32Array(R0.length), Yb = new Float32Array(R0.length);
+  for (let col = 0; col <= SK_R; col++) {
+    const ph = skirt.userData.phi[col];
+    // fitted part: lies on her hips (2 mm off the surface)
+    for (let j = 0; j <= NF; j++) { const yy = TOP_Y - fit * j / NF; stripR[j] = hipClear(ph, yy) - 0.002; stripY[j] = yy; }
+    // hanging part: near the seam it follows the hips and curves out to its hanging angle over 6 cm;
+    // if a step would go into a leg, that piece tilts outward until it slides over the leg (draping)
+    let r = stripR[NF], y = stripY[NF];
+    for (let j = NF + 1; j <= NS; j++) {
+      const done = (j - NF) * st, k = Math.min(K - 1, Math.floor((done - st / 2) / (SKIRT_LEN / K)));
+      const u = Math.min(1, done / 0.06), e = u * u * (3 - 2 * u);
+      let a = 0.12 + (skirtTheta[k] - 0.12) * e, nr, ny;
+      for (let tries = 0; tries < 45; tries++) {
+        nr = r + st * Math.sin(a); ny = y - st * Math.cos(a);
+        nr = Math.max(nr, hipClear(ph, ny));
+        if (legGap(nr * Math.sin(ph), ny, nr * Math.cos(ph), 0.004) <= 0 || a >= 1.65) break;
+        a += 0.04;
+      }
+      r = nr; y = ny; stripR[j] = r; stripY[j] = y;
+    }
+    // place both meshes' vertices in this column along the strip
+    for (const [tt, RR, YY, isSkirt] of [[tS, R0, Y, true], [tB, Rb, Yb, false]]) {
+      for (let row = 0; row <= SK_H; row++) {
+        const i = row * C + col, f = tt[i] * NS, j0 = Math.min(NS - 1, Math.floor(f)), w = f - j0;
+        let rr = stripR[j0] + (stripR[j0 + 1] - stripR[j0]) * w;
+        const yy = stripY[j0] + (stripY[j0 + 1] - stripY[j0]) * w;
+        const skt = Math.max(0, (tt[i] * total - fit) / SKIRT_LEN);
+        rr += foldAmp * Math.pow(skt, 1.5) * Math.sin(9 * ph + foldPhase);
+        RR[i] = rr; YY[i] = yy;
+        if (isSkirt) {   // safety net: how far a point is still inside a leg (only below the fitted part)
+          const gap = skt > 0.03 ? legGap(rr * Math.sin(ph), yy, rr * Math.cos(ph), 0.006) : 0;
+          PUSH[i] = Math.max(0, gap);
+        }
+      }
+    }
+  }
+  // spread any safety pushes smoothly to the surrounding fabric
+  const rows = SK_H + 1, idx = (row, col) => row * C + ((col % SK_R) + SK_R) % SK_R;
+  if (PUSH.some(v => v > 0)) for (let pass = 0; pass < 8; pass++) {
+    const nxt = PUSH.slice();
+    for (let row = 0; row < rows; row++) for (let col = 0; col < SK_R; col++) {
+      const i = idx(row, col);
+      let best = Math.max(PUSH[i], PUSH[idx(row, col - 1)] * 0.8, PUSH[idx(row, col + 1)] * 0.8);
+      if (row > 0) best = Math.max(best, PUSH[idx(row - 1, col)] * 0.7);
+      if (row < rows - 1) best = Math.max(best, PUSH[idx(row + 1, col)] * 0.6);
+      nxt[i] = best;
+    }
+    PUSH.set(nxt);
+  }
+  for (let row = 0; row < rows; row++) PUSH[row * C + SK_R] = PUSH[row * C];
+  const ps = skirt.geometry.attributes.position, pb = hemBand.geometry.attributes.position, phiA = skirt.userData.phi;
+  for (let i = 0; i < ps.count; i++) {
+    const r = R0[i] + PUSH[i], ph = phiA[i];
+    ps.setXYZ(i, r * Math.sin(ph), Y[i], r * Math.cos(ph));
+    const rb = Rb[i] + PUSH[SK_H * C + (i % C)] + 0.003;      // hem band follows the skirt's bottom edge
+    pb.setXYZ(i, rb * Math.sin(ph), Yb[i], rb * Math.cos(ph));
+  }
+  ps.needsUpdate = true; pb.needsUpdate = true;
+  skirt.geometry.computeVertexNormals(); hemBand.geometry.computeVertexNormals();
+}
+
+// Generic two-segment limb that hangs along local -y
+function makeLimb(len1, len2, r1, r2, m1, m2, sleeve) {
+  const root = new THREE.Group();
+  const seg1 = capsule(r1, len1, m1); seg1.position.y = -len1 / 2; root.add(seg1);
+  const joint = new THREE.Group(); joint.position.y = -len1; root.add(joint);
+  const seg2 = capsule(r2, len2, m2); seg2.position.y = -len2 / 2; joint.add(seg2);
+  if (sleeve) { // sheer sleeve: a slightly larger see-through layer over the arm
+    const o1 = capsule(r1 + 0.008, len1, sleeve); o1.position.y = -len1 / 2; o1.castShadow = false; root.add(o1);
+    const o2 = capsule(r2 + 0.008, len2 - 0.02, sleeve); o2.position.y = -len2 / 2 + 0.01; o2.castShadow = false; joint.add(o2);
+  }
+  const end = new THREE.Group(); end.position.y = -len2; joint.add(end);
+  return { root, joint, end, len1, len2 };
+}
+
+// A shaped limb segment hanging along -y, with rounded ends centred on the joints.
+// r = [top, middle, bottom radius, where the middle sits (0 top … 1 bottom)], back = extra fullness at the back (calf, triceps…)
+// front = { amt, at }: extra fullness at the front (quadriceps), centred at fraction `at` down the segment
+// sMax: build only the top part of the segment (0 … sMax of its length), e.g. a leotard leg over the thigh
+function shapedSeg(len, [r0, rm, r1, mid = 0.35], back, material, front, sMax) {
+  const ss = t => t * t * (3 - 2 * t);
+  const rad = s => s < mid ? r0 + (rm - r0) * ss(s / mid) : rm + (r1 - rm) * ss((s - mid) / (1 - mid));
+  const pts = [];
+  if (sMax) {
+    for (let k = 0; k < 40; k++) { const sv = sMax * (1 - k / 40); pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
+  } else {
+    for (let k = 0; k <= 8; k++) { const a = -Math.PI / 2 + (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r1 * Math.cos(a), -len + r1 * Math.sin(a))); }
+    for (let k = 1; k < 40; k++) { const sv = 1 - k / 40; pts.push(new THREE.Vector2(rad(sv), -sv * len)); }
+  }
+  for (let k = 0; k <= 8; k++) { const a = (k / 8) * Math.PI / 2; pts.push(new THREE.Vector2(r0 * Math.cos(a), r0 * Math.sin(a))); }
+  const geo = new THREE.LatheGeometry(pts, 32);
+  if (back || front) {
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const z = p.getZ(i), sv = -p.getY(i) / len;
+      // muscle shapes fade to nothing near each joint, so the two segments meet cleanly
+      const fade = Math.min(1, Math.max(0, sv / 0.18), Math.max(0, (1 - sv) / 0.18));
+      const f = fade * fade * (3 - 2 * fade);
+      if (z < 0 && back) p.setZ(i, z * (1 + back * f * Math.exp(-Math.pow((sv - mid) / 0.2, 2))));
+      if (z > 0 && front) p.setZ(i, z * (1 + front.amt * f * Math.exp(-Math.pow((sv - front.at) / 0.22, 2))));
+    }
+  }
+  geo.computeVertexNormals();
+  return shade(new THREE.Mesh(geo, material));
+}
+function makeShapedLimb(len1, len2, S, m1, m2, sleeve) {
+  const root = new THREE.Group();
+  root.add(shapedSeg(len1, S.a, S.aBack, m1, S.aFront));
+  const joint = new THREE.Group(); joint.position.y = -len1; root.add(joint);
+  joint.add(shapedSeg(len2, S.b, S.bBack, m2));
+  if (sleeve) {   // sheer sleeve following the shape of the arm
+    const plus = r => [r[0] + 0.008, r[1] + 0.008, r[2] + 0.008, r[3]];
+    const o1 = shapedSeg(len1, plus(S.a), S.aBack, sleeve); o1.castShadow = false; root.add(o1);
+    const o2 = shapedSeg(len2 - 0.02, plus(S.b), S.bBack, sleeve); o2.castShadow = false; joint.add(o2);
+  }
+  if (S.kneecap) {   // a subtle kneecap, flattened and sitting close to the surface
+    const kr = S.a[2] * 0.55;
+    const k = shade(new THREE.Mesh(new THREE.SphereGeometry(kr, 20, 14), m1));
+    k.scale.set(1, 1.2, 0.5); k.position.set(0, 0.006, S.a[2] - kr * 0.38); joint.add(k);
+  }
+  const end = new THREE.Group(); end.position.y = -len2; joint.add(end);
+  return { root, joint, end, len1, len2 };
+}
+// arm: rounded shoulder, defined back of the upper arm and forearm; leg: tapered thigh, full calf, kneecap, slim ankle
+const ARM_SHAPE = { a: [0.043, 0.039, 0.028, 0.3], aBack: 0.28, b: [0.031, 0.035, 0.02, 0.22], bBack: 0.25 };
+const LEG_SHAPE = { a: [0.07, 0.086 * 1.04, 0.047, 0.22], aBack: 0.16, aFront: { amt: 0.16, at: 0.55 },
+  b: [0.047, 0.057, 0.032, 0.3], bBack: 0.45, kneecap: true };
+
+const ARM1 = 0.29, ARM2 = 0.27, LEG1 = 0.44, LEG2 = 0.42;
+const SH_Y = 1.40, SH_X = 0.185, HIP_Y = 0.95, HIP_X = 0.08;
+
+const armL = makeShapedLimb(ARM1, ARM2, ARM_SHAPE, mat.skin, mat.skin, mat.sleeve);
+armL.root.position.set(SH_X, SH_Y, 0); skater.add(armL.root);
+const armR = makeShapedLimb(ARM1, ARM2, ARM_SHAPE, mat.skin, mat.skin, mat.sleeve);
+armR.root.position.set(-SH_X, SH_Y, 0); skater.add(armR.root);
+for (const a of [armL, armR]) {
+  // rounded shoulder muscle at the top of the arm, overlapping the torso so there is no step
+  const cap = shade(new THREE.Mesh(new THREE.SphereGeometry(0.048, 24, 16), mat.skin));
+  cap.scale.set(1, 1.5, 0.92); cap.position.y = -0.02; a.root.add(cap);
+  const capS = new THREE.Mesh(new THREE.SphereGeometry(0.056, 24, 16), mat.sleeve);
+  capS.scale.copy(cap.scale); capS.position.copy(cap.position); a.root.add(capS);
+  const hand = shade(new THREE.Mesh(new THREE.SphereGeometry(0.036, 12, 10), mat.skin));
+  hand.scale.set(0.7, 1.3, 1.0); hand.position.y = -0.03; a.end.add(hand);
+}
+
+// ---------- rounded skate boot, built like a foot ----------
+// The boot is a series of rounded cross-sections from heel to toe. For each point along the foot (z)
+// we know the sole height, the top height and the half-width; each slice is a rounded "superellipse"
+// (n = 2 is an ellipse; larger n is squarer). The heel and toe close off smoothly.
+function interp(pts, z) {            // smooth (Catmull-Rom) interpolation through [z, value] points
+  if (z <= pts[0][0]) return pts[0][1];
+  if (z >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+  let k = 0; while (z > pts[k + 1][0]) k++;
+  const p0 = pts[Math.max(k - 1, 0)][1], p1 = pts[k][1], p2 = pts[k + 1][1], p3 = pts[Math.min(k + 2, pts.length - 1)][1];
+  const t = (z - pts[k][0]) / (pts[k + 1][0] - pts[k][0]), t2 = t * t, t3 = t2 * t;
+  return 0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+}
+const BOOT_TOP = [[-0.075, 0.0], [-0.066, 0.03], [-0.03, 0.036], [0.03, 0.034], [0.06, 0.014], [0.09, -0.004], [0.13, -0.02], [0.162, -0.034], [0.178, -0.05]];
+const BOOT_SOLE = [[-0.075, -0.074], [-0.068, -0.085], [0.0, -0.087], [0.12, -0.086], [0.155, -0.081], [0.178, -0.066]];
+const BOOT_HALFW = [[-0.075, 0.022], [-0.065, 0.04], [-0.04, 0.049], [0.0, 0.052], [0.04, 0.05], [0.09, 0.052], [0.125, 0.048], [0.155, 0.038], [0.172, 0.02], [0.178, 0.006]];
+const bootCache = {};
+function roundBoot({ n = 2.6, width = 1, toeDrop = 0 }) {
+  const key = [n, width, toeDrop].join(); if (bootCache[key]) return bootCache[key];
+  const N = 90, M = 48, z0 = -0.077, z1 = 0.18;
+  const pos = [], idx = [];
+  for (let j = 0; j <= N; j++) {
+    const t = j / N, z = z0 + (z1 - z0) * t;
+    const env = Math.cbrt(Math.max(0, 1 - Math.pow(Math.abs(2 * t - 1), 12)));   // rounds off heel and toe
+    const top = interp(BOOT_TOP, z) - toeDrop * Math.max(0, (z - 0.08) / 0.1), sole = interp(BOOT_SOLE, z);
+    const yc = (top + sole) / 2, h = (top - sole) / 2 * env, w = interp(BOOT_HALFW, z) * width * env;
+    for (let i = 0; i < M; i++) {
+      const a = (i / M) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+      pos.push(w * Math.sign(c) * Math.pow(Math.abs(c), 2 / n), yc + h * Math.sign(sn) * Math.pow(Math.abs(sn), 2 / n), z);
+    }
+  }
+  for (let j = 0; j < N; j++) for (let i = 0; i < M; i++) {
+    const a = j * M + i, b = j * M + (i + 1) % M, c = (j + 1) * M + i, d = (j + 1) * M + (i + 1) % M;
+    idx.push(a, b, c, b, d, c);   // wound so the faces point outward
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  return (bootCache[key] = { geo, top: z => interp(BOOT_TOP, z) - toeDrop * Math.max(0, (z - 0.08) / 0.1) });
+}
+
+// ---------- Figure skate (boot + blade). Origin at the ankle; the foot points along +z ----------
+// Side profiles are drawn in (z, y) and extruded sideways (along x).
+function profileGeo(pts, width, bevel, segs = 4) {
+  const shape = new THREE.Shape(pts.map(([z, y]) => new THREE.Vector2(z, y)));
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: width, bevelEnabled: bevel > 0, bevelSize: bevel, bevelThickness: bevel, bevelSegments: segs, curveSegments: 12,
+  });
+  geo.translate(0, 0, -width / 2);
+  geo.rotateY(-Math.PI / 2);          // profile x → z, extrusion → x
+  return geo;
+}
+function smoothPts(ctrl, n = 6) {    // Catmull-Rom through control points, closed
+  const curve = new THREE.CatmullRomCurve3(ctrl.map(([z, y]) => new THREE.Vector3(z, y, 0)), true, 'centripetal');
+  return curve.getPoints(ctrl.length * n).map(p => [p.x, p.y]);
+}
+const skateMat = {
+  lace: new THREE.MeshStandardMaterial({ color: 0xe9eef3, roughness: 0.7 }),
+  hook: new THREE.MeshStandardMaterial({ color: 0xb9c2cc, metalness: 0.9, roughness: 0.25 }),
+  heel: new THREE.MeshStandardMaterial({ color: 0x8b5e3c, roughness: 0.55 }),
+};
+const SKATE_GEO = (() => {
+  // lower boot: rounded toe box, instep and heel, open at the ankle (the cuff above follows the shin)
+  const boot = profileGeo(smoothPts([
+    [-0.054, -0.074], [0.03, -0.075], [0.11, -0.074], [0.15, -0.068], [0.166, -0.052],
+    [0.163, -0.036], [0.135, -0.024], [0.09, -0.01], [0.066, 0.012], [0.05, 0.03],
+    [0.0, 0.036], [-0.05, 0.03], [-0.062, 0.0], [-0.07, -0.034], [-0.066, -0.062],
+  ]), 0.084, 0.011);
+  // taper the toe (narrower and rounder toward the front)
+  const p = boot.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const z = p.getZ(i);
+    const k = z > 0.05 ? 1 - 0.42 * Math.pow(Math.min((z - 0.05) / 0.13, 1), 1.6) : 1;
+    p.setX(i, p.getX(i) * k);
+  }
+  boot.computeVertexNormals();
+
+  // heel block
+  const heel = profileGeo([[-0.062, -0.084], [-0.004, -0.084], [-0.002, -0.099], [-0.06, -0.099]], 0.05, 0.004, 2);
+
+  // blade: curved (rocker) bottom, two stanchions, toothed toe pick at the front
+  const R = 1.4, zc = 0.03, yb = -0.13;
+  const rocker = z => yb + (z - zc) * (z - zc) / (2 * R);
+  const pts = [];
+  pts.push([-0.098, -0.112], [-0.09, -0.104]);                  // tail
+  pts.push([-0.075, -0.104], [-0.07, -0.103]);                  // heel stanchion
+  pts.push([-0.012, -0.103], [-0.004, -0.108]);
+  pts.push([0.02, -0.111], [0.045, -0.111]);                    // scooped middle
+  pts.push([0.06, -0.1], [0.07, -0.091]);                       // sole stanchion
+  pts.push([0.142, -0.089]);
+  // toe pick: teeth down the front
+  const teeth = [[0.152, -0.093], [0.158, -0.096], [0.153, -0.099], [0.162, -0.103], [0.156, -0.107],
+                 [0.164, -0.111], [0.157, -0.115], [0.163, -0.119], [0.155, -0.122], [0.148, -0.125]];
+  pts.push(...teeth);
+  for (let z = 0.14; z >= -0.09; z -= 0.01) pts.push([z, rocker(z)]);
+  pts.push([-0.097, -0.121]);
+  const blade = profileGeo(pts, 0.0035, 0.0008, 1);
+
+  // mounting plates under the sole and heel
+  const solePlate = profileGeo([[0.06, -0.089], [0.15, -0.089], [0.152, -0.085], [0.058, -0.085]], 0.036, 0.003, 2);
+  const heelPlate = profileGeo([[-0.068, -0.103], [-0.008, -0.103], [-0.008, -0.099], [-0.068, -0.099]], 0.034, 0.003, 2);
+  // ankle cuff: a padded tube around the lower leg, slightly oval, wider at the bottom
+  const cuff = new THREE.CylinderGeometry(0.051, 0.058, 0.14, 32, 4, true);
+  cuff.translate(0, 0.025, 0);
+  const rim = new THREE.TorusGeometry(0.051, 0.008, 10, 32);
+  rim.rotateX(Math.PI / 2); rim.translate(0, 0.095, 0);
+  return { boot, heel, blade, solePlate, heelPlate, cuff, rim };
+})();
+// the cuff lives in the shin's frame (origin at the ankle, +y up the leg)
+function makeCuff() {
+  const g = new THREE.Group();
+  const cuff = shade(new THREE.Mesh(SKATE_GEO.cuff, mat.boot)); cuff.scale.z = 1.15; g.add(cuff);
+  const rim = shade(new THREE.Mesh(SKATE_GEO.rim, mat.boot)); rim.scale.z = 1.15; g.add(rim);
+  const tongue = shade(new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 10), mat.boot));
+  tongue.scale.set(1, 0.6, 0.45); tongue.position.set(0, 0.1, 0.055); g.add(tongue);
+  [-0.025, 0.0, 0.025, 0.05, 0.075].forEach((y, i) => {
+    const lace = new THREE.Mesh(new THREE.CylinderGeometry(0.0022, 0.0022, 0.05, 6), skateMat.lace);
+    lace.rotation.z = Math.PI / 2 + (i % 2 ? 0.35 : -0.35);
+    lace.position.set(0, y, 0.066 - y * 0.04); g.add(lace);
+    for (const sx of [-1, 1]) {
+      const hook = new THREE.Mesh(new THREE.SphereGeometry(0.0042, 8, 6), skateMat.hook);
+      hook.position.set(sx * 0.027, y, 0.064 - y * 0.04); g.add(hook);
+    }
+  });
+  g.scale.set(0.88, 0.9, 0.88);
+  return g;
+}
+const SKATE_SCALE = 0.85;   // overall size of the skates
+const BOOT = { n: 2.2, width: 0.97 }, FOOT_LENGTH = 1.07;   // rounded boot; foot 7% longer
+function makeSkate() {
+  const g = new THREE.Group();
+  const RB = roundBoot(BOOT);
+  g.add(shade(new THREE.Mesh(RB.geo, mat.boot)));
+  g.add(shade(new THREE.Mesh(SKATE_GEO.heel, skateMat.heel)));
+  g.add(shade(new THREE.Mesh(SKATE_GEO.blade, mat.blade)));
+  g.add(shade(new THREE.Mesh(SKATE_GEO.solePlate, mat.blade)));
+  g.add(shade(new THREE.Mesh(SKATE_GEO.heelPlate, mat.blade)));
+  // laces sitting on the rounded instep, tilted to follow its slope
+  [0.075, 0.095].forEach((z, i) => {
+    const slope = (RB.top(z + 0.005) - RB.top(z - 0.005)) / 0.01;
+    const lace = new THREE.Mesh(new THREE.CylinderGeometry(0.0022, 0.0022, 0.045, 6), skateMat.lace);
+    lace.rotation.set(-Math.atan(slope), 0, Math.PI / 2 + (i % 2 ? 0.35 : -0.35));
+    lace.position.set(0, RB.top(z) + 0.0025, z); g.add(lace);
+  });
+  g.scale.set(SKATE_SCALE * 1.06, SKATE_SCALE, SKATE_SCALE * FOOT_LENGTH);
+  return g;
+}
+
+// Standing (right) leg: from hip down to the ball of the foot on the spin axis
+const legS = makeShapedLimb(LEG1, LEG2, LEG_SHAPE, mat.tights, mat.tights);
+legS.root.position.set(-HIP_X, HIP_Y, 0); skater.add(legS.root);
+const skateS = makeSkate(); legS.end.add(skateS);
+const ankleS = new THREE.Group(); ankleS.position.y = -LEG2; legS.joint.add(ankleS);   // shin-aligned
+ankleS.add(makeCuff());
+// Free (left) leg
+const legF = makeShapedLimb(LEG1, LEG2, LEG_SHAPE, mat.tights, mat.tights);
+legF.root.position.set(HIP_X, HIP_Y, 0); skater.add(legF.root);
+// leotard legs: the same shape as the thigh (muscles included), 4 mm larger, from the hip 18 cm down
+for (const l of [legS, legF]) {
+  const A = LEG_SHAPE.a, plus = [A[0] + 0.004, A[1] + 0.004, A[2] + 0.004, A[3]];
+  l.root.add(shapedSeg(LEG1, plus, LEG_SHAPE.aBack, mat.band, LEG_SHAPE.aFront, 0.18 / LEG1));
+}
+const ankleF = new THREE.Group(); legF.end.add(ankleF);
+const skateF = makeSkate(); ankleF.add(skateF);
+legF.end.add(makeCuff());
+
+// ---------- Poses (body frame) ----------
+const DOWN = new THREE.Vector3(0, -1, 0);
+const v = (x, y, z) => new THREE.Vector3(x, y, z).normalize();
+// Given world-ish (body frame) directions for the two segments, find joint quaternions
+function limbQuats(dir1, dir2) {
+  const q1 = new THREE.Quaternion().setFromUnitVectors(DOWN, dir1);
+  const local2 = dir2.clone().applyQuaternion(q1.clone().invert());
+  const q2 = new THREE.Quaternion().setFromUnitVectors(DOWN, local2.normalize());
+  return [q1, q2];
+}
+const pose = {
+  out: {
+    armL: limbQuats(v(0.97, -0.12, -0.12), v(0.97, -0.08, -0.16)),
+    armR: limbQuats(v(-0.97, -0.12, -0.12), v(-0.97, -0.08, -0.16)),
+    legF: limbQuats(v(0.62, -0.62, -0.42), v(0.64, -0.6, -0.44)),
+    ankle: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.45),
+  },
+  in: {
+    armL: limbQuats(v(-0.05, -0.78, 0.62), v(-0.95, 0.12, 0.28)),
+    armR: limbQuats(v(0.05, -0.72, 0.68), v(0.95, 0.20, 0.24)),
+    legF: limbQuats(v(-0.1, -0.6, 0.7), v(-0.15, -0.98, -0.1)),
+    ankle: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.55),
+  }
+};
+// standing leg: straight, foot ends at x = 0 (on the spin axis)
+{
+  const d = new THREE.Vector3(HIP_X, -(LEG1 + LEG2), 0).normalize();
+  const [q1, q2] = limbQuats(d, d.clone());
+  legS.root.quaternion.copy(q1); legS.joint.quaternion.copy(q2);
+  legS.end.quaternion.copy(q1.clone().multiply(q2).invert()); // keep the skate level
+}
+// set skater height so the standing blade touches the ice
+skater.updateMatrixWorld(true);
+{
+  const p = new THREE.Vector3(); legS.end.getWorldPosition(p);
+  skater.position.y = 0.13 * SKATE_SCALE - p.y;      // blade bottom is ~0.13 below the ankle
+  skater.position.x = -p.x; skater.position.z = -p.z;  // put the blade on the axis
+}
+// Spin axis passes through the blade. Move the rotating frame so its origin is there:
+const pivot = new THREE.Group();
+scene.add(pivot);
+pivot.position.set(0, 0, 0);
+scene.remove(skater); pivot.add(skater);
+
+const tmpQ = new THREE.Quaternion();
+function applyPose(s) {
+  const e = s * s * (3 - 2 * s); // smoothstep
+  const set = (limb, key) => {
+    limb.root.quaternion.slerpQuaternions(pose.out[key][0], pose.in[key][0], e);
+    limb.joint.quaternion.slerpQuaternions(pose.out[key][1], pose.in[key][1], e);
+  };
+  set(armL, 'armL'); set(armR, 'armR'); set(legF, 'legF');
+  ankleF.quaternion.slerpQuaternions(pose.out.ankle, pose.in.ankle, e);
+}
+
+// ---------- Mass model → moment of inertia ----------
+// Masses in kg (total 50 kg). Limb segments are sampled along their length.
+const M = {
+  head: 4.0, chest: 14.5, pelvis: 8.0,
+  upperArm: 1.4, foreArm: 0.8, hand: 0.35,
+  thigh: 6.0, shin: 2.2, foot: 1.2,
+};
+// fixed (pose-independent) part: head sphere, torso as elliptical cylinders, standing leg
+function fixedI() {
+  let I = 0;
+  I += 0.4 * M.head * 0.095 * 0.095;
+  I += M.chest * (0.15 * 0.15 + 0.09 * 0.09) / 4;
+  I += M.pelvis * (0.13 * 0.13 + 0.095 * 0.095) / 4;
+  return I;
+}
+const I_FIXED = fixedI();
+const A = new THREE.Vector3(), B = new THREE.Vector3(), P = new THREE.Vector3();
+const pivotInv = new THREE.Matrix4();
+function rodI(objA, objB, mass, radius, n = 16) {
+  // objA/objB: Object3Ds at the segment ends. Distances measured from the spin axis.
+  objA.getWorldPosition(A); objB.getWorldPosition(B);
+  A.applyMatrix4(pivotInv); B.applyMatrix4(pivotInv);
+  let s = 0;
+  for (let i = 0; i < n; i++) {
+    P.lerpVectors(A, B, (i + 0.5) / n);
+    s += P.x * P.x + P.z * P.z;
+  }
+  return mass * (s / n) + 0.25 * mass * radius * radius;
+}
+function pointI(obj, mass) {
+  obj.getWorldPosition(A); A.applyMatrix4(pivotInv);
+  return mass * (A.x * A.x + A.z * A.z);
+}
+// helper end-markers
+// tip of her toe, inside the front of the boot (the boot is scaled by SKATE_SCALE and FOOT_LENGTH)
+const footTip = new THREE.Object3D(); footTip.position.set(0, -0.045 * SKATE_SCALE, 0.168 * SKATE_SCALE * FOOT_LENGTH); ankleF.add(footTip);
+const footTipS = new THREE.Object3D(); footTipS.position.set(0, -0.06, 0.12); legS.end.add(footTipS);
+const handL = new THREE.Object3D(); handL.position.y = -0.04; armL.end.add(handL);
+const handR = new THREE.Object3D(); handR.position.y = -0.04; armR.end.add(handR);
+function computeI() {
+  pivot.updateMatrixWorld(true);
+  pivotInv.copy(pivot.matrixWorld).invert();
+  let I = I_FIXED;
+  for (const [a, h] of [[armL, handL], [armR, handR]]) {
+    I += rodI(a.root, a.joint, M.upperArm, 0.04);
+    I += rodI(a.joint, a.end, M.foreArm, 0.033);
+    I += pointI(h, M.hand);
+  }
+  for (const [l, tip] of [[legS, footTipS], [legF, footTip]]) {
+    I += rodI(l.root, l.joint, M.thigh, 0.065);
+    I += rodI(l.joint, l.end, M.shin, 0.048);
+    I += rodI(l.end, tip, M.foot, 0.04, 6);
+  }
+  return I;
+}
+
+// ---------- Vectors (L and ω along the spin axis) ----------
+function makeLabel(text, color) {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+  const g = c.getContext('2d');
+  const draw = () => {
+    g.clearRect(0, 0, 128, 128);
+    g.font = 'italic 700 84px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = 10; g.strokeStyle = 'rgba(10,20,35,0.85)'; g.strokeText(text, 64, 68);
+    g.fillStyle = color; g.fillText(text, 64, 68);
+  };
+  draw();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  // redraw once Inter has loaded
+  if (document.fonts) document.fonts.load('italic 700 84px Inter').then(() => { draw(); t.needsUpdate = true; }).catch(() => {});
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false }));
+  s.scale.set(0.16, 0.16, 1); s.renderOrder = 10;
+  return s;
+}
+function makeArrow(color) {
+  const g = new THREE.Group();
+  const m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.35, roughness: 0.4 });
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 12), m);
+  const headM = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.11, 16), m);
+  g.add(shaft); g.add(headM);
+  g.userData = { shaft, head: headM };
+  return g;
+}
+function setArrow(a, base, len) {
+  len = Math.max(len, 0.0001);
+  const h = Math.min(0.11, len * 0.5);
+  a.userData.shaft.scale.y = Math.max(len - h, 0.0001);
+  a.userData.shaft.position.y = base + (len - h) / 2;
+  a.userData.head.scale.y = h / 0.11;
+  a.userData.head.position.y = base + len - h / 2;
+  a.visible = len > 0.002;
+}
+const vecGroup = new THREE.Group(); vecGroup.visible = false; scene.add(vecGroup);
+const arrowL = makeArrow(0xffc94a); arrowL.position.x = -0.055; vecGroup.add(arrowL);
+const arrowW = makeArrow(0x4fd1ff); arrowW.position.x = 0.055; vecGroup.add(arrowW);
+const labL = makeLabel('L', '#ffc94a'); vecGroup.add(labL);
+const labW = makeLabel('ω', '#4fd1ff'); vecGroup.add(labW);
+// the axis itself
+const axisLine = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 2.0, 6),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
+axisLine.position.y = 1.0; vecGroup.add(axisLine);
+const VEC_BASE = 1.78;
+
+// ---------- Trails ----------
+const TRAIL_N = 160;
+function makeTrail(color) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(TRAIL_N * 3), col = new Float32Array(TRAIL_N * 4);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
+  const c = new THREE.Color(color);
+  for (let i = 0; i < TRAIL_N; i++) { col[i * 4] = c.r; col[i * 4 + 1] = c.g; col[i * 4 + 2] = c.b; col[i * 4 + 3] = 1 - i / TRAIL_N; }
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }));
+  line.frustumCulled = false;
+  line.userData = { pts: [], pos };
+  scene.add(line);
+  return line;
+}
+const trailHand = makeTrail(0xff8fb1);
+const trailFoot = makeTrail(0xffd36b);
+function pushTrail(tr, obj) {
+  const p = new THREE.Vector3(); obj.getWorldPosition(p);
+  const pts = tr.userData.pts; pts.unshift(p);
+  if (pts.length > TRAIL_N) pts.pop();
+  const pos = tr.userData.pos;
+  for (let i = 0; i < TRAIL_N; i++) {
+    const q = pts[Math.min(i, pts.length - 1)];
+    pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z;
+  }
+  tr.geometry.attributes.position.needsUpdate = true;
+}
+function clearTrails() { trailHand.userData.pts.length = 0; trailFoot.userData.pts.length = 0; }
+
+// ---------- State ----------
+const state = {
+  s: 0, target: 0, transition: 1.5, // seconds (simulated) for full in/out
+  angle: 0, L: 0, I: 1, w: 0, running: true, timeScale: 1, friction: false, tauF: 0.8,
+  t: 0, hist: [], dragging: false,
+};
+applyPose(0);
+const I_OUT = computeI();
+applyPose(1);
+const I_IN = computeI();
+applyPose(0);
+function restart() {
+  const rev = parseFloat(w0.value);
+  // set L so that ω would equal the chosen rate with arms fully out
+  state.L = I_OUT * rev * 2 * Math.PI;
+  state.hist.length = 0; state.t = 0;
+  clearTrails();
+}
+
+// ---------- UI ----------
+const $ = id => document.getElementById(id);
+const btnOut = $('btnOut'), btnIn = $('btnIn'), pos = $('pos'), posVal = $('posVal');
+const w0 = $('w0'), w0Val = $('w0Val');
+function setTarget(t) {
+  state.target = t;
+  btnOut.classList.toggle('on', t === 0);
+  btnIn.classList.toggle('on', t === 1);
+}
+btnOut.onclick = () => setTarget(0);
+btnIn.onclick = () => setTarget(1);
+pos.oninput = () => {
+  const t = pos.value / 100; state.target = t;
+  btnOut.classList.toggle('on', t === 0); btnIn.classList.toggle('on', t === 1);
+};
+pos.onpointerdown = () => state.dragging = true;
+window.addEventListener('pointerup', () => state.dragging = false);
+w0.oninput = () => { w0Val.textContent = parseFloat(w0.value).toFixed(1) + ' rev/s'; restart(); };
+const btnPlay = $('btnPlay');
+btnPlay.onclick = () => { state.running = !state.running; btnPlay.textContent = state.running ? 'Pause' : 'Play'; };
+document.querySelectorAll('#speedRow button').forEach(b => b.onclick = () => {
+  state.timeScale = parseFloat(b.dataset.s);
+  document.querySelectorAll('#speedRow button').forEach(x => x.classList.toggle('on', x === b));
+});
+$('chkFric').onchange = e => { state.friction = e.target.checked; };
+$('chkVec').onchange = e => { vecGroup.visible = e.target.checked; };
+$('chkTrail').onchange = e => { trailHand.visible = trailFoot.visible = e.target.checked; clearTrails(); };
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' && e.target.type !== 'checkbox') {
+    e.preventDefault(); setTarget(state.target < 0.5 ? 1 : 0);
+  }
+});
+
+// camera views (with a short glide)
+const views = {
+  angle: { p: [2.88, 2.165, 3.6], t: [0, 0.95, 0] },   // 10% closer than before
+  front: { p: [0, 1.1, 4.6], t: [0, 0.95, 0] },
+  top:   { p: [0, 5.2, 0.001], t: [0, 0.6, 0] },
+  low:   { p: [2.4, 0.25, 2.6], t: [0, 1.0, 0] },
+};
+let glide = null;
+// On a tall, narrow phone screen the camera steps back a little so all of her fits in the visible area
+function viewZoom() {
+  if (!document.body.classList.contains('phone')) return 1;
+  const r = visibleRect(), a = r.w / Math.max(1, r.h);
+  return Math.min(2.2, Math.max(1, Math.pow(1.15 / a, 0.8)));
+}
+let currentView = 'angle', userMoved = false;
+function goView(name, instant) {
+  const v = views[name]; currentView = name;
+  const tt = new THREE.Vector3(...v.t), to = new THREE.Vector3(...v.p).sub(tt).multiplyScalar(viewZoom()).add(tt);
+  if (instant) { camera.position.copy(to); controls.target.copy(tt); controls.update(); return; }
+  glide = { from: camera.position.clone(), ft: controls.target.clone(), to, tt, k: 0 };
+}
+const viewBtns = document.querySelectorAll('#viewRow button');
+const markView = name => viewBtns.forEach(x => x.classList.toggle('on', x.dataset.v === name));
+viewBtns.forEach(b => b.onclick = () => { goView(b.dataset.v); markView(b.dataset.v); });
+// once the viewer drags, pinches or scrolls the view themselves, no preset is highlighted
+controls.addEventListener('start', () => { glide = null; markView(null); userMoved = true; });
+goView('angle', true);
+
+// ---------- phones: keep her centred in the part of the screen the menus don't cover ----------
+function visibleRect() {
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  if (!document.body.classList.contains('phone')) return { x: 0, y: 0, w: W, h: H };
+  const sr = stageEl.getBoundingClientRect();
+  const top = document.getElementById('readout').getBoundingClientRect().bottom - sr.top + 6;
+  const ctl = document.getElementById('controls').getBoundingClientRect();
+  if (document.body.classList.contains('landscape')) return { x: 0, y: top, w: ctl.left - sr.left, h: H - top };
+  return { x: 0, y: top, w: W, h: Math.max(80, ctl.top - sr.top - top) };
+}
+function frameView() {
+  if (!document.body.classList.contains('phone')) { if (camera.view && camera.view.enabled) camera.clearViewOffset(); return; }
+  const W = canvas.clientWidth, H = canvas.clientHeight, r = visibleRect();
+  const dx = r.x + r.w / 2 - W / 2, dy = r.y + r.h / 2 - H / 2;
+  camera.setViewOffset(W, H, -dx, -dy, W, H);
+}
+function onLayoutChange() {
+  layoutStage(); applyControlScale(); resize(); alignBoxes();
+  if (!userMoved) goView(currentView, true);     // re-frame her (e.g. after rotating a phone) unless the viewer has moved the camera
+}
+window.addEventListener('resize', onLayoutChange);
+window.addEventListener('orientationchange', () => setTimeout(onLayoutChange, 200));
+const detailBtn = document.getElementById('detailBtn'), moreBtn = document.getElementById('moreBtn');
+if (detailBtn) detailBtn.onclick = () => {
+  const on = document.body.classList.toggle('details');
+  detailBtn.textContent = on ? 'Hide details and graphs ▴' : 'Show details and graphs ▾';
+};
+if (moreBtn) moreBtn.onclick = () => {
+  const on = document.body.classList.toggle('more');
+  moreBtn.textContent = on ? 'Fewer controls ▾' : 'More controls ▴';
+};
+
+// Reset: put everything back the way it is when the page first loads
+function resetAll() {
+  // pose: arms and leg fully out, immediately
+  state.s = 0; setTarget(0); pos.value = 0; applyPose(0);
+  // starting spin 1.0 rev/s, spin angle back to zero
+  w0.value = '1.0'; w0Val.textContent = '1.0 rev/s';
+  state.angle = 0; pivot.rotation.y = 0;
+  // playing at 1×
+  state.running = true; btnPlay.textContent = 'Pause';
+  state.timeScale = 1;
+  document.querySelectorAll('#speedRow button').forEach(x => x.classList.toggle('on', x.dataset.s === '1'));
+  // checkboxes: vectors off, traces on, friction off
+  $('chkVec').checked = false; vecGroup.visible = false;
+  $('chkTrail').checked = true; trailHand.visible = trailFoot.visible = true;
+  $('chkFric').checked = false; state.friction = false;
+  // braid hanging at rest, camera back to the Angled view
+  braid.theta.fill(BRAID_REST);
+  glide = null; goView('angle', true); markView('angle');
+  restart();                       // resets L, graphs and traces
+  state.I = computeI(); state.w = state.L / state.I;
+  updateSkirt(state.w);
+}
+$('btnResetAll').onclick = resetAll;
+
+// ---------- Readouts & graph ----------
+const vB = $('vB'), vI = $('vI'), vW = $('vW'), vRev = $('vRev'), vL = $('vL'), vK = $('vK'), eqLine = $('eqLine');
+const gC = $('graph'), gx = gC.getContext('2d');
+const HIST_T = 12;
+function fmt(x, d = 2) { return x.toFixed(d); }
+function updateReadout() {
+  const { I, w, L } = state;
+  vI.textContent = fmt(I) + ' kg·m²';
+  vW.textContent = fmt(w) + ' rad/s';
+  vRev.textContent = fmt(w / (2 * Math.PI)) + ' rev/s';
+  vL.textContent = fmt(L, 1) + ' kg·m²/s';
+  vK.textContent = fmt(0.5 * I * w * w, 0) + ' J';
+  vB.textContent = Math.round((state.braidAngle || 0) * 180 / Math.PI) + '°';
+  eqLine.innerHTML = `<span style="color:var(--L)">${fmt(L, 1)}</span> = <span style="color:var(--I)">${fmt(I)}</span> × <span style="color:var(--w)">${fmt(w)}</span>`;
+  posVal.textContent = Math.round(state.s * 100) + '% in';
+  if (!state.dragging) pos.value = Math.round(state.s * 100);   // the slider shows the transition as it happens
+}
+function drawGraph() {
+  const dpr = Math.min(window.devicePixelRatio * UI_SCALE, 3);   // stays sharp however much the stage is scaled
+  const W = gC.clientWidth, H = gC.clientHeight;
+  if (gC.width !== W * dpr || gC.height !== H * dpr) { gC.width = W * dpr; gC.height = H * dpr; }
+  gx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  gx.clearRect(0, 0, W, H);
+  const rows = [
+    { key: 'I', label: 'I', color: '#ff8fb1', max: Math.max(I_OUT, I_IN) * 1.1, unit: 'kg·m²' },
+    { key: 'w', label: 'ω', color: '#4fd1ff', max: null, unit: 'rad/s' },
+    { key: 'L', label: 'L', color: '#ffc94a', max: null, unit: 'kg·m²/s' },
+  ];
+  const h = state.hist;
+  const maxW = Math.max(1, ...h.map(p => p.w)) * 1.15;
+  const maxL = Math.max(1, ...h.map(p => p.L)) * 1.25;
+  rows[1].max = maxW; rows[2].max = maxL;
+  const left = 26, right = 4, gap = 6, rh = (H - gap * 2) / 3;
+  gx.font = '11px Inter, system-ui, sans-serif';
+  rows.forEach((r, i) => {
+    const y0 = i * (rh + gap);
+    gx.fillStyle = 'rgba(255,255,255,0.04)'; gx.fillRect(left, y0, W - left - right, rh);
+    gx.strokeStyle = 'rgba(255,255,255,0.12)'; gx.beginPath(); gx.moveTo(left, y0 + rh); gx.lineTo(W - right, y0 + rh); gx.stroke();
+    gx.fillStyle = r.color; gx.font = 'italic 700 14px Inter, system-ui, sans-serif';
+    gx.fillText(r.label, 6, y0 + rh / 2 + 5);
+    if (h.length > 1) {
+      const tNow = h[h.length - 1].t;
+      gx.strokeStyle = r.color; gx.lineWidth = 2; gx.beginPath();
+      h.forEach((p, j) => {
+        const x = left + (W - left - right) * (1 - (tNow - p.t) / HIST_T);
+        const y = y0 + rh - (p[r.key] / r.max) * (rh - 4);
+        j ? gx.lineTo(x, y) : gx.moveTo(x, y);
+      });
+      gx.stroke();
+    }
+  });
+}
+
+// ---------- Resize ----------
+function resize() {
+  const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight;
+  const pr = Math.min(window.devicePixelRatio, 3);               // sharp on high-resolution screens
+  if (w === resize.w && h === resize.h && pr === resize.pr) return;
+  resize.w = w; resize.h = h; resize.pr = pr;
+  renderer.setPixelRatio(pr);
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+// make the bottom of the graphs box line up with the bottom of the controls box
+function alignBoxes() {
+  const gb = document.getElementById('graphBox'), ctl = document.getElementById('controls'), gc = document.getElementById('graph');
+  if (!gb || getComputedStyle(gb).display === 'none') return;
+  if (document.body.classList.contains('phone')) { gc.style.height = ''; return; }
+  gc.style.height = '';                                   // start from the default height, then stretch or shrink
+  const extra = (ctl.getBoundingClientRect().bottom - gb.getBoundingClientRect().bottom) / UI_SCALE;   // screen px → design px
+  gc.style.height = Math.max(120, gc.clientHeight + extra) + 'px';
+}
+alignBoxes();
+if (document.fonts) document.fonts.ready.then(alignBoxes);
+
+// ---------- Main loop ----------
+restart();
+pivot.updateMatrixWorld(true); updateSkirt(0);
+const clock = new THREE.Clock();
+let trailAcc = 0, histAcc = 0;
+function frame() {
+  requestAnimationFrame(frame);
+  resize(); // keeps the view centred if the preview window changes size
+  frameView();
+  const realDt = Math.min(clock.getDelta(), 0.05);
+  const dt = state.running ? realDt * state.timeScale : 0;
+
+  if (dt > 0) {
+    // move limbs toward the target position
+    const rate = 1 / state.transition;
+    const d = state.target - state.s;
+    state.s += Math.sign(d) * Math.min(Math.abs(d), rate * dt);
+    applyPose(state.s);
+
+    state.I = computeI();
+    if (state.friction && state.L > 0) state.L = Math.max(0, state.L - state.tauF * dt);
+    state.w = state.L / state.I;            // L conserved → ω = L / I
+    updateBraid(state.w, dt);
+    state.angle += state.w * dt;            // counter-clockwise seen from above
+    pivot.rotation.y = state.angle;
+
+    state.t += dt;
+    histAcc += dt;
+    if (histAcc > 0.03) {
+      histAcc = 0;
+      state.hist.push({ t: state.t, I: state.I, w: state.w, L: state.L });
+      while (state.hist.length && state.t - state.hist[0].t > HIST_T) state.hist.shift();
+    }
+    // trails sampled in simulated time so their shape doesn't depend on frame rate
+    trailAcc += dt;
+    const step = 1 / 240;
+    if (trailHand.visible && trailAcc >= step) {
+      trailAcc = 0;
+      pivot.updateMatrixWorld(true);
+      pushTrail(trailHand, handL); pushTrail(trailFoot, footTip);
+    }
+    updateSkirt(state.w, dt);
+  } else if (state.s !== state.target && !state.running) {
+    // allow posing while paused (L still conserved)
+    const d = state.target - state.s;
+    state.s += Math.sign(d) * Math.min(Math.abs(d), realDt / state.transition);
+    applyPose(state.s);
+    state.I = computeI(); state.w = state.L / state.I;
+    updateSkirt(state.w); updateBraid(state.w, 1);
+  }
+
+  // vectors along the spin axis (up = counter-clockwise seen from above, right-hand rule).
+  // Scaled so the ω and L arrows are the same length when the arms are fully out.
+  const lenW = 0.032 * state.w, lenL = 0.032 * state.L / I_OUT;
+  setArrow(arrowL, VEC_BASE, lenL);
+  setArrow(arrowW, VEC_BASE, lenW);
+  labL.position.set(-0.13, VEC_BASE + Math.max(0.1, lenL) - 0.02, 0);
+  labW.position.set(0.13, VEC_BASE + Math.max(0.1, lenW) - 0.02, 0);
+
+  if (glide) {
+    glide.k = Math.min(1, glide.k + realDt / 0.8);
+    const e = 1 - Math.pow(1 - glide.k, 3);
+    camera.position.lerpVectors(glide.from, glide.to, e);
+    controls.target.lerpVectors(glide.ft, glide.tt, e);
+    if (glide.k >= 1) glide = null;
+  }
+  controls.update();
+  updateReadout();
+  drawGraph();
+  renderer.render(scene, camera);
+}
+frame();
+</script>
+</body>
+</html>
