@@ -58,7 +58,7 @@
       <h2>Motion</h2>
       <div class="row3">
         <button class="primary" id="playBtn" disabled>Pause</button>
-        <button id="stepBtn" disabled title="Advance the motion by 1/40 of a period">Step</button>
+        <button id="stepBtn" disabled title="Advance to the next step (1/40 of a period, plus each equilibrium crossing)">Step</button>
         <button id="defaultBtn">Default</button>
       </div>
       <label class="lbl" for="speed">Speed</label>
@@ -434,10 +434,25 @@
     k = parseFloat(kSl.value); $('kOut').textContent = `${k} N/m`; resetMotion();
   });
   playBtn.addEventListener('click', () => setRunning(!running));
-  // Step: pause (if needed) and advance the motion by 1/40 of a period
+  // Step: pause (if needed) and advance to the next stop. Stops are every 1/40 of a period,
+  // plus the exact moments the block passes equilibrium and spring equilibrium, so a step
+  // can land right on either line.
+  function stepStops() {
+    const TAU = 2 * Math.PI, stops = [];
+    for (let i = 0; i < 40; i++) stops.push(i * TAU / 40);      // includes turning points & equilibrium (0, ¼, ½, ¾ cycle)
+    const events = [];
+    const c = (m * g / k) / A;                                  // cos(phase) where y = spring equilibrium
+    if (Math.abs(c) <= 1) { const th = Math.acos(c); events.push(th, TAU - th); }
+    // drop grid stops that sit almost on top of an event, then merge
+    const merged = stops.filter(p => events.every(e => Math.abs(p - e) > 0.03 && Math.abs(p - e) < TAU - 0.03)).concat(events);
+    return merged.sort((a, b) => a - b);
+  }
   $('stepBtn').addEventListener('click', () => {
     if (A === 0) return;
-    t += (2 * Math.PI / omega()) / 40;
+    const TAU = 2 * Math.PI, w = omega();
+    const phase = w * t, cycle = Math.floor(phase / TAU + 1e-9), within = phase - cycle * TAU;
+    const next = stepStops().find(p => p > within + 1e-6);
+    t = (next === undefined ? (cycle + 1) * TAU : cycle * TAU + next) / w;
     setRunning(false);
   });
   // Default: restore every setting to how the app first loads
