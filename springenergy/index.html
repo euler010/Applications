@@ -312,8 +312,9 @@
   }
 
   function energyRange() {
-    // Range of every bar over the whole oscillation, so the scale stays fixed while it moves
-    const a = Math.abs(A), ye = yEq();
+    // Scale for the LARGEST allowed amplitude, so pulling the block never rescales the axis;
+    // only the origin (and k, which changes the maximum amplitude) changes the scale
+    const a = maxAmp(), ye = yEq();
     const ends = [energies(ye + a, 0), energies(ye - a, 0)];
     const mid = energies(ye, a * omega());
     let lo = 0, hi = 0;
