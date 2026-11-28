@@ -437,15 +437,23 @@
   // Step: pause (if needed) and advance to the next stop. Stops are every 1/40 of a period,
   // plus the exact moments the block passes equilibrium and spring equilibrium, so a step
   // can land right on either line.
+  // Step stops: the key moments of the cycle (turning points, equilibrium, spring equilibrium)
+  // are always stops, and each gap between key moments is split into equal time steps of
+  // about 1/40 of a period, so consecutive steps take (nearly) the same time.
   function stepStops() {
-    const TAU = 2 * Math.PI, stops = [];
-    for (let i = 0; i < 40; i++) stops.push(i * TAU / 40);      // includes turning points & equilibrium (0, ¼, ½, ¾ cycle)
-    const events = [];
+    const TAU = 2 * Math.PI, base = TAU / 40;
+    const keys = [0, TAU / 4, TAU / 2, 3 * TAU / 4];             // turning points and equilibrium
     const c = (m * g / k) / A;                                  // cos(phase) where y = spring equilibrium
-    if (Math.abs(c) <= 1) { const th = Math.acos(c); events.push(th, TAU - th); }
-    // drop grid stops that sit almost on top of an event, then merge
-    const merged = stops.filter(p => events.every(e => Math.abs(p - e) > 0.03 && Math.abs(p - e) < TAU - 0.03)).concat(events);
-    return merged.sort((a, b) => a - b);
+    if (Math.abs(c) < 1) { const th = Math.acos(c); keys.push(th, TAU - th); }
+    keys.sort((p, q) => p - q); keys.push(TAU);
+    const stops = [];
+    for (let i = 0; i < keys.length - 1; i++) {
+      const gap = keys[i + 1] - keys[i];
+      if (gap < 1e-6) continue;
+      const n = Math.max(1, Math.round(gap / base));
+      for (let j = 0; j < n; j++) stops.push(keys[i] + gap * j / n);
+    }
+    return stops;
   }
   $('stepBtn').addEventListener('click', () => {
     if (A === 0) return;
