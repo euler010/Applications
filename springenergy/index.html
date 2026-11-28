@@ -25,11 +25,15 @@
   #controls section{display:flex;flex-direction:column;gap:.5em}
   #controls h2{margin:0;font-size:.9em;font-weight:700;color:var(--ink)}
   .lbl{font-size:.85em;font-weight:600;margin-top:.2em}
+  .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.35em}
+  .row3 button{font-size:.82em;padding-inline:.15em}
   .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.45em}
   #kSl{width:100%;accent-color:var(--accent);height:1.2em;margin:0}
   #kOut{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700;font-size:.9em}
   button{font:inherit;font-size:.9em;padding:.45em .3em;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;width:100%;min-width:0;white-space:nowrap}
   button:hover{background:#eef2fb}
+  button:disabled{background:#f1f3f7;color:#9aa1ae;cursor:default}
+  button:disabled:hover{background:#f1f3f7}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   button.primary:hover{background:#1e40af}
   button.primary:disabled{background:#e3e6ec;border-color:#d7dce6;color:#9aa1ae;cursor:default}
@@ -52,8 +56,9 @@
   <aside class="card" id="controls">
     <section>
       <h2>Motion</h2>
-      <div class="row2">
+      <div class="row3">
         <button class="primary" id="playBtn" disabled>Pause</button>
+        <button id="stepBtn" disabled title="Advance the motion by 1/40 of a period">Step</button>
         <button id="defaultBtn">Default</button>
       </div>
       <label class="lbl" for="speed">Speed</label>
@@ -77,6 +82,7 @@
       </div>
       <button id="oFloor">Floor</button>
       <button id="oEq">Equilibrium</button>
+      <button id="oSeq">Spring Equilibrium</button>
     </section>
   </aside>
 </main>
@@ -419,6 +425,7 @@
     const pausedMid = !r && A !== 0 && !drag;
     playBtn.textContent = pausedMid ? 'Play' : 'Pause';
     playBtn.disabled = !(r || pausedMid);
+    $('stepBtn').disabled = A === 0 || !!drag;   // stepping needs motion to step through
   }
 
   function resetMotion() { A = 0; t = 0; setRunning(false); invalidate(); }
@@ -427,6 +434,12 @@
     k = parseFloat(kSl.value); $('kOut').textContent = `${k} N/m`; resetMotion();
   });
   playBtn.addEventListener('click', () => setRunning(!running));
+  // Step: pause (if needed) and advance the motion by 1/40 of a period
+  $('stepBtn').addEventListener('click', () => {
+    if (A === 0) return;
+    t += (2 * Math.PI / omega()) / 40;
+    setRunning(false);
+  });
   // Default: restore every setting to how the app first loads
   $('defaultBtn').addEventListener('click', () => {
     k = 40; y0 = 0; speed = 0.25;
@@ -445,6 +458,7 @@
   $('oDown').addEventListener('click', () => setOrigin(y0 - 0.1));
   $('oFloor').addEventListener('click', () => setOrigin(0));
   $('oEq').addEventListener('click', () => { y0 = yEq(); invalidate(); });
+  $('oSeq').addEventListener('click', () => { y0 = H - L0 - BH / 2; invalidate(); });   // block center when spring is unstretched
 
   // dragging
   let drag = null;
