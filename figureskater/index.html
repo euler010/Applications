@@ -1280,6 +1280,8 @@ function restart() {
   const rev = parseFloat(w0.value);
   // set L so that ω would equal the chosen rate with arms fully out
   state.L = I_OUT * rev * 2 * Math.PI;
+  // vector scale: the ω arrow reaches its longest (0.6 m) when she is fully tucked, so it always stays on screen
+  state.vecScale = 0.6 / (state.L / I_IN);
   state.hist.length = 0; state.t = 0;
   clearTrails();
 }
@@ -1529,8 +1531,9 @@ function frame() {
   }
 
   // vectors along the spin axis (up = counter-clockwise seen from above, right-hand rule).
-  // Scaled so the ω and L arrows are the same length when the arms are fully out.
-  const lenW = 0.032 * state.w, lenL = 0.032 * state.L / I_OUT;
+  // Scaled so the ω and L arrows are the same length when the arms are fully out, and the ω arrow is
+  // at most 0.6 m long (when she is fully tucked).
+  const k = state.vecScale || 0.01, lenW = k * state.w, lenL = k * state.L / I_OUT;
   setArrow(arrowL, VEC_BASE, lenL);
   setArrow(arrowW, VEC_BASE, lenW);
   labL.position.set(-0.13, VEC_BASE + Math.max(0.1, lenL) - 0.02, 0);
