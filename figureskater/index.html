@@ -1415,7 +1415,7 @@ function updateReadout() {
   vRev.textContent = fmt(w / (2 * Math.PI)) + ' rev/s';
   vL.textContent = fmt(L, 1) + ' kg·m²/s';
   vK.textContent = fmt(0.5 * I * w * w, 0) + ' J';
-  vB.textContent = Math.round((state.braidAngle || 0) * 180 / Math.PI) + '°';
+  vB.textContent = ((state.braidAngle || 0) * 180 / Math.PI).toFixed(1) + '°';
   eqLine.innerHTML = `<span style="color:var(--L)">${fmt(L, 1)}</span> = <span style="color:var(--I)">${fmt(I)}</span> × <span style="color:var(--w)">${fmt(w)}</span>`;
   posVal.textContent = Math.round(state.s * 100) + '% in';
   if (!state.dragging) pos.value = Math.round(state.s * 100);   // the slider shows the transition as it happens
