@@ -58,7 +58,7 @@
       <h2>Motion</h2>
       <div class="row3">
         <button class="primary" id="playBtn" disabled>Pause</button>
-        <button id="stepBtn" disabled title="Advance to the next step (1/40 of a period, plus each equilibrium crossing)">Step</button>
+        <button id="stepBtn" disabled title="Advance to the next step (1/80 of a period, plus each equilibrium crossing)">Step</button>
         <button id="defaultBtn">Default</button>
       </div>
       <label class="lbl" for="speed">Speed</label>
@@ -439,9 +439,9 @@
   // can land right on either line.
   // Step stops: the key moments of the cycle (turning points, equilibrium, spring equilibrium)
   // are always stops, and each gap between key moments is split into equal time steps of
-  // about 1/40 of a period, so consecutive steps take (nearly) the same time.
+  // about 1/80 of a period, so consecutive steps take (nearly) the same time.
   function stepStops() {
-    const TAU = 2 * Math.PI, base = TAU / 40;
+    const TAU = 2 * Math.PI, base = TAU / 80;
     const keys = [0, TAU / 4, TAU / 2, 3 * TAU / 4];             // turning points and equilibrium
     const c = (m * g / k) / A;                                  // cos(phase) where y = spring equilibrium
     if (Math.abs(c) < 1) { const th = Math.acos(c); keys.push(th, TAU - th); }
